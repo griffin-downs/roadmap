@@ -2,6 +2,9 @@
   "name": "roadmap",
   "version": "0.1.0",
   "type": "module",
+  "exports": {
+    "./protocol": "./src/protocol.ts"
+  },
   "scripts": {
     "check": "tsc --noEmit",
     "test": "vitest run",

@@ -86,8 +86,8 @@ function reach(nodes: Flat[], from: string, to: string): boolean {
   return false;
 }
 
-// --- define: validate graph ---
-// Throws on: cycle, consumed artifact not produced by any predecessor, missing init/term
+// --- define: validate structure ---
+// Throws on: cycle, missing init/term. Does NOT check consumes (use verify() for that).
 
 export function define<T extends string>(g: Graph<T>): Graph<T> {
   const nodes = flat(g);
@@ -100,8 +100,20 @@ export function define<T extends string>(g: Graph<T>): Graph<T> {
   const c = detectCycles(nodes);
   if (c.length) throw new Error(`Cycle in "${g.id}": ${c.join(', ')}`);
 
+  return g;
+}
+
+// --- verify: validate contracts ---
+// Returns unsatisfied consumes. Empty = all contracts satisfied.
+
+export function verify<T extends string>(g: Graph<T>): string[] {
+  const nodes = flat(g);
+  const ids = new Set(nodes.map(n => n.id));
   const nm = new Map(nodes.map(n => [n.id, n]));
+  const errors: string[] = [];
+
   for (const node of nodes) {
+    if (!node.consumes.length) continue;
     const preds = new Set<string>();
     const q = [...node.deps.filter(d => ids.has(d))];
     while (q.length) {
@@ -112,11 +124,11 @@ export function define<T extends string>(g: Graph<T>): Graph<T> {
     }
     const available = new Set([...preds].flatMap(p => nm.get(p)?.produces ?? []));
     for (const c of node.consumes) {
-      if (!available.has(c)) throw new Error(`"${node.id}" consumes "${c}" but no predecessor produces it`);
+      if (!available.has(c)) errors.push(`"${node.id}" consumes "${c}" — no predecessor produces it`);
     }
   }
 
-  return g;
+  return errors;
 }
 
 // --- check: termination ---
@@ -125,6 +137,10 @@ export function define<T extends string>(g: Graph<T>): Graph<T> {
 export function check<T extends string>(g: Graph<T>): { done: boolean; orphans: string[] } {
   const nodes = flat(g);
   const orphans: string[] = [];
+
+  // Init must reach term.
+  if (!reach(nodes, g.init, g.term)) orphans.push(`${g.term}: unreachable from ${g.init}`);
+
   for (const n of nodes) {
     if (n.id === g.init || n.id === g.term) continue;
     if (!reach(nodes, g.init, n.id)) orphans.push(`${n.id}: unreachable from ${g.init}`);
