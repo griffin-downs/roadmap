@@ -48,10 +48,32 @@ const variant = branch(main, 'feat');
 //   B. Include 'start' in the branch (start fromNode earlier)
 ```
 
+## The self-contained constraint
+
+`branch(g, fromNode)` calls `verify()` on the extracted subgraph. This means:
+**the branch init node must not consume artifacts produced by nodes outside the branch.**
+
+If `fromNode.consumes` references artifacts produced by its ancestors (which are not
+included in the branch), `verify()` will throw:
+```
+Branch validation failed: "fromNode" consumes "artifact" — no predecessor produces it
+```
+
+**This is intentional.** A branch is a standalone DAG. It must be self-sufficient.
+
+To use `branch()` successfully, the `fromNode` must either:
+- Have no `consumes` (or consume only artifacts in its own produces chain), or
+- Consume only artifacts produced by nodes that are *also* reachable from `fromNode`
+  (i.e., nodes within the branch itself)
+
+**When your branch init has external deps** — use the full graph with `orient()` instead.
+`orient()` operates on the full graph and always has context from predecessors.
+`branch()` is for when you need a structurally independent sub-roadmap.
+
 ## Invariants
 1. **Acyclicity**: branched graph has no cycles (checked by define())
 2. **Reachability**: init reaches term (checked by check())
-3. **External consumes**: any unsatisfied consumes must be provided externally (check via verify())
+3. **Self-contained**: all `consumes` in the branch must be satisfied within the branch (checked by verify())
 
 ## Contrast with merge()
 - **merge()**: Combine two complete DAGs at join points (init→term in both)

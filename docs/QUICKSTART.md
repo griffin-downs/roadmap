@@ -44,9 +44,9 @@ node boot.ts
 Create a simple agent:
 
 ```typescript
-import { loadDAG, orient } from 'roadmap/protocol';
-import { CheckpointManager } from 'roadmap/protocol';
-import { AuditTrail } from 'roadmap/protocol';
+import { orient } from 'roadmap/protocol';
+import { loadDAG } from 'roadmap/versioning';
+import { CheckpointManager, AuditTrail } from 'roadmap/recovery';
 import roadmap from './roadmap.ts';
 import { existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
@@ -156,9 +156,42 @@ ls -la .roadmap/checkpoints/
 # All saved state for recovery
 ```
 
+## idempotent field
+
+Every node has `idempotent: boolean`. This is a contract with executor agents:
+
+```typescript
+// idempotent: true  — agent can re-run safely if interrupted
+{ id: 'build', idempotent: true, ... }
+
+// idempotent: false — one-time operation; agent must not auto-retry
+{ id: 'db-migration', idempotent: false, ... }
+{ id: 'auditor-sign-off', idempotent: false, ... }
+```
+
+**What agents do with `idempotent: false`:**
+- Checkpoint immediately before execution (`checkpoint.saveCheckpoint(...)`)
+- Treat failure as a human-in-the-loop gate — surface the error, do not retry
+- Do not advance position until the operation is confirmed complete
+
+`idempotent: false` does not mean rollback is impossible — it means the agent
+cannot safely replay the operation to recover. Rollback is a separate concern
+handled by checkpoint/restore.
+
+## Entry points (v0.4.0+)
+
+```typescript
+import { define, check, verify, order, orient, merge, branch } from 'roadmap/protocol';
+import { CheckpointManager, AuditTrail } from 'roadmap/recovery';
+import { validateNode, validateGraph } from 'roadmap/validation';
+import { loadDAG, migrateDAG } from 'roadmap/versioning';
+import { getBrief, checkpoint, advance } from 'roadmap/agent';
+// or: import everything from 'roadmap' (barrel)
+```
+
 ## Next
 
 - Read `README.md` for full API
-- Check `docs/decisions/` for design
-- Multi-repo? See `example/multi-repo-merge.ts`
-- Real project? Apply to cockpit or fusion
+- Check `docs/decisions/` for design decisions
+- Multi-repo coordination? See `docs/multi-project-patterns.md`
+- Real project adoption? See `docs/real-project-adoption.md`
