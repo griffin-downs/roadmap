@@ -1,103 +1,109 @@
-# SKILL.md — DAG Expansion Protocol Guide
+# SKILL.md — Protocol Reference
 
-**roadmap/protocol**: type-safe governance specification for autonomous execution.
-
-## Core API
+## Functions (6 core + 2 composition)
 
 ```typescript
-// Construct & validate
-define(graph({ id, desc, init, term, nodes }))     // validate structure
-verify(g)                  // validate contracts (consumes satisfied)
-check(g)                   // validate connectivity (init→term reachable)
-order(g)                   // topological sort (execution sequence)
-
-// Position & reconcile
-orient(g, exists)          // current node (first with missing artifacts)
-reconcile(g, fwd, bwd)     // find where produces meets consumes
-
-// DAG composition (v0.2+)
-merge(g1, g2, connections) // combine at join points
-branch(g, fromNode)        // extract variant (parallel development)
+define(g)              // validate: cycles? init/term exist?
+check(g)               // validate: init→term reachable? no orphans?
+verify(g)              // validate: consumes satisfied by predecessors?
+order(g)               // topo sort: execution sequence
+orient(g, exists)      // find position: first incomplete node
+reconcile(g, fwd, bwd) // find gaps: where produces meets consumes
+merge(g1, g2, conn)    // combine: at join points, validate merged
+branch(g, from)        // extract: subgraph from node to term
 ```
 
-## Expansion Protocol (DAG Design)
-
-**1. Define INIT and TERM**: what exists vs. what should exist
-
-**2. EXPAND forward**: add nodes from INIT toward TERM
-
-**3. EXPAND backward**: add nodes from TERM backward to fill gaps
-
-**4. RECONCILE**: find where produces meets consumes (`reconcile(g, fwd, bwd)`)
-
-**5. VALIDATE**: `define()` + `check()` + `verify()` pass
-
-## Simple example
-
+## Types
 ```typescript
-const roadmap = define(graph({
-  id: 'cli', init: 'scaffold', term: 'released',
+interface NodeSpec<T> {
+  id: T;                    // must match key
+  desc: string;
+  produces: string[];       // artifacts created
+  consumes: string[];       // artifacts needed
+  deps: T[];                // dependencies
+}
+
+interface Graph<T> {
+  id: string;
+  init: T; term: T;         // start/end nodes
+  nodes: Record<T, NodeSpec<T>>;
+}
+
+interface Orientation {
+  position: string;         // current node
+  done: string[];           // finished
+  produces: string[];       // to create
+  consumes: string[];       // to use
+  remaining: string[];      // future
+}
+```
+
+## Expansion Protocol
+
+1. **Define INIT + TERM**: what exists vs. should exist
+2. **Expand forward**: nodes from INIT toward TERM
+3. **Expand backward**: nodes from TERM back to fill gaps
+4. **Reconcile**: `reconcile(g, fwd, bwd)` finds join points
+5. **Validate**: define() + check() + verify() all pass, gaps empty
+6. **Repeat**: for each phase, same protocol
+
+## Quick examples
+
+### Linear roadmap
+```typescript
+const g = define(graph({
+  init: 'a', term: 'd',
   nodes: {
-    scaffold:  { produces: ['src/main.ts'], deps: [] },
-    features:  { produces: ['src/cli.ts'],  deps: ['scaffold'] },
-    tests:     { produces: ['tests/'],      deps: ['features'] },
-    released:  { produces: [],              deps: ['tests'] },
+    a: { produces: ['a.txt'], deps: [] },
+    b: { produces: ['b.txt'], deps: ['a'] },
+    c: { produces: ['c.txt'], deps: ['b'] },
+    d: { produces: [], deps: ['c'] },
   }
 }));
 
-const pos = orient(roadmap, f => existsSync(f));
-// pos.position tells which node has missing artifacts
-```
-
-## Recipes
-
-### Session workflow
-```typescript
-import { orient, check, verify } from 'roadmap/protocol';
-import roadmap from './roadmap.ts';
-
-check(roadmap);    // structure valid
-verify(roadmap);   // contracts satisfied
-
-const pos = orient(roadmap, f => existsSync(f));
-// Create pos.produces
-// Re-run orient() to advance
+const pos = orient(g, f => existsSync(f));
+// pos.position: which node is incomplete
 ```
 
 ### Multi-phase with merge
 ```typescript
-const phase1 = define(graph({...}));
-const phase2 = define(graph({...}));
-
-const merged = merge(phase1, phase2, [
-  { g1Node: 'term-1', g2Node: 'init-2', artifact: 'output.json' }
+const merged = merge(g1, g2, [
+  { g1Node: 'term', g2Node: 'init', artifact: 'x.json' }
 ]);
 ```
 
-### Parallel development with branch
+### Parallel variant with branch
 ```typescript
-const main = define(graph({...}));
-const variant = branch(main, 'midpoint');
-// develop variant independently
-const merged = merge(main, variant, [...]);
+const variant = branch(g, 'midpoint');
+// variant.init = 'midpoint' (was g.init)
+// variant.term unchanged
 ```
 
+## Session workflow
+```typescript
+check(g) && verify(g)          // valid?
+const pos = orient(g, exists)  // current node
+// create pos.produces
+orient(g, exists)              // advance
+```
+
+## Adversarial specs
+
+Write tests that **fail on current implementation, pass after fix**. See SPEC.md.
+
+Pattern:
+- Core contract: catches the bug
+- Boundary: regression guards
+- File: `tests/adv-{feature}.test.ts` (~100 lines)
+
 ## Design principles
+- Type-safe (tsc validates)
+- Acyclic (define checks)
+- Connected (check validates)
+- Sound (verify checks)
+- Incremental (order + orient)
 
-- **Type-safe**: Invalid refs are tsc errors
-- **Acyclic**: define() prevents cycles
-- **Connected**: check() validates reachability
-- **Sound**: verify() ensures contracts satisfied
-- **Incremental**: order() + orient() support stepwise execution
-
-## Roadmap as governance
-
-The DAG IS the governance mechanism:
-- **Types** enforce structure (tsc checks)
-- **Cycles** prevented (define validates)
-- **Connectivity** verified (check)
-- **Contracts** validated (verify)
-- **Position** from filesystem (orient)
-- **Gaps** identified (reconcile)
-
-No configuration, no implicit state, no hidden dependencies.
+## See also
+- README.md: what/why/how + examples
+- docs/decisions/: detailed design records
+- .briefing/{node}.json: node-level guidance

@@ -219,12 +219,54 @@ const roadmap = define(graph({
       deps: ['example-create', 'skill-finalize'],
     },
 
-    term: {
-      id: 'term',
+    'v0.2.0-term': {
+      id: 'v0.2.0-term',
       desc: 'v0.2.0 ready: published npm package, documented API, real consumer examples',
       produces: [],
       consumes: ['README.md', 'SKILL.md', 'CHANGELOG.md'],
       deps: ['release-prepare'],
+    },
+
+    // --- PHASE 4.5: Governance hardening (autonomous-agent ready) ---
+
+    'spec-system': {
+      id: 'spec-system',
+      desc: 'Formalize adversarial spec system: when/how/why, integration with implementation',
+      produces: ['SPEC.md'],
+      consumes: ['tests/adv-reconcile.test.ts', 'tests/adv-orient.test.ts'],
+      deps: ['v0.2.0-term'],
+    },
+
+    'briefing-files': {
+      id: 'briefing-files',
+      desc: 'Create .briefing.json per node: what to build, which files matter, pattern to follow',
+      produces: ['.briefing/adv-reconcile.json', '.briefing/fix-reconcile.json', '.briefing/merge-spec.json'],
+      consumes: [],
+      deps: ['spec-system'],
+    },
+
+    'test-org-guide': {
+      id: 'test-org-guide',
+      desc: 'Test organization guide: how to read adv-* suites progressively, pattern matching',
+      produces: ['docs/test-organization.md'],
+      consumes: [],
+      deps: ['spec-system'],
+    },
+
+    'condense-docs': {
+      id: 'condense-docs',
+      desc: 'Refactor SKILL.md + README for reference density (60 lines each, no marketing prose)',
+      produces: ['SKILL.md', 'README.md'],
+      consumes: [],
+      deps: ['spec-system'],
+    },
+
+    term: {
+      id: 'term',
+      desc: 'v0.2.0-autonomous: agents can reorient on <5KB context, formalized spec system, node briefings',
+      produces: [],
+      consumes: ['SPEC.md', 'docs/test-organization.md'],
+      deps: ['briefing-files', 'test-org-guide', 'condense-docs'],
     },
   },
 }));
