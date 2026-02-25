@@ -1,0 +1,165 @@
+{
+  "id": "monorepo-services",
+  "name": "Monorepo with 3 dependent services",
+  "status": "pass",
+  "durationMs": 1,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok",
+      "args": "service-a"
+    },
+    {
+      "fn": "check",
+      "result": "ok",
+      "args": "service-a"
+    },
+    {
+      "fn": "verify",
+      "result": "ok",
+      "args": "service-a"
+    },
+    {
+      "fn": "define",
+      "result": "ok",
+      "args": "service-b"
+    },
+    {
+      "fn": "verify",
+      "result": "caught",
+      "args": "service-b standalone"
+    },
+    {
+      "fn": "define",
+      "result": "ok",
+      "args": "service-c"
+    },
+    {
+      "fn": "merge",
+      "result": "ok",
+      "args": "a+b"
+    },
+    {
+      "fn": "verify",
+      "result": "ok",
+      "args": "a+b merged"
+    },
+    {
+      "fn": "merge",
+      "result": "ok",
+      "args": "ab+c"
+    },
+    {
+      "fn": "verify",
+      "result": "ok",
+      "args": "abc merged"
+    },
+    {
+      "fn": "orient",
+      "result": "ok",
+      "args": "abc"
+    },
+    {
+      "fn": "reconcile",
+      "result": "ok"
+    }
+  ],
+  "errorsProtocolCaught": [
+    "Service B alone: missing contract — \"b-api\" consumes \"dist/types.d.ts\" — no predecessor produces it"
+  ],
+  "featuresExercised": [
+    "define",
+    "check",
+    "verify",
+    "merge",
+    "orient",
+    "reconcile"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 15
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "doc-sufficiency",
+      "answer": 4
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "would-have-caught",
+      "answer": false
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "prevented-deploy-issue",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 2
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 4
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "orient-accurate",
+      "answer": true
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "produces-clarity",
+      "answer": 4
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-branch-useful",
+      "answer": true
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-intuitive",
+      "answer": 4
+    },
+    {
+      "dimension": "coordination",
+      "question": "checkpoint-useful",
+      "answer": true
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    },
+    {
+      "dimension": "recommendation",
+      "question": "recommend-to-team",
+      "answer": true
+    }
+  ],
+  "notes": [
+    "Full 3-service merge: all contracts satisfied",
+    "Position: scaffold, remaining: 8",
+    "Reconcile connections: 1, gaps: 0"
+  ],
+  "errorDescription": "verify() caught missing dist/types.d.ts in service-b standalone — would have deployed B before A published types",
+  "agentBriefingClarity": 4,
+  "frictionScore": 4
+}

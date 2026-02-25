@@ -1,0 +1,68 @@
+{
+  "version": "1.0",
+  "title": "Roadmap Protocol Adoption Survey",
+  "desc": "5-dimension evaluation across 10 adoption scenarios. Aggregated into release readiness assessment.",
+  "dimensions": [
+    {
+      "id": "adoption-friction",
+      "name": "Adoption Friction",
+      "weight": 0.2,
+      "questions": [
+        { "id": "time-to-first-roadmap", "text": "How long to define your first roadmap.ts?", "type": "minutes" },
+        { "id": "ts-caught-errors", "text": "Did TypeScript catch your errors upfront?", "type": "boolean" },
+        { "id": "doc-sufficiency", "text": "Did documentation feel sufficient?", "type": "scale-1-5" },
+        { "id": "confusing-part", "text": "What was confusing?", "type": "text" }
+      ]
+    },
+    {
+      "id": "value-delivered",
+      "name": "Value Delivered",
+      "weight": 0.3,
+      "questions": [
+        { "id": "dag-caught-error", "text": "Did the DAG catch a real error in your plan?", "type": "boolean" },
+        { "id": "would-have-caught", "text": "Would you have caught this without the tool?", "type": "boolean" },
+        { "id": "prevented-deploy-issue", "text": "Did contract validation prevent a deployment issue?", "type": "boolean" },
+        { "id": "time-saved", "text": "How much time did this save? (hours)", "type": "hours" }
+      ]
+    },
+    {
+      "id": "agent-handoff",
+      "name": "Agent Handoff",
+      "weight": 0.2,
+      "questions": [
+        { "id": "briefing-clarity", "text": "Could agent understand 'what to do next' from brief?", "type": "scale-1-5" },
+        { "id": "orient-accurate", "text": "Did orient() correctly report your position?", "type": "boolean" },
+        { "id": "produces-clarity", "text": "How clear was the 'produces' artifact list?", "type": "scale-1-5" },
+        { "id": "missing-context", "text": "What context was missing from the briefing?", "type": "text" }
+      ]
+    },
+    {
+      "id": "coordination",
+      "name": "Coordination",
+      "weight": 0.15,
+      "questions": [
+        { "id": "merge-branch-useful", "text": "Did merge()/branch() solve a real problem?", "type": "boolean" },
+        { "id": "merge-intuitive", "text": "How intuitive was the merge API?", "type": "scale-1-5" },
+        { "id": "checkpoint-useful", "text": "Did checkpoint/restore match your audit needs?", "type": "boolean" },
+        { "id": "multi-team", "text": "Would you use this for multi-team coordination?", "type": "boolean" }
+      ]
+    },
+    {
+      "id": "recommendation",
+      "name": "Would Recommend",
+      "weight": 0.15,
+      "questions": [
+        { "id": "use-in-production", "text": "Would you use this in production?", "type": "boolean" },
+        { "id": "recommend-to-team", "text": "Would you recommend to another team?", "type": "boolean" },
+        { "id": "top-improvements", "text": "Top 3 improvements needed?", "type": "text" },
+        { "id": "next-use-case", "text": "What use case would you use it for next?", "type": "text" }
+      ]
+    }
+  ],
+  "successCriteria": {
+    "wouldUseInProduction": { "threshold": 0.7, "desc": "≥70% of scenarios rated 'would use in production'" },
+    "dagCaughtRealError": { "threshold": 0.8, "desc": "≥80% of scenarios: DAG caught a real error" },
+    "agentBriefingClarity": { "threshold": 4.0, "desc": "≥4/5 average briefing clarity" },
+    "noBlockingFriction": { "threshold": true, "desc": "No scenario rated friction = 1 (blocked)" }
+  }
+}

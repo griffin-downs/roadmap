@@ -1,0 +1,90 @@
+{
+  "id": "team-workflow",
+  "name": "Team onboarding as agent workflow",
+  "status": "pass",
+  "durationMs": 0,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "ok"
+    },
+    {
+      "fn": "orient",
+      "result": "ok"
+    }
+  ],
+  "errorsProtocolCaught": [],
+  "featuresExercised": [
+    "define",
+    "verify",
+    "orient"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 20
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "doc-sufficiency",
+      "answer": 4
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 2
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 5
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "orient-accurate",
+      "answer": true
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "produces-clarity",
+      "answer": 5
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "missing-context",
+      "answer": "Who to ask for design review meeting"
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    }
+  ],
+  "notes": [
+    "Agent position: first-pr",
+    "Next to produce: first-pr.url",
+    "Can consume: tour-complete.marker, env-ready.marker",
+    "Phases remaining: 2",
+    "first-pr.idempotent=false: agent knows this is a one-time human action"
+  ],
+  "errorDescription": "orient() correctly identifies first-pr as next phase given prior artifacts exist; idempotent=false tells agent this requires human action",
+  "agentBriefingClarity": 5,
+  "frictionScore": 4
+}

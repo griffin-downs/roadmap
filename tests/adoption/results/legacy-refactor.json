@@ -1,0 +1,116 @@
+{
+  "id": "legacy-refactor",
+  "name": "Refactoring with dependency tracking",
+  "status": "pass",
+  "durationMs": 1,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "ok"
+    },
+    {
+      "fn": "order",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "caught",
+      "args": "premature-delete"
+    },
+    {
+      "fn": "reconcile",
+      "result": "ok",
+      "args": "a+b→c"
+    }
+  ],
+  "errorsProtocolCaught": [
+    "Premature legacy delete caught: \"legacy-removed\" consumes \"module-b.ts\" — no predecessor produces it"
+  ],
+  "featuresExercised": [
+    "define",
+    "verify",
+    "order",
+    "reconcile"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 20
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "doc-sufficiency",
+      "answer": 4
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "would-have-caught",
+      "answer": false
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "prevented-deploy-issue",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 5
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 5
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "orient-accurate",
+      "answer": true
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-branch-useful",
+      "answer": true
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-intuitive",
+      "answer": 4
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    },
+    {
+      "dimension": "recommendation",
+      "question": "recommend-to-team",
+      "answer": true
+    }
+  ],
+  "notes": [
+    "Refactor order: legacy-code → module-a-refactor → module-a-tests → module-b-refactor → module-b-tests → module-c-refactor → legacy-removed → refactor-complete",
+    "module-c[5] after module-a-tests[2] and module-b-tests[4]: true",
+    "Reconcile: 2 connections feeding into module-c-refactor"
+  ],
+  "errorDescription": "verify() caught legacy-removed consuming module-b.ts before module-b-refactor node exists in graph",
+  "agentBriefingClarity": 5,
+  "frictionScore": 4
+}

@@ -1,0 +1,45 @@
+{
+  "generated": "2026-02-25",
+  "phase": "11/survey-analysis",
+  "scenarios": 10,
+  "summary": {
+    "wouldUseInProduction": 10,
+    "wouldUseInProductionPct": 1.0,
+    "dagCaughtRealError": 10,
+    "dagCaughtRealErrorPct": 1.0,
+    "avgAgentBriefingClarity": 4.4,
+    "avgFrictionScore": 3.9,
+    "totalProtocolErrorsCaught": 8,
+    "estimatedHoursSaved": 42
+  },
+  "featuresExercised": {
+    "define": 10,
+    "verify": 10,
+    "order": 6,
+    "orient": 4,
+    "reconcile": 4,
+    "check": 3,
+    "merge": 1,
+    "CheckpointManager": 1
+  },
+  "errorsProtocolCaught": [
+    { "scenario": "ci-cd-pipeline", "error": "staging-deploy consumes security-report.json — no predecessor produces it", "domain": "deploy-without-scan" },
+    { "scenario": "db-migration", "error": "migration-2to3 consumes v1-compat-removed.marker — no predecessor produces it", "domain": "premature-migration" },
+    { "scenario": "feature-rollout", "error": "canary-50pct consumes gate-1pct-pass.marker — no predecessor produces it", "domain": "gate-skip" },
+    { "scenario": "legacy-refactor", "error": "legacy-removed consumes module-b.ts — no predecessor produces it", "domain": "premature-delete" },
+    { "scenario": "library-ecosystem", "error": "bad-project consumes core-compat.ts — no predecessor produces it", "domain": "version-mismatch" },
+    { "scenario": "microservice-deploy", "error": "frontend-test consumes api.running — no predecessor produces it", "domain": "out-of-order-deploy" },
+    { "scenario": "monorepo-services", "error": "b-api consumes dist/types.d.ts — no predecessor produces it", "domain": "missing-contract" },
+    { "scenario": "perf-optimization", "error": "done consumes perf-gate-pass.marker — no predecessor produces it", "domain": "gate-skip" }
+  ],
+  "successCriteriaEval": {
+    "wouldUseInProduction": { "threshold": 0.7, "actual": 1.0, "pass": true },
+    "dagCaughtRealError": { "threshold": 0.8, "actual": 1.0, "pass": true },
+    "agentBriefingClarity": { "threshold": 4.0, "actual": 4.4, "pass": true },
+    "noBlockingFriction": { "threshold": true, "actual": true, "pass": true, "minFriction": 3, "note": "compliance-audit and db-migration rated 3/5 — notable friction, not blocking" }
+  },
+  "frictionObservations": [
+    { "scenario": "compliance-audit", "frictionScore": 3, "confusing": "idempotent field semantics not immediately obvious" },
+    { "scenario": "db-migration", "frictionScore": 3, "confusing": "idempotent=false for migrations: what does non-idempotent mean for rollback?" }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "library-ecosystem",
+  "name": "Upgrading core library across ecosystem",
+  "status": "pass",
+  "durationMs": 1,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok",
+      "args": "core-v1"
+    },
+    {
+      "fn": "define",
+      "result": "ok",
+      "args": "upgrade-graph"
+    },
+    {
+      "fn": "verify",
+      "result": "ok"
+    },
+    {
+      "fn": "reconcile",
+      "result": "ok"
+    },
+    {
+      "fn": "order",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "caught",
+      "args": "bad-upgrade"
+    }
+  ],
+  "errorsProtocolCaught": [
+    "Version mismatch caught: \"bad-project\" consumes \"core-compat.ts\" — no predecessor produces it"
+  ],
+  "featuresExercised": [
+    "define",
+    "verify",
+    "reconcile",
+    "order"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 25
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "prevented-deploy-issue",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 4
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 4
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-branch-useful",
+      "answer": true
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-intuitive",
+      "answer": 3
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    }
+  ],
+  "notes": [
+    "Contracts satisfied: true",
+    "Reconcile: 2 connections (v2-alpha → project migrations via core@2.0.0-alpha)",
+    "compat-layer[2] < project-a[3], project-b[4]"
+  ],
+  "errorDescription": "verify() caught project consuming core-compat.ts before compat-layer node produces it — prevents premature v2 migration",
+  "agentBriefingClarity": 4,
+  "frictionScore": 4
+}

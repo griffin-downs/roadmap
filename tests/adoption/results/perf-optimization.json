@@ -1,0 +1,93 @@
+{
+  "id": "perf-optimization",
+  "name": "Performance optimization sprint",
+  "status": "pass",
+  "durationMs": 0,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok",
+      "args": "main-track"
+    },
+    {
+      "fn": "verify",
+      "result": "ok",
+      "args": "main-track"
+    },
+    {
+      "fn": "order",
+      "result": "ok"
+    },
+    {
+      "fn": "reconcile",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "caught",
+      "args": "bad-gate"
+    }
+  ],
+  "errorsProtocolCaught": [
+    "Merge without gate caught: \"done\" consumes \"perf-gate-pass.marker\" — no predecessor produces it"
+  ],
+  "featuresExercised": [
+    "define",
+    "verify",
+    "order",
+    "reconcile"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 20
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 4
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 4
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-branch-useful",
+      "answer": true
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-intuitive",
+      "answer": 4
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    }
+  ],
+  "notes": [
+    "Both parallel: baseline[0] before db-opt[1] and cache-opt[2]",
+    "Reconcile: 2 connections, 0 gaps",
+    "  → db-opt → perf-gate via db-metrics.json",
+    "  → cache-opt → perf-gate via cache-metrics.json"
+  ],
+  "errorDescription": "branch() enables parallel optimization tracks; verify() catches merging without gate-pass artifact",
+  "agentBriefingClarity": 4,
+  "frictionScore": 4
+}

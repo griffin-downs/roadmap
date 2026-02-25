@@ -1,0 +1,76 @@
+{
+  "id": "db-migration",
+  "name": "Database schema evolution",
+  "status": "pass",
+  "durationMs": 1,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "caught",
+      "args": "premature-2to3"
+    }
+  ],
+  "errorsProtocolCaught": [
+    "Premature v2→v3 migration caught: \"migration-2to3\" consumes \"v1-compat-removed.marker\" — no predecessor produces it"
+  ],
+  "featuresExercised": [
+    "define",
+    "verify"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 25
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "confusing-part",
+      "answer": "idempotent=false for migrations: what does \"non-idempotent\" mean for rollback?"
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "prevented-deploy-issue",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 8
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 4
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    }
+  ],
+  "notes": [],
+  "errorDescription": "verify() caught 2→3 migration consuming v1-compat-removed.marker before drop-v1-compat node — prevents breaking old services",
+  "agentBriefingClarity": 4,
+  "frictionScore": 3
+}

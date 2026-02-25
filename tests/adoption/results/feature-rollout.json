@@ -1,0 +1,78 @@
+{
+  "id": "feature-rollout",
+  "name": "Feature flag rollout with gates",
+  "status": "pass",
+  "durationMs": 0,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "ok"
+    },
+    {
+      "fn": "order",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "caught",
+      "args": "skip-gate"
+    }
+  ],
+  "errorsProtocolCaught": [
+    "Gate skip caught: \"canary-50pct\" consumes \"gate-1pct-pass.marker\" — no predecessor produces it"
+  ],
+  "featuresExercised": [
+    "define",
+    "verify",
+    "order"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 15
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "prevented-deploy-issue",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 3
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 4
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    }
+  ],
+  "notes": [
+    "Order: feature-ready → canary-1pct → gate-1pct → canary-10pct → gate-10pct → canary-50pct → gate-50pct → canary-100pct → fully-live"
+  ],
+  "errorDescription": "verify() caught 50% rollout consuming gate-1pct-pass.marker without gate-1pct in deps — prevents out-of-order rollout progression",
+  "agentBriefingClarity": 4,
+  "frictionScore": 4
+}

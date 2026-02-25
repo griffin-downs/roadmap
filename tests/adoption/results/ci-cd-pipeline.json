@@ -1,0 +1,82 @@
+{
+  "id": "ci-cd-pipeline",
+  "name": "CI/CD pipeline as typed DAG",
+  "status": "pass",
+  "durationMs": 1,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok"
+    },
+    {
+      "fn": "check",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "caught",
+      "args": "skip-scan"
+    }
+  ],
+  "errorsProtocolCaught": [
+    "Deploy without scan caught: \"staging-deploy\" consumes \"security-report.json\" — no predecessor produces it"
+  ],
+  "featuresExercised": [
+    "define",
+    "check",
+    "verify",
+    "order"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 15
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "prevented-deploy-issue",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 5
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 5
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-branch-useful",
+      "answer": false
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    }
+  ],
+  "notes": [],
+  "errorDescription": "verify() caught staging-deploy consuming security-report.json without any predecessor producing it — prevents shipping unscanned builds",
+  "agentBriefingClarity": 5,
+  "frictionScore": 5
+}

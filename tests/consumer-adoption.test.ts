@@ -1,5 +1,6 @@
 import { test, expect } from 'vitest';
-import { loadDAG, orient, define, graph } from '../src/protocol.ts';
+import { orient, define, graph } from '../src/protocol.ts';
+import { loadDAG } from '../src/versioning.ts';
 import { CheckpointManager } from '../src/checkpoint.ts';
 import { AuditTrail } from '../src/audit.ts';
 

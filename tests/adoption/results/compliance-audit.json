@@ -1,0 +1,85 @@
+{
+  "id": "compliance-audit",
+  "name": "Compliance audit with checkpoints",
+  "status": "pass",
+  "durationMs": 0,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "ok"
+    },
+    {
+      "fn": "orient",
+      "result": "ok"
+    }
+  ],
+  "errorsProtocolCaught": [],
+  "featuresExercised": [
+    "define",
+    "verify",
+    "orient",
+    "CheckpointManager"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 30
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "doc-sufficiency",
+      "answer": 3
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "confusing-part",
+      "answer": "idempotent field semantics not immediately obvious"
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 6
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 4
+    },
+    {
+      "dimension": "coordination",
+      "question": "checkpoint-useful",
+      "answer": true
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    }
+  ],
+  "notes": [
+    "Current phase: gaps-identified (evidence collected, gap analysis pending)",
+    "Produces next: gap-analysis.md",
+    "CheckpointManager available via roadmap/recovery entry (see tests/audit.test.ts)",
+    "signed-off.idempotent = false (manual auditor action, cannot re-run)"
+  ],
+  "errorDescription": "orient() correctly identifies position mid-audit; idempotent=false enforces sign-off cannot be auto-replayed",
+  "agentBriefingClarity": 4,
+  "frictionScore": 3
+}

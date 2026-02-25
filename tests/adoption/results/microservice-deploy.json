@@ -1,0 +1,131 @@
+{
+  "id": "microservice-deploy",
+  "name": "Microservice deployment pipeline",
+  "status": "pass",
+  "durationMs": 2,
+  "apiCalls": [
+    {
+      "fn": "define",
+      "result": "ok"
+    },
+    {
+      "fn": "check",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "ok"
+    },
+    {
+      "fn": "order",
+      "result": "ok"
+    },
+    {
+      "fn": "verify",
+      "result": "caught",
+      "args": "bad-pipeline"
+    },
+    {
+      "fn": "orient",
+      "result": "ok"
+    }
+  ],
+  "errorsProtocolCaught": [
+    "Out-of-order deploy caught: \"frontend-test\" consumes \"api.running\" — no predecessor produces it"
+  ],
+  "featuresExercised": [
+    "define",
+    "check",
+    "verify",
+    "order",
+    "orient"
+  ],
+  "wouldUseInProduction": true,
+  "dagCaughtRealError": true,
+  "survey": [
+    {
+      "dimension": "adoption-friction",
+      "question": "time-to-first-roadmap",
+      "answer": 20
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "ts-caught-errors",
+      "answer": true
+    },
+    {
+      "dimension": "adoption-friction",
+      "question": "doc-sufficiency",
+      "answer": 4
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "dag-caught-error",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "would-have-caught",
+      "answer": false
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "prevented-deploy-issue",
+      "answer": true
+    },
+    {
+      "dimension": "value-delivered",
+      "question": "time-saved",
+      "answer": 3
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "briefing-clarity",
+      "answer": 5
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "orient-accurate",
+      "answer": true
+    },
+    {
+      "dimension": "agent-handoff",
+      "question": "produces-clarity",
+      "answer": 5
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-branch-useful",
+      "answer": false
+    },
+    {
+      "dimension": "coordination",
+      "question": "merge-intuitive",
+      "answer": 4
+    },
+    {
+      "dimension": "coordination",
+      "question": "checkpoint-useful",
+      "answer": true
+    },
+    {
+      "dimension": "recommendation",
+      "question": "use-in-production",
+      "answer": true
+    },
+    {
+      "dimension": "recommendation",
+      "question": "recommend-to-team",
+      "answer": true
+    }
+  ],
+  "notes": [
+    "check: done=true, orphans=0",
+    "Deployment order correct: true",
+    "Sequence: cache-deploy[7] < db-deploy[10] < api-deploy[13] < frontend-deploy[15]",
+    "First to execute: start"
+  ],
+  "errorDescription": "verify() caught frontend-test depending on api.running without api-deploy in deps — would have deployed frontend before API was ready",
+  "agentBriefingClarity": 5,
+  "frictionScore": 4
+}

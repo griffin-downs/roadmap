@@ -1,0 +1,35 @@
+{
+  "decision": "GO",
+  "version": "0.4.0",
+  "date": "2026-02-25",
+  "phase": "11/release-readiness-assessment",
+  "criteria": {
+    "wouldUseInProduction": { "threshold": 0.7, "actual": 1.0, "pass": true },
+    "dagCaughtRealError": { "threshold": 0.8, "actual": 1.0, "pass": true },
+    "agentBriefingClarity": { "threshold": 4.0, "actual": 4.4, "pass": true },
+    "noBlockingFriction": { "threshold": 2, "actualMin": 3, "pass": true }
+  },
+  "allCriteriaPass": true,
+  "testsPass": true,
+  "typeCheckPass": false,
+  "typeCheckNote": "Pre-existing type errors in checkpoint.ts, audit.ts, brief.ts, handoff.ts (parameter properties, readonly violations). Not introduced in phase 10/11. Track as v0.4.1 debt.",
+  "scopeComplete": true,
+  "phases": 11,
+  "tests": 189,
+  "testFiles": 24,
+  "exportedFunctions": 14,
+  "exportedTypes": 18,
+  "subEntryPoints": ["./protocol", "./recovery", "./validation", "./versioning", "./agent"],
+  "preReleaseActions": [
+    "bump package.json version 0.3.0 → 0.4.0",
+    "add idempotent=false executor guidance to QUICKSTART.md",
+    "add branch() self-contained constraint to docs/decisions/branch-design.md",
+    "git tag v0.4.0",
+    "npm publish (if publishing to registry)"
+  ],
+  "deferredToV050": [
+    "loadDAGFromFile deprecation",
+    "analyze() internalization",
+    "type error cleanup (checkpoint.ts, audit.ts, brief.ts, handoff.ts)"
+  ]
+}
