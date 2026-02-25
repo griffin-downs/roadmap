@@ -1,6 +1,7 @@
-/**
- * DAG migrations: upgrade consumer DAGs to current protocol version
- */
+// @module migrations
+// @exports DAGMigrator
+// @types (none)
+// @entry roadmap/versioning
 
 import { migrateDAG as applySchemaMigrations, checkCompatibility, type ProtocolVersion } from './versioning.schema.ts';
 

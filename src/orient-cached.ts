@@ -1,5 +1,8 @@
-// Cached orient: use .regent/git-state.json for O(1) orientation
-// Falls back to live orient() if cache is missing or stale
+// @module orient-cached
+// @exports orientCached, updateRoadmapPosition
+// @types (uses Orientation from protocol)
+// @entry roadmap (re-exported)
+// NOTE: orient() in protocol.ts is the standard version. This adds git-state caching.
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';

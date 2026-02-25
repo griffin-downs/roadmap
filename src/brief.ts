@@ -1,7 +1,7 @@
-/**
- * Brief API — sealed, minimal context for agents
- * Agents never see the full DAG, only what they need to work
- */
+// @module brief
+// @exports getBrief, loadHandoffJournal
+// @types Brief, FinalHandoff, InterimHandoff
+// @entry roadmap/agent
 
 import type { Graph } from './protocol.ts';
 

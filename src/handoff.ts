@@ -1,7 +1,7 @@
-/**
- * Handoff system — work journal + phase transitions
- * Agents checkpoint progress (interim handoffs) and advance position (final handoffs)
- */
+// @module handoff
+// @exports checkpoint, advance, verifyBootstrapSignature
+// @types (none — uses Brief types)
+// @entry roadmap/agent
 
 import type { Graph } from './protocol.ts';
 import type { FinalHandoff, InterimHandoff } from './brief.ts';

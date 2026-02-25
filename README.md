@@ -6,29 +6,41 @@ Enables any project to define a typed, verifiable development roadmap. Agents bo
 
 ## What this is
 
-Six core functions + versioning layer:
+## Entry Points
+
+| Import | Use when |
+|--------|----------|
+| `roadmap` | Full API — DAG ops + recovery + versioning + predicates + errors |
+| `roadmap/protocol` | Core only — define, verify, orient, merge, branch, reconcile, parallelOrder |
+| `roadmap/agent` | Sealed agent API — getBrief, advance, checkpoint (no DAG introspection) |
+| `roadmap/recovery` | CheckpointManager + AuditTrail |
+| `roadmap/validation` | validateNode, validateGraph |
+| `roadmap/versioning` | loadDAG, migration, compatibility |
+
+See `docs/MODULE-MAP.md` for full file-by-file breakdown.
+
+Core functions:
 
 ```typescript
-define(g)              // Validate DAG (acyclic, connected, contracts sound)
-check(g)               // Test reachability (init → term)
-verify(g)              // Test consumes satisfied by predecessors
-order(g)               // Execution sequence (topological sort)
-orient(g, exists)      // Find position (first incomplete node)
-reconcile(g, fwd, bwd) // Find gaps (where produces meets consumes)
-merge(g1, g2, conn)    // Combine DAGs at join points
-branch(g, from)        // Extract subgraph
-
-// NEW: Versioning
-loadDAG(dag)           // Load with auto-migration (0.1 → 0.3)
-checkCompatibility()   // Version check
-migrateDAG()           // Upgrade consumer DAGs
+define(g)               // Validate DAG (acyclic, connected, contracts sound)
+check(g)                // Test reachability (init → term)
+verify(g)               // Test consumes satisfied by predecessors
+order(g)                // Execution sequence (topological sort)
+parallelOrder(g)        // Batched topo sort — concurrent execution groups
+orient(g, exists)       // Find position (first incomplete node)
+reconcile(g, fwd, bwd)  // Find gaps (where produces meets consumes)
+merge(g1, g2, conn)     // Combine DAGs at join points
+branch(g, from)         // Extract subgraph
+fileExists(root)        // Curried predicate for orient()
 ```
 
-Two immutable types:
+Key types:
 
 ```typescript
 NodeSpec<T>     // { id, desc, produces, consumes, deps, validate, idempotent }
 Graph<T>        // { id, init, term, nodes, version, protocolVersion }
+Orientation     // { position, done, produces, consumes, remaining }
+RoadmapError    // { code: ErrorCode, context: { fix, entry, ... } }
 ```
 
 ## Quick start
@@ -102,8 +114,9 @@ import { join } from 'node:path';
 
 const dag = await loadDAG(roadmap);  // Auto-migrates if needed
 
-const fsCheck = (a) => existsSync(join(process.cwd(), a));
-const position = orient(dag, fsCheck);
+import { fileExists } from 'roadmap';
+
+const position = orient(dag, fileExists(process.cwd()));
 
 console.log(`Current: ${position.position}`);
 console.log(`Create:  ${position.produces.join(', ')}`);
@@ -259,7 +272,7 @@ See `.claude/agents/roadmap-agent-template.md` for full integration pattern.
 **Adversarial specs**: all features tested via adversarial test patterns that fail on current code, pass after fix.
 
 ```bash
-npm test                    # 129 tests pass
+npm test                    # 225 tests pass (28 test files)
 npm test -- tests/adv-*.ts  # Adversarial suite
 ```
 
@@ -308,7 +321,7 @@ Load with versioning. Auto-migrates if needed (0.1 → 0.3).
 | 4: Agent | 4 | Regent template, integration |
 | 5: Versioning | 4 | Version compatibility, migrations |
 
-**Total**: 47 nodes, 129 tests, v0.3.0 complete.
+**Total**: 99 nodes (12 phases), 225 tests, v0.4.0.
 
 ---
 

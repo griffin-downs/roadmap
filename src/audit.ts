@@ -1,6 +1,7 @@
-/**
- * Audit trail implementation: append-only evidence log
- */
+// @module audit
+// @exports AuditTrail
+// @types AuditEntry, AuditSession
+// @entry roadmap/recovery
 
 import { writeFile, mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';

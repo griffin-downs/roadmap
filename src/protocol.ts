@@ -1,9 +1,7 @@
-// DAG expansion protocol
-//
-// Types:     NodeSpec<TAll, TSelf>, Graph<T>, Connection, Gap
-// Functions: define, check, reconcile, order
-// Compile:   tsc --noEmit catches invalid deps, self-refs, missing nodes
-// Runtime:   define() catches cycles, broken consumes contracts
+// @module protocol
+// @exports define, graph, check, verify, order, parallelOrder, orient, reconcile, merge, branch, analyze, modify, modifyAndCommit, validateNode, validateGraph
+// @types NodeSpec, Graph, Orientation, Connection, Gap, ValidationRule, ValidationCheck, ValidationResult, ModifyAnalysis, ModificationRecord
+// @entry roadmap/protocol
 
 // --- Types ---
 

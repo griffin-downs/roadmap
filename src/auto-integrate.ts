@@ -1,7 +1,7 @@
-/**
- * Unified "roadmap integrate" command
- * Auto-detects metadata, generates roadmap, validates, boots
- */
+// @module auto-integrate
+// @exports integrateProject
+// @types (uses project-metadata.schema types)
+// @entry roadmap (internal — used by CLI)
 
 import { readProjectMetadata } from './project-metadata.schema.ts';
 import { requireProjectMetadata } from './project-detector.ts';

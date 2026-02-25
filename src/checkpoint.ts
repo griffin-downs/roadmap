@@ -1,6 +1,7 @@
-/**
- * Checkpoint implementation: save/restore roadmap state
- */
+// @module checkpoint
+// @exports CheckpointManager
+// @types (uses checkpoint.schema types)
+// @entry roadmap/recovery
 
 import { readCheckpoint, readLatestCheckpoint, writeCheckpoint, generateCheckpointId, type Checkpoint, type Artifact, type GitState } from './checkpoint.schema.ts';
 import { execSync } from 'node:child_process';
