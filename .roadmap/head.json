@@ -2074,7 +2074,7 @@
     },
     "cli-binary": {
       "id": "cli-binary",
-      "desc": "bin/roadmap CLI: orient, advance, describe, validate subcommands. JSON stdout. describeGraph() via describe. package.json bin entry.",
+      "desc": "bin/roadmap CLI: orient, advance, describe, validate, expand, branch, merge subcommands. JSON stdout. expand runs .ts scripts + validates + commits. branch/merge operate on git branches via protocol.ts branch()/merge(). package.json bin entry.",
       "produces": [
         "bin/roadmap.ts",
         "tests/cli.test.ts"
