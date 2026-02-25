@@ -261,12 +261,148 @@ const roadmap = define(graph({
       deps: ['spec-system'],
     },
 
-    term: {
-      id: 'term',
-      desc: 'v0.2.0-autonomous: agents can reorient on <5KB context, formalized spec system, node briefings',
+    'phase-4.5-term': {
+      id: 'phase-4.5-term',
+      desc: 'Phase 4.5 complete: governance documentation, formalized spec system, node briefings, agent autonomy',
       produces: [],
       consumes: ['SPEC.md', 'docs/test-organization.md'],
       deps: ['briefing-files', 'test-org-guide', 'condense-docs'],
+    },
+
+    // --- PHASE 5: Operational hardening (v0.2.1 groundwork) ---
+
+    'git-state-spec': {
+      id: 'git-state-spec',
+      desc: 'Spec: git-state.json schema — phase annotation, branch, head commit, dirty files',
+      produces: ['docs/decisions/git-state-spec.md', 'src/git-state.schema.ts'],
+      consumes: ['src/protocol.ts'],
+      deps: ['phase-4.5-term'],
+    },
+
+    'git-state-impl': {
+      id: 'git-state-impl',
+      desc: 'Implement: post-commit hook + session-start hook → write .regent/git-state.json',
+      produces: ['hooks/post-commit.ts', 'hooks/session-start.ts'],
+      consumes: ['src/git-state.schema.ts'],
+      deps: ['git-state-spec'],
+    },
+
+    'git-state-orient': {
+      id: 'git-state-orient',
+      desc: 'Extend orient() to read .regent/git-state.json cache (O(1) vs O(N) git ops)',
+      produces: ['src/protocol.ts', 'tests/git-state-caching.test.ts'],
+      consumes: ['hooks/post-commit.ts', 'src/git-state.schema.ts'],
+      deps: ['git-state-impl'],
+    },
+
+    'bootstrap-gen-spec': {
+      id: 'bootstrap-gen-spec',
+      desc: 'Spec: consumer bootstrap template generation — minimal roadmap.ts + boot harness',
+      produces: ['docs/decisions/bootstrap-gen-design.md'],
+      consumes: ['src/protocol.ts', 'SKILL.md'],
+      deps: ['phase-4.5-term'],
+    },
+
+    'bootstrap-gen-impl': {
+      id: 'bootstrap-gen-impl',
+      desc: 'Implement: generate consumer-bootstrap.ts from roadmap.ts definition',
+      produces: ['src/generate-bootstrap.ts', 'example/consumer-bootstrap.ts'],
+      consumes: ['docs/decisions/bootstrap-gen-design.md'],
+      deps: ['bootstrap-gen-spec'],
+    },
+
+    'bootstrap-test': {
+      id: 'bootstrap-test',
+      desc: 'Test: generated bootstrap runs orient(), consumes/produces correct, deps link correctly',
+      produces: ['tests/bootstrap-gen.test.ts'],
+      consumes: ['example/consumer-bootstrap.ts', 'src/generate-bootstrap.ts'],
+      deps: ['bootstrap-gen-impl'],
+    },
+
+    'multi-repo-pattern': {
+      id: 'multi-repo-pattern',
+      desc: 'Doc + example: merge(fusion_roadmap, cockpit_roadmap, ...) multi-repo coordination',
+      produces: ['docs/multi-repo-coordination.md', 'example/multi-repo-merge.ts', 'tests/multi-repo.test.ts'],
+      consumes: ['src/protocol.ts', 'docs/decisions/merge-design.md'],
+      deps: ['phase-4.5-term'],
+    },
+
+    'phase-5-term': {
+      id: 'phase-5-term',
+      desc: 'Phase 5 complete: operational hardening — efficient orientation, consumer automation, multi-repo patterns',
+      produces: [],
+      consumes: [
+        'src/git-state.schema.ts',
+        'src/protocol.ts',
+        'tests/git-state-caching.test.ts',
+        'example/consumer-bootstrap.ts',
+        'tests/bootstrap-gen.test.ts',
+        'example/multi-repo-merge.ts',
+      ],
+      deps: ['git-state-orient', 'bootstrap-test', 'multi-repo-pattern'],
+    },
+
+    // --- PHASE 6: Governance layer (session lifecycle + audit) ---
+
+    'checkpoint-spec': {
+      id: 'checkpoint-spec',
+      desc: 'Spec: checkpoint/restore session state — node ID, remaining, artifacts metadata',
+      produces: ['docs/decisions/checkpoint-restore-design.md', 'src/checkpoint.schema.ts'],
+      consumes: ['src/protocol.ts'],
+      deps: ['phase-5-term'],
+    },
+
+    'checkpoint-impl': {
+      id: 'checkpoint-impl',
+      desc: 'Implement: checkpoint(g, pos) → .boot/checkpoint-{ts}.json, restore(cp) → (g, pos)',
+      produces: ['src/checkpoint.ts'],
+      consumes: ['src/checkpoint.schema.ts'],
+      deps: ['checkpoint-spec'],
+    },
+
+    'audit-spec': {
+      id: 'audit-spec',
+      desc: 'Spec: immutable audit trail — .boot/audit.jsonl, fields: timestamp/nodeId/executor/evidence',
+      produces: ['docs/decisions/audit-trail-design.md', 'AUDIT.md'],
+      consumes: ['src/protocol.ts'],
+      deps: ['phase-5-term'],
+    },
+
+    'audit-impl': {
+      id: 'audit-impl',
+      desc: 'Implement: audit(nodeId, executor, evidence) → append to audit.jsonl, validate completions',
+      produces: ['src/audit.ts', 'tests/audit.test.ts'],
+      consumes: ['docs/decisions/audit-trail-design.md'],
+      deps: ['audit-spec'],
+    },
+
+    'regent-integration': {
+      id: 'regent-integration',
+      desc: 'Regent integration: roadmap-aware agent template, orient() on boot, position in audit',
+      produces: ['.claude/agents/roadmap-agent-template.md', 'tests/regent-integration.test.ts'],
+      consumes: ['src/checkpoint.ts', 'src/audit.ts', 'src/protocol.ts'],
+      deps: ['checkpoint-impl', 'audit-impl'],
+    },
+
+    'phase-6-term': {
+      id: 'phase-6-term',
+      desc: 'Phase 6 complete: governance layer — checkpoint/restore, audit trails, regent integration enabled',
+      produces: [],
+      consumes: [
+        'src/checkpoint.ts',
+        'src/audit.ts',
+        'AUDIT.md',
+        '.claude/agents/roadmap-agent-template.md',
+      ],
+      deps: ['regent-integration'],
+    },
+
+    term: {
+      id: 'term',
+      desc: 'v0.3.0-governance-ready: operational hardening + audit/checkpoint foundation for multi-agent coordination',
+      produces: [],
+      consumes: [],
+      deps: ['phase-6-term'],
     },
   },
 }));
@@ -288,14 +424,14 @@ if (errors.length) {
 console.log('check: done');
 console.log('verify: all contracts satisfied');
 
-// --- Frontier reconciliation (show where adversarial meets constructive) ---
+// --- Frontier reconciliation (show phase boundaries) ---
 
 const { connections, gaps } = reconcile(
   roadmap,
-  ['adv-reconcile', 'adv-orient', 'adv-property'],
-  ['consumer-integration'],
+  ['phase-4.5-term'],
+  ['phase-5-term'],
 );
-console.log('reconcile: connections', connections.map(c => `${c.forward}→${c.backward} via ${c.artifact}`));
+console.log('reconcile: phase 4.5→5 frontier', connections.map(c => `${c.forward}→${c.backward} via ${c.artifact}`));
 console.log('reconcile: gaps', gaps.map(g => `${g.between.join('↔')} missing ${g.missing.join(', ')}`));
 
 export default roadmap;
