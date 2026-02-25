@@ -32,7 +32,7 @@ const { note: _note, positional: args } = extractNote(rawArgs);
 const cmd = args[0] || 'help';
 
 // Commands that don't require a note
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install']);
 
 interface TrailEntry {
   ts: string;
@@ -78,6 +78,8 @@ async function main() {
       case 'position':  return cmdOrient(note!); // alias
       case 'parallel':  return cmdParallel(note!);
       case 'trail':     return cmdTrail();
+      case 'chart':     return cmdChart();
+      case 'install':   return cmdInstall();
       case 'help':
       case '--help':
       case '-h':        return cmdHelp();
@@ -353,6 +355,148 @@ function cmdTrail() {
   json({ entries: filtered, count: entries.length, source });
 }
 
+function cmdChart() {
+  if (!hasLocalDAG) {
+    console.log('📭 No roadmap in this repo. Run `roadmap install` to set up.');
+    return;
+  }
+
+  const dag = loadDAG();
+  const pos = orient(dag, fileExists(repoRoot));
+  const batches = parallelOrder(dag);
+  const nodeIds = Object.keys(dag.nodes);
+  const doneSet = new Set(pos.done);
+  const totalNodes = nodeIds.length;
+  const doneCount = pos.done.length;
+  const pct = Math.round((doneCount / totalNodes) * 100);
+
+  // Overall progress bar
+  const barLen = 30;
+  const filled = Math.round((doneCount / totalNodes) * barLen);
+  const bar = '█'.repeat(filled) + '░'.repeat(barLen - filled);
+  const statusEmoji = pct === 100 ? '🏁' : pct > 75 ? '🔥' : pct > 50 ? '⚡' : pct > 25 ? '🚧' : '🌱';
+
+  console.log('');
+  console.log(`${statusEmoji} ${dag.id} — ${dag.desc}`);
+  console.log(`  ${bar} ${pct}% (${doneCount}/${totalNodes} nodes)`);
+  console.log(`  📍 position: ${pos.position}`);
+  console.log('');
+
+  // Per-batch progress
+  for (let i = 0; i < batches.length; i++) {
+    const batch = batches[i];
+    const batchDone = batch.filter(n => doneSet.has(n)).length;
+    const batchPct = Math.round((batchDone / batch.length) * 100);
+    const bFilled = Math.round((batchDone / batch.length) * 15);
+    const bBar = '█'.repeat(bFilled) + '░'.repeat(15 - bFilled);
+
+    const levelEmoji = batchPct === 100 ? '✅' : batchDone > 0 ? '🔶' : '⬜';
+    const nodeList = batch.map(n => {
+      if (n === pos.position) return `👉 ${n}`;
+      if (doneSet.has(n)) return `✅ ${n}`;
+      return `⬜ ${n}`;
+    }).join('  ');
+
+    console.log(`  ${levelEmoji} L${String(i).padStart(2, '0')} ${bBar} ${String(batchPct).padStart(3)}%  ${nodeList}`);
+  }
+
+  console.log('');
+  if (pct === 100) {
+    console.log('  🎉 ROADMAP COMPLETE');
+  } else {
+    const next = pos.remaining[0];
+    if (next) {
+      const nextNode = dag.nodes[next as keyof typeof dag.nodes] as any;
+      console.log(`  ➡️  Next: ${next} — ${nextNode?.desc || ''}`);
+    }
+  }
+  console.log('');
+}
+
+function cmdInstall() {
+  // Resolve the absolute path to this CLI
+  const scriptDir = resolve(import.meta.dirname || join(repoRoot, 'bin'));
+  const binPath = join(scriptDir, 'roadmap');
+
+  const claudeMdPath = args[1] || join(repoRoot, '.claude', 'CLAUDE.md');
+  const resolvedPath = resolve(claudeMdPath);
+
+  const ANCHOR_START = '<!-- ROADMAP-PROTOCOL-START -->';
+  const ANCHOR_END = '<!-- ROADMAP-PROTOCOL-END -->';
+
+  const protocolBlock = `${ANCHOR_START}
+## Roadmap Protocol
+
+Every interaction that mutates state (code, files, config, infra, docs) is roadmap-governed. Only pure reasoning (Q&A, explanation, no artifacts) is exempt. Planning is a task — it produces a DAG.
+
+### Session protocol
+
+**Start** — run this before anything else:
+\`\`\`
+${binPath} orient --note "session start — <intent>"
+\`\`\`
+Then **reprint the chart verbatim**:
+\`\`\`
+${binPath} chart
+\`\`\`
+The chart output is the project status. Print it as-is in your response — do not summarize, paraphrase, or omit any part. This is how the user sees progress.
+
+**During work** — orient after completing logical units:
+\`\`\`
+${binPath} orient --note "<what changed>"
+${binPath} chart
+\`\`\`
+Reprint the chart after each orient. The user should always see current progress.
+
+**End** — archive the session trail:
+\`\`\`
+${binPath} trail --archive
+\`\`\`
+
+### Behavior
+- Position comes from orient, not memory — never infer
+- If no local DAG exists: orient returns \`position: "untracked"\`, breadcrumb still records globally
+- For multi-step work in an untracked repo: create \`.roadmap/head.json\` (init → term, expand between)
+- Trail: \`trail --global\` for cross-project view, \`trail --repo <name>\` to filter, \`trail --last N\` for recent
+
+### Chart
+Run \`${binPath} chart\` frequently. **Always reprint the full output verbatim.** This is the canonical progress view — emoji progress bars, per-batch breakdown, current position. Never summarize it.
+${ANCHOR_END}`;
+
+  if (!existsSync(resolvedPath)) {
+    // Create new CLAUDE.md with just the protocol
+    const dir = resolve(resolvedPath, '..');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    writeFileSync(resolvedPath, protocolBlock + '\n');
+    console.log(`✅ Created ${resolvedPath} with roadmap protocol`);
+    console.log(`   bin: ${binPath}`);
+    return;
+  }
+
+  // Read existing, splice or append
+  let content = readFileSync(resolvedPath, 'utf-8');
+
+  if (content.includes(ANCHOR_START) && content.includes(ANCHOR_END)) {
+    // Replace existing block
+    const re = new RegExp(
+      escapeRegex(ANCHOR_START) + '[\\s\\S]*?' + escapeRegex(ANCHOR_END),
+    );
+    content = content.replace(re, protocolBlock);
+    writeFileSync(resolvedPath, content);
+    console.log(`🔄 Updated roadmap protocol in ${resolvedPath}`);
+  } else {
+    // Append
+    content = content.trimEnd() + '\n\n' + protocolBlock + '\n';
+    writeFileSync(resolvedPath, content);
+    console.log(`➕ Appended roadmap protocol to ${resolvedPath}`);
+  }
+  console.log(`   bin: ${binPath}`);
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function cmdHelp() {
   console.log(`roadmap — DAG expansion protocol CLI
 
@@ -363,22 +507,22 @@ Commands:
   expand <script.ts>  Run expansion script, validate DAG, commit
   branch <name> [dag] Create git branch with optional separate DAG
   parallel            Show parallel execution batches
-  trail [--last N]    Read the invocation trail (local if DAG exists, else global)
-  trail --global      Read the global cross-project trail (~/.roadmap/trail.jsonl)
+  chart               Pretty-print progress chart with emoji bars
+  trail [--last N]    Read the invocation trail (local or global)
+  trail --global      Cross-project trail (~/.roadmap/trail.jsonl)
   trail --repo <name> Filter trail by repo name
-  trail --archive     Commit trail to git (local) or truncate (global)
+  trail --archive     Commit trail (local) or truncate (global)
+  install [path]      Install protocol into CLAUDE.md (default: .claude/CLAUDE.md)
   help                This message
 
-All commands (except help/trail) require --note "reason".
-Every invocation is appended to .roadmap/trail.jsonl.
+All commands (except help/trail/chart/install) require --note "reason".
 
 Examples:
-  roadmap orient --note "session start — checking position"
-  roadmap describe --note "surveying API surface for new consumer"
-  roadmap validate phase-13-term --note "pre-release gate"
-  roadmap expand .roadmap/expand-phase-14.ts --note "adding research phase"
-  roadmap branch research/v2 .roadmap/research-v2.json --note "spike: new walker"
-  roadmap trail --last 5`);
+  roadmap orient --note "session start"
+  roadmap chart
+  roadmap install
+  roadmap install ~/.claude/CLAUDE.md
+  roadmap trail --global --last 5`);
 }
 
 // --- Helpers ---
