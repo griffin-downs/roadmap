@@ -32,7 +32,8 @@
           "type": "artifact-exists",
           "target": "SKILL.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "reorient": {
       "id": "reorient",
@@ -50,7 +51,8 @@
           "type": "artifact-exists",
           "target": ".boot/session-receipt.json"
         }
-      ]
+      ],
+      "idempotent": false
     },
     "adv-reconcile": {
       "id": "adv-reconcile",
@@ -69,7 +71,8 @@
           "type": "artifact-exists",
           "target": "tests/adv-reconcile.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "adv-orient": {
       "id": "adv-orient",
@@ -88,7 +91,8 @@
           "type": "artifact-exists",
           "target": "tests/adv-orient.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "adv-property": {
       "id": "adv-property",
@@ -107,7 +111,8 @@
           "type": "artifact-exists",
           "target": "tests/adv-property.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "adv-types": {
       "id": "adv-types",
@@ -126,7 +131,8 @@
           "type": "artifact-exists",
           "target": "tests/adv-types.test-d.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "fix-reconcile": {
       "id": "fix-reconcile",
@@ -147,7 +153,8 @@
           "type": "artifact-exists",
           "target": "docs/decisions/reconcile-gap.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "fix-orient": {
       "id": "fix-orient",
@@ -168,7 +175,8 @@
           "type": "artifact-exists",
           "target": "docs/decisions/orient-empty-produces.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "consumer-integration": {
       "id": "consumer-integration",
@@ -194,7 +202,8 @@
           "type": "artifact-exists",
           "target": "tests/consumer-integration.test.ts"
         }
-      ]
+      ],
+      "idempotent": false
     },
     "phase-1-term": {
       "id": "phase-1-term",
@@ -211,7 +220,8 @@
         "consumer-integration",
         "adv-types"
       ],
-      "validate": []
+      "validate": [],
+      "idempotent": false
     },
     "merge-spec": {
       "id": "merge-spec",
@@ -231,7 +241,8 @@
           "type": "artifact-exists",
           "target": "docs/decisions/merge-design.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "adv-merge": {
       "id": "adv-merge",
@@ -250,7 +261,8 @@
           "type": "artifact-exists",
           "target": "tests/adv-merge.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "merge-impl": {
       "id": "merge-impl",
@@ -271,7 +283,8 @@
           "type": "artifact-exists",
           "target": "src/protocol.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "phase-2-term": {
       "id": "phase-2-term",
@@ -284,7 +297,8 @@
       "deps": [
         "merge-impl"
       ],
-      "validate": []
+      "validate": [],
+      "idempotent": false
     },
     "branch-spec": {
       "id": "branch-spec",
@@ -304,7 +318,8 @@
           "type": "artifact-exists",
           "target": "docs/decisions/branch-design.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "adv-branch": {
       "id": "adv-branch",
@@ -323,7 +338,8 @@
           "type": "artifact-exists",
           "target": "tests/adv-branch.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "branch-impl": {
       "id": "branch-impl",
@@ -344,7 +360,8 @@
           "type": "artifact-exists",
           "target": "src/protocol.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "phase-3-term": {
       "id": "phase-3-term",
@@ -357,7 +374,8 @@
       "deps": [
         "branch-impl"
       ],
-      "validate": []
+      "validate": [],
+      "idempotent": false
     },
     "skill-finalize": {
       "id": "skill-finalize",
@@ -378,7 +396,8 @@
           "type": "artifact-exists",
           "target": "SKILL.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "readme-write": {
       "id": "readme-write",
@@ -398,7 +417,8 @@
           "type": "artifact-exists",
           "target": "README.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "example-create": {
       "id": "example-create",
@@ -422,7 +442,8 @@
           "type": "artifact-exists",
           "target": "example/test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "release-prepare": {
       "id": "release-prepare",
@@ -445,7 +466,8 @@
           "type": "artifact-exists",
           "target": "package.json"
         }
-      ]
+      ],
+      "idempotent": false
     },
     "v0.2.0-term": {
       "id": "v0.2.0-term",
@@ -459,7 +481,8 @@
       "deps": [
         "release-prepare"
       ],
-      "validate": []
+      "validate": [],
+      "idempotent": false
     },
     "spec-system": {
       "id": "spec-system",
@@ -479,7 +502,8 @@
           "type": "artifact-exists",
           "target": "SPEC.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "briefing-files": {
       "id": "briefing-files",
@@ -506,7 +530,8 @@
           "type": "artifact-exists",
           "target": ".briefing/merge-spec.json"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "test-org-guide": {
       "id": "test-org-guide",
@@ -523,7 +548,8 @@
           "type": "artifact-exists",
           "target": "docs/test-organization.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "condense-docs": {
       "id": "condense-docs",
@@ -545,7 +571,8 @@
           "type": "artifact-exists",
           "target": "README.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "phase-4.5-term": {
       "id": "phase-4.5-term",
@@ -560,7 +587,8 @@
         "test-org-guide",
         "condense-docs"
       ],
-      "validate": []
+      "validate": [],
+      "idempotent": false
     },
     "git-state-spec": {
       "id": "git-state-spec",
@@ -584,7 +612,8 @@
           "type": "artifact-exists",
           "target": "src/git-state.schema.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "git-state-impl": {
       "id": "git-state-impl",
@@ -608,7 +637,8 @@
           "type": "artifact-exists",
           "target": "hooks/session-start.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "git-state-orient": {
       "id": "git-state-orient",
@@ -633,7 +663,8 @@
           "type": "artifact-exists",
           "target": "tests/git-state-caching.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "bootstrap-gen-spec": {
       "id": "bootstrap-gen-spec",
@@ -653,7 +684,8 @@
           "type": "artifact-exists",
           "target": "docs/decisions/bootstrap-gen-design.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "bootstrap-gen-impl": {
       "id": "bootstrap-gen-impl",
@@ -677,7 +709,8 @@
           "type": "artifact-exists",
           "target": "example/consumer-bootstrap.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "bootstrap-test": {
       "id": "bootstrap-test",
@@ -697,7 +730,8 @@
           "type": "artifact-exists",
           "target": "tests/bootstrap-gen.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "multi-repo-pattern": {
       "id": "multi-repo-pattern",
@@ -727,7 +761,8 @@
           "type": "artifact-exists",
           "target": "tests/multi-repo.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "modify-spec": {
       "id": "modify-spec",
@@ -746,7 +781,8 @@
           "type": "artifact-exists",
           "target": "docs/decisions/modify-spec.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "adv-modify": {
       "id": "adv-modify",
@@ -765,7 +801,8 @@
           "type": "artifact-exists",
           "target": "tests/adv-modify.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "atomic-modify-design": {
       "id": "atomic-modify-design",
@@ -785,7 +822,8 @@
           "type": "artifact-exists",
           "target": "docs/decisions/atomic-modify-design.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "adv-atomic-modify": {
       "id": "adv-atomic-modify",
@@ -804,7 +842,8 @@
           "type": "artifact-exists",
           "target": "tests/adv-atomic-modify.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "phase-5-term": {
       "id": "phase-5-term",
@@ -828,7 +867,8 @@
         "multi-repo-pattern",
         "adv-atomic-modify"
       ],
-      "validate": []
+      "validate": [],
+      "idempotent": false
     },
     "checkpoint-spec": {
       "id": "checkpoint-spec",
@@ -852,7 +892,8 @@
           "type": "artifact-exists",
           "target": "src/checkpoint.schema.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "checkpoint-impl": {
       "id": "checkpoint-impl",
@@ -871,7 +912,8 @@
           "type": "artifact-exists",
           "target": "src/checkpoint.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "audit-spec": {
       "id": "audit-spec",
@@ -895,7 +937,8 @@
           "type": "artifact-exists",
           "target": "AUDIT.md"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "audit-impl": {
       "id": "audit-impl",
@@ -919,7 +962,8 @@
           "type": "artifact-exists",
           "target": "tests/audit.test.ts"
         }
-      ]
+      ],
+      "idempotent": true
     },
     "regent-integration": {
       "id": "regent-integration",
@@ -946,7 +990,8 @@
           "type": "artifact-exists",
           "target": "tests/regent-integration.test.ts"
         }
-      ]
+      ],
+      "idempotent": false
     },
     "phase-6-term": {
       "id": "phase-6-term",
@@ -961,7 +1006,8 @@
       "deps": [
         "regent-integration"
       ],
-      "validate": []
+      "validate": [],
+      "idempotent": false
     },
     "term": {
       "id": "term",
@@ -971,7 +1017,8 @@
       "deps": [
         "phase-6-term"
       ],
-      "validate": []
+      "validate": [],
+      "idempotent": false
     }
   }
 }
