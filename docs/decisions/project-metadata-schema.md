@@ -55,15 +55,8 @@ Minimal metadata file (optional, but enables autonomous integration):
 
 ```typescript
 interface ProjectMetadata {
-  // What type of project is this?
-  readonly projectType:
-    | 'typescript-node'
-    | 'typescript-react-vite'
-    | 'typescript-react-webpack'
-    | 'python-pip'
-    | 'go'
-    | 'rust-cargo'
-    | 'generic';  // fallback
+  // What is this project? (user-defined, no validation)
+  readonly projectType: string;  // e.g., "typescript-cpp-monorepo", "python-rust-hybrid"
 
   // Initial state: what exists now?
   readonly init: string[];  // Relative paths
@@ -71,10 +64,10 @@ interface ProjectMetadata {
   // Terminal state: what should exist?
   readonly term: string[];  // Relative paths
 
-  // How to build? (for heuristic fallback)
-  readonly buildCommand?: string;  // e.g., "npm run build"
+  // How to build?
+  readonly buildCommand?: string;  // e.g., "npm run build" or "make build"
 
-  // Project phases (optional, inferred if missing)
+  // Project phases (optional)
   readonly phases?: PhaseSpec[];
 
   // Multi-repo dependencies (optional)
@@ -190,31 +183,31 @@ Takes 2+ minutes, many failures
 
 ## Examples
 
-### TypeScript React + Vite
+### TypeScript with C++ components (monorepo)
 ```json
 {
-  "projectType": "typescript-react-vite",
-  "init": ["src/main.tsx", "package.json", "vite.config.ts", "tsconfig.json"],
-  "term": ["dist/index.html", "dist/index.js"],
-  "buildCommand": "npm run build",
+  "projectType": "typescript-glue-cpp-components",
+  "init": ["src/ts/index.ts", "src/cpp/CMakeLists.txt", "package.json"],
+  "term": ["dist/index.js", "build/Release/libcomponent.so"],
+  "buildCommand": "npm run build:all",
   "phases": [
-    { "id": "build", "automatic": true, "command": "npm run build" },
+    { "id": "build-cpp", "automatic": true, "command": "cmake --build build" },
+    { "id": "build-ts", "automatic": true, "command": "npm run build:ts" },
     { "id": "test", "automatic": true, "command": "npm test" }
   ]
 }
 ```
 
-### Python poetry project
+### Python + native extensions
 ```json
 {
-  "projectType": "python-pip",
-  "init": ["pyproject.toml", "src/main.py"],
-  "term": ["dist/my-package-0.1.0.tar.gz"],
-  "buildCommand": "poetry build",
+  "projectType": "python-native-extensions",
+  "init": ["setup.py", "src/main.py", "src/native/extension.c"],
+  "term": ["dist/my-package-0.1.0.tar.gz", "build/lib.*/"],
+  "buildCommand": "python setup.py build",
   "phases": [
-    { "id": "lint", "automatic": true, "command": "poetry run ruff check" },
-    { "id": "test", "automatic": true, "command": "poetry run pytest" },
-    { "id": "publish", "automatic": false }
+    { "id": "build-native", "automatic": true, "command": "python setup.py build_ext" },
+    { "id": "test", "automatic": true, "command": "pytest" }
   ]
 }
 ```
@@ -222,7 +215,7 @@ Takes 2+ minutes, many failures
 ### Multi-repo: cockpit depends on roadmap
 ```json
 {
-  "projectType": "typescript-react-vite",
+  "projectType": "typescript-react-app",
   "init": ["src/main.tsx", "package.json"],
   "term": ["dist/index.html"],
   "dependencies": [

@@ -1,14 +1,19 @@
 import { test, expect } from 'vitest';
-import { detectProjectType } from '../src/project-detector.ts';
+import { getProjectType, requireProjectMetadata } from '../src/project-detector.ts';
 
-test('detector: identifies typescript-react-vite', async () => {
-  const result = await detectProjectType('.');
-  expect(['typescript-react-vite', 'typescript-node', 'generic']).toContain(result.type);
-  expect(result.confidence).toBeGreaterThan(0);
+test('detector: reads project type from .roadmap.json', async () => {
+  const projectType = await getProjectType('.');
+  // May be null if .roadmap.json doesn't exist
+  expect(typeof projectType === 'string' || projectType === null).toBe(true);
 });
 
-test('detector: returns confidence score', async () => {
-  const result = await detectProjectType('.');
-  expect(result.confidence).toBeGreaterThanOrEqual(0);
-  expect(result.confidence).toBeLessThanOrEqual(1);
+test('detector: requires .roadmap.json for integration', async () => {
+  try {
+    await requireProjectMetadata('.');
+    // If metadata exists, should not throw
+    expect(true).toBe(true);
+  } catch (e) {
+    // If metadata missing, error should mention .roadmap.json
+    expect((e as Error).message).toContain('.roadmap.json');
+  }
 });

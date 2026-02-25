@@ -1,0 +1,18 @@
+{
+  "id": "cp-20260225093221",
+  "timestamp": 1772011941050,
+  "roadmapPosition": "a",
+  "phase": "a",
+  "artifacts": [],
+  "gitState": {
+    "branch": "master",
+    "headHash": "a30286ddfc8f6bae6eb5c1a0a189ec7f2f3519eb",
+    "clean": false
+  },
+  "metadata": {
+    "agent": "test-agent",
+    "phase": "a",
+    "duration": 100,
+    "success": true
+  }
+}

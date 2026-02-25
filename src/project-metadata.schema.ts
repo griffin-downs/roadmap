@@ -4,16 +4,9 @@
  * Enables autonomous integration: agent reads metadata, no guessing needed.
  */
 
-export type ProjectType =
-  | 'typescript-node'
-  | 'typescript-react-vite'
-  | 'typescript-react-webpack'
-  | 'typescript-react-next'
-  | 'python-pip'
-  | 'python-poetry'
-  | 'go'
-  | 'rust-cargo'
-  | 'generic';
+// Project type: user-defined string, no built-in list
+// User describes their project however they want
+export type ProjectType = string;
 
 export interface PhaseSpec {
   readonly id: string;
