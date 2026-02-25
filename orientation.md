@@ -141,6 +141,12 @@ last checkpoint, roadmap position. Phase annotation (`"phase": "adv-reconcile"`)
 file to its roadmap node so the agent knows what the work belongs to without investigating.
 New layer between orient() and the execution protocol. Add to roadmap.ts as a future phase node.
 
+**DAG merge operations** — next protocol.ts expansion after current roadmap completes.
+Git branch operations as DAG combinators: merge, branch, rebase, cherry-pick, squash.
+reconcile() already finds join points; merge() makes them structural.
+Key constraint: merged graph needs a single init/term — needs a strategy for ID conflicts.
+See MEMORY.md for full design notes.
+
 **reorientation.md** — 3-layer pre-roadmap gap analysis (Conceptual / Normative / Operational)
 for this library. The components survey shared in the session that produced adv-reconcile and
 adv-orient is this document — write it up before the next roadmap expansion.
