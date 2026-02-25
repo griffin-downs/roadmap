@@ -1015,7 +1015,7 @@
       "produces": [],
       "consumes": [],
       "deps": [
-        "phase-10-term"
+        "phase-9-term"
       ],
       "validate": [],
       "idempotent": false
@@ -1269,7 +1269,7 @@
         "SPEC.md"
       ],
       "deps": [
-        "phase-8-term"
+        "phase-10-term"
       ],
       "validate": [
         {
@@ -1409,7 +1409,7 @@
         "src/protocol.ts"
       ],
       "deps": [
-        "phase-9-term"
+        "phase-8-term"
       ],
       "validate": [
         {
@@ -1445,7 +1445,7 @@
     },
     "api-refactor": {
       "id": "api-refactor",
-      "desc": "Refactor: move optional modules to sub-entry-points (recovery, validation, versioning)",
+      "desc": "Refactor: move optional modules to sub-entry-points",
       "produces": [
         "src/index.recovery.ts",
         "src/index.validation.ts",
