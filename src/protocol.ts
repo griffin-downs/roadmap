@@ -33,6 +33,7 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly consumes: readonly string[];
   readonly deps: readonly TAll[];
   readonly validate: readonly ValidationRule[]; // ← REQUIRED
+  readonly idempotent?: boolean; // ← NEW: can be safely re-run; validation proves output correct
 }
 
 // Inference helper — extracts T from nodes, avoids mapped-type inference limits.

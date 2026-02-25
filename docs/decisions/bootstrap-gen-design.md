@@ -75,7 +75,26 @@ export default define(graph({
 - **init**: must list actual artifacts (checked by orient via filesystem)
 - **term**: consumes = union of all produces up-chain
 - **deps**: acyclic (define() catches cycles)
-- **validation hooks**: optional property for each node (checked at node completion)
+- **validation hooks**: required property for each node (checked at node completion)
+- **idempotent**: optional boolean — if true, node can be re-run safely (deterministic produces)
+
+#### Idempotency semantics
+
+Idempotent nodes enable recovery: lost artifacts can be recreated by re-running the node.
+
+| Type | Idempotent | Recovery |
+|------|-----------|----------|
+| Write source file | ✓ | Deterministic from spec → re-write, validation proves correctness |
+| Run tests | ✓ | Same code → same results; re-run proves no regression |
+| Generate docs | ✓ | From DAG structure; always reproducible |
+| Approve PR (manual) | ✗ | Requires human decision; tracked in audit trail |
+| Deploy to prod | ✗ | State changes; separate audit trail, checkpoint/restore |
+
+Strategy:
+- All spec/code/test nodes marked `idempotent: true`
+- Manual/external nodes marked `idempotent: false` (or undefined)
+- Validation failure on idempotent node → auto-recovery: re-run node, re-validate, prove recovery
+- Validation failure on non-idempotent → requires manual intervention or rollback
 
 ## Boot harness (boot.ts)
 
