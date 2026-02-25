@@ -1,0 +1,131 @@
+{
+  "scenarios": [
+    {
+      "id": "monorepo-services",
+      "name": "Monorepo with 3 dependent services",
+      "desc": "Merge 3 separate project repos into monorepo. Service B depends on Service A's types. Service C depends on A+B's outputs. Tests multi-repo coordination, contract validation.",
+      "artifacts": ["service-a/roadmap.ts", "service-b/roadmap.ts", "service-c/roadmap.ts", "monorepo-merged.ts"],
+      "metrics": ["merge() success", "contract violations caught", "agent handoff clarity (1-5)"],
+      "expectedValue": "Prevent deployment in wrong order; catch missing type exports"
+    },
+    {
+      "id": "microservice-deploy",
+      "name": "Microservice deployment pipeline",
+      "desc": "5 services with startup dependencies (Cache → DB → API → Queue → Frontend). Each has build, test, deploy stages. Tests DAG ordering, gate conditions.",
+      "artifacts": ["deployment-roadmap.ts", "service-order.json", "gate-policies.json"],
+      "metrics": ["circular dep caught", "stage ordering verified", "deployment order correctness (1-5)"],
+      "expectedValue": "Prevent accidentally deploying services out of order; verify all gates satisfied before deploy"
+    },
+    {
+      "id": "library-ecosystem",
+      "name": "Upgrading core library across ecosystem",
+      "desc": "Core lib v1→v2 (breaking). 8 dependent projects must upgrade in sequence. Tests versioning, backward-compat gates, branch/merge for parallel tracks.",
+      "artifacts": ["core-v2-roadmap.ts", "deprecation-timeline.ts", "migration-per-project.ts"],
+      "metrics": ["version mismatch caught", "parallel branches tracked", "migration contract verified"],
+      "expectedValue": "Ensure no dependent is using v2 features before v2 released; prevent premature v1 removal"
+    },
+    {
+      "id": "ci-cd-pipeline",
+      "name": "CI/CD pipeline as typed DAG",
+      "desc": "Build → Test → Security scan → Staging deploy → Prod deploy. Each stage produces artifacts (binaries, reports, deployment manifests). Tests contract validation, artifact tracking.",
+      "artifacts": ["pipeline-roadmap.ts", "artifact-manifest.json", "gate-conditions.json"],
+      "metrics": ["missing artifact caught before deploy", "stage ordering enforced", "gate satisfaction verified"],
+      "expectedValue": "Prevent deploying before security scan runs; catch missing deployment manifests"
+    },
+    {
+      "id": "compliance-audit",
+      "name": "Compliance audit with checkpoints",
+      "desc": "Audit requirements in phases: discover → analyze → remediate → verify → sign-off. Each phase produces audit artifacts (reports, evidence). Tests checkpoint/restore, audit trail.",
+      "artifacts": ["compliance-roadmap.ts", "audit-checkpoints.json", "evidence-tracker.ts"],
+      "metrics": ["checkpoint restore accuracy", "audit trail completeness", "evidence chain of custody"],
+      "expectedValue": "Provide auditors with complete chain-of-custody for remediation; enable rollback to audit checkpoints"
+    },
+    {
+      "id": "team-workflow",
+      "name": "Team onboarding as agent workflow",
+      "desc": "New engineer: env setup → codebase tour → first PR → design review → merge → deploy. Each step has agent handoff briefing. Tests orient() accuracy, agent autonomy.",
+      "artifacts": [".onboarding/roadmap.ts", "phase-briefings.json", "engineer-checkpoint.json"],
+      "metrics": ["briefing clarity (1-5)", "agent completed phase without ambiguity (Y/N)", "time-to-first-PR"],
+      "expectedValue": "Reduce onboarding friction; make phase progress visible and verifiable"
+    },
+    {
+      "id": "feature-rollout",
+      "name": "Feature flag rollout with gates",
+      "desc": "Canary rollout: 1% → 10% → 50% → 100%. Each gate depends on previous metrics (error rate < threshold, latency ok). Tests gate conditions, progress gating.",
+      "artifacts": ["rollout-roadmap.ts", "metric-gates.json", "rollout-progress.json"],
+      "metrics": ["gate evaluated correctly", "no out-of-order progression", "rollback on gate failure"],
+      "expectedValue": "Prevent progressing to 50% if error rate is still high; provide rollback if metrics degrade"
+    },
+    {
+      "id": "db-migration",
+      "name": "Database schema evolution",
+      "desc": "Migrate schema from v1→v2→v3 (6 phases). Each phase is backward-compatible until all services upgraded. Tests versioning, backward-compat gates, verify().",
+      "artifacts": ["migration-roadmap.ts", "schema-versions.ts", "compat-matrix.json"],
+      "metrics": ["backward-compat boundary verified", "version mismatch prevented", "migration contract satisfied"],
+      "expectedValue": "Prevent schema change that breaks old code; ensure all services coordinated"
+    },
+    {
+      "id": "perf-optimization",
+      "name": "Performance optimization sprint",
+      "desc": "Identify bottlenecks → optimize → measure → gate by improvement. Parallel optimization tracks. Tests branch/merge, gate conditions on metrics.",
+      "artifacts": ["perf-roadmap.ts", "optimization-branches.ts", "benchmark-gates.json"],
+      "metrics": ["branch correctness", "metric gate accuracy", "improvement threshold enforced"],
+      "expectedValue": "Prevent merging optimization that doesn't meet improvement threshold; track parallel work"
+    },
+    {
+      "id": "legacy-refactor",
+      "name": "Refactoring with dependency tracking",
+      "desc": "Refactor module A → B (depends on A) → C (depends on A+B). Parallel refactor tracks. Tests branch/merge, contract validation.",
+      "artifacts": ["refactor-roadmap.ts", "parallel-tracks.ts", "merged-result.ts"],
+      "metrics": ["merge conflict prevention", "contract preserved after refactor", "parallel branch success"],
+      "expectedValue": "Safely parallelize refactoring; prevent merge conflicts from breaking contracts"
+    }
+  ],
+  "surveyDimensions": [
+    {
+      "dimension": "Adoption Friction",
+      "questions": [
+        "How long to define your first roadmap.ts? (minutes)",
+        "Did TypeScript catch your errors upfront? (Y/N)",
+        "Did roadmap documentation feel sufficient? (1-5)",
+        "What's one thing that was confusing?"
+      ]
+    },
+    {
+      "dimension": "Value Delivered",
+      "questions": [
+        "Did the DAG catch a real error in your plan? (Y/N, describe)",
+        "Would you have caught this error without this tool?",
+        "Did contract validation prevent a deployment issue? (Y/N)",
+        "How much time did this save? (estimate hours)"
+      ]
+    },
+    {
+      "dimension": "Agent Handoff",
+      "questions": [
+        "Could agent understand 'what to do next' from brief? (1-5)",
+        "Did orient() correctly report your position? (Y/N)",
+        "How clear was the 'produces' artifact list? (1-5)",
+        "What context was missing from the briefing?"
+      ]
+    },
+    {
+      "dimension": "Coordination",
+      "questions": [
+        "Did merge()/branch() solve a real problem? (Y/N)",
+        "How intuitive was the merge API? (1-5)",
+        "Did checkpoint/restore match your audit needs? (Y/N)",
+        "Would you use this for multi-team coordination? (Y/N)"
+      ]
+    },
+    {
+      "dimension": "Would Recommend",
+      "questions": [
+        "Would you use this in production? (Y/N)",
+        "Would you recommend to another team? (Y/N)",
+        "What's the top 3 things that would make it better?",
+        "What use case would you use it for next?"
+      ]
+    }
+  ]
+}
