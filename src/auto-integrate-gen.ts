@@ -28,8 +28,18 @@ export function generateRoadmapDAG(
   buildCommand: string,
 ): GeneratedDAG {
   const buildOutput = inferBuildOutput(metadata, buildCommand);
-  const sourceFiles = inferSourceFiles(metadata);
-  const configFiles = inferConfigFiles(metadata);
+
+  // init produces: metadata.init + node_modules (always needed)
+  const initProduces = Array.from(new Set([
+    'node_modules',
+    ...metadata.init,
+  ]));
+
+  // build consumes: only what init produces (metadata.init files + node_modules)
+  // Don't infer additional config files — they should be in metadata.init if needed
+  const buildConsumes = Array.from(new Set([
+    ...initProduces.filter(p => p !== 'node_modules'), // consume source files from init
+  ]));
 
   const dag: Graph<'init' | 'build' | 'term'> = {
     id: projectId,
@@ -40,7 +50,7 @@ export function generateRoadmapDAG(
       init: {
         id: 'init',
         desc: 'Initialize project: install dependencies, setup environment',
-        produces: ['node_modules', '.git/hooks'],
+        produces: initProduces,
         consumes: [],
         deps: [],
         validate: [
@@ -52,7 +62,7 @@ export function generateRoadmapDAG(
         id: 'build',
         desc: `Build project: ${buildCommand}`,
         produces: buildOutput,
-        consumes: [...sourceFiles, ...configFiles, 'package.json'],
+        consumes: buildConsumes,
         deps: ['init'],
         validate: [
           ...buildOutput.map(artifact => ({ type: 'artifact-exists' as const, target: artifact })),
@@ -88,7 +98,7 @@ export function generateRoadmapDAG(
     throw new Error(`Generated DAG contract violations: ${verifyErrors.join(', ')}`);
   }
 
-  const sourceCode = generateSourceCode(projectId, metadata, buildCommand, buildOutput, sourceFiles, configFiles);
+  const sourceCode = generateSourceCode(projectId, metadata, buildCommand, buildOutput, buildConsumes);
 
   return { sourceCode, dag };
 }
@@ -163,12 +173,10 @@ function generateSourceCode(
   metadata: ProjectMetadata,
   buildCommand: string,
   buildOutput: string[],
-  sourceFiles: string[],
-  configFiles: string[],
+  buildConsumes: string[],
 ): string {
   const buildOutputStr = buildOutput.map(o => `    '${o}',`).join('\n');
-  const consumesItems = [...sourceFiles, ...configFiles, 'package.json'];
-  const consumesStr = consumesItems
+  const consumesStr = buildConsumes
     .map(s => `    '${s}',`)
     .join('\n');
 
