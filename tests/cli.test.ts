@@ -1,5 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'node:child_process';
+import { existsSync, unlinkSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const N = '--note "test"';
 
 const run = (cmd: string) =>
   execSync(`node --experimental-strip-types bin/roadmap.ts ${cmd}`, {
@@ -10,10 +14,38 @@ const run = (cmd: string) =>
 
 const json = (cmd: string) => JSON.parse(run(cmd));
 
+const trailPath = join(process.cwd(), '.roadmap', 'trail.jsonl');
+
+// Clear trail before test run so we get deterministic counts
+beforeAll(() => {
+  if (existsSync(trailPath)) unlinkSync(trailPath);
+});
+
 describe('bin/roadmap CLI', () => {
+  describe('--note gate', () => {
+    it('rejects commands without --note', () => {
+      try {
+        run('orient');
+        expect.unreachable('Should have thrown');
+      } catch (e: any) {
+        expect(e.stdout).toContain('Missing --note');
+      }
+    });
+
+    it('help does not require --note', () => {
+      const output = run('help');
+      expect(output).toContain('orient');
+    });
+
+    it('trail does not require --note', () => {
+      const result = json('trail');
+      expect(result).toHaveProperty('count');
+    });
+  });
+
   describe('orient', () => {
     it('returns JSON with position + produces', () => {
-      const result = json('orient');
+      const result = json(`orient ${N}`);
       expect(result).toHaveProperty('position');
       expect(result).toHaveProperty('produces');
       expect(result).toHaveProperty('consumes');
@@ -27,7 +59,7 @@ describe('bin/roadmap CLI', () => {
 
   describe('describe', () => {
     it('returns full API surface', () => {
-      const result = json('describe');
+      const result = json(`describe ${N}`);
       expect(result.id).toBe('roadmap-adversarial');
       expect(result.nodes).toBeGreaterThan(90);
       expect(result.entryPoints).toHaveProperty('roadmap');
@@ -41,7 +73,7 @@ describe('bin/roadmap CLI', () => {
     });
 
     it('includes @exports from file headers', () => {
-      const result = json('describe');
+      const result = json(`describe ${N}`);
       expect(result.exports['src/protocol.ts']).toContain('define');
       expect(result.exports['src/protocol.ts']).toContain('orient');
       expect(result.exports['src/protocol.ts']).toContain('parallelOrder');
@@ -52,27 +84,25 @@ describe('bin/roadmap CLI', () => {
 
   describe('parallel', () => {
     it('returns batched execution groups', () => {
-      const result = json('parallel');
+      const result = json(`parallel ${N}`);
       expect(result.batches).toBeInstanceOf(Array);
       expect(result.batches.length).toBeGreaterThan(0);
       expect(result.totalLevels).toBeGreaterThan(0);
       expect(result.maxParallelism).toBeGreaterThanOrEqual(1);
-
-      // First batch should be [init]
       expect(result.batches[0].nodes).toContain('init');
     });
   });
 
   describe('validate', () => {
     it('validates single node', () => {
-      const result = json('validate init');
+      const result = json(`validate init ${N}`);
       expect(result).toHaveProperty('nodeId', 'init');
       expect(result).toHaveProperty('passed');
       expect(result).toHaveProperty('checks');
     });
 
     it('validates all nodes (summary)', { timeout: 60000 }, () => {
-      const result = json('validate');
+      const result = json(`validate ${N}`);
       expect(result).toHaveProperty('total');
       expect(result).toHaveProperty('passed');
       expect(result).toHaveProperty('failed');
@@ -80,25 +110,48 @@ describe('bin/roadmap CLI', () => {
     });
   });
 
+  describe('trail', () => {
+    it('records invocations to trail.jsonl', () => {
+      const result = json('trail');
+      // orient + describe + describe + parallel + validate + validate = 6 entries from tests above
+      expect(result.count).toBeGreaterThanOrEqual(6);
+      expect(result.entries[0]).toHaveProperty('ts');
+      expect(result.entries[0]).toHaveProperty('cmd');
+      expect(result.entries[0]).toHaveProperty('note');
+    });
+
+    it('orient entries include position', () => {
+      const result = json('trail');
+      const orients = result.entries.filter((e: any) => e.cmd === 'orient');
+      expect(orients.length).toBeGreaterThanOrEqual(1);
+      expect(orients[0]).toHaveProperty('position');
+      expect(orients[0]).toHaveProperty('dagId');
+    });
+
+    it('supports --last N', () => {
+      const result = json('trail --last 2');
+      expect(result.entries.length).toBeLessThanOrEqual(2);
+      expect(result.count).toBeGreaterThanOrEqual(6);
+    });
+  });
+
   describe('help', () => {
-    it('outputs help text', () => {
+    it('outputs help text with --note docs', () => {
       const output = run('help');
+      expect(output).toContain('--note');
+      expect(output).toContain('trail');
       expect(output).toContain('orient');
-      expect(output).toContain('describe');
-      expect(output).toContain('validate');
       expect(output).toContain('expand');
-      expect(output).toContain('branch');
     });
   });
 
   describe('error handling', () => {
     it('returns JSON error for unknown command', () => {
       try {
-        run('nonexistent-command');
+        run(`nonexistent-command ${N}`);
         expect.unreachable('Should have thrown');
       } catch (e: any) {
-        const stderr = e.stdout || '';
-        expect(stderr).toContain('Unknown command');
+        expect(e.stdout).toContain('Unknown command');
       }
     });
   });

@@ -4,7 +4,7 @@
 // @exports (CLI binary — no programmatic exports)
 // @entry bin/roadmap
 
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import {
@@ -15,20 +15,58 @@ import { fileExists } from '../src/predicates.ts';
 import { RoadmapError } from '../src/errors.ts';
 import type { Graph } from '../src/protocol.ts';
 
-const args = process.argv.slice(2);
-const cmd = args[0] || 'help';
+const rawArgs = process.argv.slice(2);
 const repoRoot = process.cwd();
 
+// Extract --note and its value, return note + remaining positional args
+function extractNote(argv: string[]): { note: string | undefined; positional: string[] } {
+  const idx = argv.indexOf('--note');
+  if (idx === -1) return { note: undefined, positional: argv };
+  const note = argv[idx + 1];
+  const positional = [...argv.slice(0, idx), ...argv.slice(idx + 2)];
+  return { note, positional };
+}
+
+const { note: _note, positional: args } = extractNote(rawArgs);
+const cmd = args[0] || 'help';
+
+// Commands that don't require a note
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail']);
+
+interface TrailEntry {
+  ts: string;
+  cmd: string;
+  note: string;
+  position?: string;
+  dagId?: string;
+  detail?: Record<string, unknown>;
+}
+
+function recordTrail(entry: TrailEntry) {
+  const trailPath = join(repoRoot, '.roadmap', 'trail.jsonl');
+  const dir = join(repoRoot, '.roadmap');
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  appendFileSync(trailPath, JSON.stringify(entry) + '\n');
+}
+
 async function main() {
+  const note = _note;
+
+  if (!NOTE_EXEMPT.has(cmd) && !note) {
+    json({ error: 'Missing --note "reason"', fix: `roadmap ${cmd} --note "why you are running this"` });
+    process.exit(1);
+  }
+
   try {
     switch (cmd) {
-      case 'orient':    return cmdOrient();
-      case 'describe':  return cmdDescribe();
-      case 'validate':  return cmdValidate();
-      case 'expand':    return await cmdExpand();
-      case 'branch':    return cmdBranch();
-      case 'position':  return cmdOrient(); // alias
-      case 'parallel':  return cmdParallel();
+      case 'orient':    return cmdOrient(note!);
+      case 'describe':  return cmdDescribe(note!);
+      case 'validate':  return cmdValidate(note!);
+      case 'expand':    return await cmdExpand(note!);
+      case 'branch':    return cmdBranch(note!);
+      case 'position':  return cmdOrient(note!); // alias
+      case 'parallel':  return cmdParallel(note!);
+      case 'trail':     return cmdTrail();
       case 'help':
       case '--help':
       case '-h':        return cmdHelp();
@@ -48,26 +86,35 @@ async function main() {
 
 // --- Commands ---
 
-function cmdOrient() {
+function cmdOrient(note: string) {
   const dag = loadDAG();
   const pos = orient(dag, fileExists(repoRoot));
-  json({
+  const result = {
     position: pos.position,
     produces: pos.produces,
     consumes: pos.consumes,
     done: pos.done.length,
     remaining: pos.remaining.length,
     complete: pos.position === dag.term,
+  };
+  recordTrail({
+    ts: new Date().toISOString(),
+    cmd: 'orient',
+    note,
+    position: pos.position,
+    dagId: dag.id,
+    detail: { done: result.done, remaining: result.remaining, complete: result.complete },
   });
+  json(result);
 }
 
-function cmdDescribe() {
+function cmdDescribe(note: string) {
   const dag = loadDAG();
   const pos = orient(dag, fileExists(repoRoot));
   const batches = parallelOrder(dag);
-
-  // Scan @exports headers from src/
   const apiSurface = scanExports();
+
+  recordTrail({ ts: new Date().toISOString(), cmd: 'describe', note, position: pos.position, dagId: dag.id });
 
   json({
     id: dag.id,
@@ -95,9 +142,11 @@ function cmdDescribe() {
   });
 }
 
-async function cmdValidate() {
+async function cmdValidate(note: string) {
   const dag = loadDAG();
   const nodeId = args[1];
+
+  recordTrail({ ts: new Date().toISOString(), cmd: 'validate', note, dagId: dag.id, detail: { nodeId: nodeId || 'all' } });
 
   if (nodeId) {
     const result = await validateNode(dag, nodeId, fileExists(repoRoot));
@@ -108,7 +157,7 @@ async function cmdValidate() {
   }
 }
 
-async function cmdExpand() {
+async function cmdExpand(note: string) {
   const scriptPath = args[1];
   if (!scriptPath) {
     throw new RoadmapError('VALIDATION_FAILED', {
@@ -157,6 +206,8 @@ async function cmdExpand() {
   execSync(`git commit -m "${msg}"`, { cwd: repoRoot, stdio: 'pipe' });
   const hash = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
 
+  recordTrail({ ts: new Date().toISOString(), cmd: 'expand', note, dagId: dagAfter.id, detail: { script: scriptPath, added, commit: hash } });
+
   json({
     expanded: true,
     script: scriptPath,
@@ -167,9 +218,9 @@ async function cmdExpand() {
   });
 }
 
-function cmdBranch() {
+function cmdBranch(note: string) {
   const branchName = args[1];
-  const dagFile = args[2]; // optional separate DAG file
+  const dagFile = args[2];
 
   if (!branchName) {
     throw new RoadmapError('VALIDATION_FAILED', {
@@ -213,6 +264,8 @@ function cmdBranch() {
 
   const hash = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
 
+  recordTrail({ ts: new Date().toISOString(), cmd: 'branch', note, detail: { branch: branchName, dagFile: dagFile || null, commit: hash } });
+
   json({
     branch: branchName,
     dagFile: dagFile || '(inherited from parent)',
@@ -220,14 +273,31 @@ function cmdBranch() {
   });
 }
 
-function cmdParallel() {
+function cmdParallel(note: string) {
   const dag = loadDAG();
   const batches = parallelOrder(dag);
+  recordTrail({ ts: new Date().toISOString(), cmd: 'parallel', note, dagId: dag.id });
+
   json({
     batches: batches.map((b, i) => ({ level: i, nodes: b, count: b.length })),
     totalLevels: batches.length,
     maxParallelism: Math.max(...batches.map(b => b.length)),
   });
+}
+
+function cmdTrail() {
+  const trailPath = join(repoRoot, '.roadmap', 'trail.jsonl');
+  if (!existsSync(trailPath)) {
+    json({ entries: [], count: 0 });
+    return;
+  }
+  const lines = readFileSync(trailPath, 'utf-8').trim().split('\n').filter(Boolean);
+  const entries = lines.map(l => JSON.parse(l));
+
+  const limit = args.includes('--last') ? parseInt(args[args.indexOf('--last') + 1]) || 10 : undefined;
+  const filtered = limit ? entries.slice(-limit) : entries;
+
+  json({ entries: filtered, count: entries.length });
 }
 
 function cmdHelp() {
@@ -240,17 +310,19 @@ Commands:
   expand <script.ts>  Run expansion script, validate DAG, commit
   branch <name> [dag] Create git branch with optional separate DAG
   parallel            Show parallel execution batches
+  trail [--last N]    Read the invocation trail
   help                This message
 
-All commands output JSON to stdout. Errors exit non-zero.
+All commands (except help/trail) require --note "reason".
+Every invocation is appended to .roadmap/trail.jsonl.
 
 Examples:
-  roadmap orient
-  roadmap describe
-  roadmap validate phase-13-term
-  roadmap expand .roadmap/expand-phase-14.ts
-  roadmap branch research/v2 .roadmap/research-v2.json
-  roadmap parallel`);
+  roadmap orient --note "session start — checking position"
+  roadmap describe --note "surveying API surface for new consumer"
+  roadmap validate phase-13-term --note "pre-release gate"
+  roadmap expand .roadmap/expand-phase-14.ts --note "adding research phase"
+  roadmap branch research/v2 .roadmap/research-v2.json --note "spike: new walker"
+  roadmap trail --last 5`);
 }
 
 // --- Helpers ---
