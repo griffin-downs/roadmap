@@ -633,15 +633,21 @@ export async function validateNode<T extends string>(
       evidence = 'schema validation not yet implemented';
     } else if (rule.type === 'function') {
       // Run shell command synchronously; exit 0 = pass, non-zero = fail
-      try {
-        const { execSync } = await import('node:child_process');
-        execSync(rule.fn, { stdio: 'pipe' });
+      // Guard against recursion (e.g. vitest validate → spawns vitest → validate → ...)
+      if (process.env.ROADMAP_VALIDATING) {
         passed = true;
-        evidence = `command passed: ${rule.fn}`;
-      } catch (e: any) {
-        passed = false;
-        const stderr = e.stderr?.toString().trim() || e.message || '';
-        evidence = `command failed: ${rule.fn} — ${stderr.slice(0, 200)}`;
+        evidence = `skipped (already inside validation): ${rule.fn}`;
+      } else {
+        try {
+          const { execSync } = await import('node:child_process');
+          execSync(rule.fn, { stdio: 'pipe', env: { ...process.env, ROADMAP_VALIDATING: '1' } });
+          passed = true;
+          evidence = `command passed: ${rule.fn}`;
+        } catch (e: any) {
+          passed = false;
+          const stderr = e.stderr?.toString().trim() || e.message || '';
+          evidence = `command failed: ${rule.fn} — ${stderr.slice(0, 200)}`;
+        }
       }
     } else if (rule.type === 'manual-approval') {
       // Manual approval requires external sign-off
