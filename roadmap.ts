@@ -13,7 +13,7 @@
 
 import { readHeadDAG, getReconciliationManifest, listCheckpoints } from './.roadmap/query.ts';
 import { generateREADME, generateSKILL, generateSPEC } from './.roadmap/docs-gen.ts';
-import { check, verify, orient } from './src/protocol.ts';
+import { check, verify, orient, validateNode, validateGraph } from './src/protocol.ts';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -67,9 +67,21 @@ async function main() {
         console.log(generateSPEC(dag));
         break;
 
+      case '--validate':
+        await validateAll(dag);
+        break;
+
+      case '--validate-node':
+        if (!process.argv[3]) {
+          console.error('Usage: roadmap.ts --validate-node <nodeId>');
+          process.exit(1);
+        }
+        await validateOne(dag, process.argv[3]);
+        break;
+
       default:
         console.error(`Unknown command: ${command}`);
-        console.error('Available: --show, --export-manifest, --list-checkpoints, --position, --gen-readme, --gen-skill, --gen-spec');
+        console.error('Available: --show, --export-manifest, --list-checkpoints, --position, --gen-readme, --gen-skill, --gen-spec, --validate, --validate-node <id>');
         process.exit(1);
     }
   } catch (e) {
@@ -140,6 +152,49 @@ async function showPosition(dag: any) {
       2,
     ),
   );
+}
+
+async function validateOne(dag: any, nodeId: string) {
+  const fsCheck = (a: string) => existsSync(join(repoRoot, a));
+  const result = await validateNode(dag, nodeId, fsCheck);
+
+  console.log(`\n=== VALIDATION: ${nodeId} ===\n`);
+  console.log(`Status: ${result.passed ? '✓ PASS' : '✗ FAIL'}\n`);
+
+  if (result.checks.length === 0) {
+    console.log('No validation rules defined');
+    return;
+  }
+
+  for (const check of result.checks) {
+    const icon = check.passed ? '✓' : '✗';
+    const type = (check.rule as any).type;
+    const target = (check.rule as any).target;
+    console.log(`${icon} [${type}] ${target}`);
+    if (check.evidence) console.log(`  ${check.evidence}`);
+  }
+
+  if (result.failedReason) {
+    console.log(`\n✗ ${result.failedReason}`);
+  }
+}
+
+async function validateAll(dag: any) {
+  const fsCheck = (a: string) => existsSync(join(repoRoot, a));
+  const validation = await validateGraph(dag, fsCheck);
+
+  console.log(`\n=== GRAPH VALIDATION ===\n`);
+  console.log(`Summary: ${validation.summary.passed}/${validation.summary.total} nodes valid\n`);
+
+  const failed = validation.results.filter(r => !r.passed);
+  if (failed.length > 0) {
+    console.log('Failed nodes:');
+    for (const result of failed) {
+      console.log(`  ✗ ${result.nodeId}: ${result.failedReason}`);
+    }
+  } else {
+    console.log('✓ All nodes validated successfully');
+  }
 }
 
 // Export for consumers

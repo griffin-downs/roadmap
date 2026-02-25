@@ -14,7 +14,25 @@
         "SKILL.md"
       ],
       "consumes": [],
-      "deps": []
+      "deps": [],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/protocol.test.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "roadmap.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "SKILL.md"
+        }
+      ]
     },
     "reorient": {
       "id": "reorient",
@@ -26,6 +44,12 @@
       "deps": [
         "adv-reconcile",
         "adv-orient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".boot/session-receipt.json"
+        }
       ]
     },
     "adv-reconcile": {
@@ -39,6 +63,12 @@
       ],
       "deps": [
         "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-reconcile.test.ts"
+        }
       ]
     },
     "adv-orient": {
@@ -52,6 +82,12 @@
       ],
       "deps": [
         "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-orient.test.ts"
+        }
       ]
     },
     "adv-property": {
@@ -65,6 +101,12 @@
       ],
       "deps": [
         "reorient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-property.test.ts"
+        }
       ]
     },
     "adv-types": {
@@ -78,6 +120,12 @@
       ],
       "deps": [
         "reorient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-types.test-d.ts"
+        }
       ]
     },
     "fix-reconcile": {
@@ -93,6 +141,12 @@
       "deps": [
         "adv-reconcile",
         "reorient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/reconcile-gap.md"
+        }
       ]
     },
     "fix-orient": {
@@ -108,6 +162,12 @@
       "deps": [
         "adv-orient",
         "reorient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/orient-empty-produces.md"
+        }
       ]
     },
     "consumer-integration": {
@@ -128,6 +188,12 @@
         "fix-reconcile",
         "fix-orient",
         "adv-property"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/consumer-integration.test.ts"
+        }
       ]
     },
     "phase-1-term": {
@@ -144,7 +210,8 @@
       "deps": [
         "consumer-integration",
         "adv-types"
-      ]
+      ],
+      "validate": []
     },
     "merge-spec": {
       "id": "merge-spec",
@@ -158,6 +225,12 @@
       ],
       "deps": [
         "phase-1-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/merge-design.md"
+        }
       ]
     },
     "adv-merge": {
@@ -171,6 +244,12 @@
       ],
       "deps": [
         "phase-1-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-merge.test.ts"
+        }
       ]
     },
     "merge-impl": {
@@ -186,6 +265,12 @@
       "deps": [
         "adv-merge",
         "merge-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        }
       ]
     },
     "phase-2-term": {
@@ -198,7 +283,8 @@
       ],
       "deps": [
         "merge-impl"
-      ]
+      ],
+      "validate": []
     },
     "branch-spec": {
       "id": "branch-spec",
@@ -212,6 +298,12 @@
       ],
       "deps": [
         "phase-2-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/branch-design.md"
+        }
       ]
     },
     "adv-branch": {
@@ -225,6 +317,12 @@
       ],
       "deps": [
         "phase-2-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-branch.test.ts"
+        }
       ]
     },
     "branch-impl": {
@@ -240,6 +338,12 @@
       "deps": [
         "adv-branch",
         "branch-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        }
       ]
     },
     "phase-3-term": {
@@ -252,7 +356,8 @@
       ],
       "deps": [
         "branch-impl"
-      ]
+      ],
+      "validate": []
     },
     "skill-finalize": {
       "id": "skill-finalize",
@@ -267,6 +372,12 @@
       ],
       "deps": [
         "phase-3-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "SKILL.md"
+        }
       ]
     },
     "readme-write": {
@@ -281,6 +392,12 @@
       ],
       "deps": [
         "phase-3-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "README.md"
+        }
       ]
     },
     "example-create": {
@@ -295,6 +412,16 @@
       ],
       "deps": [
         "readme-write"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "example/simple-project-roadmap.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "example/test.ts"
+        }
       ]
     },
     "release-prepare": {
@@ -308,6 +435,16 @@
       "deps": [
         "example-create",
         "skill-finalize"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "CHANGELOG.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "package.json"
+        }
       ]
     },
     "v0.2.0-term": {
@@ -321,7 +458,8 @@
       ],
       "deps": [
         "release-prepare"
-      ]
+      ],
+      "validate": []
     },
     "spec-system": {
       "id": "spec-system",
@@ -335,6 +473,12 @@
       ],
       "deps": [
         "v0.2.0-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "SPEC.md"
+        }
       ]
     },
     "briefing-files": {
@@ -348,6 +492,20 @@
       "consumes": [],
       "deps": [
         "spec-system"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".briefing/adv-reconcile.json"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".briefing/fix-reconcile.json"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".briefing/merge-spec.json"
+        }
       ]
     },
     "test-org-guide": {
@@ -359,6 +517,12 @@
       "consumes": [],
       "deps": [
         "spec-system"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/test-organization.md"
+        }
       ]
     },
     "condense-docs": {
@@ -371,6 +535,16 @@
       "consumes": [],
       "deps": [
         "spec-system"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "SKILL.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "README.md"
+        }
       ]
     },
     "phase-4.5-term": {
@@ -385,7 +559,8 @@
         "briefing-files",
         "test-org-guide",
         "condense-docs"
-      ]
+      ],
+      "validate": []
     },
     "git-state-spec": {
       "id": "git-state-spec",
@@ -399,6 +574,16 @@
       ],
       "deps": [
         "phase-4.5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/git-state-spec.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/git-state.schema.ts"
+        }
       ]
     },
     "git-state-impl": {
@@ -413,6 +598,16 @@
       ],
       "deps": [
         "git-state-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "hooks/post-commit.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "hooks/session-start.ts"
+        }
       ]
     },
     "git-state-orient": {
@@ -428,6 +623,16 @@
       ],
       "deps": [
         "git-state-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/git-state-caching.test.ts"
+        }
       ]
     },
     "bootstrap-gen-spec": {
@@ -442,6 +647,12 @@
       ],
       "deps": [
         "phase-4.5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/bootstrap-gen-design.md"
+        }
       ]
     },
     "bootstrap-gen-impl": {
@@ -456,6 +667,16 @@
       ],
       "deps": [
         "bootstrap-gen-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/generate-bootstrap.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "example/consumer-bootstrap.ts"
+        }
       ]
     },
     "bootstrap-test": {
@@ -470,6 +691,12 @@
       ],
       "deps": [
         "bootstrap-gen-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/bootstrap-gen.test.ts"
+        }
       ]
     },
     "multi-repo-pattern": {
@@ -486,6 +713,20 @@
       ],
       "deps": [
         "phase-4.5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/multi-repo-coordination.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "example/multi-repo-merge.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/multi-repo.test.ts"
+        }
       ]
     },
     "modify-spec": {
@@ -499,6 +740,12 @@
       ],
       "deps": [
         "phase-4.5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/modify-spec.md"
+        }
       ]
     },
     "adv-modify": {
@@ -512,6 +759,12 @@
       ],
       "deps": [
         "modify-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-modify.test.ts"
+        }
       ]
     },
     "atomic-modify-design": {
@@ -526,6 +779,12 @@
       ],
       "deps": [
         "adv-modify"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/atomic-modify-design.md"
+        }
       ]
     },
     "adv-atomic-modify": {
@@ -539,6 +798,12 @@
       ],
       "deps": [
         "atomic-modify-design"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-atomic-modify.test.ts"
+        }
       ]
     },
     "phase-5-term": {
@@ -562,7 +827,8 @@
         "bootstrap-test",
         "multi-repo-pattern",
         "adv-atomic-modify"
-      ]
+      ],
+      "validate": []
     },
     "checkpoint-spec": {
       "id": "checkpoint-spec",
@@ -576,6 +842,16 @@
       ],
       "deps": [
         "phase-5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/checkpoint-restore-design.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/checkpoint.schema.ts"
+        }
       ]
     },
     "checkpoint-impl": {
@@ -589,6 +865,12 @@
       ],
       "deps": [
         "checkpoint-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/checkpoint.ts"
+        }
       ]
     },
     "audit-spec": {
@@ -603,6 +885,16 @@
       ],
       "deps": [
         "phase-5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/audit-trail-design.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "AUDIT.md"
+        }
       ]
     },
     "audit-impl": {
@@ -617,6 +909,16 @@
       ],
       "deps": [
         "audit-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/audit.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/audit.test.ts"
+        }
       ]
     },
     "regent-integration": {
@@ -634,6 +936,16 @@
       "deps": [
         "checkpoint-impl",
         "audit-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".claude/agents/roadmap-agent-template.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/regent-integration.test.ts"
+        }
       ]
     },
     "phase-6-term": {
@@ -648,7 +960,8 @@
       ],
       "deps": [
         "regent-integration"
-      ]
+      ],
+      "validate": []
     },
     "term": {
       "id": "term",
@@ -657,7 +970,8 @@
       "consumes": [],
       "deps": [
         "phase-6-term"
-      ]
+      ],
+      "validate": []
     }
   }
 }

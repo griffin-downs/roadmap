@@ -7,12 +7,32 @@
 
 // --- Types ---
 
+export type ValidationRule =
+  | { type: 'artifact-exists'; target: string }
+  | { type: 'artifact-schema'; target: string; schema: string }
+  | { type: 'function'; target: string; fn: string }
+  | { type: 'manual-approval'; target: string; reviewer?: string };
+
+export interface ValidationCheck {
+  rule: ValidationRule;
+  passed: boolean;
+  evidence?: string;
+}
+
+export interface ValidationResult {
+  nodeId: string;
+  passed: boolean;
+  checks: ValidationCheck[];
+  failedReason?: string;
+}
+
 export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly id: TSelf;
   readonly desc: string;
   readonly produces: readonly string[];
   readonly consumes: readonly string[];
   readonly deps: readonly TAll[];
+  readonly validate: readonly ValidationRule[]; // ← REQUIRED
 }
 
 // Inference helper — extracts T from nodes, avoids mapped-type inference limits.
@@ -543,4 +563,93 @@ export async function modifyAndCommit(
   } catch (e) {
     return { success: false, error: `Commit failed: ${e instanceof Error ? e.message : String(e)}` };
   }
+}
+
+// --- Validation: Proof of delivery ---
+
+/**
+ * Execute validation rules for a node
+ * Validates that the node delivered what it claimed (produces)
+ */
+export async function validateNode<T extends string>(
+  g: Graph<T>,
+  nodeId: string,
+  exists: (artifact: string) => boolean,
+): Promise<ValidationResult> {
+  const node = g.nodes[nodeId as keyof typeof g.nodes] as any;
+
+  if (!node) {
+    return {
+      nodeId,
+      passed: false,
+      checks: [],
+      failedReason: `Node "${nodeId}" not found`,
+    };
+  }
+
+  const checks: ValidationCheck[] = [];
+  let allPassed = true;
+
+  // Execute each validation rule
+  for (const rule of (node.validate || [])) {
+    let passed = false;
+    let evidence = '';
+
+    if (rule.type === 'artifact-exists') {
+      passed = exists(rule.target);
+      evidence = passed ? `artifact exists: ${rule.target}` : `artifact missing: ${rule.target}`;
+    } else if (rule.type === 'artifact-schema') {
+      // TODO: Implement schema validation
+      passed = false;
+      evidence = 'schema validation not yet implemented';
+    } else if (rule.type === 'function') {
+      // TODO: Implement function validation
+      passed = false;
+      evidence = 'function validation not yet implemented';
+    } else if (rule.type === 'manual-approval') {
+      // Manual approval requires external sign-off
+      passed = false;
+      evidence = `manual approval pending${rule.reviewer ? ` from ${rule.reviewer}` : ''}`;
+    }
+
+    checks.push({ rule, passed, evidence });
+    if (!passed) allPassed = false;
+  }
+
+  return {
+    nodeId,
+    passed: allPassed,
+    checks,
+    failedReason: allPassed ? undefined : `${checks.filter(c => !c.passed).length} validation(s) failed`,
+  };
+}
+
+/**
+ * Validate all nodes in a graph
+ * Returns summary of what passed/failed
+ */
+export async function validateGraph<T extends string>(
+  g: Graph<T>,
+  exists: (artifact: string) => boolean,
+): Promise<{
+  passed: boolean;
+  results: ValidationResult[];
+  summary: { total: number; passed: number; failed: number };
+}> {
+  const nodes = Object.keys(g.nodes);
+  const results: ValidationResult[] = [];
+
+  for (const nodeId of nodes) {
+    const result = await validateNode(g, nodeId, exists);
+    results.push(result);
+  }
+
+  const passed = results.every(r => r.passed);
+  const summary = {
+    total: results.length,
+    passed: results.filter(r => r.passed).length,
+    failed: results.filter(r => !r.passed).length,
+  };
+
+  return { passed, results, summary };
 }
