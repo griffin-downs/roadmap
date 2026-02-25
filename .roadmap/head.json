@@ -1015,7 +1015,7 @@
       "produces": [],
       "consumes": [],
       "deps": [
-        "phase-7-term"
+        "phase-8-term"
       ],
       "validate": [],
       "idempotent": false
@@ -1107,6 +1107,152 @@
       ],
       "deps": [
         "version-validation"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "project-metadata-schema": {
+      "id": "project-metadata-schema",
+      "desc": "Spec: .roadmap.json schema — init/term artifacts, project type, manual phases",
+      "produces": [
+        "docs/decisions/project-metadata-schema.md",
+        "src/project-metadata.schema.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-7-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/project-metadata-schema.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/project-metadata.schema.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "project-type-detector": {
+      "id": "project-type-detector",
+      "desc": "Implement: detect project type (TypeScript/Node/React/Python/Go/etc) from package.json + heuristics",
+      "produces": [
+        "src/project-detector.ts",
+        "tests/project-detector.test.ts"
+      ],
+      "consumes": [
+        "src/project-metadata.schema.ts"
+      ],
+      "deps": [
+        "project-metadata-schema"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/project-detector.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/project-detector.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "build-process-discoverer": {
+      "id": "build-process-discoverer",
+      "desc": "Implement: infer build command from package.json scripts + heuristics, detect artifacts",
+      "produces": [
+        "src/build-discoverer.ts",
+        "tests/build-discoverer.test.ts"
+      ],
+      "consumes": [
+        "src/project-detector.ts"
+      ],
+      "deps": [
+        "project-type-detector"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/build-discoverer.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/build-discoverer.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "dependency-resolver": {
+      "id": "dependency-resolver",
+      "desc": "Implement: discover multi-repo dependencies, detect which repos must build first",
+      "produces": [
+        "src/dependency-resolver.ts",
+        "tests/dependency-resolver.test.ts"
+      ],
+      "consumes": [
+        "src/project-metadata.schema.ts"
+      ],
+      "deps": [
+        "project-metadata-schema"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/dependency-resolver.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/dependency-resolver.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "auto-bootstrap-command": {
+      "id": "auto-bootstrap-command",
+      "desc": "Implement: unified \"roadmap integrate\" command — auto-detect metadata, generate, validate, boot",
+      "produces": [
+        "src/auto-integrate.ts",
+        "tests/auto-integrate.test.ts"
+      ],
+      "consumes": [
+        "src/project-detector.ts",
+        "src/build-discoverer.ts",
+        "src/dependency-resolver.ts"
+      ],
+      "deps": [
+        "project-type-detector",
+        "build-process-discoverer",
+        "dependency-resolver"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/auto-integrate.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/auto-integrate.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-8-term": {
+      "id": "phase-8-term",
+      "desc": "Phase 8 complete: discovery + auto-integration — agents can integrate autonomously",
+      "produces": [],
+      "consumes": [
+        "src/project-detector.ts",
+        "src/build-discoverer.ts",
+        "src/dependency-resolver.ts",
+        "src/auto-integrate.ts",
+        "src/project-metadata.schema.ts"
+      ],
+      "deps": [
+        "auto-bootstrap-command"
       ],
       "validate": [],
       "idempotent": false
