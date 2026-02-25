@@ -33,8 +33,9 @@ Or read the table below (updated after each completed node):
 | node | status | produces |
 |------|--------|----------|
 | init | done | src/protocol.ts, tests/protocol.test.ts, roadmap.ts, SKILL.md |
-| adv-reconcile | **done** | tests/adv-reconcile.test.ts |
-| adv-orient | **done** | tests/adv-orient.test.ts |
+| adv-reconcile | done | tests/adv-reconcile.test.ts |
+| adv-orient | done | tests/adv-orient.test.ts |
+| reorient | **gate** | .boot/session-receipt.json (gitignored — created by boot.ts) |
 | adv-property | **next** | tests/adv-property.test.ts |
 | adv-types | next (parallel) | tests/adv-types.test-d.ts |
 | fix-reconcile | unblocked | docs/decisions/reconcile-gap.md |

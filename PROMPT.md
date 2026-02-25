@@ -1,26 +1,13 @@
 # Session entry — roadmap/
 
-Read `orientation.md`. Run `orient()` to confirm position:
+Run boot.ts. It verifies orientation, confirms position, captures git state,
+and writes `.boot/session-receipt.json`. If it exits non-zero, read the errors
+and resolve before proceeding.
 
 ```bash
-node --experimental-strip-types - <<'EOF'
-import { orient } from './src/protocol.ts';
-import roadmap from './roadmap.ts';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-const o = orient(roadmap, a => existsSync(join(process.cwd(), a)));
-console.log('position:', o.position);
-console.log('done:', o.done);
-console.log('remaining:', o.remaining);
-EOF
+node --experimental-strip-types boot.ts
 ```
 
-Present current position and capabilities, then ask:
+Read `orientation.md` for context on current position, constraints, and pending work.
 
-```
-Ready. Choose execution mode:
-[1] Semi-autonomous — execute next phase group, stop and present results + options
-[2] Fully autonomous — execute all remaining phases to term without stopping
-```
-
-Do not proceed until a mode is chosen.
+Do not proceed until boot exits 0 and you have chosen a mode.

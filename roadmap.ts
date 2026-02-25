@@ -25,6 +25,19 @@ const roadmap = define(graph({
       deps: [],
     },
 
+    // --- SESSION ENTRY GATE ---
+    // reorient produces a gitignored receipt. Always missing at session start.
+    // orient() positions here first. boot.ts creates the receipt after checks pass.
+    // All pending work nodes depend on this — nothing executes without a valid boot.
+
+    reorient: {
+      id: 'reorient',
+      desc: 'Session entry gate: run boot.ts, verify orientation, confirm position, choose mode',
+      produces: ['.boot/session-receipt.json'],
+      consumes: [],
+      deps: ['adv-reconcile', 'adv-orient'],
+    },
+
     // --- ADVERSARIAL LANE (spec-first) ---
 
     'adv-reconcile': {
@@ -46,14 +59,14 @@ const roadmap = define(graph({
       desc: 'Property-based: for all valid graphs, order()→orient() consistent, check()→verify() agree',
       produces: ['tests/adv-property.test.ts'],
       consumes: ['src/protocol.ts'],
-      deps: ['init'],
+      deps: ['reorient'],
     },
     'adv-types': {
       id: 'adv-types',
       desc: 'Type-level: invalid dep refs, id/key mismatch, unknown nodes are tsc errors',
       produces: ['tests/adv-types.test-d.ts'],
       consumes: ['src/protocol.ts'],
-      deps: ['init'],
+      deps: ['reorient'],
     },
 
     // --- CONSTRUCTIVE LANE (fix-driven) ---
@@ -63,14 +76,14 @@ const roadmap = define(graph({
       desc: 'Fix reconcile gap: missing = bn.consumes.filter(c => !fn.produces.includes(c))',
       produces: ['docs/decisions/reconcile-gap.md'],
       consumes: ['src/protocol.ts', 'tests/adv-reconcile.test.ts'],
-      deps: ['adv-reconcile'],
+      deps: ['adv-reconcile', 'reorient'],
     },
     'fix-orient': {
       id: 'fix-orient',
       desc: 'Fix orient empty-produces: !node.produces.length || node.produces.every(exists)',
       produces: ['docs/decisions/orient-empty-produces.md'],
       consumes: ['src/protocol.ts', 'tests/adv-orient.test.ts'],
-      deps: ['adv-orient'],
+      deps: ['adv-orient', 'reorient'],
     },
 
     // --- CONSUMER VALIDATION ---
