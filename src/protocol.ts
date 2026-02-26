@@ -50,7 +50,8 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly mode?: 'execute' | 'plan'; // default: 'execute'. 'plan' = decompose, output is DAG expansion
   readonly expandedFrom?: string; // provenance: which plan node spawned this node via expansion
   readonly loopTarget?: string; // re-entry node when convergence check fails (soft loop)
-  readonly convergenceCheck?: { readonly maxCoverageDelta?: number; readonly requireEmptyProposals?: boolean }; // loop termination criteria
+  readonly convergenceCheck?: { readonly maxCoverageDelta?: number; readonly requireEmptyProposals?: boolean; readonly minWallClockDeltaMs?: number }; // loop termination criteria
+  readonly ambient?: readonly string[]; // agent reads these for context; not a dep, not validated, never gates readiness
 }
 
 // Inference helper — extracts T from nodes, avoids mapped-type inference limits.
@@ -73,7 +74,7 @@ export type Gap = { between: [string, string]; missing: string[] };
 
 // --- Internal: flat iteration over mapped type ---
 
-type Flat = { id: string; produces: readonly string[]; consumes: readonly string[]; deps: readonly string[]; mode?: 'execute' | 'plan'; expandedFrom?: string; loopTarget?: string; convergenceCheck?: { maxCoverageDelta?: number; requireEmptyProposals?: boolean } };
+type Flat = { id: string; produces: readonly string[]; consumes: readonly string[]; deps: readonly string[]; mode?: 'execute' | 'plan'; expandedFrom?: string; loopTarget?: string; convergenceCheck?: { maxCoverageDelta?: number; requireEmptyProposals?: boolean; minWallClockDeltaMs?: number }; ambient?: readonly string[] };
 
 function flat<T extends string>(g: Graph<T>): Flat[] {
   return Object.values(g.nodes) as Flat[];
@@ -127,6 +128,8 @@ function reach(nodes: Flat[], from: string, to: string): boolean {
 // --- define: validate structure ---
 // Throws on: cycle, missing init/term. Does NOT check consumes (use verify() for that).
 
+const CONVERGENCE_CHECK_KEYS = new Set(['maxCoverageDelta', 'requireEmptyProposals', 'minWallClockDeltaMs']);
+
 export function define<T extends string>(g: Graph<T>): Graph<T> {
   const nodes = flat(g);
   const ids = new Set(nodes.map(n => n.id));
@@ -137,6 +140,13 @@ export function define<T extends string>(g: Graph<T>): Graph<T> {
 
   const c = detectCycles(nodes);
   if (c.length) throw new Error(`Cycle in "${g.id}": ${c.join(', ')}`);
+
+  // Validate convergenceCheck keys — unknown keys are silently wrong, catch them early.
+  for (const n of nodes) {
+    if (!n.convergenceCheck) continue;
+    const unknown = Object.keys(n.convergenceCheck).filter(k => !CONVERGENCE_CHECK_KEYS.has(k));
+    if (unknown.length) throw new Error(`Node "${n.id}" convergenceCheck has unknown keys: ${unknown.join(', ')} — valid keys: ${[...CONVERGENCE_CHECK_KEYS].join(', ')}`);
+  }
 
   return g;
 }
@@ -179,6 +189,7 @@ export function verify<T extends string>(g: Graph<T>): string[] {
 
 export function check<T extends string>(g: Graph<T>): { done: boolean; orphans: string[] } {
   const nodes = flat(g);
+  const ids = new Set(nodes.map(n => n.id));
   const orphans: string[] = [];
 
   // Init must reach term.
@@ -188,6 +199,16 @@ export function check<T extends string>(g: Graph<T>): { done: boolean; orphans: 
     if (n.id === g.init || n.id === g.term) continue;
     if (!reach(nodes, g.init, n.id)) orphans.push(`${n.id}: unreachable from ${g.init}`);
     else if (!reach(nodes, n.id, g.term)) orphans.push(`${n.id}: cannot reach ${g.term}`);
+
+    // loopTarget must reference an existing node — a typo produces a silent dead loop.
+    if (n.loopTarget && !ids.has(n.loopTarget)) {
+      orphans.push(`${n.id}: loopTarget "${n.loopTarget}" does not exist in this graph`);
+    }
+  }
+  // Check term node loopTarget too.
+  const termNode = nodes.find(n => n.id === g.term);
+  if (termNode?.loopTarget && !ids.has(termNode.loopTarget)) {
+    orphans.push(`${g.term}: loopTarget "${termNode.loopTarget}" does not exist in this graph`);
   }
   return { done: orphans.length === 0, orphans };
 }

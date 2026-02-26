@@ -39,7 +39,7 @@ const cmd = args[0] || 'help';
 
 // Commands that don't require a note
 // Special case: orient/position with --check is note-exempt (silent polling)
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id']);
 const isOrientCheck = (cmd === 'orient' || cmd === 'position') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -90,6 +90,51 @@ function retiredSet(): Set<string> {
   return new Set(loadRetired().keys());
 }
 
+// --- iter-id: loop iteration counter ---
+// Reads/writes .roadmap/iter.json: { iteration: number, startedAt: string }
+// Canonical iteration number for namespacing loop artifacts (evidence-iter-3.json, etc.)
+
+const iterFile = join(repoRoot, '.roadmap', 'iter.json');
+
+interface IterState { iteration: number; startedAt: string }
+
+function readIterState(): IterState | null {
+  if (!existsSync(iterFile)) return null;
+  try { return JSON.parse(readFileSync(iterFile, 'utf-8')); } catch { return null; }
+}
+
+function writeIterState(s: IterState): void {
+  const dir = join(repoRoot, '.roadmap');
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  writeFileSync(iterFile, JSON.stringify(s, null, 2) + '\n');
+}
+
+function cmdIterId(): void {
+  const doIncrement = args.includes('--increment');
+  const doReset = args.includes('--reset');
+
+  let state = readIterState();
+
+  if (doReset) {
+    state = { iteration: 0, startedAt: new Date().toISOString() };
+    writeIterState(state);
+    json({ iteration: state.iteration, reset: true, startedAt: state.startedAt });
+    return;
+  }
+
+  if (!state) {
+    state = { iteration: 0, startedAt: new Date().toISOString() };
+    writeIterState(state);
+  }
+
+  if (doIncrement) {
+    state = { ...state, iteration: state.iteration + 1 };
+    writeIterState(state);
+  }
+
+  json({ iteration: state.iteration, startedAt: state.startedAt });
+}
+
 function appendToTrail(dir: string, entry: TrailEntry) {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
   appendFileSync(join(dir, 'trail.jsonl'), JSON.stringify(entry) + '\n');
@@ -135,6 +180,7 @@ async function main() {
       case 'complete':  return await cmdComplete(note!);
       case 'checkpoint': return cmdCheckpoint(note);
       case 'diff':      return cmdDiff();
+      case 'iter-id':   return cmdIterId();
       case 'dig':       return cmdDig();
       case 'help':
       case '--help':
@@ -200,6 +246,8 @@ async function cmdOrient(note: string | undefined) {
   if (Object.keys(batchModes).length) result.planNodes = batchModes;
   if (Object.keys(claimAnnotations).length) result.claims = claimAnnotations;
   if (pos.preGate.length) result.preGate = pos.preGate;
+  const iterState = readIterState();
+  if (iterState !== null) result.iteration = iterState.iteration;
 
   // --assign: round-robin assign batchRemaining to owners
   if (args.includes('--assign')) {
@@ -1033,11 +1081,13 @@ function cmdShow() {
       desc: node.desc,
       produces: node.produces,
       consumes: node.consumes,
+      ...(node.ambient?.length ? { ambient: node.ambient } : {}),
       deps: node.deps,
       validate: node.validate,
       idempotent: node.idempotent,
       mode: node.mode ?? 'execute',
       ...(node.expandedFrom ? { expandedFrom: node.expandedFrom } : {}),
+      ...(node.loopTarget ? { loopTarget: node.loopTarget, ...(node.convergenceCheck ? { convergenceCheck: node.convergenceCheck } : {}) } : {}),
       level: levelOf.get(id) ?? -1,
       status: retiredIds.has(id) ? 'retired' : doneSet.has(id) ? 'done' : pos.batchRemaining.includes(id) ? 'in-progress' : 'pending',
       ...(claim ? { claim: { owner: claim.owner, expiry: claim.claimExpiry } } : {}),
@@ -2040,6 +2090,7 @@ Commands:
   trail --archived --read <file>  Read a specific archive
   install [path]      Install protocol into CLAUDE.md (default: .claude/CLAUDE.md)
   install-hooks       Install git hooks (pre-commit, post-commit, commit-msg, prepare-commit-msg)
+  iter-id             Current loop iteration number (--increment to bump, --reset to zero)
   dig [path]          Browse archived files in git history
   dig <path> --restore  Recover archived file to working tree
   help                This message
