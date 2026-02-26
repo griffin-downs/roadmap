@@ -113,7 +113,7 @@ All commands except help/trail/chart/install/dig require `--note "reason"`. Ever
 
 ## Session Protocol
 
-**At session start**: `bin/roadmap orient --note "session start — <intent>"`. This is mandatory — it finds position and leaves a breadcrumb. Do not infer position from memory or file reads.
+**At session start**: `bin/roadmap orient --note "<what you're doing and why>"`. This is mandatory — it finds position and leaves a breadcrumb. Do not infer position from memory or file reads. The note is trail content — write what matters, not ceremony. Example: `--note "auth module — adding JWT refresh token rotation"`.
 
 **During work**: Orient after completing logical units to record breadcrumbs.
 

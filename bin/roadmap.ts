@@ -1422,19 +1422,25 @@ Batch Model:
   Plan nodes (mode: 'plan') complete when expansion children exist, not artifacts.
   Trail entries record position as string[] with level index.
 
+Notes:
+  --note is the trail's information content. Write what you're doing and why,
+  not ceremony. The note is what you'll read in trail --last 10 next week.
+  Bad:  --note "session start"
+  Good: --note "auth module — adding JWT refresh token rotation"
+
 Examples:
-  roadmap orient --note "session start"
-  roadmap orient --assign --owners w1,w2,w3 --ttl 900 --note "dispatch"
-  roadmap claim node-a --owner worker-1 --ttl 600
-  roadmap claim node-a --renew --ttl 600
+  roadmap orient --note "auth module — investigating token expiry bug"
+  roadmap orient --assign --owners w1,w2,w3 --ttl 900 --note "dispatch L12 — api,db,cache workers"
+  roadmap claim auth-impl --owner worker-1 --ttl 600
+  roadmap claim auth-impl --renew --ttl 600
   roadmap claim --list
-  roadmap advance --note "batch complete"
+  roadmap advance --note "L12 complete — auth, db-migration, cache-layer artifacts verified"
   roadmap chart
   roadmap chart --deps
+  roadmap validate auth-impl --note "pre-advance check on auth artifacts"
+  roadmap retire phase-5-term --cascade --note "descoped — moving auth to external service"
   roadmap trail --global --last 5
-  roadmap trail --archived
   roadmap trail --archived --read 2026-02-26
-  roadmap retire phase-5-term --cascade --note "descoped"
   roadmap dig docs/API.md --restore`);
 }
 
