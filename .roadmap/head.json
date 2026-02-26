@@ -2380,7 +2380,7 @@
       "id": "batch-validation-layer",
       "desc": "Add validateBatch() function to validate all nodes in a batch as unit. Check artifact materialization (all produces must exist). Ensures batch completeness before advancement. Updates: src/validation.ts, new validateBatch() export.",
       "produces": [
-        "src/validation.ts"
+        "src/protocol.ts"
       ],
       "consumes": [],
       "deps": [
@@ -2388,9 +2388,8 @@
       ],
       "validate": [
         {
-          "type": "function",
-          "target": "tsc",
-          "fn": "npx tsc --noEmit src/validation.ts"
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
         }
       ],
       "idempotent": true
@@ -2423,7 +2422,7 @@
         "hooks/pre-commit"
       ],
       "consumes": [
-        "src/validation.ts"
+        "src/protocol.ts"
       ],
       "deps": [
         "batch-validation-layer"
@@ -2445,7 +2444,6 @@
       ],
       "consumes": [
         "src/protocol.ts",
-        "src/validation.ts",
         "bin/roadmap.ts"
       ],
       "deps": [

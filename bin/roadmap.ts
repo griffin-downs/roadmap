@@ -150,6 +150,14 @@ async function cmdOrient(note: string) {
 
   const dag = loadDAG();
   const pos = await crossOrient(dag, repoRoot, undefined, retiredSet());
+
+  // Annotate current batch nodes with their mode
+  const batchModes: Record<string, string> = {};
+  for (const nodeId of pos.position) {
+    const node = dag.nodes[nodeId as keyof typeof dag.nodes] as any;
+    if (node?.mode === 'plan') batchModes[nodeId] = 'plan';
+  }
+
   const result: Record<string, unknown> = {
     position: pos.position,
     level: pos.level,
@@ -161,6 +169,7 @@ async function cmdOrient(note: string) {
     remaining: pos.remaining.length,
     complete: pos.remaining.length === 0,
   };
+  if (Object.keys(batchModes).length) result.planNodes = batchModes;
 
   // Include blockedBy if there are blocking deps
   if (pos.blockedBy.length) {
@@ -623,10 +632,12 @@ async function cmdChart() {
 
     const levelEmoji = batchPct === 100 ? '✅' : batchDone > 0 ? '🔶' : '⬜';
     const nodeList = batch.map(n => {
-      if (pos.position.includes(n)) return `👉 ${n}`;
+      const node = dag.nodes[n as keyof typeof dag.nodes] as any;
+      const planTag = node?.mode === 'plan' ? '📋' : '';
+      if (pos.position.includes(n)) return `👉 ${planTag}${n}`;
       if (retiredIds.has(n)) return `⏭️ ${n}`;
-      if (doneSet.has(n)) return `✅ ${n}`;
-      return `⬜ ${n}`;
+      if (doneSet.has(n)) return `✅ ${planTag}${n}`;
+      return `⬜ ${planTag}${n}`;
     }).join('  ');
 
     console.log(`  ${levelEmoji} L${String(i).padStart(2, '0')} ${bBar} ${String(batchPct).padStart(3)}%  ${nodeList}`);

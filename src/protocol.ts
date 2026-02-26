@@ -9,7 +9,8 @@ export type ValidationRule =
   | { type: 'artifact-exists'; target: string }
   | { type: 'artifact-schema'; target: string; schema: string }
   | { type: 'function'; target: string; fn: string }
-  | { type: 'manual-approval'; target: string; reviewer?: string };
+  | { type: 'manual-approval'; target: string; reviewer?: string }
+  | { type: 'expanded'; minNodes?: number };
 
 export interface ValidationCheck {
   rule: ValidationRule;
@@ -32,6 +33,8 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly deps: readonly TAll[];
   readonly validate: readonly ValidationRule[]; // ← REQUIRED
   readonly idempotent: boolean; // ← REQUIRED: true=re-runnable, false=manual/state-changing
+  readonly mode?: 'execute' | 'plan'; // default: 'execute'. 'plan' = decompose, output is DAG expansion
+  readonly expandedFrom?: string; // provenance: which plan node spawned this node via expansion
 }
 
 // Inference helper — extracts T from nodes, avoids mapped-type inference limits.
@@ -54,7 +57,7 @@ export type Gap = { between: [string, string]; missing: string[] };
 
 // --- Internal: flat iteration over mapped type ---
 
-type Flat = { id: string; produces: readonly string[]; consumes: readonly string[]; deps: readonly string[] };
+type Flat = { id: string; produces: readonly string[]; consumes: readonly string[]; deps: readonly string[]; mode?: 'execute' | 'plan'; expandedFrom?: string };
 
 function flat<T extends string>(g: Graph<T>): Flat[] {
   return Object.values(g.nodes) as Flat[];
@@ -273,13 +276,26 @@ export function orient<T extends string>(
   const nodes = flat(g);
   const nm = new Map(nodes.map(n => [n.id, n]));
   const done: string[] = [];
-  let currentBatchIdx = 0;
-  let currentBatch = batches[currentBatchIdx];
+
+  // Build expansion index: plan node → children that were expanded from it
+  const expansionChildren = new Map<string, string[]>();
+  for (const n of nodes) {
+    if (n.expandedFrom) {
+      const children = expansionChildren.get(n.expandedFrom) ?? [];
+      children.push(n.id);
+      expansionChildren.set(n.expandedFrom, children);
+    }
+  }
 
   for (const batch of batches) {
     const batchIncomplete = batch.filter(id => {
       if (retired?.has(id)) return false;
       const node = nm.get(id)!;
+      // Plan node completion: done when expansion children exist in graph
+      if (node.mode === 'plan') {
+        const children = expansionChildren.get(id) ?? [];
+        return children.length === 0; // incomplete if no expansion children
+      }
       return !(!node.produces.length || node.produces.every(exists));
     });
 
@@ -712,6 +728,15 @@ export async function validateNode<T extends string>(
           evidence = `command failed: ${rule.fn} — ${stderr.slice(0, 200)}`;
         }
       }
+    } else if (rule.type === 'expanded') {
+      // Plan node expansion: check that children with expandedFrom exist
+      const allNodes = Object.values(g.nodes) as any[];
+      const children = allNodes.filter((n: any) => n.expandedFrom === nodeId);
+      const minNodes = rule.minNodes ?? 1;
+      passed = children.length >= minNodes;
+      evidence = passed
+        ? `expanded into ${children.length} node(s): ${children.map((c: any) => c.id).join(', ')}`
+        : `expansion incomplete: found ${children.length} child node(s), need >= ${minNodes}`;
     } else if (rule.type === 'manual-approval') {
       // Manual approval requires external sign-off
       passed = false;

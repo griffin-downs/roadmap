@@ -41,6 +41,8 @@ export interface FinalHandoff extends InterimHandoff {
 export interface Brief {
   /** Current position in roadmap */
   position: string;
+  /** Execution mode: 'execute' = produce artifacts, 'plan' = decompose into sub-tasks */
+  mode: 'execute' | 'plan';
   /** Files to create (≤5) */
   produces: string[];
   /** Files available from predecessors (≤5) */
@@ -103,10 +105,11 @@ export async function getBrief(
 
   return {
     position,
+    mode: node.mode ?? 'execute',
     produces: node.produces.slice(0, 5),
     consumes: node.consumes.slice(0, 5),
     description: node.desc.slice(0, 150),
-    pattern: inferPattern(node.id),
+    pattern: inferPattern(node.id, node.mode),
     handoff: prevHandoff,
     handoffJournal: journal,
     remaining,
@@ -133,8 +136,11 @@ function countRemaining(dag: Graph<string>, position: string): number {
   return visited.size - 1; // Don't count current node
 }
 
-function inferPattern(nodeId: string): string {
-  // Heuristic: guess pattern from node ID
+function inferPattern(nodeId: string, mode?: 'execute' | 'plan'): string {
+  if (mode === 'plan') {
+    return 'Decompose into sub-tasks. Decide if human input needed. Output is DAG expansion.';
+  }
+
   const patterns: Record<string, string> = {
     'spec': 'Write design doc: structure, contracts, examples',
     'impl': 'Implement from spec. Keep it minimal, no extra features.',
