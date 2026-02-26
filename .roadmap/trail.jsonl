@@ -1,0 +1,7 @@
+{"ts":"2026-02-26T19:58:31.266Z","cmd":"orient","note":"test","repo":"roadmap","position":["term"],"level":99,"dagId":"roadmap-adversarial","detail":{"done":148,"remaining":0,"complete":true,"batchRemaining":0}}
+{"ts":"2026-02-26T19:58:31.351Z","cmd":"describe","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T19:58:31.443Z","cmd":"describe","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T19:58:31.507Z","cmd":"parallel","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial","detail":{"crossRepo":false,"showGraph":false}}
+{"ts":"2026-02-26T19:58:31.615Z","cmd":"validate","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial","detail":{"nodeId":"init"}}
+{"ts":"2026-02-26T19:59:12.899Z","cmd":"advance","note":"spawn-plan-impl: src/lib/spawn-plan.ts complete — types + buildSpawnPlan","repo":"roadmap","position":["term"],"dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T19:59:16.143Z","cmd":"orient","note":"check position after spawn-plan-impl","repo":"roadmap","position":["term"],"level":99,"dagId":"roadmap-adversarial","detail":{"done":148,"remaining":0,"complete":true,"batchRemaining":0}}

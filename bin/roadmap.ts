@@ -19,6 +19,7 @@ import { crossOrient } from '../src/lib/cross-orient.ts';
 import { discoverDependencies, resolveSiblingPath } from '../src/lib/dependency-resolver.ts';
 import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, assignBatch } from '../src/lib/claims.ts';
 import { parseTasksMd, tasksToDAG } from '../src/lib/speckit-import.ts';
+import { buildSpawnPlan } from '../src/lib/spawn-plan.ts';
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 
@@ -1916,6 +1917,8 @@ function cmdImport(note: string) {
     detail: { source: filePath, tasks: tasks.length, nodes: Object.keys(dag.nodes).length },
   });
 
+  const spawnPlan = buildSpawnPlan(dag);
+
   json({
     imported: true,
     dagId,
@@ -1925,6 +1928,7 @@ function cmdImport(note: string) {
     init: dag.init,
     term: dag.term,
     path: outPath,
+    spawnPlan,
   });
 }
 
