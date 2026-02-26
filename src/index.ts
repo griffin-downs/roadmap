@@ -63,6 +63,7 @@ export {
 export {
   checkCompatibility,
   migrateDAG,
+  CURRENT_PROTOCOL_VERSION,
 } from './lib/versioning.schema.ts';
 
 export { DAGMigrator } from './lib/migrations.ts';

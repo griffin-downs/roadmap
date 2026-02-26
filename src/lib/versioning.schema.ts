@@ -3,6 +3,7 @@
  */
 
 export type ProtocolVersion = '0.1.0' | '0.2.0' | '0.3.0';
+export const CURRENT_PROTOCOL_VERSION: ProtocolVersion = '0.3.0';
 
 export interface VersionInfo {
   readonly version: string; // DAG version (semver)

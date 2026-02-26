@@ -6,7 +6,7 @@
  */
 
 export { loadDAG, loadDAGFromFile } from './lib/versioning.ts';
-export { checkCompatibility, migrateDAG } from './lib/versioning.schema.ts';
+export { checkCompatibility, migrateDAG, CURRENT_PROTOCOL_VERSION } from './lib/versioning.schema.ts';
 export { DAGMigrator } from './lib/migrations.ts';
 
 export type { VersionInfo, CompatibilityResult } from './lib/versioning.schema.ts';
