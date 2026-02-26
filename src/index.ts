@@ -44,6 +44,8 @@ export type { ErrorCode, RoadmapErrorContext } from './errors.ts';
 // Recovery + execution
 export { CheckpointManager } from './lib/checkpoint.ts';
 export { AuditTrail } from './lib/audit.ts';
+export { computeTrailMetrics, loadTrailEntries } from './lib/trail-metrics.ts';
+export type { TrailMetrics, BatchMetrics, NodeMetrics, TrailEntry } from './lib/trail-metrics.ts';
 
 // Agent APIs (sealed, no DAG introspection)
 export {

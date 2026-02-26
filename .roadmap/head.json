@@ -2073,7 +2073,7 @@
       "produces": [],
       "consumes": [],
       "deps": [
-        "phase-20-term"
+        "phase-21-term"
       ],
       "validate": [
         {
@@ -2900,6 +2900,39 @@
         "loop-validation",
         "iter-id-command",
         "ergonomics-fixes"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "trail-metrics": {
+      "id": "trail-metrics",
+      "desc": "src/lib/trail-metrics.ts: roadmap-native performance metrics from trail.jsonl + claims.json. Computes per-node durations, batch wall-clock, orient-call counts, iteration number. source: \"trail\" sentinel distinguishes from regent-enriched metrics. transcript-metrics calls this always; agent JSONL data enriches but is never required for convergence check.",
+      "produces": [
+        "src/lib/trail-metrics.ts",
+        "tests/trail-metrics.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-20-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/trail-metrics.ts"
+        }
+      ],
+      "idempotent": true,
+      "ambient": [
+        "src/lib/claims.ts"
+      ]
+    },
+    "phase-21-term": {
+      "id": "phase-21-term",
+      "desc": "Phase 21 complete: trail-metrics baseline layer operational. transcript-metrics node can call computeTrailMetrics() and optionally enrich with agent JSONL data. Improvement loop is runnable without regent.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "trail-metrics"
       ],
       "validate": [],
       "idempotent": true
