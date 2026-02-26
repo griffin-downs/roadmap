@@ -1,6 +1,6 @@
 {
   "id": "roadmap-adversarial",
-  "desc": "DAG expansion protocol \u2014 adversarial hardening: spec-first bugs, property tests, consumer validation, plan mode",
+  "desc": "DAG expansion protocol — adversarial hardening: spec-first bugs, property tests, consumer validation, plan mode",
   "init": "init",
   "term": "term",
   "nodes": {
@@ -116,7 +116,7 @@
     },
     "fr-consumer-unblock": {
       "id": "fr-consumer-unblock",
-      "desc": "E2E validation: mono-fusion scenario \u2014 orient with blockedBy, chart --deps, merge --from ../sibling, trail deps, configurable siblingPath",
+      "desc": "E2E validation: mono-fusion scenario — orient with blockedBy, chart --deps, merge --from ../sibling, trail deps, configurable siblingPath",
       "produces": [
         "tests/fr-consumer-e2e.test.ts"
       ],
@@ -177,7 +177,7 @@
     },
     "adv-orient": {
       "id": "adv-orient",
-      "desc": "Adversarial spec: orient empty-produces stalls permanently \u2014 specify correct behavior",
+      "desc": "Adversarial spec: orient empty-produces stalls permanently — specify correct behavior",
       "produces": [
         "tests/adv-orient.test.ts"
       ],
@@ -197,7 +197,7 @@
     },
     "adv-property": {
       "id": "adv-property",
-      "desc": "Property-based: for all valid graphs, order()\u2192orient() consistent, check()\u2192verify() agree",
+      "desc": "Property-based: for all valid graphs, order()→orient() consistent, check()→verify() agree",
       "produces": [
         "tests/adv-property.test.ts"
       ],
@@ -326,7 +326,7 @@
     },
     "merge-spec": {
       "id": "merge-spec",
-      "desc": "Spec: merge(g1, g2, connections) combines DAGs at reconcile() join points \u2014 init/term unification strategy",
+      "desc": "Spec: merge(g1, g2, connections) combines DAGs at reconcile() join points — init/term unification strategy",
       "produces": [
         "docs/decisions/merge-design.md"
       ],
@@ -693,7 +693,7 @@
     },
     "git-state-spec": {
       "id": "git-state-spec",
-      "desc": "Spec: git-state.json schema \u2014 phase annotation, branch, head commit, dirty files",
+      "desc": "Spec: git-state.json schema — phase annotation, branch, head commit, dirty files",
       "produces": [
         "docs/decisions/git-state-spec.md",
         "src/git-state.schema.ts"
@@ -718,7 +718,7 @@
     },
     "git-state-impl": {
       "id": "git-state-impl",
-      "desc": "Implement: post-commit hook + session-start hook \u2192 write .regent/git-state.json",
+      "desc": "Implement: post-commit hook + session-start hook → write .regent/git-state.json",
       "produces": [
         "hooks/post-commit.ts",
         "hooks/session-start.ts"
@@ -769,7 +769,7 @@
     },
     "bootstrap-gen-spec": {
       "id": "bootstrap-gen-spec",
-      "desc": "Spec: consumer bootstrap template generation \u2014 minimal roadmap.ts + boot harness",
+      "desc": "Spec: consumer bootstrap template generation — minimal roadmap.ts + boot harness",
       "produces": [
         "docs/decisions/bootstrap-gen-design.md"
       ],
@@ -868,7 +868,7 @@
     },
     "modify-spec": {
       "id": "modify-spec",
-      "desc": "Spec: goal deletion + replanning \u2014 analyze(), modify(g, nodeId, delete), decision logging",
+      "desc": "Spec: goal deletion + replanning — analyze(), modify(g, nodeId, delete), decision logging",
       "produces": [
         "docs/decisions/modify-spec.md"
       ],
@@ -908,7 +908,7 @@
     },
     "atomic-modify-design": {
       "id": "atomic-modify-design",
-      "desc": "Spec: atomic modifications via git commits \u2014 modifyAndCommit(), concurrent agent safety",
+      "desc": "Spec: atomic modifications via git commits — modifyAndCommit(), concurrent agent safety",
       "produces": [
         "docs/decisions/atomic-modify-design.md"
       ],
@@ -949,7 +949,7 @@
     },
     "phase-5-term": {
       "id": "phase-5-term",
-      "desc": "Phase 5 complete: agent autonomy \u2014 O(1) orientation, bootstrap template, replanning + atomic commits",
+      "desc": "Phase 5 complete: agent autonomy — O(1) orientation, bootstrap template, replanning + atomic commits",
       "produces": [],
       "consumes": [
         "src/git-state.schema.ts",
@@ -974,7 +974,7 @@
     },
     "checkpoint-spec": {
       "id": "checkpoint-spec",
-      "desc": "Spec: checkpoint/restore session state \u2014 node ID, remaining, artifacts metadata",
+      "desc": "Spec: checkpoint/restore session state — node ID, remaining, artifacts metadata",
       "produces": [
         "docs/decisions/checkpoint-restore-design.md",
         "src/checkpoint.schema.ts"
@@ -999,7 +999,7 @@
     },
     "checkpoint-impl": {
       "id": "checkpoint-impl",
-      "desc": "Implement: checkpoint(g, pos) \u2192 .boot/checkpoint-{ts}.json, restore(cp) \u2192 (g, pos)",
+      "desc": "Implement: checkpoint(g, pos) → .boot/checkpoint-{ts}.json, restore(cp) → (g, pos)",
       "produces": [
         "src/checkpoint.ts"
       ],
@@ -1019,7 +1019,7 @@
     },
     "audit-spec": {
       "id": "audit-spec",
-      "desc": "Spec: immutable audit trail \u2014 .boot/audit.jsonl, fields: timestamp/nodeId/executor/evidence",
+      "desc": "Spec: immutable audit trail — .boot/audit.jsonl, fields: timestamp/nodeId/executor/evidence",
       "produces": [
         "docs/decisions/audit-trail-design.md",
         "docs/archive/AUDIT.md"
@@ -1044,7 +1044,7 @@
     },
     "audit-impl": {
       "id": "audit-impl",
-      "desc": "Implement: audit(nodeId, executor, evidence) \u2192 append to audit.jsonl, validate completions",
+      "desc": "Implement: audit(nodeId, executor, evidence) → append to audit.jsonl, validate completions",
       "produces": [
         "src/audit.ts",
         "tests/audit.test.ts"
@@ -1097,7 +1097,7 @@
     },
     "phase-6-term": {
       "id": "phase-6-term",
-      "desc": "Phase 6 complete: governance layer \u2014 checkpoint/restore, audit trails, regent integration enabled",
+      "desc": "Phase 6 complete: governance layer — checkpoint/restore, audit trails, regent integration enabled",
       "produces": [],
       "consumes": [
         "src/checkpoint.ts",
@@ -1138,7 +1138,7 @@
     },
     "version-migrations": {
       "id": "version-migrations",
-      "desc": "Implement: version compatibility checker + DAG migrations (0.1\u21920.2, 0.2\u21920.3)",
+      "desc": "Implement: version compatibility checker + DAG migrations (0.1→0.2, 0.2→0.3)",
       "produces": [
         "src/migrations.ts",
         "tests/migrations.test.ts"
@@ -1204,7 +1204,7 @@
     },
     "project-metadata-schema": {
       "id": "project-metadata-schema",
-      "desc": "Spec: .roadmap.json schema \u2014 init/term artifacts, project type, manual phases",
+      "desc": "Spec: .roadmap.json schema — init/term artifacts, project type, manual phases",
       "produces": [
         "docs/decisions/project-metadata-schema.md",
         "src/project-metadata.schema.ts"
@@ -1304,7 +1304,7 @@
     },
     "auto-bootstrap-command": {
       "id": "auto-bootstrap-command",
-      "desc": "Implement: unified \"roadmap integrate\" command \u2014 auto-detect metadata, generate, validate, boot",
+      "desc": "Implement: unified \"roadmap integrate\" command — auto-detect metadata, generate, validate, boot",
       "produces": [
         "src/auto-integrate.ts",
         "tests/auto-integrate.test.ts"
@@ -1333,7 +1333,7 @@
     },
     "phase-8-term": {
       "id": "phase-8-term",
-      "desc": "Phase 8 complete: discovery + auto-integration \u2014 agents can integrate autonomously",
+      "desc": "Phase 8 complete: discovery + auto-integration — agents can integrate autonomously",
       "produces": [],
       "consumes": [
         "src/project-detector.ts",
@@ -1350,7 +1350,7 @@
     },
     "agent-bootstrap-spec": {
       "id": "agent-bootstrap-spec",
-      "desc": "Spec: regent agent template with sealed APIs \u2014 getBrief, checkpoint, advance",
+      "desc": "Spec: regent agent template with sealed APIs — getBrief, checkpoint, advance",
       "produces": [
         "docs/decisions/agent-bootstrap-design.md",
         ".claude/agents/roadmap-executor-template.md"
@@ -1376,7 +1376,7 @@
     },
     "error-guidance-spec": {
       "id": "error-guidance-spec",
-      "desc": "Spec: compilation error \u2192 guidance loop \u2014 agents learn from errors",
+      "desc": "Spec: compilation error → guidance loop — agents learn from errors",
       "produces": [
         "docs/decisions/error-guidance-design.md"
       ],
@@ -1397,7 +1397,7 @@
     },
     "agent-executor-impl": {
       "id": "agent-executor-impl",
-      "desc": "Implement: regent executor agent skeleton \u2014 boots, calls getBrief, executes node",
+      "desc": "Implement: regent executor agent skeleton — boots, calls getBrief, executes node",
       "produces": [
         ".claude/agents/roadmap-executor.ts",
         "tests/agent-executor.test.ts"
@@ -1423,7 +1423,7 @@
     },
     "fusion-integration": {
       "id": "fusion-integration",
-      "desc": "Real project: fusion roadmap + executor agent \u2014 end-to-end test",
+      "desc": "Real project: fusion roadmap + executor agent — end-to-end test",
       "produces": [
         "example/fusion-roadmap-integration.test.ts",
         "docs/real-project-adoption.md"
@@ -1449,7 +1449,7 @@
     },
     "cockpit-integration": {
       "id": "cockpit-integration",
-      "desc": "Real project: cockpit roadmap + executor agent \u2014 validate multi-project pattern",
+      "desc": "Real project: cockpit roadmap + executor agent — validate multi-project pattern",
       "produces": [
         "example/cockpit-roadmap-integration.test.ts",
         "docs/multi-project-patterns.md"
@@ -1475,7 +1475,7 @@
     },
     "phase-9-term": {
       "id": "phase-9-term",
-      "desc": "Phase 9 complete: regent integration + real project adoption \u2014 agents autonomous",
+      "desc": "Phase 9 complete: regent integration + real project adoption — agents autonomous",
       "produces": [],
       "consumes": [
         ".claude/agents/roadmap-executor.ts",
@@ -1935,7 +1935,7 @@
     },
     "api-surface-docs": {
       "id": "api-surface-docs",
-      "desc": "Export map in README (all 6 entry points incl. roadmap/agent), module map, types-at-a-glance, orient\u2194orientCached signpost",
+      "desc": "Export map in README (all 6 entry points incl. roadmap/agent), module map, types-at-a-glance, orient↔orientCached signpost",
       "produces": [
         "docs/MODULE-MAP.md",
         "docs/api-surface.md"
@@ -1979,7 +1979,7 @@
     },
     "parallel-order": {
       "id": "parallel-order",
-      "desc": "parallelOrder(g) \u2192 string[][] \u2014 batches of mutually independent nodes for concurrent execution",
+      "desc": "parallelOrder(g) → string[][] — batches of mutually independent nodes for concurrent execution",
       "produces": [
         "tests/parallel-order.test.ts"
       ],
@@ -2073,7 +2073,7 @@
       "produces": [],
       "consumes": [],
       "deps": [
-        "phase-21-term"
+        "phase-22-term"
       ],
       "validate": [
         {
@@ -2149,7 +2149,7 @@
     },
     "consumer-categories": {
       "id": "consumer-categories",
-      "desc": "Six consumer entry points: hooks, git, agent, developer, full, skills \u2014 each with targeted docs + API surface",
+      "desc": "Six consumer entry points: hooks, git, agent, developer, full, skills — each with targeted docs + API surface",
       "produces": [
         "src/index.hooks.ts",
         "src/index.git.ts",
@@ -2198,7 +2198,7 @@
     },
     "migration-script": {
       "id": "migration-script",
-      "desc": "Migration script for early adopters (Mac + Linux): symlink MEMORY.md \u2192 /dev/null, create .roadmap/memory/ locally, initialize ~/.roadmap/memory/ as standalone git repo. Idempotent and platform-aware.",
+      "desc": "Migration script for early adopters (Mac + Linux): symlink MEMORY.md → /dev/null, create .roadmap/memory/ locally, initialize ~/.roadmap/memory/ as standalone git repo. Idempotent and platform-aware.",
       "produces": [
         "bin/migrate-memory.sh"
       ],
@@ -2490,7 +2490,7 @@
     },
     "plan-mode-types": {
       "id": "plan-mode-types",
-      "desc": "Add mode?: 'execute' | 'plan' to NodeSpec, expandedFrom?: string for provenance, { type: 'expanded', minNodes?: number } to ValidationRule union. Optional fields \u2014 existing DAGs unchanged. Compile-time enforcement.",
+      "desc": "Add mode?: 'execute' | 'plan' to NodeSpec, expandedFrom?: string for provenance, { type: 'expanded', minNodes?: number } to ValidationRule union. Optional fields — existing DAGs unchanged. Compile-time enforcement.",
       "produces": [
         "src/protocol.ts"
       ],
@@ -2569,7 +2569,7 @@
     },
     "plan-mode-cli": {
       "id": "plan-mode-cli",
-      "desc": "CLI plan mode surface: orient output includes mode field per node, chart marks plan nodes with distinct emoji (\ud83d\udccb), describe shows plan vs execute node counts. Help text documents plan mode.",
+      "desc": "CLI plan mode surface: orient output includes mode field per node, chart marks plan nodes with distinct emoji (📋), describe shows plan vs execute node counts. Help text documents plan mode.",
       "produces": [
         "bin/roadmap.ts"
       ],
@@ -2613,7 +2613,7 @@
     },
     "phase-17-term": {
       "id": "phase-17-term",
-      "desc": "Phase 17 complete: Plan node execution mode operational. Nodes declare mode ('execute' | 'plan'), orient() handles plan completion via expansion detection, validateNode checks 'expanded' rule, Brief surfaces mode to agents, CLI displays plan nodes distinctly. Backward compatible \u2014 mode defaults to 'execute'.",
+      "desc": "Phase 17 complete: Plan node execution mode operational. Nodes declare mode ('execute' | 'plan'), orient() handles plan completion via expansion detection, validateNode checks 'expanded' rule, Brief surfaces mode to agents, CLI displays plan nodes distinctly. Backward compatible — mode defaults to 'execute'.",
       "produces": [],
       "consumes": [
         "tests/plan-mode.test.ts"
@@ -2626,7 +2626,7 @@
     },
     "shell-validate-rule": {
       "id": "shell-validate-rule",
-      "desc": "Add shell ValidationRule type \u2014 { type: \"shell\", command, expectExitCode? }. Enables nodes to declare arbitrary shell commands as validation gates. Wired into validateNode and the validate CLI command.",
+      "desc": "Add shell ValidationRule type — { type: \"shell\", command, expectExitCode? }. Enables nodes to declare arbitrary shell commands as validation gates. Wired into validateNode and the validate CLI command.",
       "produces": [
         "src/protocol.ts",
         "tests/shell-validate.test.ts"
@@ -2716,7 +2716,7 @@
     },
     "agent-dispatch-api": {
       "id": "agent-dispatch-api",
-      "desc": "readyNodes(): eager dispatch beyond current batch whose deps are met. nextBatch(): orchestrator lookahead with conflict pre-check. criticalPath(): longest-path init\u2192term by node count. All exported from index. orient --ready and --next flags.",
+      "desc": "readyNodes(): eager dispatch beyond current batch whose deps are met. nextBatch(): orchestrator lookahead with conflict pre-check. criticalPath(): longest-path init→term by node count. All exported from index. orient --ready and --next flags.",
       "produces": [
         "src/protocol.ts",
         "tests/ready-nodes.test.ts",
@@ -2737,7 +2737,7 @@
     },
     "loop-signal-types": {
       "id": "loop-signal-types",
-      "desc": "loopTarget + convergenceCheck on NodeSpec. LoopSignal interface in Orientation \u2014 present when current batch contains a loop node. Structurally distinguishes terminal nodes from loop nodes. orient --check output includes loop field.",
+      "desc": "loopTarget + convergenceCheck on NodeSpec. LoopSignal interface in Orientation — present when current batch contains a loop node. Structurally distinguishes terminal nodes from loop nodes. orient --check output includes loop field.",
       "produces": [
         "src/protocol.ts",
         "tests/loop-target.test.ts"
@@ -2780,7 +2780,7 @@
     },
     "orient-staged-flag": {
       "id": "orient-staged-flag",
-      "desc": "orient --staged: per-node isomorphism check \u2014 do staged files exactly match a node's produces? Returns { files, matches, extraFiles, isomorphic }. Enforces one-commit-per-node at the orient level rather than only at the pre-commit hook level.",
+      "desc": "orient --staged: per-node isomorphism check — do staged files exactly match a node's produces? Returns { files, matches, extraFiles, isomorphic }. Enforces one-commit-per-node at the orient level rather than only at the pre-commit hook level.",
       "produces": [
         "bin/roadmap.ts"
       ],
@@ -2812,7 +2812,7 @@
     },
     "complete-command": {
       "id": "complete-command",
-      "desc": "roadmap complete <node-id>: atomic claim \u2192 checkpoint \u2192 reorient \u2192 auto-advance when last in batch. --no-advance to suppress auto-advance. Eliminates 5-call agent sequence (claim + checkpoint + orient + advance + trail) to 1 call.",
+      "desc": "roadmap complete <node-id>: atomic claim → checkpoint → reorient → auto-advance when last in batch. --no-advance to suppress auto-advance. Eliminates 5-call agent sequence (claim + checkpoint + orient + advance + trail) to 1 call.",
       "produces": [
         "bin/roadmap.ts"
       ],
@@ -2857,7 +2857,7 @@
     },
     "iter-id-command": {
       "id": "iter-id-command",
-      "desc": "roadmap iter-id: .roadmap/iter.json counter (--increment, --reset). Canonical loop iteration number for artifact namespacing (evidence-iter-3.json). orient output includes iteration field when iter.json exists \u2014 agents get loop context in the standard orient call.",
+      "desc": "roadmap iter-id: .roadmap/iter.json counter (--increment, --reset). Canonical loop iteration number for artifact namespacing (evidence-iter-3.json). orient output includes iteration field when iter.json exists — agents get loop context in the standard orient call.",
       "produces": [
         "bin/roadmap.ts"
       ],
@@ -2875,7 +2875,7 @@
     },
     "ergonomics-fixes": {
       "id": "ergonomics-fixes",
-      "desc": "Parameter property syntax fix (checkpoint.ts, audit.ts \u2014 Node 25 strip-only crash). checkpoint --label note-optional (synthesizes from label). orient --ready includes myClaims[] for current-batch owned nodes. Pre-commit: single orient call (3\u21921 spawns on failure).",
+      "desc": "Parameter property syntax fix (checkpoint.ts, audit.ts — Node 25 strip-only crash). checkpoint --label note-optional (synthesizes from label). orient --ready includes myClaims[] for current-batch owned nodes. Pre-commit: single orient call (3→1 spawns on failure).",
       "produces": [
         "src/lib/checkpoint.ts",
         "src/lib/audit.ts",
@@ -2936,6 +2936,85 @@
       ],
       "validate": [],
       "idempotent": true
+    },
+    "spawn-plan-impl": {
+      "id": "spawn-plan-impl",
+      "desc": "SpawnPlan types + buildSpawnPlan(dag) function in src/lib/spawn-plan.ts",
+      "produces": [
+        "src/lib/spawn-plan.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-21-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/spawn-plan.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "spawn-plan-cli": {
+      "id": "spawn-plan-cli",
+      "desc": "Integrate spawn plan into cmdImport output in bin/roadmap.ts",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/lib/spawn-plan.ts"
+      ],
+      "deps": [
+        "spawn-plan-impl"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"spawnPlan\" bin/roadmap.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "spawn-plan-tests": {
+      "id": "spawn-plan-tests",
+      "desc": "Unit tests for buildSpawnPlan — single-node batches, multi-worker teams, recombination, conflicts",
+      "produces": [
+        "tests/spawn-plan.test.ts"
+      ],
+      "consumes": [
+        "src/lib/spawn-plan.ts"
+      ],
+      "deps": [
+        "spawn-plan-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/spawn-plan.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-22-term": {
+      "id": "phase-22-term",
+      "desc": "Phase 22 complete: spawn plan output ships with roadmap import",
+      "produces": [],
+      "consumes": [
+        "src/lib/spawn-plan.ts",
+        "bin/roadmap.ts",
+        "tests/spawn-plan.test.ts"
+      ],
+      "deps": [
+        "spawn-plan-cli",
+        "spawn-plan-tests"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/spawn-plan.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": false
     }
   },
   "version": "0.3.0",
