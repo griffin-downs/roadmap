@@ -1,6 +1,6 @@
 // @module protocol
-// @exports define, graph, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, reconcile, merge, branch, analyze, modify, modifyAndCommit, validateNode, validateBatch, validateGraph
-// @types NodeSpec, Graph, Orientation, BatchConflict, Connection, Gap, ValidationRule, ValidationCheck, ValidationResult, ModifyAnalysis, ModificationRecord, ConsumeSpec
+// @exports define, graph, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, readyNodes, nextBatch, criticalPath, reconcile, merge, branch, analyze, modify, modifyAndCommit, validateNode, validateBatch, validateGraph
+// @types NodeSpec, Graph, Orientation, ReadyNode, NextBatch, BatchConflict, Connection, Gap, ValidationRule, ValidationCheck, ValidationResult, ModifyAnalysis, ModificationRecord, ConsumeSpec
 // @entry roadmap/protocol
 
 // --- Types ---
@@ -49,6 +49,8 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly idempotent: boolean; // ← REQUIRED: true=re-runnable, false=manual/state-changing
   readonly mode?: 'execute' | 'plan'; // default: 'execute'. 'plan' = decompose, output is DAG expansion
   readonly expandedFrom?: string; // provenance: which plan node spawned this node via expansion
+  readonly loopTarget?: string; // re-entry node when convergence check fails (soft loop)
+  readonly convergenceCheck?: { readonly maxCoverageDelta?: number; readonly requireEmptyProposals?: boolean }; // loop termination criteria
 }
 
 // Inference helper — extracts T from nodes, avoids mapped-type inference limits.
@@ -71,7 +73,7 @@ export type Gap = { between: [string, string]; missing: string[] };
 
 // --- Internal: flat iteration over mapped type ---
 
-type Flat = { id: string; produces: readonly string[]; consumes: readonly string[]; deps: readonly string[]; mode?: 'execute' | 'plan'; expandedFrom?: string };
+type Flat = { id: string; produces: readonly string[]; consumes: readonly string[]; deps: readonly string[]; mode?: 'execute' | 'plan'; expandedFrom?: string; loopTarget?: string; convergenceCheck?: { maxCoverageDelta?: number; requireEmptyProposals?: boolean } };
 
 function flat<T extends string>(g: Graph<T>): Flat[] {
   return Object.values(g.nodes) as Flat[];
@@ -328,6 +330,11 @@ export function batchConflicts<T extends string>(g: Graph<T>): BatchConflict[] {
 // what to produce, what's available to consume, and what remains.
 // Position is a batch (array of nodes), not a single node.
 
+export interface LoopSignal {
+  target: string;             // re-entry node ID
+  convergenceCheck?: { maxCoverageDelta?: number; requireEmptyProposals?: boolean };
+}
+
 export interface Orientation {
   position: string[];         // batch: array of nodes that can run in parallel
   level: number;              // batch index (0-based)
@@ -338,6 +345,7 @@ export interface Orientation {
   produces: readonly string[];
   consumes: readonly string[];
   remaining: string[];
+  loop?: LoopSignal;          // present if a position node has loopTarget (soft loop)
 }
 
 export function orient<T extends string>(
@@ -399,6 +407,10 @@ export function orient<T extends string>(
         if (!planDepsBlocking) preGate.push(id);
       }
 
+      // Detect loop signals in current batch
+      const loopNode = batch.map(id => nm.get(id)!).find(n => n.loopTarget);
+      const loop = loopNode ? { target: loopNode.loopTarget!, ...(loopNode.convergenceCheck ? { convergenceCheck: loopNode.convergenceCheck } : {}) } : undefined;
+
       return {
         position: batch,
         level: batches.indexOf(batch),
@@ -409,6 +421,7 @@ export function orient<T extends string>(
         produces: batchProduces,
         consumes: batchConsumes,
         remaining: remainingBatches,
+        ...(loop ? { loop } : {}),
       };
     }
 
@@ -417,6 +430,11 @@ export function orient<T extends string>(
   }
 
   // All batches complete - position is term batch (which contains only term node)
+  const termNode = nm.get(g.term);
+  const termLoop = termNode?.loopTarget
+    ? { target: termNode.loopTarget, ...(termNode.convergenceCheck ? { convergenceCheck: termNode.convergenceCheck } : {}) }
+    : undefined;
+
   return {
     position: [g.term],
     level: batches.length - 1,
@@ -427,6 +445,7 @@ export function orient<T extends string>(
     produces: [],
     consumes: [],
     remaining: [],
+    ...(termLoop ? { loop: termLoop } : {}),
   };
 }
 
@@ -459,6 +478,164 @@ export function advanceBatch<T extends string>(
   // Since all artifacts now exist, calling orient() again will skip past
   // the current batch and find the next incomplete batch
   return orient(g, exists, retired);
+}
+
+// --- readyNodes: eager dispatch beyond current batch ---
+// Returns nodes from future batches whose deps are fully satisfied,
+// even though their batch hasn't opened yet. Read-only query —
+// does not advance or mutate batch state.
+
+export interface ReadyNode {
+  id: string;
+  level: number;              // batch index this node belongs to
+  produces: readonly string[];
+  consumes: string[];
+  mode: 'execute' | 'plan';
+}
+
+export function readyNodes<T extends string>(
+  g: Graph<T>,
+  exists: (artifact: string) => boolean,
+  retired?: ReadonlySet<string>,
+): ReadyNode[] {
+  const batches = parallelOrder(g);
+  const nodes = flat(g);
+  const nm = new Map(nodes.map(n => [n.id, n]));
+
+  // Build expansion index for plan nodes
+  const expansionChildren = new Map<string, string[]>();
+  for (const n of nodes) {
+    if (n.expandedFrom) {
+      const children = expansionChildren.get(n.expandedFrom) ?? [];
+      children.push(n.id);
+      expansionChildren.set(n.expandedFrom, children);
+    }
+  }
+
+  // Compute done set — same artifact/expansion logic as orient()
+  const done = new Set<string>();
+  for (const n of nodes) {
+    if (retired?.has(n.id)) { done.add(n.id); continue; }
+    if (n.mode === 'plan') {
+      if ((expansionChildren.get(n.id) ?? []).length > 0) done.add(n.id);
+    } else {
+      if (!n.produces.length || n.produces.every(exists)) done.add(n.id);
+    }
+  }
+
+  // Find current batch level (first incomplete)
+  let currentLevel = -1;
+  for (let i = 0; i < batches.length; i++) {
+    if (batches[i].some(id => !done.has(id))) {
+      currentLevel = i;
+      break;
+    }
+  }
+
+  // All done — nothing to dispatch
+  if (currentLevel === -1) return [];
+
+  // Scan future batches for nodes whose deps are all in done set.
+  // allDepsDone subsumes the plan-dep filter (plan deps are deps),
+  // so plan nodes with unfinished plan-mode deps are excluded automatically.
+  const ready: ReadyNode[] = [];
+  for (let level = currentLevel + 1; level < batches.length; level++) {
+    for (const id of batches[level]) {
+      if (done.has(id)) continue;
+      if (retired?.has(id)) continue;
+
+      const node = nm.get(id)!;
+      if (!node.deps.every(d => done.has(d as string))) continue;
+
+      ready.push({
+        id,
+        level,
+        produces: node.produces,
+        consumes: node.consumes.map(c => consumeArtifact(c as ConsumeSpec)),
+        mode: (node.mode ?? 'execute') as 'execute' | 'plan',
+      });
+    }
+  }
+
+  return ready;
+}
+
+// --- nextBatch: lookahead for orchestrator pre-warming ---
+// Returns the batch after the current one, with pre-checked conflicts.
+// Always returns the next batch regardless of current batch completeness —
+// the orchestrator decides whether to act.
+
+export interface NextBatch {
+  nodes: string[];
+  level: number;
+  produces: string[];     // union of all next-batch produces
+  conflicts: string[];    // files with batchConflicts in the next batch
+}
+
+export function nextBatch<T extends string>(
+  g: Graph<T>,
+  exists: (artifact: string) => boolean,
+  retired?: ReadonlySet<string>,
+): NextBatch | null {
+  const batches = parallelOrder(g);
+  const current = orient(g, exists, retired);
+  const nextLevel = current.level + 1;
+
+  if (nextLevel >= batches.length) return null;
+
+  const batch = batches[nextLevel];
+  const nodes = flat(g);
+  const nm = new Map(nodes.map(n => [n.id, n]));
+  const produces = batch.flatMap(id => [...nm.get(id)!.produces]);
+
+  // Filter batchConflicts to next batch level only
+  const allConflicts = batchConflicts(g);
+  const conflicts = allConflicts
+    .filter(c => c.level === nextLevel)
+    .map(c => c.file);
+
+  return { nodes: batch, level: nextLevel, produces, conflicts };
+}
+
+// --- criticalPath: longest path from init to term ---
+// Standard DAG longest-path via reverse topo sort. O(V+E).
+// Weight = 1 per node (node count). Returns the path as ordered node IDs.
+
+export function criticalPath<T extends string>(g: Graph<T>): string[] {
+  const nodes = flat(g);
+  const adj = fwd(nodes);
+  const order_ = order(g);
+
+  // dist[node] = longest path from init to node (inclusive)
+  const dist = new Map<string, number>();
+  const pred = new Map<string, string | null>();
+
+  for (const id of order_) {
+    dist.set(id, 1);
+    pred.set(id, null);
+  }
+
+  // Forward pass in topo order — O(V+E) via adjacency list
+  for (const id of order_) {
+    const d = dist.get(id)!;
+    for (const succ of adj.get(id) ?? []) {
+      const candidate = d + 1;
+      if (candidate > dist.get(succ)!) {
+        dist.set(succ, candidate);
+        pred.set(succ, id);
+      }
+    }
+  }
+
+  // Trace back from term
+  const path: string[] = [];
+  let cur: string | null = g.term;
+  while (cur !== null) {
+    path.unshift(cur);
+    cur = pred.get(cur) ?? null;
+  }
+
+  return path;
 }
 
 // --- merge: combine two DAGs at reconcile() join points ---

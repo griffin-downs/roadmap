@@ -9,9 +9,10 @@ import { join, resolve, basename } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
 import {
-  define, check, verify, order, parallelOrder, batchConflicts, orient, reconcile,
-  validateNode, validateGraph,
+  define, check, verify, order, parallelOrder, batchConflicts, orient, readyNodes, nextBatch, criticalPath, reconcile,
+  validateNode, validateGraph, consumeArtifact,
 } from '../src/protocol.ts';
+import type { ConsumeSpec } from '../src/protocol.ts';
 import { fileExists } from '../src/predicates.ts';
 import { RoadmapError } from '../src/errors.ts';
 import { crossOrient } from '../src/lib/cross-orient.ts';
@@ -38,11 +39,15 @@ const cmd = args[0] || 'help';
 
 // Commands that don't require a note
 // Special case: orient/position with --check is note-exempt (silent polling)
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show']);
 const isOrientCheck = (cmd === 'orient' || cmd === 'position') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
   NOTE_EXEMPT.add('position');
+}
+// checkpoint --list and --restore are read-only queries
+if (cmd === 'checkpoint' && (args.includes('--list') || args.includes('--restore'))) {
+  NOTE_EXEMPT.add('checkpoint');
 }
 
 interface TrailEntry {
@@ -124,6 +129,10 @@ async function main() {
       case 'retire':    return cmdRetire(note!);
       case 'claim':     return cmdClaim();
       case 'import':    return cmdImport(note!);
+      case 'show':      return cmdShow();
+      case 'commit':    return cmdCommit(note!);
+      case 'checkpoint': return cmdCheckpoint(note);
+      case 'diff':      return cmdDiff();
       case 'dig':       return cmdDig();
       case 'help':
       case '--help':
@@ -220,6 +229,62 @@ async function cmdOrient(note: string | undefined) {
     saveClaims(repoRoot, newStore);
     result.assignments = assignResult.assignments;
     if (Object.keys(assignResult.skipped).length) result.assignSkipped = assignResult.skipped;
+  }
+
+  // --ready: eager dispatch — nodes beyond current batch whose deps are met
+  if (args.includes('--ready')) {
+    const ready = readyNodes(dag, fileExists(repoRoot), retiredSet());
+    const active = activeClaims(claimStore);
+    result.ready = ready.map(n => ({
+      ...n,
+      claimable: !(n.id in active),
+    }));
+  }
+
+  // --next: lookahead for orchestrator pre-warming
+  if (args.includes('--next')) {
+    const next = nextBatch(dag, fileExists(repoRoot), retiredSet());
+    result.next = next;
+  }
+
+  // --staged: per-node isomorphism check — do staged files match a node's produces?
+  if (args.includes('--staged')) {
+    try {
+      const staged = execSync('git diff --cached --name-only', { cwd: repoRoot, encoding: 'utf-8' })
+        .trim().split('\n').filter(Boolean);
+      const stagedSet = new Set(staged);
+
+      // Find node(s) whose produces exactly match staged files
+      const matches: { node: string; produces: string[]; exact: boolean }[] = [];
+      for (const nodeId of pos.position) {
+        const node = (dag.nodes as Record<string, any>)[nodeId];
+        if (!node?.produces?.length) continue;
+        const nodeProduces = node.produces as string[];
+        const overlap = nodeProduces.filter((p: string) => stagedSet.has(p));
+        if (overlap.length === 0) continue;
+        matches.push({
+          node: nodeId,
+          produces: nodeProduces,
+          exact: overlap.length === nodeProduces.length && staged.length === nodeProduces.length,
+        });
+      }
+
+      const extraFiles = staged.filter(f => {
+        for (const m of matches) {
+          if (m.produces.includes(f)) return false;
+        }
+        return true;
+      });
+
+      result.staged = {
+        files: staged,
+        matches,
+        extraFiles,
+        isomorphic: matches.length === 1 && matches[0].exact && extraFiles.length === 0,
+      };
+    } catch {
+      result.staged = { files: [], matches: [], extraFiles: [], isomorphic: false };
+    }
   }
 
   // Include blockedBy if there are blocking deps
@@ -376,7 +441,7 @@ async function cmdExpand(note: string) {
   const scriptPath = args[1];
   if (!scriptPath) {
     throw new RoadmapError('VALIDATION_FAILED', {
-      fix: 'roadmap expand <script.ts>',
+      fix: 'roadmap expand <script.ts> [--type structural|iteration]',
       entry: 'bin/roadmap',
     }, 'Missing expansion script path');
   }
@@ -389,14 +454,24 @@ async function cmdExpand(note: string) {
     }, `Expansion script not found: ${resolved}`);
   }
 
+  // Expansion type: structural (default) or iteration
+  const typeIdx = args.indexOf('--type');
+  const expansionType = typeIdx !== -1 ? (args[typeIdx + 1] ?? 'structural') : 'structural';
+  if (expansionType !== 'structural' && expansionType !== 'iteration') {
+    throw new RoadmapError('VALIDATION_FAILED', {
+      fix: '--type must be "structural" or "iteration"',
+    }, `Invalid expansion type: ${expansionType}`);
+  }
+
   // Snapshot before
   const dagBefore = loadDAG();
   const nodesBefore = Object.keys(dagBefore.nodes).length;
 
-  // Run the expansion script
+  // Set expansion type as env var so scripts can branch on it
   execSync(`node --experimental-strip-types ${resolved}`, {
     cwd: repoRoot,
     stdio: 'inherit',
+    env: { ...process.env, ROADMAP_EXPANSION_TYPE: expansionType },
   });
 
   // Snapshot after
@@ -404,7 +479,9 @@ async function cmdExpand(note: string) {
   const nodesAfter = Object.keys(dagAfter.nodes).length;
   const added = nodesAfter - nodesBefore;
 
-  // Validate
+  // Structural expansions are idempotent — re-running should produce same graph.
+  // Iteration expansions are one-shot — re-running adds another iteration payload.
+  // Validate both.
   const checkResult = check(dagAfter);
   const verifyErrors = verify(dagAfter);
 
@@ -417,15 +494,16 @@ async function cmdExpand(note: string) {
 
   // Commit
   execSync('git add .roadmap/head.json', { cwd: repoRoot, stdio: 'pipe' });
-  const msg = `roadmap: expand — ${added} nodes added via ${scriptPath}`;
+  const msg = `roadmap: expand (${expansionType}) — ${added} nodes added via ${scriptPath}`;
   execSync(`git commit -m "${msg}"`, { cwd: repoRoot, stdio: 'pipe' });
   const hash = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
 
   const posAfter = orient(dagAfter, fileExists(repoRoot));
-  recordTrail({ ts: new Date().toISOString(), cmd: 'expand', note, repo: basename(repoRoot), position: posAfter.position, level: posAfter.level, dagId: dagAfter.id, detail: { script: scriptPath, added, commit: hash } });
+  recordTrail({ ts: new Date().toISOString(), cmd: 'expand', note, repo: basename(repoRoot), position: posAfter.position, level: posAfter.level, dagId: dagAfter.id, detail: { script: scriptPath, added, commit: hash, type: expansionType } });
 
   json({
     expanded: true,
+    type: expansionType,
     script: scriptPath,
     nodesBefore,
     nodesAfter,
@@ -665,6 +743,7 @@ async function cmdChart() {
   }
 
   const showDeps = args.includes('--deps');
+  const showCritical = args.includes('--critical-path');
   const dag = loadDAG();
   const retiredIds = retiredSet();
   const pos = await crossOrient(dag, repoRoot, undefined, retiredIds);
@@ -674,6 +753,7 @@ async function cmdChart() {
   const nodeIds = Object.keys(dag.nodes);
   const doneSet = new Set(pos.done);
   const preGateSet = new Set(pos.preGate);
+  const cpSet = showCritical ? new Set(criticalPath(dag)) : new Set<string>();
   const totalNodes = nodeIds.length;
   const doneCount = pos.done.length;
   const pct = Math.round((doneCount / totalNodes) * 100);
@@ -751,6 +831,7 @@ async function cmdChart() {
     const nodeList = batch.map(n => {
       const node = dag.nodes[n as keyof typeof dag.nodes] as any;
       const planTag = node?.mode === 'plan' ? '📋' : '';
+      const cpTag = cpSet.has(n) ? '⚡' : '';
       if (pos.position.includes(n)) {
         const claim = claimStore[n];
         let claimTag = '';
@@ -765,12 +846,12 @@ async function cmdChart() {
             claimTag = ` [${claim.owner} ⌛expired]`;
           }
         }
-        return `👉 ${planTag}${n}${claimTag}`;
+        return `👉 ${cpTag}${planTag}${n}${claimTag}`;
       }
       if (retiredIds.has(n)) return `⏭️ ${n}`;
-      if (doneSet.has(n)) return `✅ ${planTag}${n}`;
-      if (preGateSet.has(n)) return `🔍 ${planTag}${n}`;
-      return `⬜ ${planTag}${n}`;
+      if (doneSet.has(n)) return `✅ ${cpTag}${planTag}${n}`;
+      if (preGateSet.has(n)) return `🔍 ${cpTag}${planTag}${n}`;
+      return `⬜ ${cpTag}${planTag}${n}`;
     }).join('  ');
 
     console.log(`  ${levelEmoji} L${String(i).padStart(2, '0')} ${bBar} ${String(batchPct).padStart(3)}%  ${nodeList}`);
@@ -786,7 +867,373 @@ async function cmdChart() {
       console.log(`  ➡️  Next: ${next} — ${nextNode?.desc || ''}`);
     }
   }
+
+  if (showCritical) {
+    const cp = criticalPath(dag);
+    console.log(`  ⚡ Critical path (${cp.length} nodes): ${cp.join(' → ')}`);
+  }
+
   console.log('');
+}
+
+function cmdDiff() {
+  if (!hasLocalDAG) {
+    console.log('No roadmap in this repo.');
+    process.exit(1);
+  }
+
+  const target = args[1];
+  if (!target) {
+    console.log('Usage: roadmap diff <path-to-old-head.json>');
+    console.log('       roadmap diff <git-ref>');
+    process.exit(1);
+  }
+
+  const verbose = args.includes('--verbose');
+  const currentDag = loadDAG();
+
+  // Load old DAG — try git ref first, then file path
+  let oldDag: Record<string, any>;
+  if (existsSync(target)) {
+    oldDag = JSON.parse(readFileSync(target, 'utf-8'));
+  } else {
+    // Try as git ref
+    try {
+      const content = execSync(
+        `git show ${target}:.roadmap/head.json`,
+        { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] },
+      );
+      oldDag = JSON.parse(content);
+    } catch {
+      console.log(`Cannot load DAG from "${target}" — not a file path or valid git ref.`);
+      process.exit(1);
+    }
+  }
+
+  const oldNodes = new Map(Object.entries(oldDag.nodes ?? {}));
+  const newNodes = new Map(Object.entries(currentDag.nodes));
+
+  const added = [...newNodes.keys()].filter(id => !oldNodes.has(id));
+  const removed = [...oldNodes.keys()].filter(id => !newNodes.has(id));
+  const common = [...newNodes.keys()].filter(id => oldNodes.has(id));
+
+  // Per-node diff on common nodes
+  type FieldDiff = { field: string; added: string[]; removed: string[] };
+  const modified: { id: string; diffs: FieldDiff[] }[] = [];
+
+  for (const id of common) {
+    const o = oldNodes.get(id) as any;
+    const n = newNodes.get(id) as any;
+    const diffs: FieldDiff[] = [];
+
+    // Compare array fields
+    for (const field of ['produces', 'deps'] as const) {
+      const oldArr: string[] = o[field] ?? [];
+      const newArr: string[] = (n as any)[field] ?? [];
+      const a = newArr.filter((x: string) => !oldArr.includes(x));
+      const r = oldArr.filter((x: string) => !newArr.includes(x));
+      if (a.length || r.length) diffs.push({ field, added: a, removed: r });
+    }
+
+    // Compare consumes (normalize ConsumeSpec to string)
+    const oldConsumes: string[] = (o.consumes ?? []).map((c: any) => typeof c === 'string' ? c : c.artifact);
+    const newConsumes: string[] = (n as any).consumes.map((c: any) => consumeArtifact(c as ConsumeSpec));
+    const ca = newConsumes.filter(x => !oldConsumes.includes(x));
+    const cr = oldConsumes.filter(x => !newConsumes.includes(x));
+    if (ca.length || cr.length) diffs.push({ field: 'consumes', added: ca, removed: cr });
+
+    // Compare validate (by stringified form)
+    const oldVal = (o.validate ?? []).map((v: any) => JSON.stringify(v));
+    const newVal = ((n as any).validate ?? []).map((v: any) => JSON.stringify(v));
+    const va = newVal.filter((x: string) => !oldVal.includes(x));
+    const vr = oldVal.filter((x: string) => !newVal.includes(x));
+    if (va.length || vr.length) {
+      diffs.push({ field: 'validate', added: va.map((x: string) => JSON.parse(x).type ?? x), removed: vr.map((x: string) => JSON.parse(x).type ?? x) });
+    }
+
+    // Compare mode
+    const oldMode = o.mode ?? 'execute';
+    const newMode = (n as any).mode ?? 'execute';
+    if (oldMode !== newMode) {
+      diffs.push({ field: 'mode', added: [newMode], removed: [oldMode] });
+    }
+
+    // Compare desc (only with --verbose)
+    if (verbose && o.desc !== (n as any).desc) {
+      diffs.push({ field: 'desc', added: [(n as any).desc], removed: [o.desc] });
+    }
+
+    if (diffs.length) modified.push({ id, diffs });
+  }
+
+  // Output
+  if (!added.length && !removed.length && !modified.length) {
+    console.log('No changes.');
+    return;
+  }
+
+  if (added.length) {
+    console.log(`+ added:    ${added.join(', ')}`);
+  } else {
+    console.log('+ added:    (none)');
+  }
+
+  if (removed.length) {
+    console.log(`- removed:  ${removed.join(', ')}`);
+  } else {
+    console.log('- removed:  (none)');
+  }
+
+  for (const m of modified) {
+    console.log(`~ modified: ${m.id}`);
+    for (const d of m.diffs) {
+      const parts: string[] = [];
+      if (d.added.length) parts.push(`+ ${d.added.join(', ')}`);
+      if (d.removed.length) parts.push(`- ${d.removed.join(', ')}`);
+      console.log(`    ${d.field}: ${parts.join('  ')}`);
+    }
+  }
+}
+
+function cmdShow() {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const dag = loadDAG();
+  const retiredIds = retiredSet();
+  const pos = orient(dag, fileExists(repoRoot), retiredIds);
+  const doneSet = new Set(pos.done);
+  const claimStore = loadClaims(repoRoot);
+  const active = activeClaims(claimStore);
+  const batches = parallelOrder(dag);
+
+  // Build level index
+  const levelOf = new Map<string, number>();
+  for (let i = 0; i < batches.length; i++) {
+    for (const id of batches[i]) levelOf.set(id, i);
+  }
+
+  function nodeToJSON(id: string) {
+    const node = (dag.nodes as Record<string, any>)[id];
+    if (!node) return null;
+    const claim = active[id];
+    return {
+      id: node.id,
+      desc: node.desc,
+      produces: node.produces,
+      consumes: node.consumes,
+      deps: node.deps,
+      validate: node.validate,
+      idempotent: node.idempotent,
+      mode: node.mode ?? 'execute',
+      ...(node.expandedFrom ? { expandedFrom: node.expandedFrom } : {}),
+      level: levelOf.get(id) ?? -1,
+      status: retiredIds.has(id) ? 'retired' : doneSet.has(id) ? 'done' : pos.batchRemaining.includes(id) ? 'in-progress' : 'pending',
+      ...(claim ? { claim: { owner: claim.owner, expiry: claim.claimExpiry } } : {}),
+    };
+  }
+
+  // show --batch [level] — all nodes at a level
+  if (args.includes('--batch')) {
+    const batchArg = args[args.indexOf('--batch') + 1];
+    let level: number;
+
+    if (batchArg === undefined || batchArg.startsWith('-')) {
+      // No level specified — use current batch
+      level = pos.level;
+    } else {
+      // Parse L03 or plain number
+      level = parseInt(batchArg.replace(/^L/i, ''), 10);
+    }
+
+    if (isNaN(level) || level < 0 || level >= batches.length) {
+      json({ error: `Invalid batch level: ${batchArg}`, fix: `Valid range: 0-${batches.length - 1}` });
+      process.exit(1);
+    }
+
+    const nodes = batches[level].map(nodeToJSON).filter(Boolean);
+    json({ level, nodes });
+    return;
+  }
+
+  // show <node-id> — single node spec
+  const nodeId = args[1];
+  if (!nodeId) {
+    json({ error: 'Missing node ID', fix: 'roadmap show <node-id> or roadmap show --batch [level]' });
+    process.exit(1);
+  }
+
+  const result = nodeToJSON(nodeId);
+  if (!result) {
+    json({ error: `Node not found: ${nodeId}`, fix: `Valid nodes: ${Object.keys(dag.nodes).slice(0, 10).join(', ')}...` });
+    process.exit(1);
+  }
+  json(result);
+}
+
+async function cmdCheckpoint(note: string | undefined) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const labelIdx = args.indexOf('--label');
+  const label = labelIdx !== -1 ? args[labelIdx + 1] : undefined;
+
+  // --list: show existing checkpoints
+  if (args.includes('--list')) {
+    const cpDir = join(repoRoot, '.roadmap', 'checkpoints');
+    if (!existsSync(cpDir)) {
+      json({ checkpoints: [] });
+      return;
+    }
+    const files = readdirSync(cpDir).filter(f => f.endsWith('.json')).sort().reverse();
+    const checkpoints = files.map(f => {
+      try {
+        return JSON.parse(readFileSync(join(cpDir, f), 'utf-8'));
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+    json({ checkpoints });
+    return;
+  }
+
+  // --restore: restore from latest or labeled checkpoint
+  if (args.includes('--restore')) {
+    const { CheckpointManager } = await import('../src/lib/checkpoint.ts');
+    const mgr = new CheckpointManager(repoRoot);
+    const result = await mgr.restore();
+    if (!result) {
+      json({ error: 'No valid checkpoint found', fix: 'Create a checkpoint first: roadmap checkpoint --label <name> --note "reason"' });
+      process.exit(1);
+    }
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'checkpoint', note: note ?? 'restore',
+      repo: basename(repoRoot), position: result.position,
+      detail: { restored: result.checkpoint.id },
+    });
+    json({ restored: true, checkpoint: result.checkpoint.id, position: result.position });
+    return;
+  }
+
+  // Create checkpoint
+  if (!label) {
+    json({ error: 'Missing --label', fix: 'roadmap checkpoint --label <name> --note "reason"' });
+    process.exit(1);
+  }
+
+  const dag = loadDAG();
+  const pos = orient(dag, fileExists(repoRoot), retiredSet());
+
+  // Collect existing artifact paths
+  const allProduces: string[] = [];
+  for (const nodeId of pos.done) {
+    const node = (dag.nodes as Record<string, any>)[nodeId];
+    if (node?.produces) allProduces.push(...node.produces);
+  }
+  const existingArtifacts = allProduces.filter(p => existsSync(join(repoRoot, p)));
+
+  const { CheckpointManager } = await import('../src/lib/checkpoint.ts');
+  const mgr = new CheckpointManager(repoRoot);
+  const agent = process.env.AGENT_ID || process.env.USER || 'unknown';
+
+  const checkpoint = await mgr.saveCheckpoint({
+    position: pos.position,
+    phase: label,
+    artifacts: existingArtifacts.map(p => join(repoRoot, p)),
+    agent,
+    duration: 0,
+    success: true,
+  });
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'checkpoint', note,
+    repo: basename(repoRoot), position: pos.position, level: pos.level, dagId: dag.id,
+    detail: { label, checkpointId: checkpoint.id, artifacts: existingArtifacts.length },
+  });
+
+  json({ created: true, label, checkpointId: checkpoint.id, position: pos.position, artifacts: existingArtifacts.length });
+}
+
+function cmdCommit(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const nodeIdx = args.indexOf('--node');
+  if (nodeIdx === -1 || !args[nodeIdx + 1]) {
+    json({ error: 'Missing --node <id>', fix: 'roadmap commit --node <id> --message "what changed" --note "why"' });
+    process.exit(1);
+  }
+  const nodeId = args[nodeIdx + 1];
+
+  const msgIdx = args.indexOf('--message');
+  const message = msgIdx !== -1 ? args[msgIdx + 1] : undefined;
+  if (!message) {
+    json({ error: 'Missing --message', fix: 'roadmap commit --node <id> --message "what changed" --note "why"' });
+    process.exit(1);
+  }
+
+  const dag = loadDAG();
+  const node = (dag.nodes as Record<string, any>)[nodeId];
+  if (!node) {
+    json({ error: `Node not found: ${nodeId}`, fix: `Valid nodes: ${Object.keys(dag.nodes).slice(0, 10).join(', ')}...` });
+    process.exit(1);
+  }
+
+  const pos = orient(dag, fileExists(repoRoot), retiredSet());
+
+  // Stage the node's produces
+  const produces: string[] = node.produces ?? [];
+  if (produces.length === 0) {
+    json({ error: `Node ${nodeId} has no produces — nothing to commit` });
+    process.exit(1);
+  }
+
+  // Verify all produces exist before staging
+  const missing = produces.filter(p => !existsSync(join(repoRoot, p)));
+  if (missing.length) {
+    json({ error: `Missing artifacts: ${missing.join(', ')}`, fix: 'Produce all artifacts before committing' });
+    process.exit(1);
+  }
+
+  // Stage exactly the produces
+  for (const p of produces) {
+    execSync(`git add "${p}"`, { cwd: repoRoot, stdio: 'pipe' });
+  }
+
+  // Build commit message with node trailer
+  const fullMessage = `${message}\n\n[node: ${nodeId}]`;
+  execSync(`git commit -m "${fullMessage.replace(/"/g, '\\"')}"`, { cwd: repoRoot, stdio: 'pipe' });
+  const hash = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
+
+  // Update git-state.json
+  const gitStatePath = join(repoRoot, '.roadmap', 'git-state.json');
+  try {
+    const { createGitState, recordArtifact } = require('../src/git-state.schema.ts');
+    let state = existsSync(gitStatePath)
+      ? JSON.parse(readFileSync(gitStatePath, 'utf-8'))
+      : createGitState();
+    const fullHash = execSync('git rev-parse HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
+    for (const p of produces) {
+      state = recordArtifact(state, p, fullHash);
+    }
+    writeFileSync(gitStatePath, JSON.stringify(state, null, 2));
+  } catch {
+    // git-state update is best-effort; post-commit hook will also run
+  }
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'commit', note,
+    repo: basename(repoRoot), position: pos.position, level: pos.level, dagId: dag.id,
+    detail: { node: nodeId, produces, commit: hash },
+  });
+
+  json({ committed: true, node: nodeId, produces, commit: hash });
 }
 
 async function cmdMergeFrom() {
@@ -1418,11 +1865,19 @@ function cmdHelp() {
 Commands:
   orient              Current batch position + produces/consumes + claims (JSON)
   orient --check      Same as orient but no trail entry (for frequent polling)
+  orient --ready      Eager dispatch: nodes beyond current batch whose deps are met
+  orient --next       Next batch lookahead with pre-checked conflicts
+  orient --staged     Per-node isomorphism check: do staged files match a node's produces?
   orient --assign     Round-robin assign batchRemaining to --owners (JSON)
   advance             Advance to next batch (requires current batch complete) (JSON)
+  commit --node <id>  Stage node's produces, commit with [node: X] trailer, update git-state
+  checkpoint --label <name>  Save checkpoint at current position (recovery point)
+  checkpoint --list   List all checkpoints
+  checkpoint --restore  Restore from latest valid checkpoint
   describe            Full API surface + project state (JSON)
   validate [node]     Run validation rules (all nodes or specific)
   expand <script.ts>  Run expansion script, validate DAG, commit
+  expand <script> --type structural|iteration  Structural (idempotent) vs iteration (one-shot)
   branch <name> [dag] Create git branch with optional separate DAG
   parallel            Show parallel execution batches (current repo)
   parallel --cross-repo  Show parallel structure with sibling repos
@@ -1431,6 +1886,11 @@ Commands:
   sync [--format fmt] Aggregate tasks from all discovered roadmaps (json|tree)
   chart               Pretty-print progress chart with emoji bars
   chart --deps        Cross-repo chart: show dependency repo positions
+  chart --critical-path  Annotate critical path nodes with ⚡ + footer
+  show <node-id>      Full node spec as JSON (produces, consumes, deps, validate, status)
+  show --batch [level] All nodes at a batch level (default: current batch)
+  diff <ref|path>     Structural diff between current DAG and old version
+  diff <ref> --verbose  Include desc changes in diff output
   merge --from <path> Diagnostic: show artifact connections to sibling DAG
   retire <node-id>    Skip/retire a node (treated as done by orient)
   retire <id> --cascade  Retire node + all transitively dependent nodes
@@ -1454,14 +1914,17 @@ Commands:
   dig <path> --restore  Recover archived file to working tree
   help                This message
 
-All commands (except help/trail/chart/install/dig/claim/orient) require --note "reason".
+All commands (except help/trail/chart/install/dig/claim/diff/show/orient) require --note "reason".
   orient --check is note-exempt for swarm agents that reorient without trail pollution.
 
 Agent Workflow:
-  1. orient --note "..."           → find current batch (position[], produces[], consumes[])
-  2. claim <node> / orient --assign → take ownership of node(s) in the batch
-  3. do work                       → produce the artifacts listed in produces[]
-  4. advance --note "..."          → validate batch complete, move to next batch
+  1. orient --note "..."             → find current batch (position[], produces[], consumes[])
+  2. claim <node> / orient --assign  → take ownership of node(s) in the batch
+  3. show <node>                     → get full node spec (no head.json read needed)
+  4. do work                         → produce the artifacts listed in produces[]
+  5. commit --node <id> --message "" → stage produces, commit with [node: X] trailer
+  6. advance --note "..."            → validate batch complete, move to next batch
+  7. checkpoint --label "..."        → save recovery point at batch boundary
 
   For polling without trail clutter: orient --check (no --note required, no trail entry)
 
@@ -1476,6 +1939,19 @@ Agent Workflow:
     preGate[]        plan nodes workable before their deps close
     planNodes        { nodeId: 'plan' } for plan-mode nodes in batch
     blockedBy[]      cross-repo deps not yet satisfied
+    ready[]          (--ready) future nodes with deps met: { id, level, produces, consumes, mode, claimable }
+
+  orient --ready
+    Returns nodes beyond the current batch whose specific deps are all satisfied.
+    Enables eager dispatch: start work on unblocked future nodes without waiting
+    for the full batch to complete. Read-only — does not advance batch state.
+    Each node includes claimable: true/false based on active claims.
+
+  orient --next
+    Returns the next batch (after current) for orchestrator pre-warming.
+    Includes nodes[], level, produces[], and conflicts[] (pre-checked).
+    Always returned regardless of current batch completeness — orchestrator decides.
+    Returns null if current batch is the final batch.
 
   orient --assign --owners w1,w2,w3 [--ttl 900]
     Round-robin assigns batchRemaining nodes to owners. Respects active claims

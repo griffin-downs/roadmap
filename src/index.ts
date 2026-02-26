@@ -19,6 +19,9 @@ export {
   analyze,
   modify,
   modifyAndCommit,
+  readyNodes,
+  nextBatch,
+  criticalPath,
   validateNode,
   validateGraph,
 } from './protocol.ts';
@@ -75,10 +78,13 @@ export type {
   Connection,
   Gap,
   Orientation,
+  LoopSignal,
   ValidationRule,
   ValidationCheck,
   ValidationResult,
   ModifyAnalysis,
+  ReadyNode,
+  NextBatch,
   ModificationRecord,
 } from './protocol.ts';
 

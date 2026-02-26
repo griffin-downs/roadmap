@@ -35,13 +35,16 @@ function main() {
     fs.mkdirSync(hooksDir, { recursive: true });
   }
 
-  const hooks = ['pre-commit', 'post-commit'];
+  const hooks = ['pre-commit', 'post-commit', 'prepare-commit-msg', 'commit-msg'];
 
   for (const hook of hooks) {
-    const sourcePath = path.join(sourceDir, `${hook}.ts`);
+    // Try .ts first, then bare (shell scripts)
+    const tsPath = path.join(sourceDir, `${hook}.ts`);
+    const barePath = path.join(sourceDir, hook);
+    const sourcePath = fs.existsSync(tsPath) ? tsPath : fs.existsSync(barePath) ? barePath : null;
     const targetPath = path.join(hooksDir, hook);
 
-    if (!fs.existsSync(sourcePath)) {
+    if (!sourcePath) {
       console.log(`⏭️  Source hook not found: ${hook}`);
       continue;
     }

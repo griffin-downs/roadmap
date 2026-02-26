@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Commit-msg hook: validate node attribution in commit messages.
+# If roadmap commit --node was used, [node: X] trailer is already present.
+# This hook warns (but does not block) when commits lack node attribution.
+
+COMMIT_MSG_FILE=$1
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+ROADMAP_FILE="${REPO_ROOT}/.roadmap/head.json"
+
+# Only if roadmap exists
+if [ ! -f "$ROADMAP_FILE" ]; then
+  exit 0
+fi
+
+# Check for SKIP_NODE_CHECK bypass
+if [ -n "$SKIP_NODE_CHECK" ]; then
+  exit 0
+fi
+
+# Check if message has node trailer
+if grep -q '^\[node:' "$COMMIT_MSG_FILE" 2>/dev/null; then
+  # Validate the node exists in head.json
+  NODE_ID=$(grep '^\[node:' "$COMMIT_MSG_FILE" | head -1 | sed 's/\[node: *\(.*\)\]/\1/')
+  NODE_EXISTS=$(cd "$REPO_ROOT" && jq --arg id "$NODE_ID" '.nodes[$id] // empty' .roadmap/head.json 2>/dev/null)
+
+  if [ -z "$NODE_EXISTS" ] || [ "$NODE_EXISTS" = "null" ]; then
+    echo "⚠️  commit-msg: [node: ${NODE_ID}] not found in head.json"
+    # Warn but don't block
+  fi
+  exit 0
+fi
+
+# No [node:] trailer — advisory warning
+echo "ℹ️  commit-msg: No [node: X] trailer. Use 'roadmap commit --node <id>' for isomorphic commits."
+
+exit 0

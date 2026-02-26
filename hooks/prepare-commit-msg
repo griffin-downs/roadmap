@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Prepare-commit-msg hook: auto-populate roadmap position in commit message.
+# Appends [batch: L<level> <nodes>] to the commit message if a roadmap exists.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Only for non-merge, non-squash, non-amend commits
+if [ "$COMMIT_SOURCE" = "merge" ] || [ "$COMMIT_SOURCE" = "squash" ]; then
+  exit 0
+fi
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+ROADMAP_FILE="${REPO_ROOT}/.roadmap/head.json"
+
+# Only if roadmap exists
+if [ ! -f "$ROADMAP_FILE" ]; then
+  exit 0
+fi
+
+# Skip if message already has a [node:] or [batch:] trailer
+if grep -q '^\[node:' "$COMMIT_MSG_FILE" 2>/dev/null || grep -q '^\[batch:' "$COMMIT_MSG_FILE" 2>/dev/null; then
+  exit 0
+fi
+
+# Get position via orient --check (no trail entry)
+ORIENT_JSON=$(cd "$REPO_ROOT" && node --experimental-strip-types bin/roadmap.ts orient --check 2>/dev/null)
+
+if [ -z "$ORIENT_JSON" ]; then
+  exit 0
+fi
+
+LEVEL=$(echo "$ORIENT_JSON" | jq -r '.level // empty' 2>/dev/null)
+POSITION=$(echo "$ORIENT_JSON" | jq -r '.position | join(", ")' 2>/dev/null)
+
+if [ -n "$LEVEL" ] && [ -n "$POSITION" ]; then
+  echo "" >> "$COMMIT_MSG_FILE"
+  echo "[batch: L${LEVEL} ${POSITION}]" >> "$COMMIT_MSG_FILE"
+fi
+
+exit 0

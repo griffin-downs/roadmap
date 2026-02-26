@@ -84,11 +84,11 @@ if [ -n "$SKIP_BATCH_COMMIT" ]; then
 fi
 
 # Get current batch status via roadmap orient
-ORIENT_OUTPUT=$(cd "$REPO_ROOT" && node --experimental-strip-types bin/roadmap.ts orient --note "pre-commit" 2>/dev/null | jq -r '.batchComplete // false' 2>/dev/null || echo "false")
+ORIENT_OUTPUT=$(cd "$REPO_ROOT" && node --experimental-strip-types bin/roadmap.ts orient --check 2>/dev/null | jq -r '.batchComplete // false' 2>/dev/null || echo "false")
 
 if [ "$ORIENT_OUTPUT" = "false" ]; then
-  POSITION=$(cd "$REPO_ROOT" && node --experimental-strip-types bin/roadmap.ts orient --note "pre-commit" 2>/dev/null | jq -r '.position | join(", ")' 2>/dev/null || echo "unknown")
-  REMAINING=$(cd "$REPO_ROOT" && node --experimental-strip-types bin/roadmap.ts orient --note "pre-commit" 2>/dev/null | jq -r '.batchRemaining | join(", ")' 2>/dev/null || echo "unknown")
+  POSITION=$(cd "$REPO_ROOT" && node --experimental-strip-types bin/roadmap.ts orient --check 2>/dev/null | jq -r '.position | join(", ")' 2>/dev/null || echo "unknown")
+  REMAINING=$(cd "$REPO_ROOT" && node --experimental-strip-types bin/roadmap.ts orient --check 2>/dev/null | jq -r '.batchRemaining | join(", ")' 2>/dev/null || echo "unknown")
 
   echo "❌ Pre-commit hook: Batch validation failed"
   echo ""
