@@ -11,7 +11,10 @@ export type ValidationRule =
   | { type: 'function'; target: string; fn: string }
   | { type: 'manual-approval'; target: string; reviewer?: string }
   | { type: 'expanded'; minNodes?: number }
-  | { type: 'shell'; command: string; expectExitCode?: number };
+  | { type: 'shell'; command: string; expectExitCode?: number }
+  | { type: 'build-produces'; command: string; outputs: string[] }
+  | { type: 'launch-check'; command: string; timeout?: number; successSignal?: string }
+  | { type: 'spec-conformance'; spec: string; stories: number[]; criteria?: number[] };
 
 export interface ValidationCheck {
   rule: ValidationRule;
@@ -1056,6 +1059,87 @@ export async function validateNode<T extends string>(
             ? `command exit code matches: ${rule.command} — ${codeInfo}`
             : `command failed: ${rule.command} — ${codeInfo} — ${stderr.slice(0, 150)}`;
         }
+      }
+    } else if (rule.type === 'build-produces') {
+      // Run build command, then check all outputs exist
+      if (process.env.ROADMAP_VALIDATING) {
+        passed = true;
+        evidence = `skipped (already inside validation): ${rule.command}`;
+      } else {
+        try {
+          const { execSync } = await import('node:child_process');
+          execSync(rule.command, { stdio: 'pipe', env: { ...process.env, ROADMAP_VALIDATING: '1' } });
+          const missing = rule.outputs.filter((o: string) => !exists(o));
+          passed = missing.length === 0;
+          evidence = passed
+            ? `build passed, all outputs present: ${rule.outputs.join(', ')}`
+            : `build passed but missing outputs: ${missing.join(', ')}`;
+        } catch (e: any) {
+          passed = false;
+          const stderr = e.stderr?.toString().trim() || e.message || '';
+          evidence = `build failed: ${rule.command} — ${stderr.slice(0, 200)}`;
+        }
+      }
+    } else if (rule.type === 'launch-check') {
+      // Start a process, verify it produces a success signal or exits 0 within timeout
+      if (process.env.ROADMAP_VALIDATING) {
+        passed = true;
+        evidence = `skipped (already inside validation): ${rule.command}`;
+      } else {
+        const timeout = rule.timeout ?? 10000;
+        const successSignal = rule.successSignal;
+        try {
+          const { spawnSync } = await import('node:child_process');
+          const result = spawnSync(rule.command, {
+            shell: true,
+            timeout,
+            stdio: 'pipe',
+            env: { ...process.env, ROADMAP_VALIDATING: '1' },
+          });
+          const stdout = result.stdout?.toString() || '';
+          if (successSignal) {
+            passed = stdout.includes(successSignal);
+            evidence = passed
+              ? `process output contained signal: "${successSignal}"`
+              : `process output missing signal: "${successSignal}"`;
+          } else {
+            passed = result.status === 0;
+            evidence = passed
+              ? `process exited 0 within ${timeout}ms`
+              : `process failed or timed out: exit ${result.status}`;
+          }
+        } catch (e: any) {
+          passed = false;
+          evidence = `launch failed: ${rule.command} — ${String(e.message).slice(0, 200)}`;
+        }
+      }
+    } else if (rule.type === 'spec-conformance') {
+      // Verify spec file exists and referenced story numbers appear in it.
+      // Resolves spec path: absolute paths used as-is, relative paths resolved from cwd (= repoRoot in CLI context).
+      try {
+        const { readFileSync: rfs, existsSync: efs } = await import('node:fs');
+        const { resolve: resolvePath } = await import('node:path');
+        const specPath = resolvePath(process.cwd(), rule.spec);
+        if (!efs(specPath)) {
+          passed = false;
+          evidence = `spec file not found: ${rule.spec}`;
+        } else {
+          const specContent = rfs(specPath, 'utf-8');
+          const storyRefs = (rule.stories ?? []) as number[];
+          const missingStories = storyRefs.filter(
+            (s: number) =>
+              !specContent.includes(`Story ${s}`) &&
+              !specContent.includes(`US${s}`) &&
+              !specContent.includes(`story-${s}`),
+          );
+          passed = missingStories.length === 0;
+          evidence = passed
+            ? `spec conformance: stories [${storyRefs.join(', ')}] found in ${rule.spec}`
+            : `spec missing story refs: [${missingStories.join(', ')}] not found in ${rule.spec}`;
+        }
+      } catch (e: any) {
+        passed = false;
+        evidence = `spec-conformance error: ${String(e.message).slice(0, 200)}`;
       }
     }
 

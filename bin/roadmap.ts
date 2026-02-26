@@ -176,6 +176,7 @@ async function main() {
       case 'retire':    return cmdRetire(note!);
       case 'claim':     return cmdClaim();
       case 'import':    return cmdImport(note!);
+      case 'report':    return await cmdReport(note!);
       case 'show':      return cmdShow();
       case 'commit':    return cmdCommit(note!);
       case 'complete':  return await cmdComplete(note!);
@@ -1286,6 +1287,26 @@ async function cmdComplete(note: string) {
     process.exit(1);
   }
 
+  // 1.5 Validate — run all validation rules before accepting completion
+  const skipValidate = args.includes('--skip-validate');
+  if (!skipValidate) {
+    const { validateNode } = await import('../src/protocol.ts');
+    const validationResult = await validateNode(dag, nodeId, fileExists(repoRoot));
+    if (!validationResult.passed) {
+      // Release claim on failure so another attempt can re-claim
+      delete claimStore[nodeId];
+      saveClaims(repoRoot, claimStore);
+
+      json({
+        error: `Validation failed for "${nodeId}"`,
+        checks: validationResult.checks,
+        failedCount: validationResult.checks.filter((c: any) => !c.passed).length,
+        fix: 'Fix the failing validations and retry. Use --skip-validate to override.',
+      });
+      process.exit(1);
+    }
+  }
+
   // 2. Checkpoint
   const allProduces: string[] = [];
   for (const nid of (pos.done ?? [])) {
@@ -1329,7 +1350,7 @@ async function cmdComplete(note: string) {
   recordTrail({
     ts: new Date().toISOString(), cmd: 'complete', note,
     repo: basename(repoRoot), position: finalPos.position, level: finalPos.level, dagId: dag.id,
-    detail: { nodeId, owner, checkpointId: checkpoint.id, batchComplete: posAfter.batchComplete, advanced: !!advanced },
+    detail: { nodeId, owner, checkpointId: checkpoint.id, batchComplete: posAfter.batchComplete, advanced: !!advanced, skipValidate },
   });
 
   json({
@@ -1932,6 +1953,44 @@ function cmdImport(note: string) {
   });
 }
 
+// --- report: aggregate ValidationResult[] across all completed nodes ---
+// roadmap report --note "..."
+async function cmdReport(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const dag = loadDAG();
+  const allNodes = Object.keys(dag.nodes);
+  const results: any[] = [];
+
+  for (const nodeId of allNodes) {
+    const { validateNode } = await import('../src/protocol.ts');
+    const result = await validateNode(dag, nodeId, fileExists(repoRoot));
+    results.push(result);
+  }
+
+  const passed = results.filter(r => r.passed);
+  const failed = results.filter(r => !r.passed);
+  const noRules = results.filter(r => r.checks.length === 0);
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'report', note,
+    repo: basename(repoRoot), position: ['report'], level: -1, dagId: dag.id,
+    detail: { total: results.length, passed: passed.length, failed: failed.length },
+  });
+
+  json({
+    report: true,
+    total: results.length,
+    passed: passed.length,
+    failed: failed.length,
+    noRules: noRules.length,
+    failures: failed.map(r => ({ nodeId: r.nodeId, failedCount: r.checks.filter((c: any) => !c.passed).length, checks: r.checks.filter((c: any) => !c.passed) })),
+  });
+}
+
 function cmdDig() {
   const target = args[1];
   if (!target) {
@@ -2113,6 +2172,7 @@ Commands:
   claim <id> --release       Release a claim
   claim --list        Show all claims with expiry status
   import --from speckit <file.md> --id <dag-id>  Parse tasks.md → roadmap DAG
+  report                      Aggregate validation gap report across all nodes
   trail [--last N]    Read the invocation trail (local or global)
   trail --global      Cross-project trail (~/.roadmap/trail.jsonl)
   trail --repo <name> Filter trail by repo name
