@@ -124,7 +124,8 @@ async function main() {
       case 'sync':      return cmdSync(note!);
       case 'trail':     return cmdTrail();
       case 'chart':     return cmdChart();
-      case 'install':   return cmdInstall();
+      case 'install':        return cmdInstall();
+      case 'install-hooks':  return cmdInstallHooks(note!);
       case 'merge':     return await cmdMergeFrom();
       case 'retire':    return cmdRetire(note!);
       case 'claim':     return cmdClaim();
@@ -1380,23 +1381,43 @@ ${ANCHOR_END}`;
 }
 
 function cmdInstallHooks(note: string): void {
-  // Resolve hook script path relative to this script
   const scriptDir = resolve(import.meta.dirname || join(repoRoot, 'bin'));
-  const hookSrc = join(scriptDir, '..', 'hooks', 'pre-commit');
-  const hookDest = join(repoRoot, '.git', 'hooks', 'pre-commit');
+  const hooksSourceDir = join(scriptDir, '..', 'hooks');
+  const gitHooksDir = join(repoRoot, '.git', 'hooks');
   const configDest = join(repoRoot, '.roadmap', 'hook-config.json');
 
-  if (!existsSync(hookSrc)) {
-    throw new RoadmapError('NODE_NOT_FOUND', {
-      attempted: hookSrc,
-      fix: 'Hook script missing at hooks/pre-commit',
-    }, `Hook script not found: ${hookSrc}`);
+  if (!existsSync(join(repoRoot, '.git'))) {
+    json({ error: 'Not a git repository', fix: 'Run from a repo with a .git directory' });
+    process.exit(1);
   }
 
-  // Copy hook script to .git/hooks/
-  const hookContent = readFileSync(hookSrc, 'utf-8');
-  writeFileSync(hookDest, hookContent);
-  execSync(`chmod +x ${hookDest}`, { stdio: 'pipe' });
+  if (!existsSync(gitHooksDir)) mkdirSync(gitHooksDir, { recursive: true });
+
+  const hooks = ['pre-commit', 'post-commit', 'prepare-commit-msg', 'commit-msg'];
+  const installed: string[] = [];
+
+  for (const hook of hooks) {
+    const tsPath = join(hooksSourceDir, `${hook}.ts`);
+    const barePath = join(hooksSourceDir, hook);
+    const targetPath = join(gitHooksDir, hook);
+
+    if (existsSync(tsPath)) {
+      // TypeScript hook — write a shell wrapper that invokes with strip-types.
+      // The wrapper uses the absolute source path so relative imports resolve correctly.
+      const absSource = resolve(tsPath);
+      const wrapper = `#!/bin/sh\nexec node --experimental-strip-types "${absSource}" "$@"\n`;
+      writeFileSync(targetPath, wrapper);
+    } else if (existsSync(barePath)) {
+      writeFileSync(targetPath, readFileSync(barePath, 'utf-8'));
+    } else {
+      console.log(`⏭️  No source for ${hook} — skipping`);
+      continue;
+    }
+
+    execSync(`chmod +x ${targetPath}`, { stdio: 'pipe' });
+    installed.push(hook);
+    console.log(`✓ ${hook}`);
+  }
 
   // Create config if missing
   if (!existsSync(configDest)) {
@@ -1417,10 +1438,10 @@ function cmdInstallHooks(note: string): void {
     cmd: 'install-hooks',
     note,
     repo: basename(repoRoot),
-    detail: { hookDest, configDest },
+    detail: { installed, configDest },
   });
 
-  console.log(`✅ Installed pre-commit hook at ${hookDest}`);
+  console.log(`\n✅ Installed ${installed.length} hook(s): ${installed.join(', ')}`);
   console.log(`   Config: ${configDest}`);
 }
 
@@ -1910,6 +1931,7 @@ Commands:
   trail --archived    List archived global trail files
   trail --archived --read <file>  Read a specific archive
   install [path]      Install protocol into CLAUDE.md (default: .claude/CLAUDE.md)
+  install-hooks       Install git hooks (pre-commit, post-commit, commit-msg, prepare-commit-msg)
   dig [path]          Browse archived files in git history
   dig <path> --restore  Recover archived file to working tree
   help                This message
