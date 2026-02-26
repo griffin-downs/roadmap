@@ -32,7 +32,7 @@ const { note: _note, positional: args } = extractNote(rawArgs);
 const cmd = args[0] || 'help';
 
 // Commands that don't require a note
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig']);
 
 interface TrailEntry {
   ts: string;
@@ -80,6 +80,7 @@ async function main() {
       case 'trail':     return cmdTrail();
       case 'chart':     return cmdChart();
       case 'install':   return cmdInstall();
+      case 'dig':       return cmdDig();
       case 'help':
       case '--help':
       case '-h':        return cmdHelp();
@@ -497,6 +498,66 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function cmdDig() {
+  const target = args[1];
+  if (!target) {
+    // List all archived paths (files that existed in git history but not in working tree)
+    const allHistorical = execSync(
+      'git log --all --pretty=format: --name-only --diff-filter=D | sort -u | grep -v "^$" | grep -v "^node_modules/"',
+      { cwd: repoRoot, encoding: 'utf-8' },
+    ).trim().split('\n').filter(Boolean);
+
+    console.log(`📦 Archived files (${allHistorical.length} paths in git history)\n`);
+    const grouped: Record<string, string[]> = {};
+    for (const f of allHistorical) {
+      const dir = f.includes('/') ? f.split('/').slice(0, -1).join('/') : '.';
+      (grouped[dir] ??= []).push(f);
+    }
+    for (const [dir, files] of Object.entries(grouped).sort()) {
+      console.log(`  ${dir}/`);
+      for (const f of files) console.log(`    ${f}`);
+    }
+    console.log(`\nUse: roadmap dig <path> to see history`);
+    console.log(`Use: roadmap dig <path> --restore to recover to working tree`);
+    return;
+  }
+
+  if (args.includes('--restore')) {
+    // Restore file from last commit that had it
+    try {
+      const lastCommit = execSync(
+        `git log --all -1 --pretty=format:%H -- "${target}"`,
+        { cwd: repoRoot, encoding: 'utf-8' },
+      ).trim();
+      if (!lastCommit) {
+        console.log(`❌ No history found for: ${target}`);
+        process.exit(1);
+      }
+      execSync(`git checkout ${lastCommit} -- "${target}"`, { cwd: repoRoot, stdio: 'pipe' });
+      console.log(`✅ Restored ${target} from ${lastCommit.slice(0, 7)}`);
+    } catch {
+      console.log(`❌ Could not restore: ${target}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  // Show git log for a specific path
+  const log = execSync(
+    `git log --all --oneline -- "${target}"`,
+    { cwd: repoRoot, encoding: 'utf-8' },
+  ).trim();
+
+  if (!log) {
+    console.log(`❌ No history found for: ${target}`);
+    process.exit(1);
+  }
+
+  console.log(`📜 History for ${target}\n`);
+  console.log(log);
+  console.log(`\nUse: roadmap dig ${target} --restore to recover`);
+}
+
 function cmdHelp() {
   console.log(`roadmap — DAG expansion protocol CLI
 
@@ -513,15 +574,19 @@ Commands:
   trail --repo <name> Filter trail by repo name
   trail --archive     Commit trail (local) or truncate (global)
   install [path]      Install protocol into CLAUDE.md (default: .claude/CLAUDE.md)
+  dig [path]          Browse archived files in git history
+  dig <path> --restore  Recover archived file to working tree
   help                This message
 
-All commands (except help/trail/chart/install) require --note "reason".
+All commands (except help/trail/chart/install/dig) require --note "reason".
 
 Examples:
   roadmap orient --note "session start"
   roadmap chart
+  roadmap dig                         # list all archived files
+  roadmap dig docs/API.md             # show commit history
+  roadmap dig docs/API.md --restore   # recover to working tree
   roadmap install
-  roadmap install ~/.claude/CLAUDE.md
   roadmap trail --global --last 5`);
 }
 

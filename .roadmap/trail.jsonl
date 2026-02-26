@@ -1,0 +1,6 @@
+{"ts":"2026-02-26T08:56:53.905Z","cmd":"orient","note":"test","repo":"roadmap","position":"init","dagId":"roadmap-adversarial","detail":{"done":0,"remaining":98,"complete":false}}
+{"ts":"2026-02-26T08:56:53.980Z","cmd":"describe","note":"test","repo":"roadmap","position":"init","dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T08:56:54.057Z","cmd":"describe","note":"test","repo":"roadmap","position":"init","dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T08:56:54.122Z","cmd":"parallel","note":"test","repo":"roadmap","dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T08:56:54.187Z","cmd":"validate","note":"test","repo":"roadmap","dagId":"roadmap-adversarial","detail":{"nodeId":"init"}}
+{"ts":"2026-02-26T08:56:54.251Z","cmd":"validate","note":"test","repo":"roadmap","dagId":"roadmap-adversarial","detail":{"nodeId":"all"}}
