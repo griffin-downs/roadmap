@@ -1,6 +1,7 @@
-{"ts":"2026-02-26T09:23:08.719Z","cmd":"orient","note":"test","repo":"roadmap","position":"init","dagId":"roadmap-adversarial","detail":{"done":0,"remaining":98,"complete":false}}
-{"ts":"2026-02-26T09:23:08.788Z","cmd":"describe","note":"test","repo":"roadmap","position":"init","dagId":"roadmap-adversarial"}
-{"ts":"2026-02-26T09:23:08.860Z","cmd":"describe","note":"test","repo":"roadmap","position":"init","dagId":"roadmap-adversarial"}
-{"ts":"2026-02-26T09:23:08.933Z","cmd":"parallel","note":"test","repo":"roadmap","dagId":"roadmap-adversarial"}
-{"ts":"2026-02-26T09:23:08.999Z","cmd":"validate","note":"test","repo":"roadmap","dagId":"roadmap-adversarial","detail":{"nodeId":"init"}}
-{"ts":"2026-02-26T09:23:09.071Z","cmd":"validate","note":"test","repo":"roadmap","dagId":"roadmap-adversarial","detail":{"nodeId":"all"}}
+{"ts":"2026-02-26T09:58:01.882Z","cmd":"orient","note":"test","repo":"roadmap","position":"fix-reconcile","dagId":"roadmap-adversarial","detail":{"done":9,"remaining":95,"complete":false}}
+{"ts":"2026-02-26T09:58:01.976Z","cmd":"describe","note":"test","repo":"roadmap","position":"init","dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T09:58:02.055Z","cmd":"describe","note":"test","repo":"roadmap","position":"init","dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T09:58:02.129Z","cmd":"parallel","note":"test","repo":"roadmap","dagId":"roadmap-adversarial"}
+{"ts":"2026-02-26T09:58:02.199Z","cmd":"validate","note":"test","repo":"roadmap","dagId":"roadmap-adversarial","detail":{"nodeId":"init"}}
+{"ts":"2026-02-26T09:58:02.268Z","cmd":"validate","note":"test","repo":"roadmap","dagId":"roadmap-adversarial","detail":{"nodeId":"all"}}
+{"ts":"2026-02-26T09:58:08.281Z","cmd":"orient","note":"git-library + consumer-categories added","repo":"roadmap","position":"fix-reconcile","dagId":"roadmap-adversarial","detail":{"done":9,"remaining":95,"complete":false}}
