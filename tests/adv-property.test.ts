@@ -167,7 +167,7 @@ describe('P1 [regression guard]: orient() partitions order(g)', () => {
   it('done ++ [position] ++ remaining = order(g) when nothing exists', () => {
     const o = orient(linear3, () => false);
     const ord = order(linear3);
-    const partition = [...o.done, o.position, ...o.remaining];
+    const partition = [...o.done, ...o.position, ...o.remaining];
 
     expect(partition.length).toBe(ord.length);
     expect([...partition].sort()).toEqual([...ord].sort());
@@ -178,7 +178,7 @@ describe('P1 [regression guard]: orient() partitions order(g)', () => {
     const have = new Set(['i.out', 'a.out']);
     const o = orient(linear3, a => have.has(a));
     const ord = order(linear3);
-    const partition = [...o.done, o.position, ...o.remaining];
+    const partition = [...o.done, ...o.position, ...o.remaining];
 
     expect(partition.length).toBe(ord.length);
     expect([...partition].sort()).toEqual([...ord].sort());
@@ -187,7 +187,7 @@ describe('P1 [regression guard]: orient() partitions order(g)', () => {
   it('done ++ [position] ++ remaining = order(g) when all exist', () => {
     const o = orient(linear3, () => true);
     const ord = order(linear3);
-    const partition = [...o.done, o.position, ...o.remaining];
+    const partition = [...o.done, ...o.position, ...o.remaining];
 
     expect(partition.length).toBe(ord.length);
     expect([...partition].sort()).toEqual([...ord].sort());
@@ -197,8 +197,9 @@ describe('P1 [regression guard]: orient() partitions order(g)', () => {
     const have = new Set(['i.out', 'a.out']);
     const o = orient(linear3, a => have.has(a));
     const ord = order(linear3);
+    const posIdx = ord.findIndex(n => o.position.includes(n));
 
-    expect(o.remaining).toEqual(ord.slice(ord.indexOf(o.position) + 1));
+    expect(o.remaining).toEqual(ord.slice(posIdx + o.position.length));
   });
 });
 
@@ -218,7 +219,7 @@ describe('P3 [regression guard]: orient() monotonicity — adding files advances
     let prevIdx = -1;
     for (const have of progression) {
       const o = orient(linear3, a => have.has(a));
-      const idx = ord.indexOf(o.position);
+      const idx = ord.findIndex(n => o.position.includes(n));
       expect(idx).toBeGreaterThanOrEqual(prevIdx);
       prevIdx = idx;
     }
@@ -228,8 +229,10 @@ describe('P3 [regression guard]: orient() monotonicity — adding files advances
     const ord = order(gateInMiddle);
     const pos0 = orient(gateInMiddle, () => false).position;
     const pos1 = orient(gateInMiddle, a => a === 'init.out').position;
+    const idx0 = ord.findIndex(n => pos0.includes(n));
+    const idx1 = ord.findIndex(n => pos1.includes(n));
 
-    expect(ord.indexOf(pos1)).toBeGreaterThanOrEqual(ord.indexOf(pos0));
+    expect(idx1).toBeGreaterThanOrEqual(idx0);
   });
 });
 

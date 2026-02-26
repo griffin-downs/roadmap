@@ -122,7 +122,7 @@ describe('ADV-MERGE: merge(g1, g2, connections) combines DAGs', () => {
 
     const merged = merge(g1, g2, [{ g1Node: 'b', g2Node: 'c', artifact: '' }]);
     const o = orient(merged, () => false);
-    const partition = [...o.done, o.position, ...o.remaining];
+    const partition = [...o.done, ...o.position, ...o.remaining];
     const ord = order(merged);
 
     expect(partition.length).toBe(ord.length);
@@ -172,7 +172,7 @@ describe('ADV-MERGE: merge(g1, g2, connections) combines DAGs', () => {
     const o = orient(merged, a => a === 'seed');
 
     // position should be term (gate is trivially done)
-    expect(m.position).toEqual(["term"]);
+    expect(o.position).toEqual(["term"]);
     expect(o.done).toContain('gate');
   });
 });

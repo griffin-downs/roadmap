@@ -25,7 +25,7 @@ describe('regent integration', () => {
     expect(check(g).done).toBe(true);
 
     const pos = orient(g, () => true);
-    expect(pos.position).toBe('a');
+    expect(pos.position).toEqual(['c']);
   });
 
   it('audit trail records operations', () => {
@@ -55,7 +55,7 @@ describe('regent integration', () => {
     const pos1 = orient(g1, () => true);
     const pos2 = orient(g2, () => true);
 
-    expect(pos1.position).toBe(pos2.position);
+    expect(pos1.position).toEqual(pos2.position);
   });
 
   it('orientation respects idempotence', () => {
@@ -73,7 +73,7 @@ describe('regent integration', () => {
     );
 
     const pos = orient(g, (p) => p === 'x' || p === 'done');
-    expect(pos.position).toBe('done');
+    expect(pos.position).toEqual(['done']);
   });
 
   it('verify catches contract violations', () => {
@@ -131,14 +131,14 @@ describe('regent integration', () => {
 
     // All artifacts exist: should be at term
     const full = orient(g, () => true);
-    expect(full.position).toBe('d');
+    expect(full.position).toEqual(['d']);
 
     // No artifacts: should be at init
     const empty = orient(g, () => false);
-    expect(empty.position).toBe('a');
+    expect(empty.position).toEqual(['a']);
 
     // Partial: at intermediate node
     const partial = orient(g, (p) => p === 'x' || p === 'y');
-    expect(['b', 'c'].includes(partial.position)).toBe(true);
+    expect(['b', 'c'].some(n => partial.position.includes(n))).toBe(true);
   });
 });

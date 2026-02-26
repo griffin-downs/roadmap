@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
-import { Checkpoint, CheckpointState, createCheckpoint, isValidCheckpointState } from './checkpoint.schema';
+import { Checkpoint, CheckpointState, createCheckpoint, isValidCheckpointState } from './checkpoint.schema.ts';
 
 /**
  * Checkpoint management: save and restore DAG execution state.
@@ -23,7 +23,7 @@ export class CheckpointManager {
    */
   async createCheckpoint(
     label: string,
-    position: string,
+    position: string[],
     artifacts: Record<string, boolean>,
   ): Promise<Checkpoint> {
     // Get current git commit
@@ -132,11 +132,11 @@ export class CheckpointManager {
   /**
    * Commit checkpoint to git.
    */
-  private commitCheckpoint(label: string, position: string): void {
+  private commitCheckpoint(label: string, position: string[]): void {
     try {
       const cpDir = path.join(this.checkpointDir, label);
       execSync(`git add ${cpDir}`, { encoding: 'utf-8' });
-      execSync(`git commit -m "checkpoint: ${label} at ${position}"`, { encoding: 'utf-8' });
+      execSync(`git commit -m "checkpoint: ${label} at ${position.join(',')}"`, { encoding: 'utf-8' });
     } catch {
       // Silently ignore commit failures
     }
@@ -145,10 +145,10 @@ export class CheckpointManager {
   /**
    * Commit restore operation to git.
    */
-  private commitRestore(label: string, position: string): void {
+  private commitRestore(label: string, position: string[]): void {
     try {
       execSync(`git add .roadmap/head.json`, { encoding: 'utf-8' });
-      execSync(`git commit -m "restore: ${label} back to ${position}"`, { encoding: 'utf-8' });
+      execSync(`git commit -m "restore: ${label} back to ${position.join(',')}"`, { encoding: 'utf-8' });
     } catch {
       // Silently ignore commit failures
     }
@@ -165,7 +165,7 @@ const defaultManager = new CheckpointManager();
  */
 export async function checkpoint(
   label: string,
-  position: string,
+  position: string[],
   artifacts: Record<string, boolean> = {},
 ): Promise<Checkpoint> {
   return defaultManager.createCheckpoint(label, position, artifacts);
@@ -208,4 +208,3 @@ Checkpoint: ${cp.label}
 `.trim();
 }
 
-export { CheckpointManager };

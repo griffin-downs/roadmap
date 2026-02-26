@@ -3,6 +3,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { execSync } from 'node:child_process';
+import { roadmapCli } from './cli-helper.ts';
 import { writeFileSync, mkdirSync, rmSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as os from 'node:os';
@@ -58,13 +59,7 @@ function createMinimalDAG(id: string, nodes: Record<string, any> = {}) {
 
 function executeCmd(cmd: string, cwd: string = repoRoot): any {
   try {
-    const output = execSync(`node --experimental-strip-types bin/roadmap.ts ${cmd}`, {
-      cwd: join(__dirname, '..'),
-      env: { ...process.env, PWD: cwd },
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-    return JSON.parse(output);
+    return JSON.parse(roadmapCli(cmd, { cwd }));
   } catch (e) {
     if (e instanceof Error && 'stdout' in e) {
       try {
@@ -129,10 +124,7 @@ describe('CLI Cross-Repo Commands', () => {
     it('accepts --format tree', () => {
       // Tree format outputs to console, not JSON
       // Just verify the command executes without error
-      execSync(`node --experimental-strip-types bin/roadmap.ts sync --format tree --note "test"`, {
-        cwd: join(__dirname, '..'),
-        env: { ...process.env, PWD: tmpDir },
-      });
+      roadmapCli('sync --format tree --note "test"', { cwd: tmpDir });
     });
 
     it('rejects invalid format', () => {

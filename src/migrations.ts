@@ -81,4 +81,3 @@ export function saveDAG(filePath: string, graph: any): void {
   fs.writeFileSync(filePath, JSON.stringify(graph, null, 2));
 }
 
-export { CURRENT_VERSION };

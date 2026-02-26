@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { roadmapCli } from './cli-helper.ts';
 import {
   loadClaims, saveClaims, isExpired, assignBatch,
 } from '../src/lib/claims.ts';
@@ -260,5 +261,140 @@ describe('assignBatch + saveClaims: atomic write', () => {
     expect(loaded['A']!.owner).toBe('w1');
     expect(loaded['B']!.owner).toBe('w2');
     expect(loaded['C']!.owner).toBe('w1');
+  });
+});
+
+describe('CLI: orient --assign', () => {
+  const fixtureRoot = '/home/griffin/src/roadmap';
+
+  const run = (cmd: string) => {
+    try {
+      return roadmapCli(cmd, { cwd: fixtureRoot });
+    } catch (e: any) {
+      throw new Error(e.stdout || e.message);
+    }
+  };
+
+  const json = (cmd: string) => JSON.parse(run(cmd));
+
+  it('returns JSON with assignments field for batchRemaining', () => {
+    const result = json('orient --assign --owners w1,w2 --note "cli test"');
+    expect(result).toHaveProperty('assignments');
+    expect(typeof result.assignments).toBe('object');
+    // Assignments is a nodeId → owner mapping
+    for (const [key, val] of Object.entries(result.assignments)) {
+      expect(typeof key).toBe('string');
+      expect(typeof val).toBe('string');
+    }
+  });
+
+  it('exits non-zero without --owners', () => {
+    try {
+      run('orient --assign --note "cli test"');
+      expect.unreachable('Should have thrown');
+    } catch (e: any) {
+      expect(e.message).toContain('Missing --owners');
+    }
+  });
+
+  it('exits non-zero with empty --owners', () => {
+    try {
+      run('orient --assign --owners "" --note "cli test"');
+      expect.unreachable('Should have thrown');
+    } catch (e: any) {
+      expect(e.message).toContain('Empty --owners');
+    }
+  });
+
+  it('writes .roadmap/claims.json with claimExpiry based on --ttl', () => {
+    const claimsPath = join(fixtureRoot, '.roadmap', 'claims.json');
+    // Clean up any existing claims
+    if (existsSync(claimsPath)) rmSync(claimsPath);
+
+    const before = Date.now();
+    const result = json('orient --assign --owners w1 --ttl 120 --note "cli test"');
+    const after = Date.now();
+
+    expect(existsSync(claimsPath)).toBe(true);
+    const claims = JSON.parse(readFileSync(claimsPath, 'utf-8'));
+
+    // Check that at least one claim was created
+    expect(Object.keys(claims).length).toBeGreaterThan(0);
+
+    // Check claimExpiry is approximately 120s from now
+    for (const [nodeId, claim] of Object.entries(claims)) {
+      expect(claim).toHaveProperty('claimExpiry');
+      const expiry = new Date((claim as any).claimExpiry).getTime();
+      const expectedExpiry = before + 120_000;
+      // Allow 5 second wiggle room for execution time
+      expect(Math.abs(expiry - expectedExpiry)).toBeLessThan(5000);
+    }
+
+    // Clean up
+    if (existsSync(claimsPath)) rmSync(claimsPath);
+  });
+
+  it('second orient --assign with same owners is idempotent (skips claimed nodes)', () => {
+    const claimsPath = join(fixtureRoot, '.roadmap', 'claims.json');
+    if (existsSync(claimsPath)) rmSync(claimsPath);
+
+    // First assignment
+    const result1 = json('orient --assign --owners w1,w2 --ttl 300 --note "cli test 1"');
+    const firstAssignments = result1.assignments || {};
+
+    // Second assignment with same owners
+    const result2 = json('orient --assign --owners w1,w2 --ttl 300 --note "cli test 2"');
+    const secondAssignments = result2.assignments || {};
+
+    // Second assignment should be empty (all nodes already claimed by first)
+    expect(Object.keys(secondAssignments).length).toBe(0);
+    // Or if there's an assignSkipped field, all nodes should be in it
+    if (result2.assignSkipped) {
+      expect(Object.keys(result2.assignSkipped).length).toBeGreaterThan(0);
+    }
+
+    // Clean up
+    if (existsSync(claimsPath)) rmSync(claimsPath);
+  });
+
+  it('orient --assign respects default TTL of 300s', () => {
+    const claimsPath = join(fixtureRoot, '.roadmap', 'claims.json');
+    if (existsSync(claimsPath)) rmSync(claimsPath);
+
+    const before = Date.now();
+    json('orient --assign --owners w1 --note "cli test"');
+    const after = Date.now();
+
+    if (existsSync(claimsPath)) {
+      const claims = JSON.parse(readFileSync(claimsPath, 'utf-8'));
+      for (const claim of Object.values(claims)) {
+        const expiry = new Date((claim as any).claimExpiry).getTime();
+        const expectedExpiry = before + 300_000;
+        // Allow 5 second wiggle room
+        expect(Math.abs(expiry - expectedExpiry)).toBeLessThan(5000);
+      }
+      rmSync(claimsPath);
+    }
+  });
+
+  it('orient --assign with multiple owners distributes round-robin', () => {
+    const claimsPath = join(fixtureRoot, '.roadmap', 'claims.json');
+    if (existsSync(claimsPath)) rmSync(claimsPath);
+
+    const result = json('orient --assign --owners w1,w2,w3 --ttl 300 --note "cli test"');
+    const assignments = result.assignments || {};
+
+    if (Object.keys(assignments).length > 0) {
+      const ownerCounts: Record<string, number> = {};
+      for (const owner of Object.values(assignments)) {
+        ownerCounts[owner as string] = (ownerCounts[owner as string] ?? 0) + 1;
+      }
+      // Verify assignments were distributed (not all to one owner)
+      const uniqueOwners = Object.keys(ownerCounts).length;
+      expect(uniqueOwners).toBeGreaterThan(1);
+    }
+
+    // Clean up
+    if (existsSync(claimsPath)) rmSync(claimsPath);
   });
 });

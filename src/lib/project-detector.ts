@@ -7,6 +7,7 @@
 
 import { readProjectMetadata } from './project-metadata.schema.ts';
 import type { ProjectType } from './project-metadata.schema.ts';
+export type { ProjectType };
 
 export async function getProjectType(repoRoot: string): Promise<ProjectType | null> {
   // Read .roadmap.json if it exists

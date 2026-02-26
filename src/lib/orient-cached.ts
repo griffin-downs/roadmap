@@ -65,6 +65,7 @@ export async function orientCached<T extends string>(
         produces: batchProduces,
         consumes: batchConsumes,
         remaining: [],
+        preGate: [],
       };
     }
   }

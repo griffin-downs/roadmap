@@ -173,8 +173,7 @@ export class AuditTrail {
       return content
         .split('\n')
         .filter((line) => line.trim())
-        .map((line) => JSON.parse(line) as AuditEntry)
-        .catch(() => []) as AuditEntry[];
+        .map((line) => JSON.parse(line) as AuditEntry);
     } catch {
       return [];
     }
@@ -222,4 +221,3 @@ export function archiveTrail(): void {
   defaultTrail.archive();
 }
 
-export { AuditTrail };
