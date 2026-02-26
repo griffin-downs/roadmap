@@ -1,5 +1,5 @@
 {
-  "lastCommit": "58e86d928d73c304ff57c3aa03b42d789dfe2f0a",
-  "timestamp": "2026-02-26T15:46:52.766Z",
-  "message": "roadmap: per-node claims for parallel batch execution"
+  "lastCommit": "1a6acda56828c6033bcbc28b1c824f92ee9fcd40",
+  "timestamp": "2026-02-26T15:52:54.375Z",
+  "message": "roadmap: rotate global trail to archive on --archive"
 }

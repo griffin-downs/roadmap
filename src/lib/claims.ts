@@ -43,6 +43,110 @@ export function activeClaims(store: ClaimStore, now = new Date()): ClaimStore {
   return out;
 }
 
+// --- assignBatch: round-robin assign batchRemaining to owners ---
+
+export interface ConflictPair {
+  file: string;
+  writers: string[];
+}
+
+export interface AssignResult {
+  assignments: Record<string, string>;  // nodeId → owner
+  skipped: Record<string, string>;      // nodeId → reason
+}
+
+/**
+ * Round-robin assign nodes to owners, respecting existing claims and conflicts.
+ * - Skips nodes with active (non-expired) claims
+ * - Avoids co-assigning conflicting nodes to the same owner
+ * - All new claims returned as a merged store (caller writes atomically)
+ */
+export function assignBatch(
+  batchRemaining: readonly string[],
+  owners: readonly string[],
+  existingStore: ClaimStore,
+  conflicts: readonly ConflictPair[],
+  ttlSeconds: number,
+  now = new Date(),
+): { store: ClaimStore; result: AssignResult } {
+  if (owners.length === 0) throw new Error('--owners must be non-empty');
+
+  const store: ClaimStore = { ...existingStore };
+  const assignments: Record<string, string> = {};
+  const skipped: Record<string, string> = {};
+
+  // Build conflict index: nodeId → set of nodeIds it conflicts with
+  const conflictIndex = new Map<string, Set<string>>();
+  for (const c of conflicts) {
+    for (const w of c.writers) {
+      if (!conflictIndex.has(w)) conflictIndex.set(w, new Set());
+      for (const other of c.writers) {
+        if (other !== w) conflictIndex.get(w)!.add(other);
+      }
+    }
+  }
+
+  // Track which nodes are assigned to each owner (for conflict checks)
+  const ownerNodes = new Map<string, Set<string>>();
+  for (const o of owners) ownerNodes.set(o, new Set());
+
+  let robin = 0;
+  const claimedAt = now.toISOString();
+  const claimExpiry = new Date(now.getTime() + ttlSeconds * 1000).toISOString();
+
+  for (const nodeId of batchRemaining) {
+    // Skip nodes with active claims
+    const existing = store[nodeId];
+    if (existing && !isExpired(existing, now)) {
+      skipped[nodeId] = `active claim by ${existing.owner}`;
+      // Track existing claim owner for conflict awareness
+      const existingOwnerSet = ownerNodes.get(existing.owner);
+      if (existingOwnerSet) existingOwnerSet.add(nodeId);
+      continue;
+    }
+
+    // Find a non-conflicting owner via round-robin
+    const conflictsOf = conflictIndex.get(nodeId);
+    let assigned = false;
+
+    for (let attempt = 0; attempt < owners.length; attempt++) {
+      const candidateOwner = owners[(robin + attempt) % owners.length];
+      const candidateNodes = ownerNodes.get(candidateOwner)!;
+
+      // Check if assigning nodeId to candidateOwner creates a conflict
+      let hasConflict = false;
+      if (conflictsOf) {
+        for (const conflictNode of conflictsOf) {
+          if (candidateNodes.has(conflictNode)) {
+            hasConflict = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasConflict) {
+        assignments[nodeId] = candidateOwner;
+        store[nodeId] = { owner: candidateOwner, claimedAt, claimExpiry };
+        candidateNodes.add(nodeId);
+        robin = (robin + attempt + 1) % owners.length;
+        assigned = true;
+        break;
+      }
+    }
+
+    if (!assigned) {
+      // All owners conflict — assign to round-robin default anyway, note the conflict
+      const fallbackOwner = owners[robin % owners.length];
+      assignments[nodeId] = fallbackOwner;
+      store[nodeId] = { owner: fallbackOwner, claimedAt, claimExpiry };
+      ownerNodes.get(fallbackOwner)!.add(nodeId);
+      robin = (robin + 1) % owners.length;
+    }
+  }
+
+  return { store, result: { assignments, skipped } };
+}
+
 export interface ClaimAnnotation extends NodeClaim {
   expired: boolean;
 }
