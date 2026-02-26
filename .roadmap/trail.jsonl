@@ -1,6 +1,3 @@
-{"ts":"2026-02-26T10:17:30.397Z","cmd":"orient","note":"bootstrap-test complete","repo":"roadmap","position":"atomic-modify-design","dagId":"roadmap-adversarial","detail":{"done":42,"remaining":62,"complete":false}}
-{"ts":"2026-02-26T10:18:14.173Z","cmd":"orient","note":"atomic-modify-design complete","repo":"roadmap","position":"checkpoint-spec","dagId":"roadmap-adversarial","detail":{"done":45,"remaining":59,"complete":false}}
-{"ts":"2026-02-26T10:18:40.659Z","cmd":"orient","note":"checkpoint-spec complete","repo":"roadmap","position":"audit-spec","dagId":"roadmap-adversarial","detail":{"done":46,"remaining":58,"complete":false}}
-{"ts":"2026-02-26T10:19:08.967Z","cmd":"orient","note":"audit-spec complete","repo":"roadmap","position":"checkpoint-impl","dagId":"roadmap-adversarial","detail":{"done":47,"remaining":57,"complete":false}}
-{"ts":"2026-02-26T10:19:24.910Z","cmd":"orient","note":"checkpoint-impl complete","repo":"roadmap","position":"audit-impl","dagId":"roadmap-adversarial","detail":{"done":48,"remaining":56,"complete":false}}
-{"ts":"2026-02-26T10:20:14.315Z","cmd":"orient","note":"audit-impl complete","repo":"roadmap","position":"regent-integration","dagId":"roadmap-adversarial","detail":{"done":49,"remaining":55,"complete":false}}
+{"ts":"2026-02-26T10:20:41.010Z","cmd":"orient","note":"regent-integration complete","repo":"roadmap","position":"version-spec","dagId":"roadmap-adversarial","detail":{"done":51,"remaining":53,"complete":false}}
+{"ts":"2026-02-26T10:21:02.643Z","cmd":"orient","note":"version-spec complete","repo":"roadmap","position":"version-migrations","dagId":"roadmap-adversarial","detail":{"done":52,"remaining":52,"complete":false}}
+{"ts":"2026-02-26T10:21:16.128Z","cmd":"orient","note":"version-migrations complete — 50%+ milestone","repo":"roadmap","position":"project-metadata-schema","dagId":"roadmap-adversarial","detail":{"done":55,"remaining":49,"complete":false}}
