@@ -4,7 +4,7 @@
 // @exports (CLI binary — no programmatic exports)
 // @entry bin/roadmap
 
-import { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
@@ -16,7 +16,7 @@ import { fileExists } from '../src/predicates.ts';
 import { RoadmapError } from '../src/errors.ts';
 import { crossOrient } from '../src/lib/cross-orient.ts';
 import { discoverDependencies, resolveSiblingPath } from '../src/lib/dependency-resolver.ts';
-import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims } from '../src/lib/claims.ts';
+import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, assignBatch } from '../src/lib/claims.ts';
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 
@@ -178,6 +178,38 @@ async function cmdOrient(note: string) {
   if (Object.keys(batchModes).length) result.planNodes = batchModes;
   if (Object.keys(claimAnnotations).length) result.claims = claimAnnotations;
   if (pos.preGate.length) result.preGate = pos.preGate;
+
+  // --assign: round-robin assign batchRemaining to owners
+  if (args.includes('--assign')) {
+    const ownersIdx = args.indexOf('--owners');
+    if (ownersIdx === -1 || !args[ownersIdx + 1]) {
+      json({ error: 'Missing --owners', fix: 'roadmap orient --assign --owners w1,w2,w3 --note "reason"' });
+      process.exit(1);
+    }
+    const owners = args[ownersIdx + 1].split(',').filter(Boolean);
+    if (owners.length === 0) {
+      json({ error: 'Empty --owners list' });
+      process.exit(1);
+    }
+    const ttlIdx = args.indexOf('--ttl');
+    const ttlSeconds = ttlIdx !== -1 ? parseInt(args[ttlIdx + 1] ?? '300', 10) : 300;
+    if (isNaN(ttlSeconds) || ttlSeconds <= 0) {
+      json({ error: 'Invalid --ttl value; must be a positive integer (seconds)' });
+      process.exit(1);
+    }
+
+    const conflicts = batchConflicts(dag);
+    const currentBatchConflicts = conflicts
+      .filter(c => c.writers.some(w => pos.batchRemaining.includes(w)))
+      .map(c => ({ file: c.file, writers: c.writers }));
+
+    const { store: newStore, result: assignResult } = assignBatch(
+      pos.batchRemaining, owners, claimStore, currentBatchConflicts, ttlSeconds,
+    );
+    saveClaims(repoRoot, newStore);
+    result.assignments = assignResult.assignments;
+    if (Object.keys(assignResult.skipped).length) result.assignSkipped = assignResult.skipped;
+  }
 
   // Include blockedBy if there are blocking deps
   if (pos.blockedBy.length) {
@@ -549,10 +581,52 @@ function cmdTrail() {
         json({ archived: true, source, entries: lines.length, commit: hash });
       }
     } else {
-      // Global trail: just truncate (no git repo to commit to)
+      // Global trail: rotate to timestamped file then truncate
+      const archiveDir = join(globalTrailDir, 'archive');
+      if (!existsSync(archiveDir)) mkdirSync(archiveDir, { recursive: true });
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const archivePath = join(archiveDir, `trail-${stamp}.jsonl`);
+      writeFileSync(archivePath, readFileSync(trailPath, 'utf-8'));
       writeFileSync(trailPath, '');
-      json({ archived: true, source, entries: lines.length });
+      json({ archived: true, source, entries: lines.length, archivePath });
     }
+    return;
+  }
+
+  // --archived: list or read rotated global trail files
+  if (args.includes('--archived')) {
+    const archiveDir = join(globalTrailDir, 'archive');
+    if (!existsSync(archiveDir)) {
+      json({ archives: [], count: 0 });
+      return;
+    }
+    const files = readdirSync(archiveDir)
+      .filter((f: string) => f.endsWith('.jsonl'))
+      .sort();
+
+    // If a specific file index is given, read it
+    const readIdx = args.indexOf('--read');
+    if (readIdx !== -1) {
+      const target = args[readIdx + 1];
+      const match = files.find((f: string) => f === target || f.includes(target));
+      if (!match) {
+        json({ error: `No archive matching "${target}"`, available: files });
+        process.exit(1);
+      }
+      const archLines = readFileSync(join(archiveDir, match), 'utf-8').trim().split('\n').filter(Boolean);
+      const archEntries = archLines.map((l: string) => JSON.parse(l));
+      json({ file: match, entries: archEntries, count: archEntries.length });
+      return;
+    }
+
+    // List archives with entry counts and date ranges
+    const summaries = files.map((f: string) => {
+      const content = readFileSync(join(archiveDir, f), 'utf-8').trim().split('\n').filter(Boolean);
+      const first = content.length ? JSON.parse(content[0]).ts : null;
+      const last = content.length ? JSON.parse(content[content.length - 1]).ts : null;
+      return { file: f, entries: content.length, from: first, to: last };
+    });
+    json({ archives: summaries, count: files.length });
     return;
   }
 
@@ -1298,7 +1372,9 @@ Commands:
   trail [--last N]    Read the invocation trail (local or global)
   trail --global      Cross-project trail (~/.roadmap/trail.jsonl)
   trail --repo <name> Filter trail by repo name
-  trail --archive     Commit trail (local) or truncate (global)
+  trail --archive     Commit trail (local) or rotate to archive (global)
+  trail --archived    List archived global trail files
+  trail --archived --read <file>  Read a specific archive
   install [path]      Install protocol into CLAUDE.md (default: .claude/CLAUDE.md)
   dig [path]          Browse archived files in git history
   dig <path> --restore  Recover archived file to working tree
