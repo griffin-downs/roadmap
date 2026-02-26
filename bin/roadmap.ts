@@ -20,6 +20,9 @@ import { discoverDependencies, resolveSiblingPath } from '../src/lib/dependency-
 import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, assignBatch } from '../src/lib/claims.ts';
 import { parseTasksMd, tasksToDAG } from '../src/lib/speckit-import.ts';
 import { buildSpawnPlan } from '../src/lib/spawn-plan.ts';
+import { buildScaffold } from '../src/lib/scaffold.ts';
+import { buildClusters } from '../src/lib/cluster.ts';
+import { buildSchedule } from '../src/lib/schedule.ts';
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 
@@ -177,6 +180,9 @@ async function main() {
       case 'claim':     return cmdClaim();
       case 'import':    return cmdImport(note!);
       case 'report':    return await cmdReport(note!);
+      case 'scaffold':  return await cmdScaffold(note!);
+      case 'cluster':   return cmdCluster(note!);
+      case 'schedule':  return cmdSchedule(note!);
       case 'show':      return cmdShow();
       case 'commit':    return cmdCommit(note!);
       case 'complete':  return await cmdComplete(note!);
@@ -1347,10 +1353,14 @@ async function cmdComplete(note: string) {
     ? orient(dag, fileExists(repoRoot), retiredSet())
     : posAfter;
 
+  // 5. Surface newly unblocked nodes — downstream nodes whose deps are now all satisfied.
+  const nowReady = readyNodes(dag, fileExists(repoRoot), retiredSet());
+  const unblocked = nowReady.map(n => n.id);
+
   recordTrail({
     ts: new Date().toISOString(), cmd: 'complete', note,
     repo: basename(repoRoot), position: finalPos.position, level: finalPos.level, dagId: dag.id,
-    detail: { nodeId, owner, checkpointId: checkpoint.id, batchComplete: posAfter.batchComplete, advanced: !!advanced, skipValidate },
+    detail: { nodeId, owner, checkpointId: checkpoint.id, batchComplete: posAfter.batchComplete, advanced: !!advanced, skipValidate, unblocked },
   });
 
   json({
@@ -1360,6 +1370,7 @@ async function cmdComplete(note: string) {
     position: finalPos.position,
     batchComplete: finalPos.batchComplete,
     batchRemaining: finalPos.batchRemaining,
+    unblocked,
     ...(advanced ? { advanced } : {}),
     ...(posAfter.batchComplete && !advanced && !noAdvance ? { hint: 'roadmap advance --note "batch done"' } : {}),
   });
@@ -1989,6 +2000,67 @@ async function cmdReport(note: string) {
     noRules: noRules.length,
     failures: failed.map(r => ({ nodeId: r.nodeId, failedCount: r.checks.filter((c: any) => !c.passed).length, checks: r.checks.filter((c: any) => !c.passed) })),
   });
+}
+
+// --- scaffold: generate typed stubs for all DAG produces ---
+async function cmdScaffold(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+  const dag = loadDAG();
+  const buildCheck = args.includes('--build-check');
+  const dryRun = args.includes('--dry-run');
+  const result = await buildScaffold(dag, repoRoot, { buildCheck, dryRun });
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'scaffold', note,
+    repo: basename(repoRoot), position: ['scaffold'], level: -1, dagId: dag.id,
+    detail: { filesGenerated: result.filesGenerated, nodesScaffolded: result.nodesScaffolded, dryRun, buildCheck },
+  });
+
+  json(result);
+}
+
+// --- cluster: compute context clusters from data flow graph ---
+function cmdCluster(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+  const dag = loadDAG();
+  const maxSizeIdx = args.indexOf('--max-size');
+  const maxSize = maxSizeIdx !== -1 ? parseInt(args[maxSizeIdx + 1] ?? '8', 10) : undefined;
+  const result = buildClusters(dag, { maxSize });
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'cluster', note,
+    repo: basename(repoRoot), position: ['cluster'], level: -1, dagId: dag.id,
+    detail: { clusterCount: result.clusters.length, agentCount: result.agentCount },
+  });
+
+  json(result);
+}
+
+// --- schedule: compute spawn order from clusters + critical path ---
+function cmdSchedule(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+  const dag = loadDAG();
+  const maxSizeIdx = args.indexOf('--max-size');
+  const maxSize = maxSizeIdx !== -1 ? parseInt(args[maxSizeIdx + 1] ?? '8', 10) : undefined;
+  const clusters = buildClusters(dag, { maxSize });
+  const result = buildSchedule(dag, clusters);
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'schedule', note,
+    repo: basename(repoRoot), position: ['schedule'], level: -1, dagId: dag.id,
+    detail: { pipelineDepth: result.pipelineDepth, maxConcurrency: result.maxConcurrency },
+  });
+
+  json(result);
 }
 
 function cmdDig() {
