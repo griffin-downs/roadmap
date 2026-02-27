@@ -295,6 +295,23 @@ async function cmdOrient(note: string | undefined) {
       process.exit(1);
     }
 
+    // Load strategy if available
+    const strategyPath = join(repoRoot, '.roadmap', 'strategy.json');
+    let strategyInfo: any = null;
+    if (existsSync(strategyPath)) {
+      try {
+        strategyInfo = JSON.parse(readFileSync(strategyPath, 'utf-8'));
+        result.strategy = {
+          selected: strategyInfo.selected,
+          estimates: strategyInfo.estimates,
+          gateProfile: strategyInfo.gateProfile,
+        };
+      } catch (e) {
+        // Strategy file exists but unreadable — log warning but continue
+        console.error(`[warn] strategy.json unreadable: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+
     // When batchRemaining is empty but position has nodes (e.g. term with artifacts
     // present but validation not yet run), fall back to position as the assignable set.
     const assignableNodes = pos.batchRemaining.length > 0 ? pos.batchRemaining : pos.position;
@@ -3282,7 +3299,7 @@ async function cmdPlanGallery(note: string) {
   const headPath = join(repoRoot, '.roadmap', 'head.json');
   const headPrevPath = join(repoRoot, '.roadmap', 'head-prev.json');
 
-  // --evaluate: record LLM judgments and commit selected candidate
+  // --evaluate: record LLM judgments and store selected strategy (metadata, not DAG replacement)
   if (evaluateJson) {
     type Judgment = { statement: string; confidence: number; reasoning: string; evidence?: string[] };
     let judgments: Judgment[];
@@ -3334,15 +3351,21 @@ async function cmdPlanGallery(note: string) {
     };
     appendFileSync(join(evalDir, 'plan-selection.jsonl'), JSON.stringify(selectionRecord) + '\n', 'utf-8');
 
-    // Backup existing head.json if present
-    if (existsSync(headPath)) {
-      writeFileSync(headPrevPath, readFileSync(headPath, 'utf-8'));
-    }
-
-    // Write selected candidate dag as head.json
+    // Store strategy choice as metadata (preserves current DAG in head.json)
     const roadmapDir = join(repoRoot, '.roadmap');
     if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
-    writeFileSync(headPath, JSON.stringify(selected.dag, null, 2) + '\n');
+
+    const strategyPath = join(roadmapDir, 'strategy.json');
+    const strategy = {
+      selected: selected.id,
+      runId,
+      judgments,
+      specSource,
+      ts: new Date().toISOString(),
+      gateProfile: selected.gateProfile,
+      estimates: selected.estimates,
+    };
+    writeFileSync(strategyPath, JSON.stringify(strategy, null, 2) + '\n');
 
     recordTrail({
       ts: new Date().toISOString(), cmd: 'plan --gallery --evaluate', note,
@@ -3350,11 +3373,11 @@ async function cmdPlanGallery(note: string) {
       detail: { selectedId: selected.id, runId, specSource, confidence: Math.min(...judgments.map(j => j.confidence)) },
     });
 
-    json({ selected: selected.id, committed: true, headPath: '.roadmap/head.json' });
+    json({ selected: selected.id, stored: true, strategyPath: '.roadmap/strategy.json', headPreserved: true });
     return;
   }
 
-  // --select: manual override, same as --evaluate but no confidence requirement
+  // --select: manual strategy selection (stores metadata, preserves current DAG)
   if (selectId) {
     const candidates = buildGallery(specSource, evalDir);
     const selected = candidates.find(c => c.id === selectId);
@@ -3377,15 +3400,21 @@ async function cmdPlanGallery(note: string) {
     };
     appendFileSync(join(evalDir, 'plan-selection.jsonl'), JSON.stringify(selectionRecord) + '\n', 'utf-8');
 
-    // Backup existing head.json if present
-    if (existsSync(headPath)) {
-      writeFileSync(headPrevPath, readFileSync(headPath, 'utf-8'));
-    }
-
-    // Write selected candidate dag as head.json
+    // Store strategy choice as metadata (preserves current DAG in head.json)
     const roadmapDir = join(repoRoot, '.roadmap');
     if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
-    writeFileSync(headPath, JSON.stringify(selected.dag, null, 2) + '\n');
+
+    const strategyPath = join(roadmapDir, 'strategy.json');
+    const strategy = {
+      selected: selected.id,
+      runId,
+      manualOverride: true,
+      specSource,
+      ts: new Date().toISOString(),
+      gateProfile: selected.gateProfile,
+      estimates: selected.estimates,
+    };
+    writeFileSync(strategyPath, JSON.stringify(strategy, null, 2) + '\n');
 
     recordTrail({
       ts: new Date().toISOString(), cmd: 'plan --gallery --select', note,
@@ -3393,7 +3422,7 @@ async function cmdPlanGallery(note: string) {
       detail: { selectedId: selected.id, runId, specSource, manualOverride: true },
     });
 
-    json({ selected: selected.id, committed: true, headPath: '.roadmap/head.json' });
+    json({ selected: selected.id, stored: true, strategyPath: '.roadmap/strategy.json', headPreserved: true });
     return;
   }
 
