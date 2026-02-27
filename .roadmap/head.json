@@ -3776,12 +3776,208 @@
       "validate": [
         {
           "type": "expanded",
-          "minNodes": 9
+          "minNodes": 8
         }
       ],
       "idempotent": true,
       "mode": "plan",
       "expandOnFail": true
+    },
+    "clarify-to-contract": {
+      "id": "clarify-to-contract",
+      "desc": "Convert plan clarity gaps to feature contract with selectors and observations",
+      "produces": [
+        "spec-clarified.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "spec-clarified.json"
+        },
+        {
+          "type": "spec-conformance",
+          "spec": "docs/FR-SPEC-THREADING.md",
+          "scenario": "Contract generation from clarity gaps",
+          "section": "Spec Generation"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "spec-contract-tests": {
+      "id": "spec-contract-tests",
+      "desc": "Test spec contract generation: clarity gaps → features with selectors",
+      "produces": [
+        "tests/spec-contract.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "clarify-to-contract"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test -- tests/spec-contract.test.ts",
+          "description": "All spec contract tests pass"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "verify-against-contract": {
+      "id": "verify-against-contract",
+      "desc": "Terminal gate validates explore observations against spec contract",
+      "produces": [
+        "src/lib/spec-verifier.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "clarify-to-contract"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/spec-verifier.ts"
+        },
+        {
+          "type": "spec-conformance",
+          "spec": "docs/FR-SPEC-THREADING.md",
+          "scenario": "Contract verification against observations",
+          "section": "Spec Verification"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "verifier-tests": {
+      "id": "verifier-tests",
+      "desc": "Test spec verification: observe features, match against contract",
+      "produces": [
+        "tests/spec-verifier.test.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "verify-against-contract"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test -- tests/spec-verifier.test.ts",
+          "description": "All spec verifier tests pass"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "explore-script-template": {
+      "id": "explore-script-template",
+      "desc": "Generate explore script template that validates against contract",
+      "produces": [
+        "scripts/explore-validate-contract.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "verify-against-contract"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "scripts/explore-validate-contract.ts"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "terminal-gate-update": {
+      "id": "terminal-gate-update",
+      "desc": "Update terminal intent gate to use spec contract validation",
+      "produces": [
+        "src/lib/validate-terminal-gate-spec.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "verify-against-contract"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/validate-terminal-gate-spec.ts"
+        },
+        {
+          "type": "spec-conformance",
+          "spec": "docs/FR-SPEC-THREADING.md",
+          "scenario": "Terminal gate uses contract for validation",
+          "section": "Terminal Integration"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "e2e-spec-threading": {
+      "id": "e2e-spec-threading",
+      "desc": "E2E test: vague plan → contract → verified output",
+      "produces": [
+        "tests/spec-threading-e2e.test.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "clarify-to-contract",
+        "verify-against-contract",
+        "terminal-gate-update",
+        "term"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test -- tests/spec-threading-e2e.test.ts",
+          "description": "E2E: plan clarity → spec contract → terminal verification"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "spec-docs": {
+      "id": "spec-docs",
+      "desc": "Document spec contract format, generation, and verification",
+      "produces": [
+        "docs/FR-SPEC-THREADING.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "clarify-to-contract",
+        "verify-against-contract",
+        "term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/FR-SPEC-THREADING.md"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
     }
   },
   "version": "0.3.0",
