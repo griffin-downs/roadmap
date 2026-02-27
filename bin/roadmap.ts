@@ -23,6 +23,7 @@ import { buildSpawnPlan } from '../src/lib/spawn-plan.ts';
 import { buildScaffold } from '../src/lib/scaffold.ts';
 import { buildClusters } from '../src/lib/cluster.ts';
 import { buildSchedule } from '../src/lib/schedule.ts';
+import { propagateConstraints } from '../src/lib/propagate.ts';
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 
@@ -190,6 +191,7 @@ async function main() {
       case 'diff':      return cmdDiff();
       case 'iter-id':   return cmdIterId();
       case 'dig':       return cmdDig();
+      case 'propagate': return cmdPropagate(note!);
       case 'help':
       case '--help':
       case '-h':        return cmdHelp();
@@ -281,12 +283,41 @@ async function cmdOrient(note: string | undefined) {
       .filter(c => c.writers.some(w => pos.batchRemaining.includes(w)))
       .map(c => ({ file: c.file, writers: c.writers }));
 
-    const { store: newStore, result: assignResult } = assignBatch(
-      pos.batchRemaining, owners, claimStore, currentBatchConflicts, ttlSeconds,
-    );
-    saveClaims(repoRoot, newStore);
-    result.assignments = assignResult.assignments;
-    if (Object.keys(assignResult.skipped).length) result.assignSkipped = assignResult.skipped;
+    // --by-cluster: assign clusters to owners instead of individual nodes
+    if (args.includes('--by-cluster')) {
+      const maxSizeIdx = args.indexOf('--max-size');
+      const maxSize = maxSizeIdx !== -1 ? parseInt(args[maxSizeIdx + 1] ?? '8', 10) : undefined;
+      const clusters = buildClusters(dag, { maxSize });
+      // Filter to clusters containing batchRemaining nodes
+      const remainingSet = new Set(pos.batchRemaining);
+      const activeClusters = clusters.clusters.filter(c => c.nodes.some(n => remainingSet.has(n)));
+      const clusterAssignments: Record<string, { cluster: string; nodes: string[] }> = {};
+      for (let i = 0; i < activeClusters.length; i++) {
+        const owner = owners[i % owners.length];
+        const c = activeClusters[i];
+        clusterAssignments[owner] = clusterAssignments[owner]
+          ? { ...clusterAssignments[owner], nodes: [...clusterAssignments[owner].nodes, ...c.nodes] }
+          : { cluster: c.id, nodes: [...c.nodes] };
+        // Claim all nodes in this cluster for the owner
+        for (const nodeId of c.nodes) {
+          if (!remainingSet.has(nodeId)) continue;
+          const { store: s } = assignBatch([nodeId], [owner], claimStore, [], ttlSeconds);
+          Object.assign(claimStore, s);
+        }
+      }
+      saveClaims(repoRoot, claimStore);
+      result.clusterAssignments = clusterAssignments;
+      result.activeClusters = activeClusters.map(c => ({
+        id: c.id, nodes: c.nodes, internalOrder: c.internalOrder, crossClusterDeps: c.crossClusterDeps,
+      }));
+    } else {
+      const { store: newStore, result: assignResult } = assignBatch(
+        pos.batchRemaining, owners, claimStore, currentBatchConflicts, ttlSeconds,
+      );
+      saveClaims(repoRoot, newStore);
+      result.assignments = assignResult.assignments;
+      if (Object.keys(assignResult.skipped).length) result.assignSkipped = assignResult.skipped;
+    }
   }
 
   // --ready: eager dispatch — nodes beyond current batch whose deps are met
@@ -662,6 +693,24 @@ function cmdParallel(note: string) {
 
   const showConflicts = args.includes('--conflicts');
   const conflicts = batchConflicts(dag);
+
+  // --by-cluster: show pipeline waves of clusters instead of individual nodes
+  if (args.includes('--by-cluster')) {
+    const maxSizeIdx = args.indexOf('--max-size');
+    const maxSize = maxSizeIdx !== -1 ? parseInt(args[maxSizeIdx + 1] ?? '8', 10) : undefined;
+    const clusters = buildClusters(dag, { maxSize });
+    const schedule = buildSchedule(dag, clusters);
+    json({
+      clusters: clusters.clusters.map(c => ({
+        id: c.id, nodes: c.nodes, internalOrder: c.internalOrder,
+        crossClusterDeps: c.crossClusterDeps, critical: c.critical,
+      })),
+      waves: schedule.waves,
+      pipelineDepth: schedule.pipelineDepth,
+      maxConcurrency: schedule.maxConcurrency,
+    });
+    return;
+  }
 
   const result: Record<string, any> = {
     batches: batches.map((b, i) => ({ level: i, nodes: b, count: b.length })),
@@ -1108,6 +1157,35 @@ function cmdShow() {
       status: retiredIds.has(id) ? 'retired' : doneSet.has(id) ? 'done' : pos.batchRemaining.includes(id) ? 'in-progress' : 'pending',
       ...(claim ? { claim: { owner: claim.owner, expiry: claim.claimExpiry } } : {}),
     };
+  }
+
+  // show --cluster <id> — all nodes in a cluster with internal order
+  if (args.includes('--cluster')) {
+    const clusterId = args[args.indexOf('--cluster') + 1];
+    if (!clusterId) {
+      json({ error: 'Missing cluster ID', fix: 'roadmap show --cluster <cluster-id>' });
+      process.exit(1);
+    }
+    const maxSizeIdx = args.indexOf('--max-size');
+    const maxSize = maxSizeIdx !== -1 ? parseInt(args[maxSizeIdx + 1] ?? '8', 10) : undefined;
+    const clusters = buildClusters(dag, { maxSize });
+    const cluster = clusters.clusters.find(c => c.id === clusterId);
+    if (!cluster) {
+      json({ error: `Cluster not found: ${clusterId}`, fix: `Valid clusters: ${clusters.clusters.map(c => c.id).slice(0, 10).join(', ')}...` });
+      process.exit(1);
+    }
+    const nodes = cluster.internalOrder.map(nodeToJSON).filter(Boolean);
+    json({
+      cluster: cluster.id,
+      internalOrder: cluster.internalOrder,
+      produces: cluster.produces,
+      consumes: cluster.consumes,
+      crossClusterDeps: cluster.crossClusterDeps,
+      coupling: cluster.coupling,
+      critical: cluster.critical,
+      nodes,
+    });
+    return;
   }
 
   // show --batch [level] — all nodes at a level
@@ -2031,13 +2109,32 @@ function cmdCluster(note: string) {
   const dag = loadDAG();
   const maxSizeIdx = args.indexOf('--max-size');
   const maxSize = maxSizeIdx !== -1 ? parseInt(args[maxSizeIdx + 1] ?? '8', 10) : undefined;
-  const result = buildClusters(dag, { maxSize });
+  const hubIdx = args.indexOf('--exclude-hubs');
+  const excludeHubs = hubIdx !== -1 ? parseInt(args[hubIdx + 1] ?? '3', 10) || 3 : undefined;
+  const useSolver = args.includes('--solver');
+  const result = buildClusters(dag, { maxSize, excludeHubs, useSolver });
 
   recordTrail({
     ts: new Date().toISOString(), cmd: 'cluster', note,
     repo: basename(repoRoot), position: ['cluster'], level: -1, dagId: dag.id,
-    detail: { clusterCount: result.clusters.length, agentCount: result.agentCount },
+    detail: { clusterCount: result.clusterCount, agentCount: result.agentCount, maxParallelClusters: result.maxParallelClusters, solver: result.solver ?? 'union-find', ...(result.cutWeight !== undefined ? { cutWeight: result.cutWeight } : {}), ...(result.hubFiles?.length ? { hubFiles: result.hubFiles.length } : {}) },
   });
+
+  if (args.includes('--dot')) {
+    const lines: string[] = ['digraph clusters {', '  rankdir=LR;', '  node [shape=box];'];
+    for (const c of result.clusters) {
+      const label = `${c.id}\\n${c.nodes.length} nodes${c.critical ? ' ★' : ''}`;
+      lines.push(`  "${c.id}" [label="${label}"${c.critical ? ' style=bold' : ''}];`);
+    }
+    for (const c of result.clusters) {
+      for (const dep of c.crossClusterDeps) {
+        lines.push(`  "${dep.cluster}" -> "${c.id}" [label="${dep.via.length} artifacts"];`);
+      }
+    }
+    lines.push('}');
+    console.log(lines.join('\n'));
+    return;
+  }
 
   json(result);
 }
@@ -2254,6 +2351,10 @@ Commands:
   install [path]      Install protocol into CLAUDE.md (default: .claude/CLAUDE.md)
   install-hooks       Install git hooks (pre-commit, post-commit, commit-msg, prepare-commit-msg)
   iter-id             Current loop iteration number (--increment to bump, --reset to zero)
+  propagate           Backward constraint propagation — derive upstream validate rules from downstream
+  propagate --dry-run Show what would be propagated without mutating the DAG
+  propagate --from <id>  Start propagation from a specific node (not term)
+  propagate --depth N Limit propagation hop count
   dig [path]          Browse archived files in git history
   dig <path> --restore  Recover archived file to working tree
   help                This message
@@ -2339,6 +2440,57 @@ Examples:
   roadmap trail --global --last 5
   roadmap trail --archived --read 2026-02-26
   roadmap dig docs/API.md --restore`);
+}
+
+// --- propagate: backward constraint propagation ---
+
+function cmdPropagate(note: string) {
+  const dag = loadDAG();
+  const dryRun = args.includes('--dry-run');
+  const fromIdx = args.indexOf('--from');
+  const from = fromIdx !== -1 ? args[fromIdx + 1] : undefined;
+  const depthIdx = args.indexOf('--depth');
+  const depth = depthIdx !== -1 ? parseInt(args[depthIdx + 1], 10) : undefined;
+
+  const result = propagateConstraints(dag, { dryRun, from, depth });
+
+  if (!dryRun && result.dag) {
+    const headPath = join(repoRoot, '.roadmap', 'head.json');
+    // Validate propagated DAG
+    const checkResult = check(result.dag);
+    const verifyErrors = verify(result.dag);
+    if (!checkResult.done || verifyErrors.length) {
+      throw new RoadmapError('VALIDATION_FAILED', {
+        fix: 'Propagated DAG failed validation — file a bug',
+      }, `Propagation produced invalid DAG: ${verifyErrors.length} verify errors`);
+    }
+
+    writeFileSync(headPath, JSON.stringify(result.dag, null, 2) + '\n');
+    execSync('git add .roadmap/head.json', { cwd: repoRoot, stdio: 'pipe' });
+    const msg = `roadmap: propagate — ${result.propagated} constraints across ${result.nodesAffected} nodes`;
+    execSync(`git commit -m "${msg}"`, { cwd: repoRoot, stdio: 'pipe' });
+    const hash = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
+
+    const posAfter = orient(result.dag, fileExists(repoRoot), retiredSet());
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'propagate', note, repo: basename(repoRoot),
+      position: posAfter.position, level: posAfter.level, dagId: result.dag.id,
+      detail: { propagated: result.propagated, nodesAffected: result.nodesAffected, commit: hash, dryRun: false },
+    });
+  } else {
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'propagate', note, repo: basename(repoRoot),
+      dagId: dag.id,
+      detail: { propagated: result.propagated, nodesAffected: result.nodesAffected, dryRun: true },
+    });
+  }
+
+  json({
+    propagated: result.propagated,
+    nodesAffected: result.nodesAffected,
+    constraints: result.constraints,
+    dryRun,
+  });
 }
 
 // --- Helpers ---
