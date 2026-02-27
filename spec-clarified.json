@@ -1,0 +1,45 @@
+{
+  "features": [
+    {
+      "id": "crud-add",
+      "selector": "input[placeholder*=Add]",
+      "observation": "visible",
+      "evidence": "VagueProduces gap: 'database' resolved to concrete CRUD UI — add input must be visible"
+    },
+    {
+      "id": "crud-toggle",
+      "selector": "input[type=checkbox]",
+      "observation": "interactive",
+      "evidence": "VagueProduces gap: 'database' resolved to concrete CRUD UI — toggle must be keyboard-accessible"
+    },
+    {
+      "id": "crud-list",
+      "selector": "[data-testid=item-list]",
+      "observation": "count",
+      "minCount": 1,
+      "evidence": "VagueProduces gap: 'database' resolved to concrete CRUD UI — list must render items"
+    },
+    {
+      "id": "text-contrast",
+      "selector": "body",
+      "minRatio": 4.5,
+      "observation": "contrast",
+      "evidence": "NoValidate gap: accessibility requirement — WCAG AA 4.5:1 contrast ratio"
+    },
+    {
+      "id": "auth-form",
+      "selector": "form[data-testid=auth]",
+      "observation": "visible",
+      "evidence": "BroadScope gap: 'auth and database' decomposed — auth form is independent feature"
+    }
+  ],
+  "gaps": [],
+  "confidence": 0.95,
+  "generated": "2026-02-27T05:20:00Z",
+  "source": {
+    "generator": "generateClarifiedSpec",
+    "inputGapTypes": ["VagueProduces", "NoValidate", "BroadScope"],
+    "planNodes": 5,
+    "resolvedGaps": 3
+  }
+}
