@@ -162,6 +162,123 @@ Save/restore points for risky operations.
 - Restore is destructive — confirms with user before executing.
 ```
 
+### `/roadmap-explore-write`
+
+Context injection for writing explore scripts. Presents the observation pattern library, interaction helpers, script template, and ExploreResult contract. The agent calls this once before writing an explore script — it loads the vocabulary into context.
+
+This is not a generator. It does not produce a script. It presents the patterns so the agent can compose from them.
+
+```markdown
+# /roadmap-explore-write
+
+Load the explore script pattern library. Call this before writing a runtime-explore script.
+
+## Arguments
+- `spec-statements` (optional): Intent statements the explore script should validate. If provided, the skill highlights which observation patterns are most relevant.
+
+## Steps
+1. Present the ExploreResult contract:
+   - Script reads `CDP_URL` from env
+   - Script connects via `chromium.connectOverCDP()`
+   - Script emits JSON to stdout: `{ observations: ObservationResult[] }`
+   - Each observation: `{ id, pass, evidence, value? }`
+
+2. Present the observation pattern library (from explore-helpers.ts):
+
+   | Pattern | Function | Use when |
+   |---------|----------|----------|
+   | Visibility | `checkVisible(page, selector, label)` | Element should be present and visible |
+   | Text content | `checkText(page, selector, label)` | Verify rendered text (always trims) |
+   | Computed style | `checkStyle(page, selector, property, label)` | CSS property inspection (color, font, layout) |
+   | Size / touch target | `checkSize(page, selector, minW, minH, label)` | Bounding box measurement |
+   | Count | `checkCount(page, selector, expected, label)` | Number of matching elements |
+   | Attribute | `checkAttribute(page, selector, attr, expected, label)` | ARIA, data attributes, accessibility |
+   | Class state | `checkClass(page, selector, className, label)` | Class-based state (dark mode, expanded) |
+   | Contrast | `checkContrast(page, textSel, bgSel, minRatio, label)` | Text legibility (catches white-on-white) |
+   | Overflow | `checkOverflow(page, selector, label)` | Scroll/overflow detection |
+
+3. Present the interaction library (from explore-interactions.ts):
+
+   | Pattern | Function | Use when |
+   |---------|----------|----------|
+   | Safe click | `safeClick(page, selector)` | Click with visibility guard |
+   | Type + submit | `typeAndSubmit(page, selector, text, key?)` | Form input |
+   | Drag | `drag(page, source, target, opts?)` | Mouse drag with smooth motion |
+   | Wait for element | `waitFor(page, selector, timeout?)` | Element readiness |
+   | Wait for transition | `waitForTransition(page, ms?)` | Animation/CSS transition settle |
+
+4. Present the page discovery pattern:
+   - `connectAndFindPage(cdpUrl)` → filters DevTools pages, returns app page
+   - `resetState(page)` → calls __DEMO_RESET__() if available
+
+5. Present the template script (from scripts/explore/template-explore.ts):
+   - Full working example showing all patterns in context
+   - Baseline state → observations → interactions → re-observations
+
+6. If `spec-statements` provided: highlight which patterns map to each statement.
+   - "renders correctly in both themes" → checkStyle, checkContrast, checkClass
+   - "all CRUD operations functional" → typeAndSubmit, checkCount, checkText
+   - "data persists across restart" → interaction sequence (add → close → reopen → verify)
+
+## Contract
+- This skill is read-only. It does not create files.
+- The agent writes the script after reading these patterns.
+- The script must emit ExploreResult JSON to stdout. Everything else is up to the agent.
+- Do not generate the script from the patterns. Present the vocabulary; the agent composes.
+```
+
+### `/roadmap-explore-run`
+
+Iterative explore script execution. Agent wrote a script, wants to test it against the live app. Launches app, runs script, returns observations. Agent fixes and re-runs until observations are correct.
+
+```markdown
+# /roadmap-explore-run
+
+Run an explore script against the live application and return observations.
+
+## Arguments
+- `script` (required): Path to the explore script
+- `launch` (optional): Launch command (default: inferred from package.json)
+- `port` (optional): CDP port (default: 9222)
+- `build` (optional): Build command to run before launch (default: inferred)
+- `keep-alive` (optional): Don't teardown after run — for rapid iteration
+
+## Steps
+1. If app not already running (no keep-alive from previous run):
+   a. Build if needed: `$build` or `npx electron-vite build`
+   b. Launch: `$launch --remote-debugging-port=$port`
+   c. Wait for CDP readiness (poll /json/version, timeout 10s)
+2. Run explore script: `npx tsx $script` with CDP_URL + CDP_PORT env vars
+3. Parse ExploreResult JSON from stdout
+4. Present observations:
+
+   ```
+   ## 🔬 Explore Results — validate-app.ts
+
+   ✅ input-field-visible     — element found
+   ✅ todo-added              — count: 1 (expected: 1)
+   ✅ todo-text-correct       — "Test todo"
+   ❌ text-contrast           — ratio 1.2:1 (min: 4.5:1)  ← FAILING
+   ✅ dark-mode-active        — html.dark class present
+   ❌ dark-mode-contrast      — ratio 1.0:1 (min: 4.5:1)  ← FAILING
+
+   4/6 passing · 2 failures
+   ```
+
+5. If failures exist, present diagnostic context:
+   - Which observation failed + actual value
+   - Suggest which source files likely need changes (from node's produces)
+6. If keep-alive: leave app running for next run
+7. If not keep-alive: teardown app process
+
+## Contract
+- This is for iteration, not for validation. Use /roadmap-done for formal validation.
+- Agent can call this repeatedly (fix script → re-run → fix script → re-run).
+- With --keep-alive, app stays up between runs — faster iteration cycle.
+- Observations are displayed with emoji status (✅/❌) for quick scanning.
+- Failures include actual values, not just pass/fail — the agent needs to see what's wrong.
+```
+
 ## Proposal: User skills (display layer)
 
 These skills transform CLI output into visual displays optimized for human comprehension. Every user skill ends with AskUserQuestion — the display is always a decision point, never a dead-end dump.
@@ -409,7 +526,7 @@ roadmap install --skills --agent-only       # agent skills only (for CI, headles
 roadmap install --skills --user-only        # user display skills only
 ```
 
-Agent skills: roadmap-start, roadmap-work, roadmap-done, roadmap-dispatch, roadmap-review, roadmap-constraints, roadmap-expand, roadmap-claim, roadmap-validate, roadmap-escalate, roadmap-trail, roadmap-checkpoint
+Agent skills: roadmap-start, roadmap-work, roadmap-done, roadmap-dispatch, roadmap-review, roadmap-constraints, roadmap-expand, roadmap-claim, roadmap-validate, roadmap-escalate, roadmap-trail, roadmap-checkpoint, roadmap-explore-write, roadmap-explore-run
 
 User skills: roadmap-gallery, roadmap-progress, roadmap-dashboard, roadmap-dag, roadmap-cost, roadmap-node, roadmap-expansion-history, roadmap-session
 
@@ -431,6 +548,8 @@ Full catalog with layer, shipped status, and dependency:
 | `/roadmap-escalate` | agent | planned | — |
 | `/roadmap-trail` | agent | planned | — |
 | `/roadmap-checkpoint` | agent | planned | — |
+| `/roadmap-explore-write` | agent | planned | FR-RUNTIME-EXPLORE, explore-helpers.ts |
+| `/roadmap-explore-run` | agent | planned | FR-RUNTIME-EXPLORE, runtime-explore.ts |
 | `/roadmap-gallery` | user | **shipped** | — |
 | `/roadmap-progress` | user | **shipped** | — |
 | `/roadmap-dashboard` | user | planned | — |
@@ -448,8 +567,10 @@ Full catalog with layer, shipped status, and dependency:
 2. `/roadmap-claim` — swarm correctness. Eliminates claim misuse (wrong TTL, forgetting to claim, claiming ahead of frontier).
 3. `/roadmap-expand` — expansion correctness. Ensures propagate always follows expand.
 4. `/roadmap-escalate` — structured exits. Replaces freeform "I'm stuck" with actionable payloads.
-5. `/roadmap-trail` — session hygiene. Ensures archive on exit.
-6. `/roadmap-checkpoint` — safety net. Saves before risky operations.
+5. `/roadmap-explore-write` — explore script authoring. Loads observation vocabulary so agents write rich scripts, not shallow `isVisible()` checks.
+6. `/roadmap-explore-run` — explore iteration loop. Run script, see observations, fix, re-run. With `--keep-alive` for rapid cycles.
+7. `/roadmap-trail` — session hygiene. Ensures archive on exit.
+8. `/roadmap-checkpoint` — safety net. Saves before risky operations.
 
 **User skills** — each one improves a decision the user makes:
 
@@ -462,7 +583,7 @@ Full catalog with layer, shipped status, and dependency:
 
 ## Scope
 
-- New: `src/skills/` — 12 new skill templates (6 agent, 6 user)
+- New: `src/skills/` — 14 new skill templates (8 agent, 6 user)
 - New: `src/lib/skill-renderer.ts` — shared rendering primitives for user skills
 - Modify: `src/lib/install-skills.ts` — `--agent-only`, `--user-only` flags, expanded skill registry
 - Tests: each skill template renders correctly, AskUserQuestion options are state-derived, renderer primitives are deterministic
