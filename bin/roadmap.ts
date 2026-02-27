@@ -25,6 +25,7 @@ import { buildClusters } from '../src/lib/cluster.ts';
 import { buildSchedule } from '../src/lib/schedule.ts';
 import { propagateConstraints } from '../src/lib/propagate.ts';
 import { compilePrompts } from '../src/lib/compile-prompts.ts';
+import { compileBrief } from '../src/lib/compile-brief.ts';
 import { recordEvaluation, judgmentToRecord } from '../src/lib/intent-evaluator.ts';
 import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } from '../src/lib/validate-dag.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
@@ -50,7 +51,7 @@ const cmd = args[0] || 'help';
 
 // Commands that don't require a note
 // Special case: orient/position with --check is note-exempt (silent polling)
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore']);
 const isOrientCheck = (cmd === 'orient' || cmd === 'position') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -199,7 +200,9 @@ async function main() {
       case 'iter-id':   return cmdIterId();
       case 'dig':       return cmdDig();
       case 'propagate': return cmdPropagate(note!);
+      case 'explore':   return await cmdExplore();
       case 'compile-prompts': return cmdCompilePrompts(note!);
+      case 'compile-brief': return cmdCompileBrief(note!);
       case 'plan':
         if (args.includes('--gallery')) return await cmdPlanGallery(note!);
         json({ error: 'Unknown plan subcommand', fix: 'roadmap plan --gallery [--from <specFile>] [--select <id>] [--evaluate <json>] [--json]' });
@@ -2909,11 +2912,16 @@ Commands:
   propagate --dry-run Show what would be propagated without mutating the DAG
   propagate --from <id>  Start propagation from a specific node (not term)
   propagate --depth N Limit propagation hop count
+  explore --api         Show explore API surface (observation + interaction helpers)
+  explore --api --json  Machine-readable API surface for agent context injection
+  explore --run <script> [--launch <cmd>] [--port N] [--keep-alive]  Run explore script with managed lifecycle
+  compile-brief --node <id> [--env path]  Generate agent-ready work brief from node spec + environment
+  compile-prompts --node <id> [--env path] Generate agent prompts from DAG nodes
   dig [path]          Browse archived files in git history
   dig <path> --restore  Recover archived file to working tree
   help                This message
 
-All commands (except help/trail/chart/install/dig/claim/diff/show/orient) require --note "reason".
+All commands (except help/trail/chart/install/dig/claim/diff/show/orient/explore) require --note "reason".
   orient --check is note-exempt for swarm agents that reorient without trail pollution.
 
 Agent Workflow:
@@ -3045,6 +3053,162 @@ function cmdPropagate(note: string) {
     constraints: result.constraints,
     dryRun,
   });
+}
+
+// --- explore: API surface dump + managed script execution ---
+
+async function cmdExplore() {
+  const isApi = args.includes('--api');
+  const isJson = args.includes('--json');
+  const runIdx = args.indexOf('--run');
+  const evalIdx = args.indexOf('--eval');
+
+  if (isApi) {
+    const surface = {
+      import: 'roadmap/explore',
+      observations: [
+        { fn: 'checkVisible', sig: '(page: Page, selector: string, label: string) → ObservationResult', desc: 'Element present and visible in viewport' },
+        { fn: 'checkText', sig: '(page: Page, selector: string, label: string) → ObservationResult', desc: 'Extract and verify rendered text content' },
+        { fn: 'checkStyle', sig: '(page: Page, selector: string, property: string, label: string) → ObservationResult', desc: 'Read computed CSS property value' },
+        { fn: 'checkSize', sig: '(page: Page, selector: string, minW: number, minH: number, label: string) → ObservationResult', desc: 'Bounding box exceeds minimum dimensions' },
+        { fn: 'checkCount', sig: '(page: Page, selector: string, expected: number, label: string) → ObservationResult', desc: 'Count matching elements against expected' },
+        { fn: 'checkAttribute', sig: '(page: Page, selector: string, attr: string, expected: string, label: string) → ObservationResult', desc: 'Element attribute matches expected value' },
+        { fn: 'checkClass', sig: '(page: Page, selector: string, className: string, label: string) → ObservationResult', desc: 'Element has specific CSS class' },
+        { fn: 'checkContrast', sig: '(page: Page, textSel: string, bgSel: string, minRatio: number, label: string) → ObservationResult', desc: 'WCAG 2.1 contrast ratio between text and background' },
+        { fn: 'checkOverflow', sig: '(page: Page, selector: string, label: string) → ObservationResult', desc: 'Detect scrollable overflow (clipped content)' },
+      ],
+      interactions: [
+        { fn: 'safeClick', sig: '(page: Page, selector: string) → void', desc: 'Click with visibility + enabled guard' },
+        { fn: 'typeAndSubmit', sig: '(page: Page, selector: string, text: string, key?: string) → void', desc: 'Fill input and press key (default: Enter)' },
+        { fn: 'drag', sig: '(page: Page, sourceSelector: string, targetSelector: string, opts?: { steps?: number }) → void', desc: 'Smooth mouse drag between elements' },
+        { fn: 'waitFor', sig: '(page: Page, selector: string, timeout?: number) → Locator', desc: 'Wait for element visible + enabled (default 5000ms)' },
+        { fn: 'waitForTransition', sig: '(page: Page, ms?: number) → void', desc: 'Wait for CSS transitions to settle (default 300ms)' },
+        { fn: 'connectAndFindPage', sig: '(cdpUrl: string) → { page: Page, browser: Browser }', desc: 'Connect via CDP, filter devtools pages, return app page' },
+        { fn: 'resetState', sig: '(page: Page) → void', desc: 'Call window.__DEMO_RESET__() if available' },
+      ],
+      runtime: [
+        { fn: 'launchApp', sig: '(opts: { command: string, port?: number, timeout?: number, buildCommand?: string }) → LaunchHandle', desc: 'Build + launch + poll CDP readiness' },
+        { fn: 'runExploreScript', sig: '(opts: { script: string, cdpUrl: string, port: number, timeout?: number }) → ExploreScriptResult', desc: 'Execute explore script, parse JSON output' },
+        { fn: 'teardown', sig: '(proc: ChildProcess) → void', desc: 'SIGTERM + force kill after 3s' },
+      ],
+      types: {
+        ObservationResult: '{ id: string, pass: boolean, evidence: string, value?: string | number | boolean }',
+        ExploreResult: '{ observations: ObservationResult[] }',
+        LaunchHandle: '{ process: ChildProcess, cdpUrl: string, port: number }',
+      },
+    };
+
+    if (isJson) {
+      json(surface);
+      return;
+    }
+
+    // Human-readable output
+    console.log('Explore API — import from "roadmap/explore"\n');
+    console.log('Observation helpers (9):');
+    for (const o of surface.observations) {
+      console.log(`  ${o.fn}${o.sig.slice(o.sig.indexOf('('))}`);
+      console.log(`    ${o.desc}\n`);
+    }
+    console.log('Interaction helpers (7):');
+    for (const i of surface.interactions) {
+      console.log(`  ${i.fn}${i.sig.slice(i.sig.indexOf('('))}`);
+      console.log(`    ${i.desc}\n`);
+    }
+    console.log('Runtime (3):');
+    for (const r of surface.runtime) {
+      console.log(`  ${r.fn}${r.sig.slice(r.sig.indexOf('('))}`);
+      console.log(`    ${r.desc}\n`);
+    }
+    console.log('Types:');
+    for (const [name, shape] of Object.entries(surface.types)) {
+      console.log(`  ${name} = ${shape}`);
+    }
+    return;
+  }
+
+  if (runIdx !== -1) {
+    const script = args[runIdx + 1];
+    if (!script) {
+      json({ error: 'Missing script path', fix: 'roadmap explore --run <script.ts>' });
+      process.exit(1);
+    }
+
+    const portIdx = args.indexOf('--port');
+    const port = portIdx !== -1 ? parseInt(args[portIdx + 1], 10) : 9222;
+    const launchIdx = args.indexOf('--launch');
+    const launchCommand = launchIdx !== -1 ? args[launchIdx + 1] : undefined;
+    const buildIdx = args.indexOf('--build');
+    const buildCommand = buildIdx !== -1 ? args[buildIdx + 1] : undefined;
+    const keepAlive = args.includes('--keep-alive');
+
+    const { launchApp, runExploreScript, teardown: teardownApp } = await import('../src/lib/runtime-explore.ts');
+
+    let handle: import('../src/lib/runtime-explore.ts').LaunchHandle | undefined;
+
+    try {
+      // Launch app if command provided
+      if (launchCommand) {
+        console.error(`🚀 Launching: ${launchCommand} (port ${port})`);
+        handle = await launchApp({ command: launchCommand, port, buildCommand });
+        console.error(`✅ CDP ready at ${handle.cdpUrl}`);
+      }
+
+      // Run script
+      console.error(`🔬 Running: ${script}`);
+      const result = await runExploreScript({
+        script,
+        cdpUrl: `http://localhost:${port}`,
+        port,
+      });
+
+      if (!result.success) {
+        console.error(`❌ Script failed: ${result.error}`);
+        json({ success: false, error: result.error });
+        process.exit(1);
+      }
+
+      // Present observations
+      const obs = result.result?.observations ?? [];
+      const passed = obs.filter(o => o.pass).length;
+      const failed = obs.filter(o => !o.pass).length;
+
+      console.log(`\n🔬 Explore: ${script}\n`);
+      for (const o of obs) {
+        console.log(`${o.pass ? '✅' : '❌'} ${o.id.padEnd(28)} ${o.evidence}`);
+      }
+      console.log(`\n${passed}/${obs.length} passing · ${failed} failure(s)`);
+
+      if (isJson) {
+        json({ success: true, observations: obs, passed, failed, total: obs.length });
+      }
+    } finally {
+      if (handle && !keepAlive) {
+        teardownApp(handle.process);
+        console.error('🛑 App terminated');
+      } else if (handle && keepAlive) {
+        console.error(`♻️  App still running (port ${port}) — use --keep-alive to iterate`);
+      }
+    }
+    return;
+  }
+
+  // Default: show help
+  console.log(`roadmap explore — CDP-based behavioral observation
+
+Modes:
+  --api                 Show full API surface (functions, signatures, types)
+  --api --json          Machine-readable API surface
+  --run <script.ts>     Run explore script with managed lifecycle
+    --launch <cmd>      Launch command (e.g., "npx electron .")
+    --build <cmd>       Build command before launch
+    --port <N>          CDP port (default: 9222)
+    --keep-alive        Don't teardown after run
+
+Examples:
+  roadmap explore --api
+  roadmap explore --run scripts/explore/validate-app.ts --launch "npx electron dist/main/index.js" --port 9222
+  roadmap explore --run scripts/explore/validate-app.ts --keep-alive`);
 }
 
 // --- plan --gallery: template gallery, candidate selection, judgment recording ---
@@ -3401,6 +3565,53 @@ function cmdCompilePrompts(note: string) {
   }
 
   json({ ...result, stale, violations: [] });
+}
+
+// --- compile-brief: generate agent-ready work briefs from node specs + environment ---
+function cmdCompileBrief(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+  const dag = loadDAG();
+
+  const nodeIdx = args.indexOf('--node');
+  const nodeId = nodeIdx !== -1 ? args[nodeIdx + 1] : undefined;
+
+  if (!nodeId) {
+    json({ error: 'Missing --node <id>', fix: 'roadmap compile-brief --node T012 [--env environment.md] --note "reason"' });
+    process.exit(1);
+  }
+
+  const envIdx = args.indexOf('--env');
+  const envPath = envIdx !== -1 ? resolve(repoRoot, args[envIdx + 1] ?? '') : resolve(repoRoot, 'environment.md');
+
+  let envSource: string | undefined;
+  if (existsSync(envPath)) {
+    envSource = readFileSync(envPath, 'utf-8');
+  }
+
+  let brief;
+  try {
+    brief = compileBrief(dag, nodeId, envSource);
+  } catch (e) {
+    json({ error: e instanceof Error ? e.message : String(e), fix: `Valid nodes: ${Object.keys((dag.nodes as Record<string, any>)).slice(0, 10).join(', ')}` });
+    process.exit(1);
+  }
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'compile-brief', note,
+    repo: basename(repoRoot), position: [nodeId], level: -1, dagId: dag.id,
+    detail: { nodeId, produces: brief.whatYouProduce.length, consumes: brief.whatYouConsume.length },
+  });
+
+  // Output markdown by default
+  const asJson = args.includes('--json');
+  if (asJson) {
+    json(brief);
+  } else {
+    console.log(brief.markdown);
+  }
 }
 
 await main();
