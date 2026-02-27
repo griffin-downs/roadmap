@@ -6,7 +6,7 @@
 // --- Types ---
 
 export type ValidationRule =
-  | { type: 'artifact-exists'; target: string }
+  | { type: 'artifact-exists'; target: string; _propagatedFrom?: string }
   | { type: 'artifact-schema'; target: string; schema: string }
   | { type: 'function'; target: string; fn: string }
   | { type: 'manual-approval'; target: string; reviewer?: string }
