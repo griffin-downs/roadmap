@@ -6,10 +6,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AuditTrail } from '../src/audit';
 import fs from 'fs';
 import path from 'path';
+import { tmpdir } from 'os';
 
 describe('audit trail', () => {
   let trail: AuditTrail;
-  const testDir = '.roadmap-test';
+  const testDir = path.join(tmpdir(), `.roadmap-test-${process.pid}`);
 
   beforeEach(() => {
     if (!fs.existsSync(testDir)) {
