@@ -1,5 +1,5 @@
 {
-  "lastCommit": "900766c9ebe4eec1f21fe5128011500357db7f52",
-  "timestamp": "2026-02-27T09:12:19.571Z",
-  "message": "roadmap: Add phase-26 example phase — 5 nodes demonstrating expansion, parallel execution, and convergence patterns"
+  "lastCommit": "3d3e84226db1bacda2607deca3ff210b20ca2fa4",
+  "timestamp": "2026-02-27T09:26:53.328Z",
+  "message": "roadmap: Fix budget strategy time estimate calculations — use critical path instead of fake parallelism factors"
 }

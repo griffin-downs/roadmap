@@ -4,7 +4,8 @@
 
 import type { GalleryCandidate, TemplateParams } from '../gallery.ts';
 import { computeRisk, paretoFilter } from '../gallery.ts';
-import { estimateCost } from '../cost-estimator.ts';
+import { estimateCost, estimateFromDAG } from '../cost-estimator.ts';
+import type { Graph } from '../../protocol.ts';
 
 export interface TemplateDefinition {
   id: 'aggressive' | 'corrective' | 'staged' | 'budget'
@@ -182,11 +183,9 @@ export function buildGallery(specSource: string, historyDir?: string): GalleryCa
     const baseNodes = counts.baseNodes;
     const maxExpansion = counts.maxExpansion();
 
-    // Use maxExpansion for cost — mirrors gallery.ts buildCandidate convention
-    const costEst = estimateCost({
-      nodeCount: baseNodes,
-      modelAllocation: tpl.parameters.modelAllocation,
-    });
+    // Build template DAG and estimate from critical path (not heuristic formulas)
+    const dagSpec = tpl.buildDag(specSource);
+    const costEst = estimateFromDAG(dagSpec as unknown as Graph<string>, tpl.parameters.modelAllocation);
 
     // Determine risk: cold-start unless historyDir supplied (future: parse historyDir)
     const risk = historyDir !== undefined
@@ -202,7 +201,7 @@ export function buildGallery(specSource: string, historyDir?: string): GalleryCa
       label: tpl.label,
       summary: tpl.summary,
       parameters: tpl.parameters,
-      dag: tpl.buildDag(specSource),
+      dag: dagSpec,
       estimates: {
         nodes: baseNodes,
         maxExpansion,

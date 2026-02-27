@@ -5,6 +5,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { TemplateParams } from './gallery.ts';
+import { parallelOrder } from '../protocol.ts';
+import type { Graph } from '../protocol.ts';
 
 export interface CostEstimate {
   wallClockMinutes: number;
@@ -87,6 +89,46 @@ function confidenceFromCount(count: number): CostEstimate['confidence'] {
   if (count <= 2) return 'low';
   if (count <= 9) return 'medium';
   return 'high';
+}
+
+/**
+ * Estimate cost and wall-clock time from actual DAG structure.
+ * Uses parallelOrder() to compute critical path instead of heuristic formulas.
+ * This gives accurate, parallelizable recommendations.
+ */
+export function estimateFromDAG(
+  dag: Graph<string>,
+  modelAllocation: TemplateParams['modelAllocation']
+): CostEstimate {
+  // Cost based on total node count
+  const nodeCount = Object.keys(dag.nodes).length;
+  const costUSD = computeCostUSD(nodeCount, modelAllocation);
+
+  // Wall-clock time from critical path
+  // Get batches: each batch runs in parallel, then we move to next batch
+  const batches = parallelOrder(dag);
+  let wallClockMinutes = 0;
+
+  // Map model allocation to per-node duration
+  function nodeDuration(nodeId: string): number {
+    const isOpusNode = nodeId.includes('judge') || nodeId.includes('opus');
+    return isOpusNode ? MINUTES_PER_NODE_OPUS_HEAVY : MINUTES_PER_NODE_HAIKU_HEAVY;
+  }
+
+  // For each batch, find max duration (bottleneck node in parallel batch)
+  for (const batch of batches) {
+    const batchMaxDuration = Math.max(...batch.map(nodeDuration));
+    wallClockMinutes += batchMaxDuration;
+  }
+
+  // Ensure minimum 1 minute estimate
+  wallClockMinutes = Math.max(1, wallClockMinutes);
+
+  return {
+    wallClockMinutes,
+    costUSD,
+    confidence: 'medium', // DAG-based estimate is more reliable than cold-start
+  };
 }
 
 export function estimateCost(params: {
