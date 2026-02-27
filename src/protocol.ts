@@ -497,7 +497,7 @@ export function orient<T extends string>(
         const children = expansionChildren.get(id) ?? [];
         return children.length === 0; // incomplete if no expansion children
       }
-      return !(!node.produces.length || node.produces.every(exists));
+      return !!(node.produces?.length && node.produces.some(p => !exists(p)));
     });
 
     if (batchIncomplete.length > 0) {
