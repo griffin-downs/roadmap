@@ -152,9 +152,23 @@ function printAPIReference() {
 `);
 }
 
-function printError(title: string, message: string) {
+function printError(title: string, message: string, actionItems?: string[]) {
   console.error(`\n❌ ${title}`);
   console.error(`   ${message}\n`);
+
+  if (actionItems && actionItems.length > 0) {
+    console.error('🔧 REQUIRED ACTIONS (in order):');
+    actionItems.forEach((item, i) => {
+      console.error(`   ${i + 1}. ${item}`);
+    });
+    console.error();
+  }
+
+  console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.error('⚠️  DO NOT READ SOURCE CODE OR INVESTIGATE FURTHER');
+  console.error('    All required information is in the messages above.');
+  console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
   printAPIReference();
 }
 
@@ -189,17 +203,33 @@ function loadContract(path: string): ClarifiedContract {
     if (err.code === 'ENOENT') {
       printError(
         'Contract file not found',
-        `Could not read: ${path}\n\n   Make sure spec-clarified.json exists in the project root,\n   or pass a valid path as the first argument.\n\n   Run: npx tsx scripts/explore-validate-contract.ts ./path/to/contract.json`
+        `Could not read: ${path}`,
+        [
+          `Check that file exists: ls -la ${path}`,
+          `If missing, run init gate to generate: clarify-to-contract node`,
+          `Or pass explicit path: npx tsx scripts/explore-validate-contract.ts ./path/to/spec-clarified.json`,
+          `Expected location: ${resolve('./spec-clarified.json')}`
+        ]
       );
     } else if (err instanceof SyntaxError) {
       printError(
         'Invalid JSON in contract file',
-        `${path} contains invalid JSON:\n\n   ${err.message}`
+        `${path} contains malformed JSON: ${err.message}`,
+        [
+          `Validate JSON syntax: jq . ${path}`,
+          `Regenerate contract if corrupted: run clarify-to-contract node`,
+          `Expected format: { features: [...], gaps: [...], confidence: number }`
+        ]
       );
     } else {
       printError(
         'Failed to load contract',
-        `${err.message}`
+        `${err.message}`,
+        [
+          `Verify file is readable: cat ${path} | head -5`,
+          `Check permissions: chmod 644 ${path}`,
+          `Regenerate if damaged: run clarify-to-contract node`
+        ]
       );
     }
     process.exit(1);
@@ -288,9 +318,17 @@ async function run() {
       browser = await chromium.connectOverCDP(CDP_URL);
     } catch (err: any) {
       if (err.message?.includes('ECONNREFUSED') || err.message?.includes('connect')) {
+        const platform = process.platform === 'darwin' ? 'macOS' : process.platform === 'win32' ? 'Windows' : 'Linux';
         printError(
           'Cannot connect to browser via CDP',
-          `Failed to connect to ${CDP_URL}\n\n   Make sure your app is running with Chrome DevTools Protocol enabled:\n\n   • Electron:        npx npm run electron:dev (with --remote-debugging-port=9222)\n   • Chrome/Chromium: chrome --remote-debugging-port=9222 http://localhost:5173\n   • Web (Vite):      npm run dev (then use: playwright test)\n\n   Or set a custom CDP URL:\n   export CDP_URL=http://your-host:9222\n   export CDP_PORT=9222`
+          `Failed to connect to ${CDP_URL}\n\nNo process is listening on that port or the browser isn't running with debugging enabled.`,
+          [
+            `1. Check if something is listening on port 9222:\n      lsof -i :9222 (macOS/Linux) or netstat -ano | findstr :9222 (Windows)`,
+            `2. If nothing is listening, start your app with CDP enabled:\n\n      OPTION A - Electron app:\n      npm run electron:dev\n\n      OPTION B - Chrome/Chromium:\n      google-chrome --remote-debugging-port=9222 http://localhost:5173\n\n      OPTION C - Web app (Vite):\n      npm run dev\n      (then run: npm run test:e2e to use Playwright)`,
+            `3. If listening on different port, set CDP_PORT:\n      export CDP_PORT=9333\n      npx tsx scripts/explore-validate-contract.ts`,
+            `4. If app is on different host, set CDP_URL:\n      export CDP_URL=http://192.168.1.100:9222\n      npx tsx scripts/explore-validate-contract.ts`,
+            `5. Verify connection works:\n      curl http://localhost:9222/json/version`
+          ]
         );
       }
       throw err;
@@ -300,16 +338,31 @@ async function run() {
     if (contexts.length === 0) {
       printError(
         'No browser contexts found',
-        `The browser is running but has no windows/tabs open.\n\n   Make sure your app window is visible and running.`
+        `The browser is running but has no windows/tabs open.`,
+        [
+          `1. Make sure your app window is visible and not minimized`,
+          `2. Reload the app window: Ctrl+R (or Cmd+R on macOS)`,
+          `3. Verify app loaded successfully by checking DevTools`,
+          `4. For Electron: electron:dev should auto-open the window`,
+          `5. For Chrome: ensure you passed a valid URL to chrome command`
+        ]
       );
       throw new Error('No browser contexts found');
     }
 
     const page = contexts[0].pages().find(p => !p.url().startsWith('devtools://'));
     if (!page) {
+      const urls = contexts[0].pages().map(p => p.url()).join(', ');
       printError(
         'No application page found',
-        `Connected to browser but only found DevTools pages.\n\n   Make sure your app page is loaded and not minimized.\n   Current pages: ${contexts[0].pages().map(p => p.url()).join(', ')}`
+        `Connected to browser but only found DevTools pages. Current pages: ${urls}`,
+        [
+          `1. Click on the app window to make sure it's visible`,
+          `2. Check app console for errors: DevTools → Console tab`,
+          `3. Reload page: Ctrl+R (or Cmd+R on macOS)`,
+          `4. Verify app started successfully in terminal output`,
+          `5. For Electron: check if window closed or loading failed`
+        ]
       );
       throw new Error('No application page found (only devtools pages)');
     }
@@ -348,11 +401,13 @@ async function run() {
 }
 
 run().catch((err) => {
-  if (!err.message?.startsWith('❌')) {
-    printError(
-      'Unexpected error',
-      `${err.message || String(err)}`
-    );
-  }
+  // Always print error + API reference for any failure
+  console.error('\n' + '═'.repeat(80));
+  console.error('❌ EXPLORE VALIDATION FAILED');
+  console.error('═'.repeat(80));
+  console.error(`\nError: ${err.message || String(err)}\n`);
+  console.error('⚠️  DO NOT READ SOURCE CODE OR INVESTIGATE FURTHER');
+  console.error('    All required information is in the messages above.\n');
+  printAPIReference();
   process.exit(1);
 });
