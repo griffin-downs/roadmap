@@ -65,7 +65,7 @@ function setupTestRepo() {
   exec('git config user.name "Test User"');
 
   // Copy hook script from project
-  const hookSrc = path.join(process.cwd(), 'hooks', 'pre-commit');
+  const hookSrc = path.join(import.meta.dirname, '..', 'hooks', 'pre-commit');
   const hookDest = path.join(hooksDir, 'pre-commit');
   fs.mkdirSync(hooksDir, { recursive: true });
   fs.copyFileSync(hookSrc, hookDest);
