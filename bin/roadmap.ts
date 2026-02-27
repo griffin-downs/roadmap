@@ -2461,7 +2461,7 @@ function cmdInit(note: string) {
     process.exit(1);
   }
 
-  const dagId = args[0];
+  const dagId = args[1]; // args[0] is 'init' (the command)
   if (!dagId) {
     json({ error: 'Missing dag-id argument', fix: 'roadmap init <dag-id> --statement "Plan is clear" --threshold 0.95 --note "..."' });
     process.exit(1);

@@ -141,16 +141,6 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly _intentDiagnosis?: IntentDiagnosis; // provenance: what failing intent triggered this fix node's creation
 }
 
-// Intent expansion provenance — attached to fix nodes created by intent-driven expansion
-export interface IntentDiagnosis {
-  statement: string;
-  achievedConfidence: number;
-  threshold: number;
-  reasoning: string;
-  evidence: string[];
-  expansionDepth: number; // 0 = first expansion, 1 = expansion of expansion, ...
-}
-
 export interface EmitGalleryNodeSpec {
   id: string
   nodeType: 'emit-gallery'           // discriminant, distinct from mode

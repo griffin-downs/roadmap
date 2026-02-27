@@ -150,6 +150,7 @@ export function mapObservationsToChecks(
     rule,
     passed: obs.pass,
     evidence: `[${obs.id}] ${obs.evidence}${obs.value !== undefined ? ` (value: ${obs.value})` : ''}`,
+    observations: [obs], // attach observation result for intent enrichment
   }));
 }
 
