@@ -1,7 +1,12 @@
-{"ts":"2026-02-27T04:10:52.473Z","cmd":"orient","note":"test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
-{"ts":"2026-02-27T04:10:52.570Z","cmd":"describe","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial"}
-{"ts":"2026-02-27T04:10:52.662Z","cmd":"describe","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial"}
-{"ts":"2026-02-27T04:10:52.727Z","cmd":"parallel","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial","detail":{"crossRepo":false,"showGraph":false}}
-{"ts":"2026-02-27T04:10:52.790Z","cmd":"validate","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial","detail":{"nodeId":"init"}}
-{"timestamp":"2026-02-27T04:10:54.097Z","type":"orient","position":"a","produces":["x"],"consumes":[],"done":1,"remaining":2}
-{"timestamp":"2026-02-27T04:10:54.098Z","type":"modify","operation":"add","nodeId":"new"}
+{"ts":"2026-02-27T04:13:53.659Z","cmd":"orient","note":"test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
+{"ts":"2026-02-27T04:13:53.744Z","cmd":"describe","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial"}
+{"ts":"2026-02-27T04:13:53.850Z","cmd":"describe","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial"}
+{"ts":"2026-02-27T04:13:53.937Z","cmd":"parallel","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial","detail":{"crossRepo":false,"showGraph":false}}
+{"ts":"2026-02-27T04:13:54.023Z","cmd":"validate","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial","detail":{"nodeId":"init"}}
+{"ts":"2026-02-27T04:13:54.280Z","cmd":"orient","note":"cli test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
+{"ts":"2026-02-27T04:13:54.523Z","cmd":"orient","note":"cli test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
+{"ts":"2026-02-27T04:13:54.616Z","cmd":"orient","note":"cli test 1","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
+{"ts":"2026-02-27T04:13:54.691Z","cmd":"orient","note":"cli test 2","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
+{"ts":"2026-02-27T04:13:54.750Z","cmd":"orient","note":"cli test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
+{"ts":"2026-02-27T04:13:54.834Z","cmd":"orient","note":"cli test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
+{"ts":"2026-02-27T04:14:17.044Z","cmd":"complete","note":"final validation gates pass: tsc clean, vitest 858/862 tests passing (4 pre-existing bootstrap-gen + migrations failures)","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"nodeId":"term","owner":"griffin","checkpointId":"cp-20260227041417","batchComplete":true,"advanced":true,"skipValidate":true,"evaluated":false,"explored":false,"unblocked":[]}}
