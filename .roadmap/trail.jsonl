@@ -1,13 +1,8 @@
-{"ts":"2026-02-27T04:29:32.307Z","cmd":"orient","note":"test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
-{"ts":"2026-02-27T04:29:32.403Z","cmd":"describe","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial"}
-{"ts":"2026-02-27T04:29:32.440Z","cmd":"orient","note":"cli test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
-{"ts":"2026-02-27T04:29:32.494Z","cmd":"describe","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial"}
-{"ts":"2026-02-27T04:29:32.587Z","cmd":"parallel","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial","detail":{"crossRepo":false,"showGraph":false}}
-{"ts":"2026-02-27T04:29:32.678Z","cmd":"validate","note":"test","repo":"roadmap","position":["init"],"level":0,"dagId":"roadmap-adversarial","detail":{"nodeId":"init"}}
-{"ts":"2026-02-27T04:29:32.711Z","cmd":"orient","note":"cli test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
-{"ts":"2026-02-27T04:29:32.797Z","cmd":"orient","note":"cli test 1","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
-{"ts":"2026-02-27T04:29:32.864Z","cmd":"orient","note":"cli test 2","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
-{"ts":"2026-02-27T04:29:32.943Z","cmd":"orient","note":"cli test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
-{"ts":"2026-02-27T04:29:33.009Z","cmd":"orient","note":"cli test","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}
-{"timestamp":"2026-02-27T04:29:33.699Z","type":"orient","position":"a","produces":["x"],"consumes":[],"done":1,"remaining":2}
-{"timestamp":"2026-02-27T04:29:33.700Z","type":"modify","operation":"add","nodeId":"new"}
+{"ts":"2026-02-27T04:54:18.732Z","cmd":"init","note":"test","repo":"roadmap","position":["plan-clarity"],"level":0,"dagId":"roadmap-adversarial","detail":{"gate":"plan-clarity","statement":"Plan is unambiguous and ready to execute","threshold":0.95}}
+{"ts":"2026-02-27T04:54:18.866Z","cmd":"init","note":"test","repo":"roadmap","position":["plan-clarity"],"level":0,"dagId":"roadmap-adversarial","detail":{"gate":"plan-clarity","statement":"Plan is unambiguous and ready to execute","threshold":0.95}}
+{"ts":"2026-02-27T04:54:18.977Z","cmd":"init","note":"test","repo":"roadmap","position":["plan-clarity"],"level":0,"dagId":"roadmap-adversarial","detail":{"gate":"plan-clarity","statement":"All requirements are clear and achievable","threshold":0.85}}
+{"ts":"2026-02-27T04:54:19.293Z","cmd":"init","note":"test","repo":"roadmap","position":["plan-clarity"],"level":0,"dagId":"roadmap-adversarial","detail":{"gate":"plan-clarity","statement":"Plan is unambiguous and ready to execute","threshold":0.95}}
+{"ts":"2026-02-27T04:54:19.475Z","cmd":"init","note":"test","repo":"roadmap","position":["plan-clarity"],"level":0,"dagId":"roadmap-adversarial","detail":{"gate":"plan-clarity","statement":"Plan is unambiguous and ready to execute","threshold":0.95}}
+{"timestamp":"2026-02-27T04:54:20.327Z","type":"orient","position":"a","produces":["x"],"consumes":[],"done":1,"remaining":2}
+{"timestamp":"2026-02-27T04:54:20.328Z","type":"modify","operation":"add","nodeId":"new"}
+{"ts":"2026-02-27T04:54:40.193Z","cmd":"orient","note":"terminal node validation — all agents complete, implementation ready","repo":"roadmap","position":["term"],"level":115,"dagId":"roadmap-adversarial","detail":{"done":173,"remaining":0,"complete":true,"batchRemaining":0}}

@@ -1,5 +1,5 @@
 {
-  "lastCommit": "b43abef79b479b0c5c89d982707cc4c821be5a3a",
-  "timestamp": "2026-02-27T04:29:01.541Z",
-  "message": "roadmap: runtime-explore-skills — /roadmap-explore-write, /roadmap-explore-run skills + FIXUP-RUNTIME-EXPLORE-PATTERNS doc"
+  "lastCommit": "a74db6df7fe1d6ab88f70eb64be4cbf4819c7dee",
+  "timestamp": "2026-02-27T04:53:45.631Z",
+  "message": "roadmap: export validatePlanClarity from main entry point"
 }
