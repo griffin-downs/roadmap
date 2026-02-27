@@ -1525,7 +1525,7 @@ async function cmdComplete(note: string) {
             }
           }
 
-          // Generate fix nodes and commit to DAG
+          // Generate fix nodes and write expansion script
           const expansion = generateIntentExpansion(
             nodeId,
             nodeSpec?.produces ?? [],
@@ -1536,33 +1536,44 @@ async function cmdComplete(note: string) {
             currentDepth,
           );
 
-          const headPath = join(repoRoot, '.roadmap', 'head.json');
-          const headContent = JSON.parse(readFileSync(headPath, 'utf-8'));
-          for (const fixNode of expansion.fixNodes) {
-            headContent.nodes[fixNode.id] = fixNode;
-          }
-          writeFileSync(headPath, JSON.stringify(headContent, null, 2));
+          const { writeExpansionScript } = await import('../src/lib/expansion-writer.ts');
+          const scriptPath = writeExpansionScript({
+            parentId: nodeId,
+            parentNode: nodeSpec,
+            failures: intentFailures,
+            fixNodes: expansion.fixNodes,
+            reason: 'intent-expansion',
+            repoRoot,
+          });
 
-          execSync('git add .roadmap/head.json', { cwd: repoRoot, stdio: 'pipe' });
-          const msg = `roadmap: intent-expansion — ${expansion.fixNodes.length} fix nodes for ${nodeId}`;
-          execSync(`git commit -m "${msg}"`, { cwd: repoRoot, stdio: 'pipe' });
+          const relativeScriptPath = scriptPath.startsWith(repoRoot)
+            ? scriptPath.slice(repoRoot.length + 1)
+            : scriptPath;
 
           delete claimStore[nodeId];
           saveClaims(repoRoot, claimStore);
 
-          const posAfterExpand = orient(dag, fileExists(repoRoot), retiredSet());
           recordTrail({
             ts: new Date().toISOString(), cmd: 'complete', note,
-            repo: basename(repoRoot), position: posAfterExpand.position, level: posAfterExpand.level, dagId: dag.id,
-            detail: { nodeId, owner, status: 'expanding', fixNodes: expansion.fixNodes.map(n => n.id), depth: expansion.depth },
+            repo: basename(repoRoot), position: pos.position, level: pos.level, dagId: dag.id,
+            detail: { nodeId, owner, status: 'expanding', script: relativeScriptPath, fixNodes: expansion.fixNodes.map(n => n.id), depth: expansion.depth },
           });
 
           json({
-            status: 'expanding',
+            completed: false,
             node: nodeId,
-            generatedNodes: expansion.fixNodes.map(n => ({ id: n.id, desc: n.desc, statement: n._intentDiagnosis.statement })),
-            depth: expansion.depth,
-            nextStep: 'Fix nodes will execute in next batch. Re-run complete on parent after fix nodes close.',
+            validation: {
+              passed: false,
+              expandable: true,
+              script: relativeScriptPath,
+              failedIntents: intentFailures.map(f => ({
+                statement: f.statement,
+                achieved: f.achieved,
+                threshold: f.threshold,
+                reasoning: f.reasoning,
+              })),
+              nextStep: `Review the expansion script, then run: roadmap expand ${relativeScriptPath}`,
+            },
           });
           return;
         }
