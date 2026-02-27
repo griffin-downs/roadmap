@@ -30,25 +30,47 @@ interface TechStack {
 }
 
 /**
- * Analyze spec to understand requirements (wisdom-agnostic of tech stack)
+ * Analyze spec to understand requirements (by reading spec.md structure)
+ * Parse headings and acceptance criteria to extract actual requirements
  */
 function analyzeSpec(specContent: string): SpecAnalysis {
   const lower = specContent.toLowerCase();
+
+  // Parse spec structure: look for feature sections and acceptance criteria
+  const acceptanceCriteria = specContent.match(/### .*?(?=###|$)/gs) || [];
+  const allCriteria = acceptanceCriteria.join('\n').toLowerCase();
+
+  // Detect CRUD by looking for all four operations in acceptance criteria
+  const hasCrudCreate = allCriteria.includes('create') || allCriteria.includes('add');
+  const hasCrudRead = allCriteria.includes('read') || allCriteria.includes('list') || allCriteria.includes('view');
+  const hasCrudUpdate = allCriteria.includes('update') || allCriteria.includes('edit') || allCriteria.includes('modify');
+  const hasCrudDelete = allCriteria.includes('delete') || allCriteria.includes('remove');
+
+  // Detect features from requirements sections and user stories
+  const hasUISection = /## User Interface|## UI|## Components|User can.*view|User can.*see/i.test(specContent);
+  const hasUIInCriteria = allCriteria.includes('visible') || allCriteria.includes('display') || allCriteria.includes('show');
+
+  const hasExportSection = /## Export|CSV|download/i.test(specContent);
+  const hasThemeSection = /## Theme|dark mode|light mode|theme.toggle/i.test(specContent);
+  const hasPersistenceSection = /## Persistence|## Storage|## Database|data.persist|state.persist/i.test(specContent);
+  const hasDesktopSection = /## Desktop|Electron|window|application.window/i.test(specContent);
+
+  // App type detection from intro/overview
+  const intro = specContent.substring(0, 1000).toLowerCase();
+  const isDesktop = intro.includes('electron') || intro.includes('desktop');
+  const isWeb = intro.includes('web') || intro.includes('browser') || intro.includes('http');
+  const isCli = intro.includes('cli') || intro.includes('command-line') || intro.includes('terminal');
+
   return {
-    hasCRUD:
-      (lower.includes('create') || lower.includes('add')) &&
-      (lower.includes('read') || lower.includes('list') || lower.includes('view')) &&
-      (lower.includes('update') || lower.includes('edit')) &&
-      (lower.includes('delete') || lower.includes('remove')),
-    hasState: lower.includes('state') || lower.includes('persist') || lower.includes('store'),
-    hasUI: lower.includes('ui') || lower.includes('interface') || lower.includes('button') || lower.includes('input'),
-    hasExport: lower.includes('export') || lower.includes('csv') || lower.includes('download'),
-    hasTheme: lower.includes('theme') || lower.includes('dark') || lower.includes('light') || lower.includes('mode'),
-    isPersistent:
-      lower.includes('persist') || lower.includes('database') || lower.includes('save') || lower.includes('storage'),
-    isDesktopApp: lower.includes('electron') || lower.includes('desktop') || lower.includes('window'),
-    isWebApp: lower.includes('web') || lower.includes('browser') || lower.includes('http'),
-    isCLI: lower.includes('cli') || lower.includes('command') || lower.includes('terminal'),
+    hasCRUD: hasCrudCreate && hasCrudRead && hasCrudUpdate && hasCrudDelete,
+    hasState: allCriteria.includes('state') || allCriteria.includes('persist') || hasPersistenceSection,
+    hasUI: hasUISection || hasUIInCriteria,
+    hasExport: hasExportSection || allCriteria.includes('export') || allCriteria.includes('csv'),
+    hasTheme: hasThemeSection || allCriteria.includes('theme') || allCriteria.includes('dark'),
+    isPersistent: hasPersistenceSection || allCriteria.includes('persist') || allCriteria.includes('database'),
+    isDesktopApp: isDesktop || hasDesktopSection,
+    isWebApp: isWeb,
+    isCLI: isCli,
   };
 }
 
