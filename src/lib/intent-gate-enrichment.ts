@@ -5,6 +5,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Graph, ValidationRule } from '../protocol.ts';
+import { godEngineerBrief, type GodEngineerAnalysis } from './god-engineer-prompt.ts';
 
 interface SpecAnalysis {
   hasCRUD: boolean;
@@ -274,19 +275,37 @@ function generateWisdomValidators(spec: SpecAnalysis, stack: TechStack): Validat
 }
 
 /**
- * Enrich DAG with wisdom-driven intent-gate validators
- * Extracts spec requirements and generates tech-stack-agnostic validators
+ * Enrich DAG with intent-gate validators via God Engineer analysis
+ *
+ * Design: Intent-gate validation should use a "God Engineer" LLM prompt that:
+ * 1. Reads the full spec
+ * 2. Analyzes the tech stack
+ * 3. Reasons about what matters
+ * 4. Generates validators for critical paths
+ *
+ * Current: Falls back to hardcoded wisdom validators pending LLM integration
+ * TODO: Integrate Anthropic API to call God Engineer prompt for validators
  */
 export function enrichIntentGate(dag: Graph<string>, repoRoot: string): Graph<string> {
   const stack = detectStack(repoRoot);
 
-  // If no spec, can't enrich wisely — return as-is
+  // If no spec, can't enrich — return as-is
   if (!stack.specContent) {
     return dag;
   }
 
+  // TODO: Uncomment when LLM integration is available
+  // const godAnalysis = await callGodEngineer(stack.specContent, stack.specPath);
+  // const validators = godAnalysis.validators.map(godRuleToValidationRule);
+
+  // For now: fall back to hardcoded wisdom validators
   const spec = analyzeSpec(stack.specContent);
   const validators = generateWisdomValidators(spec, stack);
+
+  // Generate God Engineer brief (for future LLM integration)
+  const pkgPath = join(repoRoot, 'package.json');
+  const pkgContent = existsSync(pkgPath) ? readFileSync(pkgPath, 'utf-8') : '{}';
+  const _godBrief = godEngineerBrief(stack.specContent, pkgContent);
 
   // Find term node
   const termNodeId = dag.term;
