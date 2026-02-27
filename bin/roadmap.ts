@@ -3334,6 +3334,36 @@ async function cmdPlanGallery(note: string) {
     };
     appendFileSync(join(evalDir, 'plan-selection.jsonl'), JSON.stringify(selectionRecord) + '\n', 'utf-8');
 
+    // Validate the execution plan DAG before replacing head.json
+    try {
+      define(selected.dag as any);
+      const verifyErrors = verify(selected.dag as any);
+      if (verifyErrors.length > 0) {
+        json({
+          error: 'Selected execution plan failed validation',
+          details: verifyErrors,
+          fix: 'The strategy DAG has contract violations. This is a bug in the strategy generation.',
+        });
+        process.exit(1);
+      }
+      const checkResult = check(selected.dag as any);
+      if (!checkResult.done) {
+        json({
+          error: 'Selected execution plan is incomplete',
+          orphans: checkResult.orphans,
+          fix: 'The strategy DAG has unreachable nodes. This is a bug in the strategy generation.',
+        });
+        process.exit(1);
+      }
+    } catch (e: any) {
+      json({
+        error: 'Selected execution plan failed structural validation',
+        reason: e.message || String(e),
+        fix: 'The strategy DAG is malformed. This is a bug in the strategy generation.',
+      });
+      process.exit(1);
+    }
+
     // Write selected execution plan as head.json (replaces current DAG)
     // Recovery: use `roadmap dig .roadmap/head.json --restore` or `git revert`
     const roadmapDir = join(repoRoot, '.roadmap');
@@ -3384,6 +3414,36 @@ async function cmdPlanGallery(note: string) {
       ts: new Date().toISOString(),
     };
     appendFileSync(join(evalDir, 'plan-selection.jsonl'), JSON.stringify(selectionRecord) + '\n', 'utf-8');
+
+    // Validate the execution plan DAG before replacing head.json
+    try {
+      define(selected.dag as any);
+      const verifyErrors = verify(selected.dag as any);
+      if (verifyErrors.length > 0) {
+        json({
+          error: 'Selected execution plan failed validation',
+          details: verifyErrors,
+          fix: 'The strategy DAG has contract violations. This is a bug in the strategy generation.',
+        });
+        process.exit(1);
+      }
+      const checkResult = check(selected.dag as any);
+      if (!checkResult.done) {
+        json({
+          error: 'Selected execution plan is incomplete',
+          orphans: checkResult.orphans,
+          fix: 'The strategy DAG has unreachable nodes. This is a bug in the strategy generation.',
+        });
+        process.exit(1);
+      }
+    } catch (e: any) {
+      json({
+        error: 'Selected execution plan failed structural validation',
+        reason: e.message || String(e),
+        fix: 'The strategy DAG is malformed. This is a bug in the strategy generation.',
+      });
+      process.exit(1);
+    }
 
     // Write selected execution plan as head.json (replaces current DAG)
     // Recovery: use `roadmap dig .roadmap/head.json --restore` or `git revert`
