@@ -6,6 +6,7 @@
 import type { Graph, ValidationRule } from '../protocol.ts';
 import { consumeArtifact } from '../protocol.ts';
 import type { ClusterResult } from './cluster.ts';
+import { readEvaluations } from './intent-evaluator.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -188,11 +189,40 @@ function buildVerificationChecklist(validate: readonly ValidationRule[]): string
   }).join('\n');
 }
 
+// Build intent self-check subsection from validate rules, enriched with last failure from history.
+function buildIntentSelfCheck(
+  validate: readonly ValidationRule[],
+  nodeId: string,
+  repoRoot: string,
+): string {
+  const intentRules = validate.filter(r => r.type === 'intent');
+  if (intentRules.length === 0) return '';
+
+  const history = readEvaluations(nodeId, repoRoot);
+  const lines: string[] = [];
+
+  for (const rule of intentRules) {
+    if (rule.type !== 'intent') continue;
+    lines.push(`- [ ] "${rule.statement}" (threshold: ${rule.confidence}, evaluator: ${rule.evaluator})`);
+
+    const lastFailure = history.filter(r => r.statement === rule.statement && !r.pass).at(-1);
+    if (lastFailure) {
+      lines.push(`      Known failure mode: ${lastFailure.reasoning}`);
+      if (lastFailure.evidence.length > 0) {
+        lines.push(`      Evidence: ${lastFailure.evidence.join(', ')}`);
+      }
+    }
+  }
+
+  return lines.join('\n');
+}
+
 export function fillTemplate(
   template: string,
   node: NodeSpec,
   domain: string,
   env: EnvironmentSections | null,
+  repoRoot?: string,
 ): string {
   const consumeArtifacts = node.consumes.map(consumeArtifact);
   const ambientFiles = node.ambient ? [...node.ambient] : [];
@@ -216,7 +246,15 @@ export function fillTemplate(
 
   const shellCmds = resolveValidateShellCommands(node.validate);
   const quickCheck = shellCmds[0] ?? 'tsc --noEmit';
-  const verificationChecklist = buildVerificationChecklist(node.validate);
+  let verificationChecklist = buildVerificationChecklist(node.validate);
+
+  // Append intent self-check subsection when repoRoot is available and intent rules exist
+  if (repoRoot) {
+    const intentSection = buildIntentSelfCheck(node.validate, node.id, repoRoot);
+    if (intentSection) {
+      verificationChecklist += '\n\n### Intent (self-check — evaluated after submit)\n\n' + intentSection;
+    }
+  }
 
   // Domain-filtered constraints from environment
   let constraints = '(none)';
@@ -313,6 +351,7 @@ export interface CompilePromptsOpts {
   validateOnly?: boolean;       // validate without writing
   clusterResult?: ClusterResult; // pre-computed clusters for domain assignment
   currentCommit?: string;       // for staleness detection
+  repoRoot?: string;            // repo root for reading intent evaluation history
 }
 
 export function compilePrompts(
@@ -353,7 +392,7 @@ export function compilePrompts(
     if (!node) { skipped++; continue; }
 
     const domain = resolveDomain(nodeId);
-    const content = fillTemplate(template, node, domain, env);
+    const content = fillTemplate(template, node, domain, env, opts.repoRoot);
     const path = `${outputDir}/prompt-${nodeId}.md`;
 
     prompts.push({ node: nodeId, path, domain, content });
