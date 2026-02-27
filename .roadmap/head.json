@@ -2073,7 +2073,7 @@
       "produces": [],
       "consumes": [],
       "deps": [
-        "phase-24-term"
+        "phase-25-term"
       ],
       "validate": [
         {
@@ -3252,6 +3252,507 @@
         {
           "type": "shell",
           "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": false
+    },
+    "fr-impl-init": {
+      "id": "fr-impl-init",
+      "desc": "Phase 25 gate — existing files available as ambient context for gallery implementation",
+      "produces": [],
+      "consumes": [],
+      "ambient": [
+        "src/lib/intent-evaluator.ts",
+        "src/lib/compile-prompts.ts",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-24-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/intent-evaluator.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/compile-prompts.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-compile-prompts-intent": {
+      "id": "fr-compile-prompts-intent",
+      "desc": "Enhance src/lib/compile-prompts.ts: intent rules in validate[] emit annotated self-check items\nwith failure mode hints from evaluation history.\n\nCurrently buildVerificationChecklist() emits:\n  case \"intent\": return `- [ ] Intent (${rule.evaluator}): \"${rule.statement}\"`\n\nRequired change:\n  1. Add buildIntentSelfCheck(validate: ValidationRule[], nodeId: string, repoRoot: string): string\n     - For each intent rule: emit \"- [ ] \\\"${statement}\\\" (threshold: ${confidence}, evaluator: ${evaluator})\"\n     - Call readEvaluations(nodeId, repoRoot) from src/lib/intent-evaluator.ts\n     - Filter by rule.statement, find last failing record (r.pass === false)\n     - If found: emit \"      Known failure mode: ${lastFailure.reasoning}\"\n     - If found && lastFailure.evidence.length: emit \"      Evidence: ${lastFailure.evidence.join(\", \")}\"\n  2. In fillTemplate(): call buildIntentSelfCheck for intent rules, append as \"### Intent (self-check)\" subsection\n     in the Verification section, after deterministic items.\n     Signature change: fillTemplate(node, env, cluster?, repoRoot?) — repoRoot optional for backward compat.\n  3. compilePrompts(): pass repoRoot through to fillTemplate.\n\nDo NOT change the existing deterministic checklist items. The intent section is additive.\nDo NOT lower confidence thresholds — hints enrich prompts, they do not relax gates.\n\nconsumes: src/lib/intent-evaluator.ts (readEvaluations export)",
+      "produces": [
+        "src/lib/compile-prompts.ts"
+      ],
+      "consumes": [],
+      "ambient": [
+        "src/lib/intent-evaluator.ts"
+      ],
+      "deps": [
+        "fr-impl-init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"buildIntentSelfCheck\" src/lib/compile-prompts.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"readEvaluations\" src/lib/compile-prompts.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"Known failure mode\" src/lib/compile-prompts.ts"
+        },
+        {
+          "type": "intent",
+          "statement": "Intent self-check items include failure mode hint from evaluation history when prior failures exist, but history never adjusts confidence thresholds",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "context": [
+            "src/lib/compile-prompts.ts"
+          ]
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-emit-node-type": {
+      "id": "fr-emit-node-type",
+      "desc": "Add EmitGalleryNodeSpec type and nodeType discriminant to src/protocol.ts.\n\nAdd to protocol.ts:\n  export interface EmitGalleryNodeSpec {\n    id: string\n    nodeType: \"emit-gallery\"           // discriminant, distinct from mode\n    candidates: number                 // how many implementations to generate\n    strategies: string[]               // e.g. [\"faithful\", \"minimal\", \"robust\", \"budget\"]\n    selectionMode: \"auto\" | \"manual\"   // auto = LLM selects via Judgment\n    validate: ValidationRule[]         // gate suite applied to each candidate\n    produces: string[]\n    deps?: string[]\n    desc?: string\n  }\n\n  Add to NodeSpec<TAll, TSelf>: nodeType?: \"execute\" | \"emit-gallery\"\n  (mode is already \"execute\" | \"plan\" — nodeType is a separate dispatch dimension)\n\n  Export EmitGalleryNodeSpec from protocol.ts.\n\nDo NOT change ValidationRule, Graph, or Orientation types. Additive only.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "fr-impl-init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"EmitGalleryNodeSpec\" src/protocol.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"nodeType.*emit-gallery\" src/protocol.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit 2>&1 | head -5"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-strategies": {
+      "id": "fr-strategies",
+      "desc": "Create src/lib/strategies/ — generation strategy definitions for emit-gallery.\n\nCreate src/lib/strategies/index.ts exporting:\n  export interface StrategySpec {\n    id: string                  // \"faithful\" | \"minimal\" | \"robust\" | \"budget\"\n    label: string               // human-readable name\n    systemPrompt: string        // injected as system prompt for the generator\n    model: string               // e.g. \"claude-opus-4-6\" | \"claude-haiku-4-5-20251001\"\n    estimatedCostMultiplier: number  // relative cost vs baseline (1.0 = baseline)\n  }\n  export const STRATEGIES: StrategySpec[]\n  export function getStrategy(id: string): StrategySpec\n\nFour strategies in STRATEGIES:\n  faithful: Opus, spec-literal, no embellishment. systemPrompt emphasizes exact spec adherence.\n  minimal: Haiku, fewest files, simplest architecture. systemPrompt emphasizes reduction.\n  robust: Opus, defensive coding, comprehensive error handling. systemPrompt emphasizes edge cases.\n  budget: Haiku, same spec input as faithful. systemPrompt identical to faithful. costMultiplier ~0.15.\n\nFile: src/lib/strategies/index.ts (single file, no subdirectory needed)",
+      "produces": [
+        "src/lib/strategies/index.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "fr-impl-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/strategies/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'export interface StrategySpec' src/lib/strategies/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"faithful.*minimal.*robust.*budget\" src/lib/strategies/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"getStrategy\" src/lib/strategies/index.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-gallery-core": {
+      "id": "fr-gallery-core",
+      "desc": "Create src/lib/gallery.ts — plan gallery core: types, Pareto filtering, cardinal risk, candidate generation.\n\nExports:\n  export interface TemplateParams {\n    emitStrategy: \"single-pass\" | \"two-stage\" | \"per-cluster\"\n    gateOrdering: \"parallel\" | \"serial\" | \"cheapest-first\"\n    preExpansion: \"none\" | \"from-history\" | \"from-spec-complexity\"\n    modelAllocation: \"opus-all\" | \"opus-emit+haiku-fix\" | \"haiku-emit+opus-judge\"\n    convergence: \"fixed-passes\" | \"until-clean\" | \"budget-capped\"\n  }\n\n  export interface GalleryCandidate {\n    id: string                    // \"aggressive\" | \"corrective\" | \"staged\" | \"budget\"\n    label: string\n    summary: string\n    parameters: TemplateParams\n    dag: Record<string, any>      // head.json-compatible DAGSpec\n    estimates: {\n      nodes: number\n      maxExpansion: number\n      wallClockMinutes: number\n      costUSD: number\n      risk: number                // cardinal: 0.0–1.0 = 1 - (historicalSuccessRate * gateConvergenceRate)\n    }\n    gateProfile: { deterministic: number; intent: number; runtime: number }\n    historySignal?: {\n      priorFailureClasses: string[]\n      preExpanded: string[]\n      templateSuccessRate: number\n    }\n  }\n\n  export function computeRisk(historicalSuccessRate: number, gateConvergenceRate: number): number\n    // risk = 1 - (historicalSuccessRate * gateConvergenceRate)\n    // No history → both rates default to 0 → risk = 1.0\n\n  export function paretoFilter(candidates: GalleryCandidate[]): GalleryCandidate[]\n    // Prune dominated candidates. A is dominated by B if:\n    //   B.estimates.costUSD <= A.estimates.costUSD AND\n    //   B.estimates.wallClockMinutes <= A.estimates.wallClockMinutes AND\n    //   B.estimates.risk <= A.estimates.risk AND at least one strictly less.\n    // Target: 3-4 survivors.\n    // On cold start (all risk=1.0): conservative template always survives.\n\n  export function generateCandidates(specSource: string, historyDir?: string): GalleryCandidate[]\n    // Generate all template combinations, score with computeRisk, run paretoFilter.\n    // historyDir = path to .roadmap/evaluations/ (optional, skipped if missing)\n\nNo Anthropic API calls. This is pure data generation + filtering.",
+      "produces": [
+        "src/lib/gallery.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "fr-impl-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"GalleryCandidate\" src/lib/gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"paretoFilter\" src/lib/gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"computeRisk\" src/lib/gallery.ts"
+        },
+        {
+          "type": "intent",
+          "statement": "Pareto filtering uses cardinal risk = 1 - (historicalSuccessRate × gateConvergenceRate), defaults to 1.0 on cold start, and conservative template always survives when all candidates share risk=1.0",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "context": [
+            "src/lib/gallery.ts"
+          ]
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-cost-estimator": {
+      "id": "fr-cost-estimator",
+      "desc": "Create src/lib/cost-estimator.ts — history-based cost and time estimation for gallery candidates.\n\nExports:\n  export interface CostEstimate {\n    wallClockMinutes: number\n    costUSD: number\n    confidence: \"cold-start\" | \"low\" | \"medium\" | \"high\"  // based on history sample size\n  }\n\n  export function estimateCost(params: {\n    nodeCount: number,\n    modelAllocation: TemplateParams[\"modelAllocation\"],\n    checkpointDir?: string,       // .roadmap/checkpoints/ for duration baselines\n    evaluationsDir?: string,      // .roadmap/evaluations/ for gate convergence history\n  }): CostEstimate\n\n  Cost model:\n    opus: $0.015/1k input tokens, ~0.5k tokens/node average\n    haiku: $0.00025/1k input tokens, same node count\n  Duration model:\n    Read checkpoint durations from checkpointDir if available\n    Fallback: 1.5 min/node for opus, 0.5 min/node for haiku\n  Confidence:\n    cold-start = no history files found\n    low = 1-2 prior runs\n    medium = 3-9 prior runs\n    high = 10+ prior runs\n\nImport TemplateParams from src/lib/gallery.ts.\nNo Anthropic API calls.",
+      "produces": [
+        "src/lib/cost-estimator.ts"
+      ],
+      "consumes": [
+        "src/lib/gallery.ts"
+      ],
+      "deps": [
+        "fr-gallery-core"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/cost-estimator.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"estimateCost\" src/lib/cost-estimator.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"CostEstimate\" src/lib/cost-estimator.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"cold-start\" src/lib/cost-estimator.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-gallery-templates": {
+      "id": "fr-gallery-templates",
+      "desc": "Create src/lib/gallery-templates/index.ts — four named plan templates as GalleryCandidate factories.\n\nExports:\n  export interface TemplateDefinition {\n    id: \"aggressive\" | \"corrective\" | \"staged\" | \"budget\"\n    label: string\n    summary: string\n    parameters: TemplateParams\n    buildDag(specSource: string, historyFailureClasses?: string[]): Record<string, any>\n    // Returns head.json-compatible partial DAGSpec (nodes + deps, no id/init/term)\n  }\n  export const TEMPLATES: TemplateDefinition[]\n  export function buildGallery(specSource: string, historyDir?: string): GalleryCandidate[]\n    // Instantiate all 4 templates, score with estimateCost + computeRisk, return Pareto-filtered set.\n\nTemplate DAG shapes:\n  aggressive:  emit-gallery(4 candidates, parallel) → runtime-gate → converged\n  corrective:  emit-gallery(4 candidates, serial gates) → intent → runtime-gate → converged\n               preExpansion: \"from-history\" — adds fix nodes for known failure classes\n  staged:      emit-gallery(skeleton, 3 candidates) → emit-gallery(features, 3 candidates) → test → intent → runtime-gate → converged\n  budget:      emit-gallery(4 haiku candidates) → compile → test → runtime-gate → converged\n\nImport GalleryCandidate, TemplateParams, computeRisk, paretoFilter from src/lib/gallery.ts.\nImport estimateCost from src/lib/cost-estimator.ts.",
+      "produces": [
+        "src/lib/gallery-templates/index.ts"
+      ],
+      "consumes": [
+        "src/lib/gallery.ts",
+        "src/lib/cost-estimator.ts"
+      ],
+      "deps": [
+        "fr-gallery-core",
+        "fr-cost-estimator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/gallery-templates/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"TemplateDefinition\" src/lib/gallery-templates/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildGallery\" src/lib/gallery-templates/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"aggressive.*corrective.*staged.*budget\" src/lib/gallery-templates/index.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-emit-gallery-core": {
+      "id": "fr-emit-gallery-core",
+      "desc": "Create src/lib/emit-gallery.ts — multi-candidate code generation: parallel execution, gating, scorecard.\n\nExports:\n  export interface CandidateResult {\n    id: string\n    strategy: string\n    files: Record<string, string>  // path → content\n    deterministic: {\n      tsc: { pass: boolean; errors?: string[] }\n      vitest: { pass: boolean; passed: number; failed: number; coverage: number }\n      build: { pass: boolean; outputs?: string[] }\n    }\n    intent: Array<{ statement: string; pass: boolean; confidence: number; reasoning: string; evidence: string[] }>\n    summary: { loc: number; fileCount: number; deterministicPass: boolean; intentScore: string; estimatedCost: number }\n  }\n\n  export type FileToIntents = Record<string, string[]>\n\n  export function buildFileToIntents(validateRules: ValidationRule[]): FileToIntents\n    // Invert intent rule contextPaths: statement→files → files→statements\n    // Rule with no contextPaths: skip (requires explicit context for blend substitutability)\n\n  export interface ConvergenceConfig {\n    maxFixPasses: number          // per gate, default 3\n    escalateAfter: \"all-candidates-fail\" | \"fix-pass-stall\"\n    escalateTo: \"human\" | \"opus-review\"\n  }\n\n  export interface GalleryFailure {\n    unreachable: string           // intent statement that no candidate satisfied\n    bestConfidence: number\n    threshold: number\n    candidates: number\n    diagnosis: string             // e.g. \"all candidates used @media prefers-color-scheme\"\n  }\n\n  export interface GalleryRunResult {\n    candidates: CandidateResult[]\n    survivors: CandidateResult[]  // passed deterministic gates\n    intentSurvivors: CandidateResult[]  // also passed intent gates\n    failures: GalleryFailure[]    // unreachable intents\n    scorecard: string             // ASCII table for CLI rendering\n  }\n\n  export async function runGallery(opts: {\n    nodeSpec: EmitGalleryNodeSpec,\n    strategies: StrategySpec[],\n    workDir: string,              // .roadmap/gallery/\n    convergence?: ConvergenceConfig,\n  }): Promise<GalleryRunResult>\n    // Generates candidates in parallel (Promise.all), gates each, builds scorecard.\n    // Does NOT make real LLM calls — stubs candidates as empty file sets for now.\n    // Real LLM dispatch is a future FR. This FR establishes the pipeline + types.\n\nImport EmitGalleryNodeSpec from src/protocol.ts.\nImport StrategySpec from src/lib/strategies/index.ts.\nImport ValidationRule from src/protocol.ts.\n\nKey invariant: gallery is diversity not retry.\n  If all candidates fail the same intent → GalleryFailure, not loop.\n  maxFixPasses applies per gate after selection, not to generation.",
+      "produces": [
+        "src/lib/emit-gallery.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "src/lib/strategies/index.ts"
+      ],
+      "deps": [
+        "fr-emit-node-type",
+        "fr-strategies"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildFileToIntents\" src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"GalleryRunResult\" src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"ConvergenceConfig\" src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"GalleryFailure\" src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'import.*StrategySpec.*from.*strategies' src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "intent",
+          "statement": "Gallery treats maxFixPasses as a per-gate budget after selection, not a generation retry count; all-candidates-fail produces GalleryFailure with structured evidence rather than additional generation attempts",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "context": [
+            "src/lib/emit-gallery.ts"
+          ]
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-blend": {
+      "id": "fr-blend",
+      "desc": "Create src/lib/blend.ts — multi-candidate file merging with intent-gate conflict resolution.\n\nExports:\n  export interface BlendSpec {\n    primary: string     // candidate id — base architecture source\n    donors: string[]    // candidates to pull cheaper files from\n  }\n\n  export interface BlendResult {\n    files: Record<string, string>  // merged file set\n    substitutions: Array<{ path: string; from: string; reason: string }>\n    reverted: Array<{ path: string; reason: string }>\n    deterministicPass: boolean\n    intentScore: string\n  }\n\n  export function blendCandidates(\n    candidates: CandidateResult[],\n    spec: BlendSpec,\n    fileToIntents: FileToIntents,\n  ): BlendResult\n\nAlgorithm:\n  1. Start with primary candidate files.\n  2. For each donor candidate, for each file in donor:\n     a. Look up fileToIntents[path] → list of intent statements covering this file.\n     b. If the donor passed ALL those intents AND donor.summary.loc < primary.summary.loc → substitute.\n     c. Re-check deterministic validators (tsc pass, vitest pass) on the blended set.\n        If deterministic gate breaks → revert the substitution.\n  3. Re-run intent evaluation on blended result (use donor intent results where unchanged,\n     mark substituted files as needing re-evaluation).\n  4. If blend fails gates that all source candidates passed → discard, return primary files.\n\nNote: files with empty fileToIntents[path] are not substitutable (conservative).\n  This is by design — see FR-EMIT-GALLERY open question 5.\n\nImport CandidateResult, FileToIntents from src/lib/emit-gallery.ts.",
+      "produces": [
+        "src/lib/blend.ts"
+      ],
+      "consumes": [
+        "src/lib/emit-gallery.ts"
+      ],
+      "deps": [
+        "fr-emit-gallery-core"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/blend.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"blendCandidates\" src/lib/blend.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"BlendResult\" src/lib/blend.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"fileToIntents\" src/lib/blend.ts"
+        },
+        {
+          "type": "intent",
+          "statement": "Blend substitutes donor files only when the donor passed ALL intent statements in fileToIntents[path], and reverts any substitution that breaks a deterministic gate",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "context": [
+            "src/lib/blend.ts"
+          ]
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-plan-gallery-cli": {
+      "id": "fr-plan-gallery-cli",
+      "desc": "Add `roadmap plan --gallery` command to bin/roadmap.ts.\n\nNew command: plan --gallery [--from <specFile>] [--select <id>] [--evaluate <json>] [--json]\n\nHandler cmdPlanGallery():\n  1. Parse --from <specFile> (defaults to first .specify/specs/**/*.md found, or empty string)\n  2. Parse --select <id> to commit a previously-generated candidate\n  3. Parse --evaluate <json> for LLM judgment (same Judgment schema as complete --evaluate)\n  4. If no --select and no --evaluate:\n     a. Call buildGallery(specSource, repoRoot + \"/.roadmap/evaluations\")\n     b. Render ASCII table comparison (id, nodes, wallClockMinutes, costUSD, risk)\n     c. Show topology diagram per candidate (compact: \"emit → compile ─┬─ test ─┬─ runtime\")\n     d. Show recommendation (lowest risk)\n     e. Output \"Select [A/B/C/D]:\"\n  5. If --evaluate <json>:\n     a. Parse Judgment[] from json\n     b. Validate confidence >= 0.7 (minimum bar for plan selection)\n     c. Record to .roadmap/evaluations/plan-selection.jsonl with phase: \"plan-selection:<runId>\"\n     d. Write selected candidate dag as .roadmap/head.json (AFTER backing up existing as .roadmap/head-prev.json)\n     e. Output: { selected: id, committed: true, headPath: \".roadmap/head.json\" }\n  6. If --select <id>: same as --evaluate but without confidence requirement (manual override)\n\nWire in main switch: case \"plan\": if (args.includes(\"--gallery\")) ...\n\nImport buildGallery from src/lib/gallery-templates/index.ts\nImport estimateCost from src/lib/cost-estimator.ts\n\nAfter adding the command, run: npx tsc --noEmit to verify no type errors.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/lib/gallery.ts",
+        "src/lib/gallery-templates/index.ts",
+        "src/lib/cost-estimator.ts"
+      ],
+      "deps": [
+        "fr-gallery-core",
+        "fr-gallery-templates",
+        "fr-cost-estimator"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"cmdPlanGallery\\|plan.*gallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildGallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"plan-selection\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-emit-gallery-cli": {
+      "id": "fr-emit-gallery-cli",
+      "desc": "Add `roadmap emit --gallery` command and emit-gallery complete dispatch to bin/roadmap.ts.\n\nTwo changes to bin/roadmap.ts:\n\n1. New command: emit --gallery [--candidates N] [--from <spec>] [--select <id>] [--blend <A+B>] [--evaluate <json>] [--json]\n   Handler cmdEmitGallery():\n   a. Parse flags\n   b. Load DAG, find emit-gallery nodes (nodeType === \"emit-gallery\")\n   c. Call runGallery({ nodeSpec, strategies: STRATEGIES, workDir: repoRoot+\"/.roadmap/gallery/\" })\n   d. Render scorecard ASCII table (Candidate, Files, LOC, tsc, vitest, build, intent, cost)\n   e. Show: \"Deterministic survivors: ...\", \"Intent survivors: ...\"\n   f. If --blend <A+B>: call blendCandidates(), re-evaluate, show blend result\n   g. If --evaluate <json>: parse Judgment, record to .roadmap/evaluations/emit-selection.jsonl,\n      copy winning candidate files to main working tree, commit\n   h. If --select <id>: same as --evaluate without confidence check\n\n2. In cmdComplete handler, add dispatch on node.nodeType:\n   After loading nodeSpec, check: if ((nodeSpec as any).nodeType === \"emit-gallery\") {\n     await handleEmitGalleryComplete(nodeSpec, repoRoot)\n     return  // skip standard validation\n   }\n   handleEmitGalleryComplete() = runGallery + auto-select best intent survivor + commit files.\n\nWire in main switch: case \"emit\": if (args.includes(\"--gallery\")) ...\n\nImport runGallery from src/lib/emit-gallery.ts\nImport blendCandidates from src/lib/blend.ts\nImport STRATEGIES from src/lib/strategies/index.ts\n\nAfter adding both changes, run: npx tsc --noEmit to verify no type errors.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/lib/emit-gallery.ts",
+        "src/lib/blend.ts",
+        "src/lib/strategies/index.ts",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "fr-plan-gallery-cli",
+        "fr-emit-gallery-core",
+        "fr-blend",
+        "fr-emit-node-type"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"cmdEmitGallery\\|emit.*gallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"runGallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"emit-gallery.*nodeType\\|nodeType.*emit-gallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-gallery-tests": {
+      "id": "fr-gallery-tests",
+      "desc": "Tests for plan gallery: types, Pareto filtering, risk formula, cost estimation, template generation.\n\nFile: tests/gallery.test.ts\n\nTest suites:\n  computeRisk():\n    - Both rates 1.0 → risk 0.0\n    - Both rates 0.0 → risk 1.0 (cold start: default to 0 → risk = 1.0)\n    - Mixed: (0.8 * 0.9) → risk = 1 - 0.72 = 0.28\n\n  paretoFilter():\n    - All candidates distinct → all survive (no domination)\n    - B dominates A (cheaper AND faster AND safer) → A removed\n    - Partial domination (cheaper but riskier) → both survive\n    - Cold start (all risk=1.0): conservative template (lowest cost estimate) survives\n    - Result always has 1–4 candidates\n\n  estimateCost():\n    - Cold start (no historyDir): confidence=\"cold-start\", uses fallback rates\n    - Opus-all allocation: higher cost, lower or equal wallClockMinutes\n    - Haiku allocation: lower cost\n\n  buildGallery():\n    - Returns 3-4 candidates (Pareto filtered)\n    - Each has id, label, estimates, gateProfile\n    - Contains \"corrective\" template when history failure classes present\n\nImport from src/lib/gallery.ts and src/lib/cost-estimator.ts.",
+      "produces": [
+        "tests/gallery.test.ts"
+      ],
+      "consumes": [
+        "src/lib/gallery.ts",
+        "src/lib/cost-estimator.ts",
+        "src/lib/gallery-templates/index.ts"
+      ],
+      "deps": [
+        "fr-plan-gallery-cli",
+        "fr-gallery-core",
+        "fr-cost-estimator",
+        "fr-gallery-templates"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/gallery.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/gallery.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-emit-gallery-tests": {
+      "id": "fr-emit-gallery-tests",
+      "desc": "Tests for emit gallery: buildFileToIntents, blendCandidates, convergence protocol, strategy specs.\n\nFile: tests/emit-gallery.test.ts\n\nTest suites:\n  buildFileToIntents():\n    - Intent rule with contextPaths → inverted index\n    - Multiple rules with overlapping paths → all statements included\n    - Rule without contextPaths → excluded (conservative)\n\n  blendCandidates():\n    - Donor file passes all fileToIntents intents AND is smaller → substituted\n    - Donor file fails an intent → not substituted\n    - File not in fileToIntents (empty entry) → not substitutable\n    - Substitution breaks deterministic gate → reverted\n    - All-donors-fail → returns primary candidate files unchanged\n\n  ConvergenceConfig:\n    - runGallery with 4 strategies → GalleryRunResult with 4 candidates\n    - All candidates fail same intent → GalleryFailure in result.failures\n    - GalleryFailure includes bestConfidence, threshold, diagnosis\n\n  StrategySpec (from src/lib/strategies/index.ts):\n    - getStrategy(\"faithful\") returns StrategySpec with model containing \"opus\"\n    - getStrategy(\"budget\") returns StrategySpec with lower estimatedCostMultiplier\n    - getStrategy(\"unknown\") throws\n    - STRATEGIES has exactly 4 entries\n\nImport from src/lib/emit-gallery.ts, src/lib/blend.ts, src/lib/strategies/index.ts.",
+      "produces": [
+        "tests/emit-gallery.test.ts"
+      ],
+      "consumes": [
+        "src/lib/emit-gallery.ts",
+        "src/lib/blend.ts",
+        "src/lib/strategies/index.ts"
+      ],
+      "deps": [
+        "fr-emit-gallery-cli",
+        "fr-emit-gallery-core",
+        "fr-blend",
+        "fr-strategies"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/emit-gallery.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/emit-gallery.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-intent-selfcheck-tests": {
+      "id": "fr-intent-selfcheck-tests",
+      "desc": "Tests for compile-prompts intent self-check with history enrichment.\n\nFile: tests/compile-prompts-intent.test.ts\n(Extend or create alongside existing compile-prompts tests.)\n\nTest suites:\n  buildIntentSelfCheck() — no history:\n    - Intent rule with no prior failures → emits statement + threshold, no hint\n\n  buildIntentSelfCheck() — with failing history:\n    - Prior failure exists → emits \"Known failure mode: ${reasoning}\"\n    - Prior failure with evidence → emits \"Evidence: ...\"\n    - Prior failure then pass (most recent is pass) → no hint emitted\n    - Multiple statements → only matching statement gets hint\n\n  compilePrompts() integration:\n    - Node with intent rule + history → compiled prompt contains \"Known failure mode\"\n    - Node with intent rule + no history → compiled prompt contains statement but no hint\n    - Deterministic checklist items still present alongside intent self-check\n\nUse tmp directory for fake .roadmap/evaluations/ records.\nImport fillTemplate, compilePrompts from src/lib/compile-prompts.ts.\nImport recordEvaluation, judgmentToRecord from src/lib/intent-evaluator.ts (for test setup).",
+      "produces": [
+        "tests/compile-prompts-intent.test.ts"
+      ],
+      "consumes": [
+        "src/lib/compile-prompts.ts"
+      ],
+      "ambient": [
+        "src/lib/intent-evaluator.ts"
+      ],
+      "deps": [
+        "fr-compile-prompts-intent"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/compile-prompts-intent.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/compile-prompts-intent.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-25-term": {
+      "id": "phase-25-term",
+      "desc": "Phase 25 complete: gallery system ships — plan gallery, emit gallery, compile-prompts intent self-check, blend, strategies",
+      "produces": [],
+      "consumes": [
+        "tests/gallery.test.ts",
+        "tests/emit-gallery.test.ts",
+        "tests/compile-prompts-intent.test.ts"
+      ],
+      "deps": [
+        "fr-gallery-tests",
+        "fr-emit-gallery-tests",
+        "fr-intent-selfcheck-tests"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run --reporter=dot"
         }
       ],
       "idempotent": false
