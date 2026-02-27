@@ -176,6 +176,18 @@ function formatSuccessCriteria(validate: ValidationRule[]): string[] {
             criteria.push(`Spec scenario passes: ${scenario}${section}`);
           }
           break;
+        case 'intent':
+          const statement = (rule as any).statement;
+          if (statement) {
+            const confidence = (rule as any).confidence ?? 0;
+            const confidenceStr = confidence > 0 ? ` (confidence: ${Math.round(confidence * 100)}%)` : '';
+            criteria.push(`Intent validation: ${statement}${confidenceStr}`);
+          }
+          break;
+        case 'expanded':
+          const minNodes = (rule as any).minNodes ?? 1;
+          criteria.push(`Expand to ≥${minNodes} child node(s)`);
+          break;
       }
     }
   }

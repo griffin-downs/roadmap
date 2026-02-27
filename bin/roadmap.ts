@@ -417,6 +417,27 @@ async function cmdOrient(note: string | undefined) {
     }));
   }
 
+  // --brief: compile agent briefs for all nodes in current batch
+  if (args.includes('--brief')) {
+    const envPath = resolve(repoRoot, 'environment.md');
+    let envSource: string | undefined;
+    if (existsSync(envPath)) {
+      envSource = readFileSync(envPath, 'utf-8');
+    }
+
+    const briefs: Record<string, any> = {};
+    for (const nodeId of pos.position) {
+      try {
+        const brief = compileBrief(dag, nodeId, envSource);
+        briefs[nodeId] = brief;
+      } catch (e) {
+        // If brief compilation fails, skip that node but continue
+        briefs[nodeId] = { error: e instanceof Error ? e.message : String(e) };
+      }
+    }
+    result.briefs = briefs;
+  }
+
   // Trail entry with batch context (skip if --check)
   if (!isCheck) {
     const trailDetail: Record<string, unknown> = {
