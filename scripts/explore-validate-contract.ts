@@ -137,16 +137,35 @@ function printAPIReference() {
 
 ═══════════════════════════════════════════════════════════════════════════════
 
+❓ QUICK START:
+
+  # 1. See the full explore API:
+  roadmap explore --api
+
+  # 2. Start your app with CDP:
+  npm run electron:dev
+  (or: chrome --remote-debugging-port=9222)
+
+  # 3. Run validation:
+  roadmap explore ./spec-clarified.json
+
+  # 4. Or write your own script using the roadmap/explore library:
+  import { checkVisible, checkCount } from 'roadmap/explore';
+  // No need to import Playwright or set up CDP — roadmap handles it!
+
 ❓ EXAMPLES:
 
-  # Start app with CDP, then run:
-  npx tsx scripts/explore-validate-contract.ts
+  # Validate contract:
+  roadmap explore ./spec-clarified.json
 
-  # With custom contract path:
-  npx tsx scripts/explore-validate-contract.ts ./contracts/todo-spec.json
+  # With custom CDP port:
+  CDP_PORT=9333 roadmap explore
 
-  # With custom CDP URL:
-  CDP_URL=http://192.168.1.100:9222 npx tsx scripts/explore-validate-contract.ts
+  # See all available API functions:
+  roadmap explore --api
+
+  # Get help:
+  roadmap explore --help
 
 ═══════════════════════════════════════════════════════════════════════════════
 `);
