@@ -1,5 +1,5 @@
 // @module intent-expansion
-// @exports IntentFailure, PlanClarityGap, ConvergenceLimits, CostHistory, FixNodeSpec, ExpansionResult, generateIntentExpansion, generateInitGateExpansion, resolveProduces, detectStall, buildEscalation, extractIntentFailures, extractObservationFailures, enrichIntentFailuresWithObservations, fixNodeCost, isInitGateFailure
+// @exports IntentFailure, PlanClarityGap, ConvergenceLimits, CostHistory, FixNodeSpec, ExpansionResult, generateIntentExpansion, generateInitGateExpansion, resolveProduces, isInitGateFailure, extractPlanClarityGaps, detectStall, buildEscalation, extractIntentFailures, extractObservationFailures, enrichIntentFailuresWithObservations, fixNodeCost
 // @entry roadmap
 
 import type { ValidationRule, ValidationCheck, IntentJudgment, EscalationResult, ObservationResult } from '../protocol.ts';
