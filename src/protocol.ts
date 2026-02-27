@@ -63,10 +63,23 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly validate: readonly ValidationRule[]; // ← REQUIRED
   readonly idempotent: boolean; // ← REQUIRED: true=re-runnable, false=manual/state-changing
   readonly mode?: 'execute' | 'plan'; // default: 'execute'. 'plan' = decompose, output is DAG expansion
+  readonly nodeType?: 'execute' | 'emit-gallery'; // dispatch dimension: pipeline type (orthogonal to mode)
   readonly expandedFrom?: string; // provenance: which plan node spawned this node via expansion
   readonly loopTarget?: string; // re-entry node when convergence check fails (soft loop)
   readonly convergenceCheck?: { readonly maxCoverageDelta?: number; readonly requireEmptyProposals?: boolean; readonly minWallClockDeltaMs?: number }; // loop termination criteria
   readonly ambient?: readonly string[]; // agent reads these for context; not a dep, not validated, never gates readiness
+}
+
+export interface EmitGalleryNodeSpec {
+  id: string
+  nodeType: 'emit-gallery'           // discriminant, distinct from mode
+  candidates: number                 // how many implementations to generate
+  strategies: string[]               // e.g. ['faithful', 'minimal', 'robust', 'budget']
+  selectionMode: 'auto' | 'manual'  // auto = LLM selects via Judgment
+  validate: ValidationRule[]         // gate suite applied to each candidate
+  produces: string[]
+  deps?: string[]
+  desc?: string
 }
 
 // Inference helper — extracts T from nodes, avoids mapped-type inference limits.
