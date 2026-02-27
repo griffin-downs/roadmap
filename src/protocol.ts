@@ -518,7 +518,14 @@ export function orient<T extends string>(
         const children = expansionChildren.get(id) ?? [];
         return children.length === 0; // incomplete if no expansion children
       }
-      return !!(node.produces?.length && node.produces.some(p => !exists(p)));
+      // Execute node completion: artifacts exist AND explicit completion
+      // Both artifact-based (exists) and completion-based (completed) count as done
+      if (node.produces?.length) {
+        // Has artifacts requirement — all must exist
+        return node.produces.some(p => !exists(p));
+      }
+      // No artifacts to produce — node is done if it's in completed or has no produces
+      return false;
     });
 
     if (batchIncomplete.length > 0) {
