@@ -1,73 +1,3985 @@
 {
-  "id": "budget-",
-  "init": "emit",
-  "term": "converged",
+  "id": "roadmap-adversarial",
+  "desc": "DAG expansion protocol — adversarial hardening: spec-first bugs, property tests, consumer validation, plan mode",
+  "init": "init",
+  "term": "term",
   "nodes": {
-    "emit": {
-      "id": "emit",
-      "desc": "Single-pass emit (haiku)",
-      "produces": [],
+    "init": {
+      "id": "init",
+      "desc": "Library core + seed tests + self-referential roadmap + expansion skill",
+      "produces": [
+        "src/protocol.ts",
+        "tests/protocol.test.ts",
+        "roadmap.ts",
+        "SKILL.md"
+      ],
       "consumes": [],
       "deps": [],
-      "validate": [],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/protocol.test.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "roadmap.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "SKILL.md"
+        }
+      ],
       "idempotent": true
     },
-    "compile": {
-      "id": "compile",
-      "desc": "Compile gate",
-      "produces": [],
+    "fr-predicates": {
+      "id": "fr-predicates",
+      "desc": "Cross-repo predicates: siblingArtifactExists(root), gitArtifactAt(root, ref), any() OR combinator",
+      "produces": [
+        "tests/predicates-cross-repo.test.ts"
+      ],
+      "consumes": [
+        {
+          "artifact": "src/predicates.ts",
+          "resolvedBy": "predicate-builders"
+        }
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/predicates-cross-repo.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-cross-orient": {
+      "id": "fr-cross-orient",
+      "desc": "Async crossOrient: read .roadmap.json deps, parallel sibling orient, blockedBy field; fix orderByDependencies transitive BFS; handle missing dep repos gracefully",
+      "produces": [
+        "src/lib/cross-orient.ts",
+        "tests/cross-orient.test.ts"
+      ],
+      "consumes": [
+        {
+          "artifact": "src/predicates.ts",
+          "resolvedBy": "predicate-builders"
+        },
+        {
+          "artifact": "src/lib/dependency-resolver.ts",
+          "resolvedBy": "dependency-resolver"
+        },
+        {
+          "artifact": "src/lib/project-metadata.schema.ts",
+          "resolvedBy": "project-metadata-schema"
+        }
+      ],
+      "deps": [
+        "fr-predicates"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/cross-orient.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/cross-orient.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-cli-surface": {
+      "id": "fr-cli-surface",
+      "desc": "CLI: chart --deps (cross-repo progress), merge --from (diagnostic reconcile), trail dep context in breadcrumbs",
+      "produces": [
+        "tests/cli-cross-repo.test.ts"
+      ],
+      "consumes": [
+        "src/lib/cross-orient.ts"
+      ],
+      "deps": [
+        "fr-cross-orient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/cli-cross-repo.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-consumer-unblock": {
+      "id": "fr-consumer-unblock",
+      "desc": "E2E validation: mono-fusion scenario — orient with blockedBy, chart --deps, merge --from ../sibling, trail deps, configurable siblingPath",
+      "produces": [
+        "tests/fr-consumer-e2e.test.ts"
+      ],
+      "consumes": [
+        "tests/cli-cross-repo.test.ts",
+        "tests/cross-orient.test.ts",
+        "tests/predicates-cross-repo.test.ts"
+      ],
+      "deps": [
+        "fr-cli-surface"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/fr-consumer-e2e.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "reorient": {
+      "id": "reorient",
+      "desc": "Session entry gate: run boot.ts, verify orientation, confirm position, choose mode",
+      "produces": [
+        ".boot/session-receipt.json"
+      ],
       "consumes": [],
       "deps": [
-        "emit"
+        "adv-reconcile",
+        "adv-orient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".boot/session-receipt.json"
+        }
+      ],
+      "idempotent": false
+    },
+    "adv-reconcile": {
+      "id": "adv-reconcile",
+      "desc": "Adversarial spec: reconcile gap.missing = unmet consumes only, not surplus produces",
+      "produces": [
+        "tests/adv-reconcile.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-reconcile.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "adv-orient": {
+      "id": "adv-orient",
+      "desc": "Adversarial spec: orient empty-produces stalls permanently — specify correct behavior",
+      "produces": [
+        "tests/adv-orient.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-orient.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "adv-property": {
+      "id": "adv-property",
+      "desc": "Property-based: for all valid graphs, order()→orient() consistent, check()→verify() agree",
+      "produces": [
+        "tests/adv-property.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "reorient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-property.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "adv-types": {
+      "id": "adv-types",
+      "desc": "Type-level: invalid dep refs, id/key mismatch, unknown nodes are tsc errors",
+      "produces": [
+        "tests/adv-types.test-d.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "reorient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-types.test-d.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fix-reconcile": {
+      "id": "fix-reconcile",
+      "desc": "Fix reconcile gap: missing = bn.consumes.filter(c => !fn.produces.includes(c))",
+      "produces": [
+        "docs/decisions/reconcile-gap.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "tests/adv-reconcile.test.ts"
+      ],
+      "deps": [
+        "adv-reconcile",
+        "reorient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/reconcile-gap.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "fix-orient": {
+      "id": "fix-orient",
+      "desc": "Fix orient empty-produces: !node.produces.length || node.produces.every(exists)",
+      "produces": [
+        "docs/decisions/orient-empty-produces.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "tests/adv-orient.test.ts"
+      ],
+      "deps": [
+        "adv-orient",
+        "reorient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/orient-empty-produces.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "consumer-integration": {
+      "id": "consumer-integration",
+      "desc": "Consumer smoke test: install from path, write minimal roadmap.ts, orient() from real filesystem",
+      "produces": [
+        "tests/consumer-integration.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "roadmap.ts",
+        "SKILL.md",
+        "tests/adv-property.test.ts",
+        "docs/decisions/reconcile-gap.md",
+        "docs/decisions/orient-empty-produces.md"
+      ],
+      "deps": [
+        "fix-reconcile",
+        "fix-orient",
+        "adv-property"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/consumer-integration.test.ts"
+        }
+      ],
+      "idempotent": false
+    },
+    "phase-1-term": {
+      "id": "phase-1-term",
+      "desc": "Phase 1 complete: adversarially hardened protocol core (bugs fixed, contracts proven)",
+      "produces": [],
+      "consumes": [
+        "tests/adv-reconcile.test.ts",
+        "tests/adv-orient.test.ts",
+        "tests/adv-property.test.ts",
+        "tests/adv-types.test-d.ts",
+        "tests/consumer-integration.test.ts"
+      ],
+      "deps": [
+        "consumer-integration",
+        "adv-types"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "merge-spec": {
+      "id": "merge-spec",
+      "desc": "Spec: merge(g1, g2, connections) combines DAGs at reconcile() join points — init/term unification strategy",
+      "produces": [
+        "docs/decisions/merge-design.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "docs/decisions/reconcile-gap.md"
+      ],
+      "deps": [
+        "phase-1-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/merge-design.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "adv-merge": {
+      "id": "adv-merge",
+      "desc": "Adversarial spec: merge() preserves structure (no cycles), unifies nodes correctly, consumes satisfied",
+      "produces": [
+        "tests/adv-merge.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-1-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-merge.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "merge-impl": {
+      "id": "merge-impl",
+      "desc": "Implement merge(g1, g2): validate inputs, reconcile(), add structural edges, define() + verify() merged graph",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [
+        "tests/adv-merge.test.ts",
+        "docs/decisions/merge-design.md"
+      ],
+      "deps": [
+        "adv-merge",
+        "merge-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-2-term": {
+      "id": "phase-2-term",
+      "desc": "Phase 2 complete: DAG merge operations enable recursive expansion + multi-repo coordination",
+      "produces": [],
+      "consumes": [
+        "tests/adv-merge.test.ts",
+        "docs/decisions/merge-design.md"
+      ],
+      "deps": [
+        "merge-impl"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "branch-spec": {
+      "id": "branch-spec",
+      "desc": "Spec: branch(g, from) extracts subgraph from node to term, creates variant DAG for parallel development",
+      "produces": [
+        "docs/decisions/branch-design.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "docs/decisions/merge-design.md"
+      ],
+      "deps": [
+        "phase-2-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/branch-design.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "adv-branch": {
+      "id": "adv-branch",
+      "desc": "Adversarial spec: branch() preserves structure (acyclic), includes all reachable nodes to term, consumes satisfied",
+      "produces": [
+        "tests/adv-branch.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-2-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-branch.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "branch-impl": {
+      "id": "branch-impl",
+      "desc": "Implement branch(g, from): extract subgraph, set new init/term, validate via define() + verify()",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [
+        "tests/adv-branch.test.ts",
+        "docs/decisions/branch-design.md"
+      ],
+      "deps": [
+        "adv-branch",
+        "branch-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-3-term": {
+      "id": "phase-3-term",
+      "desc": "Phase 3 complete: branch operations enable parallel development + variant exploration",
+      "produces": [],
+      "consumes": [
+        "tests/adv-branch.test.ts",
+        "docs/decisions/branch-design.md"
+      ],
+      "deps": [
+        "branch-impl"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "skill-finalize": {
+      "id": "skill-finalize",
+      "desc": "Finalize SKILL.md: protocol spec + merge/branch examples, expansion workflow",
+      "produces": [
+        "SKILL.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "docs/decisions/merge-design.md",
+        "docs/decisions/branch-design.md"
+      ],
+      "deps": [
+        "phase-3-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "SKILL.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "readme-write": {
+      "id": "readme-write",
+      "desc": "Write README.md: what/why/how, 3+ end-to-end examples, installation, API reference",
+      "produces": [
+        "README.md"
+      ],
+      "consumes": [
+        "SKILL.md",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-3-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "README.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "example-create": {
+      "id": "example-create",
+      "desc": "Create real consumer example: example/simple-project-roadmap.ts + integration test",
+      "produces": [
+        "example/simple-project-roadmap.ts",
+        "example/test.ts"
+      ],
+      "consumes": [
+        "README.md"
+      ],
+      "deps": [
+        "readme-write"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "example/simple-project-roadmap.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "example/test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "release-prepare": {
+      "id": "release-prepare",
+      "desc": "Add CHANGELOG.md, update package.json version to 0.2.0, prepare npm publish",
+      "produces": [
+        "CHANGELOG.md",
+        "package.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "example-create",
+        "skill-finalize"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "CHANGELOG.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "package.json"
+        }
+      ],
+      "idempotent": false
+    },
+    "v0.2.0-term": {
+      "id": "v0.2.0-term",
+      "desc": "v0.2.0 ready: published npm package, documented API, real consumer examples",
+      "produces": [],
+      "consumes": [
+        "README.md",
+        "SKILL.md",
+        "CHANGELOG.md"
+      ],
+      "deps": [
+        "release-prepare"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "spec-system": {
+      "id": "spec-system",
+      "desc": "Formalize adversarial spec system: when/how/why, integration with implementation",
+      "produces": [
+        "docs/archive/SPEC.md"
+      ],
+      "consumes": [
+        "tests/adv-reconcile.test.ts",
+        "tests/adv-orient.test.ts"
+      ],
+      "deps": [
+        "v0.2.0-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/archive/SPEC.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "briefing-files": {
+      "id": "briefing-files",
+      "desc": "Create .briefing.json per node: what to build, which files matter, pattern to follow",
+      "produces": [
+        ".briefing/adv-reconcile.json",
+        ".briefing/fix-reconcile.json",
+        ".briefing/merge-spec.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "spec-system"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".briefing/adv-reconcile.json"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".briefing/fix-reconcile.json"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".briefing/merge-spec.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "test-org-guide": {
+      "id": "test-org-guide",
+      "desc": "Test organization guide: how to read adv-* suites progressively, pattern matching",
+      "produces": [
+        "docs/test-organization.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "spec-system"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/test-organization.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "condense-docs": {
+      "id": "condense-docs",
+      "desc": "Refactor SKILL.md + README for reference density (60 lines each, no marketing prose)",
+      "produces": [
+        "SKILL.md",
+        "README.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "spec-system"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "SKILL.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "README.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-4.5-term": {
+      "id": "phase-4.5-term",
+      "desc": "Phase 4.5 complete: governance documentation, formalized spec system, node briefings, agent autonomy",
+      "produces": [],
+      "consumes": [
+        "docs/archive/SPEC.md",
+        "docs/test-organization.md"
+      ],
+      "deps": [
+        "briefing-files",
+        "test-org-guide",
+        "condense-docs"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "git-state-spec": {
+      "id": "git-state-spec",
+      "desc": "Spec: git-state.json schema — phase annotation, branch, head commit, dirty files",
+      "produces": [
+        "docs/decisions/git-state-spec.md",
+        "src/git-state.schema.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-4.5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/git-state-spec.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/git-state.schema.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "git-state-impl": {
+      "id": "git-state-impl",
+      "desc": "Implement: post-commit hook + session-start hook → write .regent/git-state.json",
+      "produces": [
+        "hooks/post-commit.ts",
+        "hooks/session-start.ts"
+      ],
+      "consumes": [
+        "src/git-state.schema.ts"
+      ],
+      "deps": [
+        "git-state-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "hooks/post-commit.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "hooks/session-start.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "git-state-orient": {
+      "id": "git-state-orient",
+      "desc": "Extend orient() to read .regent/git-state.json cache (O(1) vs O(N) git ops)",
+      "produces": [
+        "src/protocol.ts",
+        "tests/git-state-caching.test.ts"
+      ],
+      "consumes": [
+        "hooks/post-commit.ts",
+        "src/git-state.schema.ts"
+      ],
+      "deps": [
+        "git-state-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/git-state-caching.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "bootstrap-gen-spec": {
+      "id": "bootstrap-gen-spec",
+      "desc": "Spec: consumer bootstrap template generation — minimal roadmap.ts + boot harness",
+      "produces": [
+        "docs/decisions/bootstrap-gen-design.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "SKILL.md"
+      ],
+      "deps": [
+        "phase-4.5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/bootstrap-gen-design.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "bootstrap-gen-impl": {
+      "id": "bootstrap-gen-impl",
+      "desc": "Implement: generate consumer-bootstrap.ts from roadmap.ts definition",
+      "produces": [
+        "src/generate-bootstrap.ts",
+        "example/consumer-bootstrap.ts"
+      ],
+      "consumes": [
+        "docs/decisions/bootstrap-gen-design.md"
+      ],
+      "deps": [
+        "bootstrap-gen-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/generate-bootstrap.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "example/consumer-bootstrap.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "bootstrap-test": {
+      "id": "bootstrap-test",
+      "desc": "Test: generated bootstrap runs orient(), consumes/produces correct, deps link correctly",
+      "produces": [
+        "tests/bootstrap-gen.test.ts"
+      ],
+      "consumes": [
+        "example/consumer-bootstrap.ts",
+        "src/generate-bootstrap.ts"
+      ],
+      "deps": [
+        "bootstrap-gen-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/bootstrap-gen.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "multi-repo-pattern": {
+      "id": "multi-repo-pattern",
+      "desc": "Doc + example: merge(fusion_roadmap, cockpit_roadmap, ...) multi-repo coordination",
+      "produces": [
+        "docs/multi-repo-coordination.md",
+        "example/multi-repo-merge.ts",
+        "tests/multi-repo.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "docs/decisions/merge-design.md"
+      ],
+      "deps": [
+        "phase-4.5-term",
+        "fr-consumer-unblock"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/multi-repo-coordination.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "example/multi-repo-merge.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/multi-repo.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "modify-spec": {
+      "id": "modify-spec",
+      "desc": "Spec: goal deletion + replanning — analyze(), modify(g, nodeId, delete), decision logging",
+      "produces": [
+        "docs/decisions/modify-spec.md"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-4.5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/modify-spec.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "adv-modify": {
+      "id": "adv-modify",
+      "desc": "Adversarial spec: modify() preserves graph validity, analyze() shows impact, skip action tracked",
+      "produces": [
+        "tests/adv-modify.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "modify-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-modify.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "atomic-modify-design": {
+      "id": "atomic-modify-design",
+      "desc": "Spec: atomic modifications via git commits — modifyAndCommit(), concurrent agent safety",
+      "produces": [
+        "docs/decisions/atomic-modify-design.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "docs/decisions/modify-spec.md"
+      ],
+      "deps": [
+        "adv-modify"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/atomic-modify-design.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "adv-atomic-modify": {
+      "id": "adv-atomic-modify",
+      "desc": "Adversarial spec: modifyAndCommit() atomically persists, concurrent agents see committed state",
+      "produces": [
+        "tests/adv-atomic-modify.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "atomic-modify-design"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/adv-atomic-modify.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-5-term": {
+      "id": "phase-5-term",
+      "desc": "Phase 5 complete: agent autonomy — O(1) orientation, bootstrap template, replanning + atomic commits",
+      "produces": [],
+      "consumes": [
+        "src/git-state.schema.ts",
+        "src/protocol.ts",
+        "tests/git-state-caching.test.ts",
+        "example/consumer-bootstrap.ts",
+        "tests/bootstrap-gen.test.ts",
+        "example/multi-repo-merge.ts",
+        "tests/adv-modify.test.ts",
+        "docs/decisions/modify-spec.md",
+        "tests/adv-atomic-modify.test.ts",
+        "docs/decisions/atomic-modify-design.md"
+      ],
+      "deps": [
+        "git-state-orient",
+        "bootstrap-test",
+        "multi-repo-pattern",
+        "adv-atomic-modify"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "checkpoint-spec": {
+      "id": "checkpoint-spec",
+      "desc": "Spec: checkpoint/restore session state — node ID, remaining, artifacts metadata",
+      "produces": [
+        "docs/decisions/checkpoint-restore-design.md",
+        "src/checkpoint.schema.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/checkpoint-restore-design.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/checkpoint.schema.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "checkpoint-impl": {
+      "id": "checkpoint-impl",
+      "desc": "Implement: checkpoint(g, pos) → .boot/checkpoint-{ts}.json, restore(cp) → (g, pos)",
+      "produces": [
+        "src/checkpoint.ts"
+      ],
+      "consumes": [
+        "src/checkpoint.schema.ts"
+      ],
+      "deps": [
+        "checkpoint-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/checkpoint.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "audit-spec": {
+      "id": "audit-spec",
+      "desc": "Spec: immutable audit trail — .boot/audit.jsonl, fields: timestamp/nodeId/executor/evidence",
+      "produces": [
+        "docs/decisions/audit-trail-design.md",
+        "docs/archive/AUDIT.md"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/audit-trail-design.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "docs/archive/AUDIT.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "audit-impl": {
+      "id": "audit-impl",
+      "desc": "Implement: audit(nodeId, executor, evidence) → append to audit.jsonl, validate completions",
+      "produces": [
+        "src/audit.ts",
+        "tests/audit.test.ts"
+      ],
+      "consumes": [
+        "docs/decisions/audit-trail-design.md"
+      ],
+      "deps": [
+        "audit-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/audit.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/audit.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "regent-integration": {
+      "id": "regent-integration",
+      "desc": "Regent integration: roadmap-aware agent template, orient() on boot, position in audit",
+      "produces": [
+        ".claude/agents/roadmap-agent-template.md",
+        "tests/regent-integration.test.ts"
+      ],
+      "consumes": [
+        "src/checkpoint.ts",
+        "src/audit.ts",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "checkpoint-impl",
+        "audit-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".claude/agents/roadmap-agent-template.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/regent-integration.test.ts"
+        }
+      ],
+      "idempotent": false
+    },
+    "phase-6-term": {
+      "id": "phase-6-term",
+      "desc": "Phase 6 complete: governance layer — checkpoint/restore, audit trails, regent integration enabled",
+      "produces": [],
+      "consumes": [
+        "src/checkpoint.ts",
+        "src/audit.ts",
+        "docs/archive/AUDIT.md",
+        ".claude/agents/roadmap-agent-template.md"
+      ],
+      "deps": [
+        "regent-integration"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "version-spec": {
+      "id": "version-spec",
+      "desc": "Spec: DAG versioning + protocol version tracking",
+      "produces": [
+        "docs/decisions/version-migration-design.md",
+        "src/versioning.schema.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-6-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/version-migration-design.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/versioning.schema.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "version-migrations": {
+      "id": "version-migrations",
+      "desc": "Implement: version compatibility checker + DAG migrations (0.1→0.2, 0.2→0.3)",
+      "produces": [
+        "src/migrations.ts",
+        "tests/migrations.test.ts"
+      ],
+      "consumes": [
+        "src/versioning.schema.ts"
+      ],
+      "deps": [
+        "version-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/migrations.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/migrations.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "version-validation": {
+      "id": "version-validation",
+      "desc": "Extend define() to validate version compatibility on DAG load",
+      "produces": [
+        "src/protocol.ts",
+        "tests/version-validation.test.ts"
+      ],
+      "consumes": [
+        "src/migrations.ts"
+      ],
+      "deps": [
+        "version-migrations"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/version-validation.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-7-term": {
+      "id": "phase-7-term",
+      "desc": "Phase 7 complete: versioning + consumer DAG migration",
+      "produces": [],
+      "consumes": [
+        "src/protocol.ts",
+        "src/versioning.schema.ts",
+        "src/migrations.ts",
+        "docs/decisions/version-migration-design.md"
+      ],
+      "deps": [
+        "version-validation"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "project-metadata-schema": {
+      "id": "project-metadata-schema",
+      "desc": "Spec: .roadmap.json schema — init/term artifacts, project type, manual phases",
+      "produces": [
+        "docs/decisions/project-metadata-schema.md",
+        "src/project-metadata.schema.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-7-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/project-metadata-schema.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/project-metadata.schema.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "project-type-detector": {
+      "id": "project-type-detector",
+      "desc": "Implement: detect project type (TypeScript/Node/React/Python/Go/etc) from package.json + heuristics",
+      "produces": [
+        "src/project-detector.ts",
+        "tests/project-detector.test.ts"
+      ],
+      "consumes": [
+        "src/project-metadata.schema.ts"
+      ],
+      "deps": [
+        "project-metadata-schema"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/project-detector.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/project-detector.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "build-process-discoverer": {
+      "id": "build-process-discoverer",
+      "desc": "Implement: infer build command from package.json scripts + heuristics, detect artifacts",
+      "produces": [
+        "src/build-discoverer.ts",
+        "tests/build-discoverer.test.ts"
+      ],
+      "consumes": [
+        "src/project-detector.ts"
+      ],
+      "deps": [
+        "project-type-detector"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/build-discoverer.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/build-discoverer.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "dependency-resolver": {
+      "id": "dependency-resolver",
+      "desc": "Implement: discover multi-repo dependencies, detect which repos must build first",
+      "produces": [
+        "src/dependency-resolver.ts",
+        "tests/dependency-resolver.test.ts"
+      ],
+      "consumes": [
+        "src/project-metadata.schema.ts"
+      ],
+      "deps": [
+        "project-metadata-schema"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/dependency-resolver.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/dependency-resolver.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "auto-bootstrap-command": {
+      "id": "auto-bootstrap-command",
+      "desc": "Implement: unified \"roadmap integrate\" command — auto-detect metadata, generate, validate, boot",
+      "produces": [
+        "src/auto-integrate.ts",
+        "tests/auto-integrate.test.ts"
+      ],
+      "consumes": [
+        "src/project-detector.ts",
+        "src/build-discoverer.ts",
+        "src/dependency-resolver.ts"
+      ],
+      "deps": [
+        "project-type-detector",
+        "build-process-discoverer",
+        "dependency-resolver"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/auto-integrate.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/auto-integrate.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-8-term": {
+      "id": "phase-8-term",
+      "desc": "Phase 8 complete: discovery + auto-integration — agents can integrate autonomously",
+      "produces": [],
+      "consumes": [
+        "src/project-detector.ts",
+        "src/build-discoverer.ts",
+        "src/dependency-resolver.ts",
+        "src/auto-integrate.ts",
+        "src/project-metadata.schema.ts"
+      ],
+      "deps": [
+        "auto-bootstrap-command"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "agent-bootstrap-spec": {
+      "id": "agent-bootstrap-spec",
+      "desc": "Spec: regent agent template with sealed APIs — getBrief, checkpoint, advance",
+      "produces": [
+        "docs/decisions/agent-bootstrap-design.md",
+        ".claude/agents/roadmap-executor-template.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "docs/archive/SPEC.md"
+      ],
+      "deps": [
+        "phase-10-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/agent-bootstrap-design.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".claude/agents/roadmap-executor-template.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "error-guidance-spec": {
+      "id": "error-guidance-spec",
+      "desc": "Spec: compilation error → guidance loop — agents learn from errors",
+      "produces": [
+        "docs/decisions/error-guidance-design.md"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "README.md"
+      ],
+      "deps": [
+        "agent-bootstrap-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/error-guidance-design.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "agent-executor-impl": {
+      "id": "agent-executor-impl",
+      "desc": "Implement: regent executor agent skeleton — boots, calls getBrief, executes node",
+      "produces": [
+        ".claude/agents/roadmap-executor.ts",
+        "tests/agent-executor.test.ts"
+      ],
+      "consumes": [
+        "docs/decisions/agent-bootstrap-design.md",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "error-guidance-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".claude/agents/roadmap-executor.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/agent-executor.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fusion-integration": {
+      "id": "fusion-integration",
+      "desc": "Real project: fusion roadmap + executor agent — end-to-end test",
+      "produces": [
+        "example/fusion-roadmap-integration.test.ts",
+        "docs/real-project-adoption.md"
+      ],
+      "consumes": [
+        ".claude/agents/roadmap-executor.ts",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "agent-executor-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "example/fusion-roadmap-integration.test.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "docs/real-project-adoption.md"
+        }
+      ],
+      "idempotent": false
+    },
+    "cockpit-integration": {
+      "id": "cockpit-integration",
+      "desc": "Real project: cockpit roadmap + executor agent — validate multi-project pattern",
+      "produces": [
+        "example/cockpit-roadmap-integration.test.ts",
+        "docs/multi-project-patterns.md"
+      ],
+      "consumes": [
+        ".claude/agents/roadmap-executor.ts",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "fusion-integration"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "example/cockpit-roadmap-integration.test.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "docs/multi-project-patterns.md"
+        }
+      ],
+      "idempotent": false
+    },
+    "phase-9-term": {
+      "id": "phase-9-term",
+      "desc": "Phase 9 complete: regent integration + real project adoption — agents autonomous",
+      "produces": [],
+      "consumes": [
+        ".claude/agents/roadmap-executor.ts",
+        "docs/decisions/agent-bootstrap-design.md",
+        "example/fusion-roadmap-integration.test.ts",
+        "example/cockpit-roadmap-integration.test.ts"
+      ],
+      "deps": [
+        "cockpit-integration",
+        "phase-10-term"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "api-audit": {
+      "id": "api-audit",
+      "desc": "Audit: measure API surface, identify unused exports, tree-shaking opportunities",
+      "produces": [
+        "docs/decisions/api-audit.md",
+        "docs/api-usage-metrics.md"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-8-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/api-audit.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "docs/api-usage-metrics.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "sub-entry-points-spec": {
+      "id": "sub-entry-points-spec",
+      "desc": "Spec: split index.ts into sub-entry-points (recovery, validation, versioning)",
+      "produces": [
+        "docs/decisions/entry-points-design.md"
+      ],
+      "consumes": [
+        "docs/decisions/api-audit.md"
+      ],
+      "deps": [
+        "api-audit"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/entry-points-design.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "api-refactor": {
+      "id": "api-refactor",
+      "desc": "Refactor: move optional modules to sub-entry-points",
+      "produces": [
+        "src/index.recovery.ts",
+        "src/index.validation.ts",
+        "src/index.versioning.ts",
+        "src/index.agent.ts"
+      ],
+      "consumes": [
+        "docs/decisions/entry-points-design.md",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "sub-entry-points-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/index.recovery.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/index.validation.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/index.versioning.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "package-exports-update": {
+      "id": "package-exports-update",
+      "desc": "Update: package.json exports field with new entry points",
+      "produces": [],
+      "consumes": [
+        "src/index.recovery.ts",
+        "src/index.validation.ts",
+        "src/index.versioning.ts"
+      ],
+      "deps": [
+        "api-refactor"
       ],
       "validate": [],
       "idempotent": true
     },
-    "test": {
-      "id": "test",
-      "desc": "Test gate",
-      "produces": [],
-      "consumes": [],
+    "api-test-migration": {
+      "id": "api-test-migration",
+      "desc": "Test: update imports to use correct sub-entry-points, verify tree-shaking",
+      "produces": [
+        "tests/api-tree-shaking.test.ts"
+      ],
+      "consumes": [
+        "src/index.recovery.ts",
+        "src/index.validation.ts",
+        "src/index.versioning.ts"
+      ],
       "deps": [
-        "emit"
+        "package-exports-update"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/api-tree-shaking.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-10-term": {
+      "id": "phase-10-term",
+      "desc": "Phase 10 complete: API optimized, sub-entry-points, tree-shaking ready",
+      "produces": [],
+      "consumes": [
+        "src/index.recovery.ts",
+        "src/index.validation.ts",
+        "src/index.versioning.ts",
+        "src/index.agent.ts",
+        "tests/api-tree-shaking.test.ts"
+      ],
+      "deps": [
+        "api-test-migration"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-setup": {
+      "id": "adoption-scenario-setup",
+      "desc": "Setup: Create test harnesses for 10 adoption scenarios (template, metrics collector, survey)",
+      "produces": [],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-9-term",
+        "phase-10-term"
       ],
       "validate": [],
       "idempotent": true
     },
-    "judge": {
-      "id": "judge",
-      "desc": "Opus judge gate (parallel)",
+    "adoption-scenario-1": {
+      "id": "adoption-scenario-1",
+      "desc": "Execute adoption scenario: monorepo-services",
       "produces": [],
       "consumes": [],
       "deps": [
-        "emit"
+        "adoption-scenario-setup"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-2": {
+      "id": "adoption-scenario-2",
+      "desc": "Execute adoption scenario: microservice-deploy",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-1"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-3": {
+      "id": "adoption-scenario-3",
+      "desc": "Execute adoption scenario: library-ecosystem",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-2"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-4": {
+      "id": "adoption-scenario-4",
+      "desc": "Execute adoption scenario: ci-cd-pipeline",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-3"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-5": {
+      "id": "adoption-scenario-5",
+      "desc": "Execute adoption scenario: compliance-audit",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-4"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-6": {
+      "id": "adoption-scenario-6",
+      "desc": "Execute adoption scenario: team-workflow",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-5"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-7": {
+      "id": "adoption-scenario-7",
+      "desc": "Execute adoption scenario: feature-rollout",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-6"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-8": {
+      "id": "adoption-scenario-8",
+      "desc": "Execute adoption scenario: db-migration",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-7"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-9": {
+      "id": "adoption-scenario-9",
+      "desc": "Execute adoption scenario: perf-optimization",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-8"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "adoption-scenario-10": {
+      "id": "adoption-scenario-10",
+      "desc": "Execute adoption scenario: legacy-refactor",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-9"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "survey-analysis": {
+      "id": "survey-analysis",
+      "desc": "Analyze: Aggregate metrics across 10 scenarios, produce adoption-survey-results.md with findings",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "adoption-scenario-10"
       ],
       "validate": [],
       "idempotent": true
     },
-    "runtime": {
-      "id": "runtime",
-      "desc": "Runtime check",
+    "release-readiness-assessment": {
+      "id": "release-readiness-assessment",
+      "desc": "Assess: Review adoption results, verify success criteria, make GO/NO-GO release decision",
       "produces": [],
       "consumes": [],
       "deps": [
-        "compile",
-        "test",
-        "judge"
+        "survey-analysis"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "phase-11-term": {
+      "id": "phase-11-term",
+      "desc": "Phase 11 complete: Adoption-verified release-ready (10 scenarios, survey complete, GO decision)",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "release-readiness-assessment"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "integrate-gen-spec": {
+      "id": "integrate-gen-spec",
+      "desc": "Design: roadmap.ts generation strategy (bootstrap template vs. full generation)",
+      "produces": [
+        "docs/decisions/integrate-generation.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-11-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/decisions/integrate-generation.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "integrate-gen-impl": {
+      "id": "integrate-gen-impl",
+      "desc": "Implementation: Generate roadmap.ts from ProjectMetadata + buildProcess, validate DAG",
+      "produces": [
+        "src/auto-integrate-gen.ts"
+      ],
+      "consumes": [
+        "docs/decisions/integrate-generation.md"
+      ],
+      "deps": [
+        "integrate-gen-spec"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/auto-integrate-gen.ts"
+        },
+        {
+          "type": "function",
+          "target": "compile-auto-integrate-gen",
+          "fn": "npx tsc src/auto-integrate-gen.ts --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "integrate-cli": {
+      "id": "integrate-cli",
+      "desc": "CLI entrypoint: \"roadmap integrate\" command with --dry-run support",
+      "produces": [
+        "bin/roadmap-integrate.ts"
+      ],
+      "consumes": [
+        "src/auto-integrate-gen.ts"
+      ],
+      "deps": [
+        "integrate-gen-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "bin/roadmap-integrate.ts"
+        },
+        {
+          "type": "function",
+          "target": "compile-cli",
+          "fn": "npx tsc bin/roadmap-integrate.ts --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "integrate-test": {
+      "id": "integrate-test",
+      "desc": "Comprehensive testing: End-to-end integration tests (3+ real project patterns)",
+      "produces": [
+        "tests/auto-integrate-full.test.ts"
+      ],
+      "consumes": [
+        "bin/roadmap-integrate.ts"
+      ],
+      "deps": [
+        "integrate-cli"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/auto-integrate-full.test.ts"
+        },
+        {
+          "type": "function",
+          "target": "test-integrate",
+          "fn": "npx vitest run tests/auto-integrate-full.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "integrate-docs": {
+      "id": "integrate-docs",
+      "desc": "Documentation: Adoption guide for external projects + CLI walkthrough",
+      "produces": [
+        "docs/ADOPTION-GUIDE.md"
+      ],
+      "consumes": [
+        "tests/auto-integrate-full.test.ts"
+      ],
+      "deps": [
+        "integrate-test"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/ADOPTION-GUIDE.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-12-term": {
+      "id": "phase-12-term",
+      "desc": "Phase 12 complete: External adoption enablement (CLI ready, adoption guide complete)",
+      "produces": [],
+      "consumes": [
+        "docs/ADOPTION-GUIDE.md"
+      ],
+      "deps": [
+        "integrate-docs"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "docs-restructure": {
+      "id": "docs-restructure",
+      "desc": "Move dev history docs to docs/archive/, keep only README/CHANGELOG/PROTOCOL/SKILL at root",
+      "produces": [
+        "docs/archive/orientation.md",
+        "docs/archive/reorientation.md",
+        "docs/archive/reorientation-phase5.md",
+        "docs/archive/ADOPTION-AUDIT.md",
+        "docs/archive/SPEC.md",
+        "docs/archive/PROMPT.md",
+        "docs/archive/RELEASE-ROADMAP.md",
+        "docs/archive/AUDIT.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-12-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/archive/orientation.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "docs/archive/SPEC.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "api-surface-docs": {
+      "id": "api-surface-docs",
+      "desc": "Export map in README (all 6 entry points incl. roadmap/agent), module map, types-at-a-glance, orient↔orientCached signpost",
+      "produces": [
+        "docs/MODULE-MAP.md",
+        "docs/api-surface.md"
+      ],
+      "consumes": [
+        "docs/archive/orientation.md"
+      ],
+      "deps": [
+        "docs-restructure"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/MODULE-MAP.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "predicate-builders": {
+      "id": "predicate-builders",
+      "desc": "Curried exists predicates: fileExists(root), gitArtifactExists(root), compound(...preds)",
+      "produces": [
+        "src/predicates.ts",
+        "tests/predicates.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-12-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/predicates.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/predicates.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "parallel-order": {
+      "id": "parallel-order",
+      "desc": "parallelOrder(g) → string[][] — batches of mutually independent nodes for concurrent execution",
+      "produces": [
+        "tests/parallel-order.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-12-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/parallel-order.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "error-model": {
+      "id": "error-model",
+      "desc": "RoadmapError class: typed codes (POSITION_MISMATCH, CONTRACT_VIOLATION, ...) + fix field + entry point",
+      "produces": [
+        "src/errors.ts",
+        "tests/errors.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-12-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/errors.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/errors.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "cli-binary": {
+      "id": "cli-binary",
+      "desc": "bin/roadmap CLI: orient, advance, describe, validate, expand, branch, merge subcommands. JSON stdout. expand runs .ts scripts + validates + commits. branch/merge operate on git branches via protocol.ts branch()/merge(). package.json bin entry.",
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/cli.test.ts"
+      ],
+      "consumes": [
+        "docs/MODULE-MAP.md",
+        "src/predicates.ts",
+        "src/errors.ts",
+        "tests/parallel-order.test.ts"
+      ],
+      "deps": [
+        "api-surface-docs",
+        "predicate-builders",
+        "parallel-order",
+        "error-model",
+        "file-headers"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "bin/roadmap.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/cli.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-13-term": {
+      "id": "phase-13-term",
+      "desc": "Phase 13 complete: Consumption surface (CLI, predicates, parallelOrder, errors, clean docs, file headers, CLAUDE.md)",
+      "produces": [],
+      "consumes": [
+        "bin/roadmap.ts",
+        "tests/cli.test.ts"
+      ],
+      "deps": [
+        "cli-binary",
+        "claude-md",
+        "repo-cleanup",
+        "consumer-categories"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "term": {
+      "id": "term",
+      "desc": "v0.5.0-consumption-ready: All phases complete, CLI binary ships, clean API surface",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "spec-threading-feature"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run --reporter=dot"
+        },
+        {
+          "type": "intent",
+          "statement": "Output implementation matches spec contract: all features visible, interactive, accessible",
+          "confidence": 0,
+          "evaluator": "self",
+          "expandOnFail": true,
+          "maxExpansionDepth": 2
+        }
+      ],
+      "idempotent": false
+    },
+    "file-headers": {
+      "id": "file-headers",
+      "desc": "Structured @module/@exports/@types/@entry headers in all src/ files. Enables grep-based API discovery.",
+      "produces": [],
+      "consumes": [
+        "docs/archive/orientation.md"
+      ],
+      "deps": [
+        "docs-restructure"
       ],
       "validate": [],
       "idempotent": true
     },
-    "converged": {
-      "id": "converged",
-      "desc": "Convergence term (fixed passes)",
+    "repo-cleanup": {
+      "id": "repo-cleanup",
+      "desc": "Remove stale .roadmap/ expansion scripts, tests/adoption/ scaffolding, dead artifacts from completed phases",
       "produces": [],
       "consumes": [],
       "deps": [
-        "runtime"
+        "phase-12-term"
       ],
       "validate": [],
       "idempotent": true
+    },
+    "claude-md": {
+      "id": "claude-md",
+      "desc": "Update .claude/CLAUDE.md for consumer LLMs: module map, export table, type signatures, usage examples",
+      "produces": [],
+      "consumes": [
+        "docs/MODULE-MAP.md"
+      ],
+      "deps": [
+        "api-surface-docs"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "git-library": {
+      "id": "git-library",
+      "desc": "Consolidate git operations: repoInfo, artifactAtRef, archivedFiles, fileHistory, restore, stageAndCommit, createBranch",
+      "produces": [
+        "src/lib/git.ts",
+        "tests/git-library.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-4.5-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/git.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/git-library.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "consumer-categories": {
+      "id": "consumer-categories",
+      "desc": "Six consumer entry points: hooks, git, agent, developer, full, skills — each with targeted docs + API surface",
+      "produces": [
+        "src/index.hooks.ts",
+        "src/index.git.ts",
+        "src/index.agent.ts",
+        "src/index.developer.ts",
+        "docs/consumer-guide.md",
+        "tests/consumer-categories.test.ts"
+      ],
+      "consumes": [
+        "src/lib/git.ts",
+        "src/lib/cross-orient.ts"
+      ],
+      "deps": [
+        "phase-12-term",
+        "git-library"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/index.hooks.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/consumer-categories.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "git-ops-impl": {
+      "id": "git-ops-impl",
+      "desc": "git-ops mechanical skill: read/write/log/diff/exists/list/commit operations. Cross-repo reads, local writes, atomic commits, --session-squash with env inference (CLAUDE_SESSION_ID or ROADMAP_SESSION_ID). Input via --stdin or --from-file.",
+      "produces": [
+        "~/.claude/skills/git-ops/SKILL.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-13-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "~/.claude/skills/git-ops/SKILL.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "migration-script": {
+      "id": "migration-script",
+      "desc": "Migration script for early adopters (Mac + Linux): symlink MEMORY.md → /dev/null, create .roadmap/memory/ locally, initialize ~/.roadmap/memory/ as standalone git repo. Idempotent and platform-aware.",
+      "produces": [
+        "bin/migrate-memory.sh"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-13-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "bin/migrate-memory.sh"
+        }
+      ],
+      "idempotent": true
+    },
+    "memory-docs": {
+      "id": "memory-docs",
+      "desc": "Document per-agent and per-swarm memory patterns: self-orientation on spawn, learned patterns as guards, session-local memory, cross-repo context. Per-swarm: collective memory synthesis, memory-driven coordination, swarm-specific optimizations, memory as audit trail. Include examples in TypeScript.",
+      "produces": [
+        "docs/agent-memory-guide.md"
+      ],
+      "consumes": [
+        "docs/api-surface.md"
+      ],
+      "deps": [
+        "git-ops-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/agent-memory-guide.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "memory-tests": {
+      "id": "memory-tests",
+      "desc": "Tests for git-ops skill (cross-repo reads, local write isolation, atomic commits, session squash, --stdin/--from-file) and migration script (idempotency, platform detection, symlink creation). Integration + unit tests.",
+      "produces": [
+        "tests/git-ops.test.ts",
+        "tests/migrate-memory.test.ts"
+      ],
+      "consumes": [
+        "~/.claude/skills/git-ops/SKILL.md",
+        "bin/migrate-memory.sh"
+      ],
+      "deps": [
+        "git-ops-impl",
+        "migration-script"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/git-ops.test.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "tests/migrate-memory.test.ts"
+        },
+        {
+          "type": "function",
+          "target": "vitest",
+          "fn": "npx vitest run tests/git-ops.test.ts tests/migrate-memory.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-14-term": {
+      "id": "phase-14-term",
+      "desc": "Phase 14 complete: Agent memory infrastructure (git-ops skill, migration script, memory patterns, tests)",
+      "produces": [],
+      "consumes": [
+        "docs/agent-memory-guide.md",
+        "tests/git-ops.test.ts",
+        "tests/migrate-memory.test.ts"
+      ],
+      "deps": [
+        "memory-docs",
+        "memory-tests"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "locate-readmaps": {
+      "id": "locate-readmaps",
+      "desc": "Roadmap discovery skill: find all .roadmap/head.json files on machine, load+parse each, orient each one, return { name, path, dagId, position, complete, nodes, blockedBy }. Graceful failure on corrupted DAGs.",
+      "produces": [
+        "~/.claude/skills/roadmap-locate/SKILL.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-14-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "~/.claude/skills/roadmap-locate/SKILL.md"
+        },
+        {
+          "type": "function",
+          "target": "vitest",
+          "fn": "npx vitest run tests/roadmap-locate.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "cli-cross-project": {
+      "id": "cli-cross-project",
+      "desc": "CLI commands for cross-repo coordination: `roadmap locate --all` (discover), `roadmap sync [--format json|tree]` (aggregate tasks), `roadmap parallel --cross-repo [--graph]` (show parallel batches across repos). Enables agents to see all available work and parallel fanout points.",
+      "produces": [
+        "tests/cli-cross-project.test.ts"
+      ],
+      "consumes": [
+        "~/.claude/skills/roadmap-locate/SKILL.md"
+      ],
+      "deps": [
+        "locate-readmaps"
+      ],
+      "validate": [
+        {
+          "type": "function",
+          "target": "vitest",
+          "fn": "npx vitest run tests/cli-cross-project.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "git-hook-test-enforcement": {
+      "id": "git-hook-test-enforcement",
+      "desc": "Pre-commit hook enforcing test-writing: commit fails if src/*.ts changed but no tests/*.test.ts added. Allow bypass via SKIP_TEST_CHECK=<reason>. Store config in .roadmap/hook-config.json. Install via `roadmap install-hooks`. Configurable per-repo.",
+      "produces": [
+        "hooks/pre-commit",
+        ".roadmap/hook-config.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-14-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "hooks/pre-commit"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/hook-config.json"
+        },
+        {
+          "type": "function",
+          "target": "vitest",
+          "fn": "npx vitest run tests/test-enforcement.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-15-term": {
+      "id": "phase-15-term",
+      "desc": "Phase 15 complete: Cross-repo coordination infrastructure (discovery, aggregation, parallel scheduling, test enforcement). Agents can now see all roadmaps and work across them.",
+      "produces": [],
+      "consumes": [
+        "tests/cli-cross-project.test.ts",
+        "hooks/pre-commit"
+      ],
+      "deps": [
+        "cli-cross-project",
+        "git-hook-test-enforcement"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "batch-position-types": {
+      "id": "batch-position-types",
+      "desc": "Redefine Orientation type: position becomes string[] (batch, not node). Implement orient() returning batch, advanceBatch() for advancement. Breaking change to API. Updates: src/protocol.ts type system, orient() signature, new advanceBatch() function.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-15-term"
+      ],
+      "validate": [
+        {
+          "type": "function",
+          "target": "tsc",
+          "fn": "npx tsc --noEmit src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "batch-validation-layer": {
+      "id": "batch-validation-layer",
+      "desc": "Add validateBatch() function to validate all nodes in a batch as unit. Check artifact materialization (all produces must exist). Ensures batch completeness before advancement. Updates: src/validation.ts, new validateBatch() export.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-15-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "batch-cli-trail": {
+      "id": "batch-cli-trail",
+      "desc": "Update CLI commands: orient/advance for batch-level position. Update trail schema to record batch progressions (position: string[] instead of string). New cmdAdvance() function. Updates: bin/roadmap.ts, trail JSON format.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "batch-position-types"
+      ],
+      "validate": [
+        {
+          "type": "function",
+          "target": "tsc",
+          "fn": "npx tsc --noEmit bin/roadmap.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "batch-enforcement-hook": {
+      "id": "batch-enforcement-hook",
+      "desc": "Update pre-commit hook for batch-level enforcement: prevent commits unless entire batch validates AND all artifacts materialized. New validation: batchComplete + artifact-exists checks. Updates: hooks/pre-commit script.",
+      "produces": [
+        "hooks/pre-commit"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "batch-validation-layer"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "hooks/pre-commit"
+        }
+      ],
+      "idempotent": true
+    },
+    "batch-position-tests": {
+      "id": "batch-position-tests",
+      "desc": "Comprehensive test rewrite for batch semantics: orient() returns array, advanceBatch() validation, artifact materialization, batch completion. Rewrite protocol.test.ts, add batch-specific tests. Coverage: linear DAGs, diamond DAGs, complex DAGs.",
+      "produces": [
+        "tests/protocol.test.ts",
+        "tests/batch-position.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "bin/roadmap.ts"
+      ],
+      "deps": [
+        "batch-position-types",
+        "batch-validation-layer",
+        "batch-cli-trail",
+        "batch-enforcement-hook"
+      ],
+      "validate": [
+        {
+          "type": "function",
+          "target": "vitest",
+          "fn": "npx vitest run tests/protocol.test.ts tests/batch-position.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-16-term": {
+      "id": "phase-16-term",
+      "desc": "Phase 16 complete: Batch-level position model enforced. Position is array (batch), not string (node). Cannot advance before entire batch complete. Trail records batch progressions. Pre-commit prevents partial batch commits. Breaking API change, but mechanically enforced.",
+      "produces": [],
+      "consumes": [
+        "tests/protocol.test.ts",
+        "tests/batch-position.test.ts",
+        "hooks/pre-commit"
+      ],
+      "deps": [
+        "batch-position-tests"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "plan-mode-types": {
+      "id": "plan-mode-types",
+      "desc": "Add mode?: 'execute' | 'plan' to NodeSpec, expandedFrom?: string for provenance, { type: 'expanded', minNodes?: number } to ValidationRule union. Optional fields — existing DAGs unchanged. Compile-time enforcement.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-16-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "plan-mode-orient": {
+      "id": "plan-mode-orient",
+      "desc": "Update orient() plan node semantics: a node with mode='plan' is done when at least one node with expandedFrom pointing to it exists in the graph. If no expansion children exist, plan node is current position (needs expansion). Default mode='execute' preserves existing behavior.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "plan-mode-types"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "plan-mode-validate": {
+      "id": "plan-mode-validate",
+      "desc": "Implement 'expanded' validation rule in validateNode: check that nodes with expandedFrom === nodeId exist in graph, count >= minNodes (default 1). Returns evidence listing expansion children found.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "plan-mode-types"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "plan-mode-brief": {
+      "id": "plan-mode-brief",
+      "desc": "Add mode field to Brief type. getBrief reads node mode and returns it. inferPattern handles plan mode: 'Decompose into sub-tasks. Decide if human input needed. Output is DAG expansion.' Agents branch on brief.mode.",
+      "produces": [
+        "src/lib/brief.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "plan-mode-orient",
+        "plan-mode-validate"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/brief.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "plan-mode-cli": {
+      "id": "plan-mode-cli",
+      "desc": "CLI plan mode surface: orient output includes mode field per node, chart marks plan nodes with distinct emoji (📋), describe shows plan vs execute node counts. Help text documents plan mode.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "plan-mode-orient"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "bin/roadmap.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "plan-mode-tests": {
+      "id": "plan-mode-tests",
+      "desc": "Comprehensive tests: mode field type validation (optional, defaults execute), orient with plan nodes (done when expanded, current when not), expanded validation rule (count children, evidence), Brief.mode field, CLI mode output. Edge cases: plan node with no children, plan node expanded into more plan nodes (recursive).",
+      "produces": [
+        "tests/plan-mode.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "src/lib/brief.ts",
+        "bin/roadmap.ts"
+      ],
+      "deps": [
+        "plan-mode-brief",
+        "plan-mode-cli"
+      ],
+      "validate": [
+        {
+          "type": "function",
+          "target": "vitest",
+          "fn": "npx vitest run tests/plan-mode.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-17-term": {
+      "id": "phase-17-term",
+      "desc": "Phase 17 complete: Plan node execution mode operational. Nodes declare mode ('execute' | 'plan'), orient() handles plan completion via expansion detection, validateNode checks 'expanded' rule, Brief surfaces mode to agents, CLI displays plan nodes distinctly. Backward compatible — mode defaults to 'execute'.",
+      "produces": [],
+      "consumes": [
+        "tests/plan-mode.test.ts"
+      ],
+      "deps": [
+        "plan-mode-tests"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "shell-validate-rule": {
+      "id": "shell-validate-rule",
+      "desc": "Add shell ValidationRule type — { type: \"shell\", command, expectExitCode? }. Enables nodes to declare arbitrary shell commands as validation gates. Wired into validateNode and the validate CLI command.",
+      "produces": [
+        "src/protocol.ts",
+        "tests/shell-validate.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-17-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/shell-validate.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "silent-orient": {
+      "id": "silent-orient",
+      "desc": "orient --check: silent, note-exempt batch polling for swarm agents. No trail entry written. Added to NOTE_EXEMPT gate and orient --check path. Prevents trail pollution from high-frequency position checks.",
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/silent-orient.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-17-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/silent-orient.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "pending-contracts": {
+      "id": "pending-contracts",
+      "desc": "ConsumeSpec: string | { artifact, resolvedBy }. Acknowledged pending contracts suppress verify() warnings while the resolver node is still incomplete. Enables DAGs with intentional cross-node artifact handoffs without false-positive verify errors.",
+      "produces": [
+        "src/protocol.ts",
+        "tests/pending-contracts.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-17-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/pending-contracts.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "speckit-import": {
+      "id": "speckit-import",
+      "desc": "roadmap import --from speckit <file.md> --id <dag-id>: parse a tasks.md into a roadmap DAG. parseTasksMd + tasksToDAG in src/lib/speckit-import.ts. CLI wired to cmdImport.",
+      "produces": [
+        "src/lib/speckit-import.ts",
+        "tests/speckit-import.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-17-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/speckit-import.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-18-term": {
+      "id": "phase-18-term",
+      "desc": "Phase 18 complete: shell validate rule, silent orient (--check), pending contracts (ConsumeSpec resolvedBy), and spec-kit import command all operational.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "shell-validate-rule",
+        "silent-orient",
+        "pending-contracts",
+        "speckit-import"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "agent-dispatch-api": {
+      "id": "agent-dispatch-api",
+      "desc": "readyNodes(): eager dispatch beyond current batch whose deps are met. nextBatch(): orchestrator lookahead with conflict pre-check. criticalPath(): longest-path init→term by node count. All exported from index. orient --ready and --next flags.",
+      "produces": [
+        "src/protocol.ts",
+        "tests/ready-nodes.test.ts",
+        "tests/next-batch.test.ts",
+        "tests/critical-path.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-18-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/ready-nodes.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "loop-signal-types": {
+      "id": "loop-signal-types",
+      "desc": "loopTarget + convergenceCheck on NodeSpec. LoopSignal interface in Orientation — present when current batch contains a loop node. Structurally distinguishes terminal nodes from loop nodes. orient --check output includes loop field.",
+      "produces": [
+        "src/protocol.ts",
+        "tests/loop-target.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-18-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/loop-target.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "cli-agent-commands": {
+      "id": "cli-agent-commands",
+      "desc": "New CLI commands: show <node-id> (full node spec as JSON), commit --node <id> (stages produces + [node: X] trailer), checkpoint --label, diff. install-hooks wired to dispatch + extended to all four hooks (pre-commit, post-commit, commit-msg, prepare-commit-msg). Shell wrapper for .ts hook sources.",
+      "produces": [
+        "bin/roadmap.ts",
+        "hooks/commit-msg",
+        "hooks/prepare-commit-msg",
+        "tests/show.test.ts",
+        "tests/checkpoint-cmd.test.ts",
+        "tests/commit-cmd.test.ts",
+        "tests/dag-diff.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-18-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/show.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "orient-staged-flag": {
+      "id": "orient-staged-flag",
+      "desc": "orient --staged: per-node isomorphism check — do staged files exactly match a node's produces? Returns { files, matches, extraFiles, isomorphic }. Enforces one-commit-per-node at the orient level rather than only at the pre-commit hook level.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-18-term"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "node --experimental-strip-types bin/roadmap.ts help 2>&1 | grep -q \"orient --staged\""
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-19-term": {
+      "id": "phase-19-term",
+      "desc": "Phase 19 complete: agent dispatch API (readyNodes/nextBatch/criticalPath), loop signal types, CLI agent commands (show/commit/checkpoint/diff/install-hooks), orient --staged isomorphism check all operational.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "agent-dispatch-api",
+        "loop-signal-types",
+        "cli-agent-commands",
+        "orient-staged-flag"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "complete-command": {
+      "id": "complete-command",
+      "desc": "roadmap complete <node-id>: atomic claim → checkpoint → reorient → auto-advance when last in batch. --no-advance to suppress auto-advance. Eliminates 5-call agent sequence (claim + checkpoint + orient + advance + trail) to 1 call.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-19-term"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "node --experimental-strip-types bin/roadmap.ts help 2>&1 | grep -q \"complete <node\""
+        }
+      ],
+      "idempotent": true
+    },
+    "ambient-field": {
+      "id": "ambient-field",
+      "desc": "NodeSpec.ambient: readonly string[] of files agent reads for context but that don't gate readiness or appear in dependency resolution. Decouples \"I need this to read\" from \"I need this to unblock.\" Threaded through Flat type, surfaced in show output alongside consumes.",
+      "produces": [
+        "src/protocol.ts",
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-19-term"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "loop-validation": {
+      "id": "loop-validation",
+      "desc": "convergenceCheck schema enforcement: define() rejects unknown keys (valid: maxCoverageDelta, requireEmptyProposals, minWallClockDeltaMs). loopTarget reference validation: check() emits orphan entry for any loopTarget that doesn't exist as a node ID. Previously both were silent.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-19-term"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "iter-id-command": {
+      "id": "iter-id-command",
+      "desc": "roadmap iter-id: .roadmap/iter.json counter (--increment, --reset). Canonical loop iteration number for artifact namespacing (evidence-iter-3.json). orient output includes iteration field when iter.json exists — agents get loop context in the standard orient call.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-19-term"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "node --experimental-strip-types bin/roadmap.ts help 2>&1 | grep -q \"iter-id\""
+        }
+      ],
+      "idempotent": true
+    },
+    "ergonomics-fixes": {
+      "id": "ergonomics-fixes",
+      "desc": "Parameter property syntax fix (checkpoint.ts, audit.ts — Node 25 strip-only crash). checkpoint --label note-optional (synthesizes from label). orient --ready includes myClaims[] for current-batch owned nodes. Pre-commit: single orient call (3→1 spawns on failure).",
+      "produces": [
+        "src/lib/checkpoint.ts",
+        "src/lib/audit.ts",
+        "hooks/pre-commit",
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-19-term"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "phase-20-term": {
+      "id": "phase-20-term",
+      "desc": "Phase 20 complete: complete command with auto-advance, NodeSpec.ambient, convergenceCheck/loopTarget validation, iter-id, ergonomics fixes (parameter properties, note-optional checkpoint, myClaims, single orient spawn) all operational.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "complete-command",
+        "ambient-field",
+        "loop-validation",
+        "iter-id-command",
+        "ergonomics-fixes"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "trail-metrics": {
+      "id": "trail-metrics",
+      "desc": "src/lib/trail-metrics.ts: roadmap-native performance metrics from trail.jsonl + claims.json. Computes per-node durations, batch wall-clock, orient-call counts, iteration number. source: \"trail\" sentinel distinguishes from regent-enriched metrics. transcript-metrics calls this always; agent JSONL data enriches but is never required for convergence check.",
+      "produces": [
+        "src/lib/trail-metrics.ts",
+        "tests/trail-metrics.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-20-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/trail-metrics.ts"
+        }
+      ],
+      "idempotent": true,
+      "ambient": [
+        "src/lib/claims.ts"
+      ]
+    },
+    "phase-21-term": {
+      "id": "phase-21-term",
+      "desc": "Phase 21 complete: trail-metrics baseline layer operational. transcript-metrics node can call computeTrailMetrics() and optionally enrich with agent JSONL data. Improvement loop is runnable without regent.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "trail-metrics"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "spawn-plan-impl": {
+      "id": "spawn-plan-impl",
+      "desc": "SpawnPlan types + buildSpawnPlan(dag) function in src/lib/spawn-plan.ts",
+      "produces": [
+        "src/lib/spawn-plan.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-21-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/spawn-plan.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "spawn-plan-cli": {
+      "id": "spawn-plan-cli",
+      "desc": "Integrate spawn plan into cmdImport output in bin/roadmap.ts",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/lib/spawn-plan.ts"
+      ],
+      "deps": [
+        "spawn-plan-impl"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"spawnPlan\" bin/roadmap.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "spawn-plan-tests": {
+      "id": "spawn-plan-tests",
+      "desc": "Unit tests for buildSpawnPlan — single-node batches, multi-worker teams, recombination, conflicts",
+      "produces": [
+        "tests/spawn-plan.test.ts"
+      ],
+      "consumes": [
+        "src/lib/spawn-plan.ts"
+      ],
+      "deps": [
+        "spawn-plan-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/spawn-plan.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-22-term": {
+      "id": "phase-22-term",
+      "desc": "Phase 22 complete: spawn plan output ships with roadmap import",
+      "produces": [],
+      "consumes": [
+        "src/lib/spawn-plan.ts",
+        "bin/roadmap.ts",
+        "tests/spawn-plan.test.ts"
+      ],
+      "deps": [
+        "spawn-plan-cli",
+        "spawn-plan-tests"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/spawn-plan.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": false
+    },
+    "validate-protocol": {
+      "id": "validate-protocol",
+      "desc": "Add build-produces, launch-check, spec-conformance rule types to validateNode in src/protocol.ts",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-22-term"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"build-produces\" src/protocol.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"launch-check\" src/protocol.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"spec-conformance\" src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "validate-cli": {
+      "id": "validate-cli",
+      "desc": "Wire validateNode into cmdComplete + --skip-validate flag + roadmap report command in bin/roadmap.ts",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-22-term"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"skip-validate\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"cmdReport\" bin/roadmap.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "validate-tests": {
+      "id": "validate-tests",
+      "desc": "Tests for validation enforcement: build-produces, launch-check, spec-conformance, cmdComplete rejection, --skip-validate, report",
+      "produces": [
+        "tests/validate-enforcement.test.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "bin/roadmap.ts"
+      ],
+      "deps": [
+        "validate-protocol",
+        "validate-cli"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/validate-enforcement.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/validate-enforcement.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-23-term": {
+      "id": "phase-23-term",
+      "desc": "Phase 23 complete: validateNode enforced on complete, 3 new rule types, gap report command",
+      "produces": [],
+      "consumes": [
+        "tests/validate-enforcement.test.ts"
+      ],
+      "deps": [
+        "validate-tests"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": false
+    },
+    "scaffold-impl": {
+      "id": "scaffold-impl",
+      "desc": "buildScaffold(): topologically generate typed stub files for all DAG produces, optional tsc type-check",
+      "produces": [
+        "src/lib/scaffold.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-23-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/scaffold.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildScaffold\" src/lib/scaffold.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "cluster-impl": {
+      "id": "cluster-impl",
+      "desc": "buildClusters(): bipartite produces/consumes graph → connected-component clusters with coupling + critical path annotation",
+      "produces": [
+        "src/lib/cluster.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-23-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/cluster.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildClusters\" src/lib/cluster.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "schedule-impl": {
+      "id": "schedule-impl",
+      "desc": "buildSchedule(): inter-cluster dep graph → wave assignment with critical path ordering",
+      "produces": [
+        "src/lib/schedule.ts"
+      ],
+      "consumes": [
+        "src/lib/cluster.ts"
+      ],
+      "deps": [
+        "cluster-impl"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/schedule.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildSchedule\" src/lib/schedule.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "dag-compiler-cli": {
+      "id": "dag-compiler-cli",
+      "desc": "Register scaffold/cluster/schedule CLI commands + surface unblocked nodes in cmdComplete response",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/lib/scaffold.ts",
+        "src/lib/cluster.ts",
+        "src/lib/schedule.ts"
+      ],
+      "deps": [
+        "scaffold-impl",
+        "cluster-impl",
+        "schedule-impl"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"cmdScaffold\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"cmdCluster\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"cmdSchedule\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"unblocked\" bin/roadmap.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "dag-compiler-tests": {
+      "id": "dag-compiler-tests",
+      "desc": "Tests for scaffold, cluster, schedule: stub generation, connected components, wave assignment, unblocked surfacing",
+      "produces": [
+        "tests/dag-compiler.test.ts"
+      ],
+      "consumes": [
+        "src/lib/scaffold.ts",
+        "src/lib/cluster.ts",
+        "src/lib/schedule.ts"
+      ],
+      "deps": [
+        "dag-compiler-cli"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/dag-compiler.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/dag-compiler.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-24-term": {
+      "id": "phase-24-term",
+      "desc": "Phase 24 complete: DAG-as-Compiler — scaffold, cluster, schedule, unblocked surfacing all ship",
+      "produces": [],
+      "consumes": [
+        "tests/dag-compiler.test.ts"
+      ],
+      "deps": [
+        "dag-compiler-tests"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": false
+    },
+    "fr-impl-init": {
+      "id": "fr-impl-init",
+      "desc": "Phase 25 gate — existing files available as ambient context for gallery implementation",
+      "produces": [],
+      "consumes": [],
+      "ambient": [
+        "src/lib/intent-evaluator.ts",
+        "src/lib/compile-prompts.ts",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "phase-24-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/intent-evaluator.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/compile-prompts.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-compile-prompts-intent": {
+      "id": "fr-compile-prompts-intent",
+      "desc": "Enhance src/lib/compile-prompts.ts: intent rules in validate[] emit annotated self-check items\nwith failure mode hints from evaluation history.\n\nCurrently buildVerificationChecklist() emits:\n  case \"intent\": return `- [ ] Intent (${rule.evaluator}): \"${rule.statement}\"`\n\nRequired change:\n  1. Add buildIntentSelfCheck(validate: ValidationRule[], nodeId: string, repoRoot: string): string\n     - For each intent rule: emit \"- [ ] \\\"${statement}\\\" (threshold: ${confidence}, evaluator: ${evaluator})\"\n     - Call readEvaluations(nodeId, repoRoot) from src/lib/intent-evaluator.ts\n     - Filter by rule.statement, find last failing record (r.pass === false)\n     - If found: emit \"      Known failure mode: ${lastFailure.reasoning}\"\n     - If found && lastFailure.evidence.length: emit \"      Evidence: ${lastFailure.evidence.join(\", \")}\"\n  2. In fillTemplate(): call buildIntentSelfCheck for intent rules, append as \"### Intent (self-check)\" subsection\n     in the Verification section, after deterministic items.\n     Signature change: fillTemplate(node, env, cluster?, repoRoot?) — repoRoot optional for backward compat.\n  3. compilePrompts(): pass repoRoot through to fillTemplate.\n\nDo NOT change the existing deterministic checklist items. The intent section is additive.\nDo NOT lower confidence thresholds — hints enrich prompts, they do not relax gates.\n\nconsumes: src/lib/intent-evaluator.ts (readEvaluations export)",
+      "produces": [
+        "src/lib/compile-prompts.ts"
+      ],
+      "consumes": [],
+      "ambient": [
+        "src/lib/intent-evaluator.ts"
+      ],
+      "deps": [
+        "fr-impl-init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"buildIntentSelfCheck\" src/lib/compile-prompts.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"readEvaluations\" src/lib/compile-prompts.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"Known failure mode\" src/lib/compile-prompts.ts"
+        },
+        {
+          "type": "intent",
+          "statement": "Intent self-check items include failure mode hint from evaluation history when prior failures exist, but history never adjusts confidence thresholds",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "context": [
+            "src/lib/compile-prompts.ts"
+          ]
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-emit-node-type": {
+      "id": "fr-emit-node-type",
+      "desc": "Add EmitGalleryNodeSpec type and nodeType discriminant to src/protocol.ts.\n\nAdd to protocol.ts:\n  export interface EmitGalleryNodeSpec {\n    id: string\n    nodeType: \"emit-gallery\"           // discriminant, distinct from mode\n    candidates: number                 // how many implementations to generate\n    strategies: string[]               // e.g. [\"faithful\", \"minimal\", \"robust\", \"budget\"]\n    selectionMode: \"auto\" | \"manual\"   // auto = LLM selects via Judgment\n    validate: ValidationRule[]         // gate suite applied to each candidate\n    produces: string[]\n    deps?: string[]\n    desc?: string\n  }\n\n  Add to NodeSpec<TAll, TSelf>: nodeType?: \"execute\" | \"emit-gallery\"\n  (mode is already \"execute\" | \"plan\" — nodeType is a separate dispatch dimension)\n\n  Export EmitGalleryNodeSpec from protocol.ts.\n\nDo NOT change ValidationRule, Graph, or Orientation types. Additive only.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "fr-impl-init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"EmitGalleryNodeSpec\" src/protocol.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"nodeType.*emit-gallery\" src/protocol.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit 2>&1 | head -5"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-strategies": {
+      "id": "fr-strategies",
+      "desc": "Create src/lib/strategies/ — generation strategy definitions for emit-gallery.\n\nCreate src/lib/strategies/index.ts exporting:\n  export interface StrategySpec {\n    id: string                  // \"faithful\" | \"minimal\" | \"robust\" | \"budget\"\n    label: string               // human-readable name\n    systemPrompt: string        // injected as system prompt for the generator\n    model: string               // e.g. \"claude-opus-4-6\" | \"claude-haiku-4-5-20251001\"\n    estimatedCostMultiplier: number  // relative cost vs baseline (1.0 = baseline)\n  }\n  export const STRATEGIES: StrategySpec[]\n  export function getStrategy(id: string): StrategySpec\n\nFour strategies in STRATEGIES:\n  faithful: Opus, spec-literal, no embellishment. systemPrompt emphasizes exact spec adherence.\n  minimal: Haiku, fewest files, simplest architecture. systemPrompt emphasizes reduction.\n  robust: Opus, defensive coding, comprehensive error handling. systemPrompt emphasizes edge cases.\n  budget: Haiku, same spec input as faithful. systemPrompt identical to faithful. costMultiplier ~0.15.\n\nFile: src/lib/strategies/index.ts (single file, no subdirectory needed)",
+      "produces": [
+        "src/lib/strategies/index.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "fr-impl-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/strategies/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'export interface StrategySpec' src/lib/strategies/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"faithful.*minimal.*robust.*budget\" src/lib/strategies/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"getStrategy\" src/lib/strategies/index.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-gallery-core": {
+      "id": "fr-gallery-core",
+      "desc": "Create src/lib/gallery.ts — plan gallery core: types, Pareto filtering, cardinal risk, candidate generation.\n\nExports:\n  export interface TemplateParams {\n    emitStrategy: \"single-pass\" | \"two-stage\" | \"per-cluster\"\n    gateOrdering: \"parallel\" | \"serial\" | \"cheapest-first\"\n    preExpansion: \"none\" | \"from-history\" | \"from-spec-complexity\"\n    modelAllocation: \"opus-all\" | \"opus-emit+haiku-fix\" | \"haiku-emit+opus-judge\"\n    convergence: \"fixed-passes\" | \"until-clean\" | \"budget-capped\"\n  }\n\n  export interface GalleryCandidate {\n    id: string                    // \"aggressive\" | \"corrective\" | \"staged\" | \"budget\"\n    label: string\n    summary: string\n    parameters: TemplateParams\n    dag: Record<string, any>      // head.json-compatible DAGSpec\n    estimates: {\n      nodes: number\n      maxExpansion: number\n      wallClockMinutes: number\n      costUSD: number\n      risk: number                // cardinal: 0.0–1.0 = 1 - (historicalSuccessRate * gateConvergenceRate)\n    }\n    gateProfile: { deterministic: number; intent: number; runtime: number }\n    historySignal?: {\n      priorFailureClasses: string[]\n      preExpanded: string[]\n      templateSuccessRate: number\n    }\n  }\n\n  export function computeRisk(historicalSuccessRate: number, gateConvergenceRate: number): number\n    // risk = 1 - (historicalSuccessRate * gateConvergenceRate)\n    // No history → both rates default to 0 → risk = 1.0\n\n  export function paretoFilter(candidates: GalleryCandidate[]): GalleryCandidate[]\n    // Prune dominated candidates. A is dominated by B if:\n    //   B.estimates.costUSD <= A.estimates.costUSD AND\n    //   B.estimates.wallClockMinutes <= A.estimates.wallClockMinutes AND\n    //   B.estimates.risk <= A.estimates.risk AND at least one strictly less.\n    // Target: 3-4 survivors.\n    // On cold start (all risk=1.0): conservative template always survives.\n\n  export function generateCandidates(specSource: string, historyDir?: string): GalleryCandidate[]\n    // Generate all template combinations, score with computeRisk, run paretoFilter.\n    // historyDir = path to .roadmap/evaluations/ (optional, skipped if missing)\n\nNo Anthropic API calls. This is pure data generation + filtering.",
+      "produces": [
+        "src/lib/gallery.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "fr-impl-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"GalleryCandidate\" src/lib/gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"paretoFilter\" src/lib/gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"computeRisk\" src/lib/gallery.ts"
+        },
+        {
+          "type": "intent",
+          "statement": "Pareto filtering uses cardinal risk = 1 - (historicalSuccessRate × gateConvergenceRate), defaults to 1.0 on cold start, and conservative template always survives when all candidates share risk=1.0",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "context": [
+            "src/lib/gallery.ts"
+          ]
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-cost-estimator": {
+      "id": "fr-cost-estimator",
+      "desc": "Create src/lib/cost-estimator.ts — history-based cost and time estimation for gallery candidates.\n\nExports:\n  export interface CostEstimate {\n    wallClockMinutes: number\n    costUSD: number\n    confidence: \"cold-start\" | \"low\" | \"medium\" | \"high\"  // based on history sample size\n  }\n\n  export function estimateCost(params: {\n    nodeCount: number,\n    modelAllocation: TemplateParams[\"modelAllocation\"],\n    checkpointDir?: string,       // .roadmap/checkpoints/ for duration baselines\n    evaluationsDir?: string,      // .roadmap/evaluations/ for gate convergence history\n  }): CostEstimate\n\n  Cost model:\n    opus: $0.015/1k input tokens, ~0.5k tokens/node average\n    haiku: $0.00025/1k input tokens, same node count\n  Duration model:\n    Read checkpoint durations from checkpointDir if available\n    Fallback: 1.5 min/node for opus, 0.5 min/node for haiku\n  Confidence:\n    cold-start = no history files found\n    low = 1-2 prior runs\n    medium = 3-9 prior runs\n    high = 10+ prior runs\n\nImport TemplateParams from src/lib/gallery.ts.\nNo Anthropic API calls.",
+      "produces": [
+        "src/lib/cost-estimator.ts"
+      ],
+      "consumes": [
+        "src/lib/gallery.ts"
+      ],
+      "deps": [
+        "fr-gallery-core"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/cost-estimator.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"estimateCost\" src/lib/cost-estimator.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"CostEstimate\" src/lib/cost-estimator.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"cold-start\" src/lib/cost-estimator.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-gallery-templates": {
+      "id": "fr-gallery-templates",
+      "desc": "Create src/lib/gallery-templates/index.ts — four named plan templates as GalleryCandidate factories.\n\nExports:\n  export interface TemplateDefinition {\n    id: \"aggressive\" | \"corrective\" | \"staged\" | \"budget\"\n    label: string\n    summary: string\n    parameters: TemplateParams\n    buildDag(specSource: string, historyFailureClasses?: string[]): Record<string, any>\n    // Returns head.json-compatible partial DAGSpec (nodes + deps, no id/init/term)\n  }\n  export const TEMPLATES: TemplateDefinition[]\n  export function buildGallery(specSource: string, historyDir?: string): GalleryCandidate[]\n    // Instantiate all 4 templates, score with estimateCost + computeRisk, return Pareto-filtered set.\n\nTemplate DAG shapes:\n  aggressive:  emit-gallery(4 candidates, parallel) → runtime-gate → converged\n  corrective:  emit-gallery(4 candidates, serial gates) → intent → runtime-gate → converged\n               preExpansion: \"from-history\" — adds fix nodes for known failure classes\n  staged:      emit-gallery(skeleton, 3 candidates) → emit-gallery(features, 3 candidates) → test → intent → runtime-gate → converged\n  budget:      emit-gallery(4 haiku candidates) → compile → test → runtime-gate → converged\n\nImport GalleryCandidate, TemplateParams, computeRisk, paretoFilter from src/lib/gallery.ts.\nImport estimateCost from src/lib/cost-estimator.ts.",
+      "produces": [
+        "src/lib/gallery-templates/index.ts"
+      ],
+      "consumes": [
+        "src/lib/gallery.ts",
+        "src/lib/cost-estimator.ts"
+      ],
+      "deps": [
+        "fr-gallery-core",
+        "fr-cost-estimator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/gallery-templates/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"TemplateDefinition\" src/lib/gallery-templates/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildGallery\" src/lib/gallery-templates/index.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"aggressive.*corrective.*staged.*budget\" src/lib/gallery-templates/index.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-emit-gallery-core": {
+      "id": "fr-emit-gallery-core",
+      "desc": "Create src/lib/emit-gallery.ts — multi-candidate code generation: parallel execution, gating, scorecard.\n\nExports:\n  export interface CandidateResult {\n    id: string\n    strategy: string\n    files: Record<string, string>  // path → content\n    deterministic: {\n      tsc: { pass: boolean; errors?: string[] }\n      vitest: { pass: boolean; passed: number; failed: number; coverage: number }\n      build: { pass: boolean; outputs?: string[] }\n    }\n    intent: Array<{ statement: string; pass: boolean; confidence: number; reasoning: string; evidence: string[] }>\n    summary: { loc: number; fileCount: number; deterministicPass: boolean; intentScore: string; estimatedCost: number }\n  }\n\n  export type FileToIntents = Record<string, string[]>\n\n  export function buildFileToIntents(validateRules: ValidationRule[]): FileToIntents\n    // Invert intent rule contextPaths: statement→files → files→statements\n    // Rule with no contextPaths: skip (requires explicit context for blend substitutability)\n\n  export interface ConvergenceConfig {\n    maxFixPasses: number          // per gate, default 3\n    escalateAfter: \"all-candidates-fail\" | \"fix-pass-stall\"\n    escalateTo: \"human\" | \"opus-review\"\n  }\n\n  export interface GalleryFailure {\n    unreachable: string           // intent statement that no candidate satisfied\n    bestConfidence: number\n    threshold: number\n    candidates: number\n    diagnosis: string             // e.g. \"all candidates used @media prefers-color-scheme\"\n  }\n\n  export interface GalleryRunResult {\n    candidates: CandidateResult[]\n    survivors: CandidateResult[]  // passed deterministic gates\n    intentSurvivors: CandidateResult[]  // also passed intent gates\n    failures: GalleryFailure[]    // unreachable intents\n    scorecard: string             // ASCII table for CLI rendering\n  }\n\n  export async function runGallery(opts: {\n    nodeSpec: EmitGalleryNodeSpec,\n    strategies: StrategySpec[],\n    workDir: string,              // .roadmap/gallery/\n    convergence?: ConvergenceConfig,\n  }): Promise<GalleryRunResult>\n    // Generates candidates in parallel (Promise.all), gates each, builds scorecard.\n    // Does NOT make real LLM calls — stubs candidates as empty file sets for now.\n    // Real LLM dispatch is a future FR. This FR establishes the pipeline + types.\n\nImport EmitGalleryNodeSpec from src/protocol.ts.\nImport StrategySpec from src/lib/strategies/index.ts.\nImport ValidationRule from src/protocol.ts.\n\nKey invariant: gallery is diversity not retry.\n  If all candidates fail the same intent → GalleryFailure, not loop.\n  maxFixPasses applies per gate after selection, not to generation.",
+      "produces": [
+        "src/lib/emit-gallery.ts"
+      ],
+      "consumes": [
+        "src/protocol.ts",
+        "src/lib/strategies/index.ts"
+      ],
+      "deps": [
+        "fr-emit-node-type",
+        "fr-strategies"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildFileToIntents\" src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"GalleryRunResult\" src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"ConvergenceConfig\" src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"GalleryFailure\" src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'import.*StrategySpec.*from.*strategies' src/lib/emit-gallery.ts"
+        },
+        {
+          "type": "intent",
+          "statement": "Gallery treats maxFixPasses as a per-gate budget after selection, not a generation retry count; all-candidates-fail produces GalleryFailure with structured evidence rather than additional generation attempts",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "context": [
+            "src/lib/emit-gallery.ts"
+          ]
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-blend": {
+      "id": "fr-blend",
+      "desc": "Create src/lib/blend.ts — multi-candidate file merging with intent-gate conflict resolution.\n\nExports:\n  export interface BlendSpec {\n    primary: string     // candidate id — base architecture source\n    donors: string[]    // candidates to pull cheaper files from\n  }\n\n  export interface BlendResult {\n    files: Record<string, string>  // merged file set\n    substitutions: Array<{ path: string; from: string; reason: string }>\n    reverted: Array<{ path: string; reason: string }>\n    deterministicPass: boolean\n    intentScore: string\n  }\n\n  export function blendCandidates(\n    candidates: CandidateResult[],\n    spec: BlendSpec,\n    fileToIntents: FileToIntents,\n  ): BlendResult\n\nAlgorithm:\n  1. Start with primary candidate files.\n  2. For each donor candidate, for each file in donor:\n     a. Look up fileToIntents[path] → list of intent statements covering this file.\n     b. If the donor passed ALL those intents AND donor.summary.loc < primary.summary.loc → substitute.\n     c. Re-check deterministic validators (tsc pass, vitest pass) on the blended set.\n        If deterministic gate breaks → revert the substitution.\n  3. Re-run intent evaluation on blended result (use donor intent results where unchanged,\n     mark substituted files as needing re-evaluation).\n  4. If blend fails gates that all source candidates passed → discard, return primary files.\n\nNote: files with empty fileToIntents[path] are not substitutable (conservative).\n  This is by design — see FR-EMIT-GALLERY open question 5.\n\nImport CandidateResult, FileToIntents from src/lib/emit-gallery.ts.",
+      "produces": [
+        "src/lib/blend.ts"
+      ],
+      "consumes": [
+        "src/lib/emit-gallery.ts"
+      ],
+      "deps": [
+        "fr-emit-gallery-core"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/blend.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"blendCandidates\" src/lib/blend.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"BlendResult\" src/lib/blend.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"fileToIntents\" src/lib/blend.ts"
+        },
+        {
+          "type": "intent",
+          "statement": "Blend substitutes donor files only when the donor passed ALL intent statements in fileToIntents[path], and reverts any substitution that breaks a deterministic gate",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "context": [
+            "src/lib/blend.ts"
+          ]
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-plan-gallery-cli": {
+      "id": "fr-plan-gallery-cli",
+      "desc": "Add `roadmap plan --gallery` command to bin/roadmap.ts.\n\nNew command: plan --gallery [--from <specFile>] [--select <id>] [--evaluate <json>] [--json]\n\nHandler cmdPlanGallery():\n  1. Parse --from <specFile> (defaults to first .specify/specs/**/*.md found, or empty string)\n  2. Parse --select <id> to commit a previously-generated candidate\n  3. Parse --evaluate <json> for LLM judgment (same Judgment schema as complete --evaluate)\n  4. If no --select and no --evaluate:\n     a. Call buildGallery(specSource, repoRoot + \"/.roadmap/evaluations\")\n     b. Render ASCII table comparison (id, nodes, wallClockMinutes, costUSD, risk)\n     c. Show topology diagram per candidate (compact: \"emit → compile ─┬─ test ─┬─ runtime\")\n     d. Show recommendation (lowest risk)\n     e. Output \"Select [A/B/C/D]:\"\n  5. If --evaluate <json>:\n     a. Parse Judgment[] from json\n     b. Validate confidence >= 0.7 (minimum bar for plan selection)\n     c. Record to .roadmap/evaluations/plan-selection.jsonl with phase: \"plan-selection:<runId>\"\n     d. Write selected candidate dag as .roadmap/head.json (AFTER backing up existing as .roadmap/head-prev.json)\n     e. Output: { selected: id, committed: true, headPath: \".roadmap/head.json\" }\n  6. If --select <id>: same as --evaluate but without confidence requirement (manual override)\n\nWire in main switch: case \"plan\": if (args.includes(\"--gallery\")) ...\n\nImport buildGallery from src/lib/gallery-templates/index.ts\nImport estimateCost from src/lib/cost-estimator.ts\n\nAfter adding the command, run: npx tsc --noEmit to verify no type errors.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/lib/gallery.ts",
+        "src/lib/gallery-templates/index.ts",
+        "src/lib/cost-estimator.ts"
+      ],
+      "deps": [
+        "fr-gallery-core",
+        "fr-gallery-templates",
+        "fr-cost-estimator"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"cmdPlanGallery\\|plan.*gallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"buildGallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"plan-selection\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-emit-gallery-cli": {
+      "id": "fr-emit-gallery-cli",
+      "desc": "Add `roadmap emit --gallery` command and emit-gallery complete dispatch to bin/roadmap.ts.\n\nTwo changes to bin/roadmap.ts:\n\n1. New command: emit --gallery [--candidates N] [--from <spec>] [--select <id>] [--blend <A+B>] [--evaluate <json>] [--json]\n   Handler cmdEmitGallery():\n   a. Parse flags\n   b. Load DAG, find emit-gallery nodes (nodeType === \"emit-gallery\")\n   c. Call runGallery({ nodeSpec, strategies: STRATEGIES, workDir: repoRoot+\"/.roadmap/gallery/\" })\n   d. Render scorecard ASCII table (Candidate, Files, LOC, tsc, vitest, build, intent, cost)\n   e. Show: \"Deterministic survivors: ...\", \"Intent survivors: ...\"\n   f. If --blend <A+B>: call blendCandidates(), re-evaluate, show blend result\n   g. If --evaluate <json>: parse Judgment, record to .roadmap/evaluations/emit-selection.jsonl,\n      copy winning candidate files to main working tree, commit\n   h. If --select <id>: same as --evaluate without confidence check\n\n2. In cmdComplete handler, add dispatch on node.nodeType:\n   After loading nodeSpec, check: if ((nodeSpec as any).nodeType === \"emit-gallery\") {\n     await handleEmitGalleryComplete(nodeSpec, repoRoot)\n     return  // skip standard validation\n   }\n   handleEmitGalleryComplete() = runGallery + auto-select best intent survivor + commit files.\n\nWire in main switch: case \"emit\": if (args.includes(\"--gallery\")) ...\n\nImport runGallery from src/lib/emit-gallery.ts\nImport blendCandidates from src/lib/blend.ts\nImport STRATEGIES from src/lib/strategies/index.ts\n\nAfter adding both changes, run: npx tsc --noEmit to verify no type errors.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        "src/lib/emit-gallery.ts",
+        "src/lib/blend.ts",
+        "src/lib/strategies/index.ts",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "fr-plan-gallery-cli",
+        "fr-emit-gallery-core",
+        "fr-blend",
+        "fr-emit-node-type"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q \"cmdEmitGallery\\|emit.*gallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"runGallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"emit-gallery.*nodeType\\|nodeType.*emit-gallery\" bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-gallery-tests": {
+      "id": "fr-gallery-tests",
+      "desc": "Tests for plan gallery: types, Pareto filtering, risk formula, cost estimation, template generation.\n\nFile: tests/gallery.test.ts\n\nTest suites:\n  computeRisk():\n    - Both rates 1.0 → risk 0.0\n    - Both rates 0.0 → risk 1.0 (cold start: default to 0 → risk = 1.0)\n    - Mixed: (0.8 * 0.9) → risk = 1 - 0.72 = 0.28\n\n  paretoFilter():\n    - All candidates distinct → all survive (no domination)\n    - B dominates A (cheaper AND faster AND safer) → A removed\n    - Partial domination (cheaper but riskier) → both survive\n    - Cold start (all risk=1.0): conservative template (lowest cost estimate) survives\n    - Result always has 1–4 candidates\n\n  estimateCost():\n    - Cold start (no historyDir): confidence=\"cold-start\", uses fallback rates\n    - Opus-all allocation: higher cost, lower or equal wallClockMinutes\n    - Haiku allocation: lower cost\n\n  buildGallery():\n    - Returns 3-4 candidates (Pareto filtered)\n    - Each has id, label, estimates, gateProfile\n    - Contains \"corrective\" template when history failure classes present\n\nImport from src/lib/gallery.ts and src/lib/cost-estimator.ts.",
+      "produces": [
+        "tests/gallery.test.ts"
+      ],
+      "consumes": [
+        "src/lib/gallery.ts",
+        "src/lib/cost-estimator.ts",
+        "src/lib/gallery-templates/index.ts"
+      ],
+      "deps": [
+        "fr-plan-gallery-cli",
+        "fr-gallery-core",
+        "fr-cost-estimator",
+        "fr-gallery-templates"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/gallery.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/gallery.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-emit-gallery-tests": {
+      "id": "fr-emit-gallery-tests",
+      "desc": "Tests for emit gallery: buildFileToIntents, blendCandidates, convergence protocol, strategy specs.\n\nFile: tests/emit-gallery.test.ts\n\nTest suites:\n  buildFileToIntents():\n    - Intent rule with contextPaths → inverted index\n    - Multiple rules with overlapping paths → all statements included\n    - Rule without contextPaths → excluded (conservative)\n\n  blendCandidates():\n    - Donor file passes all fileToIntents intents AND is smaller → substituted\n    - Donor file fails an intent → not substituted\n    - File not in fileToIntents (empty entry) → not substitutable\n    - Substitution breaks deterministic gate → reverted\n    - All-donors-fail → returns primary candidate files unchanged\n\n  ConvergenceConfig:\n    - runGallery with 4 strategies → GalleryRunResult with 4 candidates\n    - All candidates fail same intent → GalleryFailure in result.failures\n    - GalleryFailure includes bestConfidence, threshold, diagnosis\n\n  StrategySpec (from src/lib/strategies/index.ts):\n    - getStrategy(\"faithful\") returns StrategySpec with model containing \"opus\"\n    - getStrategy(\"budget\") returns StrategySpec with lower estimatedCostMultiplier\n    - getStrategy(\"unknown\") throws\n    - STRATEGIES has exactly 4 entries\n\nImport from src/lib/emit-gallery.ts, src/lib/blend.ts, src/lib/strategies/index.ts.",
+      "produces": [
+        "tests/emit-gallery.test.ts"
+      ],
+      "consumes": [
+        "src/lib/emit-gallery.ts",
+        "src/lib/blend.ts",
+        "src/lib/strategies/index.ts"
+      ],
+      "deps": [
+        "fr-emit-gallery-cli",
+        "fr-emit-gallery-core",
+        "fr-blend",
+        "fr-strategies"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/emit-gallery.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/emit-gallery.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "fr-intent-selfcheck-tests": {
+      "id": "fr-intent-selfcheck-tests",
+      "desc": "Tests for compile-prompts intent self-check with history enrichment.\n\nFile: tests/compile-prompts-intent.test.ts\n(Extend or create alongside existing compile-prompts tests.)\n\nTest suites:\n  buildIntentSelfCheck() — no history:\n    - Intent rule with no prior failures → emits statement + threshold, no hint\n\n  buildIntentSelfCheck() — with failing history:\n    - Prior failure exists → emits \"Known failure mode: ${reasoning}\"\n    - Prior failure with evidence → emits \"Evidence: ...\"\n    - Prior failure then pass (most recent is pass) → no hint emitted\n    - Multiple statements → only matching statement gets hint\n\n  compilePrompts() integration:\n    - Node with intent rule + history → compiled prompt contains \"Known failure mode\"\n    - Node with intent rule + no history → compiled prompt contains statement but no hint\n    - Deterministic checklist items still present alongside intent self-check\n\nUse tmp directory for fake .roadmap/evaluations/ records.\nImport fillTemplate, compilePrompts from src/lib/compile-prompts.ts.\nImport recordEvaluation, judgmentToRecord from src/lib/intent-evaluator.ts (for test setup).",
+      "produces": [
+        "tests/compile-prompts-intent.test.ts"
+      ],
+      "consumes": [
+        "src/lib/compile-prompts.ts"
+      ],
+      "ambient": [
+        "src/lib/intent-evaluator.ts"
+      ],
+      "deps": [
+        "fr-compile-prompts-intent"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "tests/compile-prompts-intent.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/compile-prompts-intent.test.ts --reporter=dot"
+        }
+      ],
+      "idempotent": true
+    },
+    "phase-25-term": {
+      "id": "phase-25-term",
+      "desc": "Phase 25 complete: gallery system ships — plan gallery, emit gallery, compile-prompts intent self-check, blend, strategies",
+      "produces": [],
+      "consumes": [
+        "tests/gallery.test.ts",
+        "tests/emit-gallery.test.ts",
+        "tests/compile-prompts-intent.test.ts"
+      ],
+      "deps": [
+        "fr-gallery-tests",
+        "fr-emit-gallery-tests",
+        "fr-intent-selfcheck-tests"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run --reporter=dot"
+        }
+      ],
+      "idempotent": false
+    },
+    "spec-threading-feature": {
+      "id": "spec-threading-feature",
+      "desc": "Init→terminal spec threading: clarified spec contract flows through bookends",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "phase-25-term"
+      ],
+      "validate": [
+        {
+          "type": "expanded",
+          "minNodes": 8
+        }
+      ],
+      "idempotent": true,
+      "mode": "plan",
+      "expandOnFail": true
+    },
+    "clarify-to-contract": {
+      "id": "clarify-to-contract",
+      "desc": "Convert plan clarity gaps to feature contract with selectors and observations",
+      "produces": [
+        "spec-clarified.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "spec-clarified.json"
+        },
+        {
+          "type": "spec-conformance",
+          "spec": "docs/FR-SPEC-THREADING.md",
+          "scenario": "Contract generation from clarity gaps",
+          "section": "Spec Generation"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "spec-contract-tests": {
+      "id": "spec-contract-tests",
+      "desc": "Test spec contract generation: clarity gaps → features with selectors",
+      "produces": [
+        "tests/spec-contract.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "clarify-to-contract"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test -- tests/spec-contract.test.ts",
+          "description": "All spec contract tests pass"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "verify-against-contract": {
+      "id": "verify-against-contract",
+      "desc": "Terminal gate validates explore observations against spec contract",
+      "produces": [
+        "src/lib/spec-verifier.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "clarify-to-contract"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/spec-verifier.ts"
+        },
+        {
+          "type": "spec-conformance",
+          "spec": "docs/FR-SPEC-THREADING.md",
+          "scenario": "Contract verification against observations",
+          "section": "Spec Verification"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "verifier-tests": {
+      "id": "verifier-tests",
+      "desc": "Test spec verification: observe features, match against contract",
+      "produces": [
+        "tests/spec-verifier.test.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "verify-against-contract"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test -- tests/spec-verifier.test.ts",
+          "description": "All spec verifier tests pass"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "explore-script-template": {
+      "id": "explore-script-template",
+      "desc": "Generate explore script template that validates against contract",
+      "produces": [
+        "scripts/explore-validate-contract.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "verify-against-contract"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "scripts/explore-validate-contract.ts"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "terminal-gate-update": {
+      "id": "terminal-gate-update",
+      "desc": "Update terminal intent gate to use spec contract validation",
+      "produces": [
+        "src/lib/validate-terminal-gate-spec.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "verify-against-contract"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "src/lib/validate-terminal-gate-spec.ts"
+        },
+        {
+          "type": "spec-conformance",
+          "spec": "docs/FR-SPEC-THREADING.md",
+          "scenario": "Terminal gate uses contract for validation",
+          "section": "Terminal Integration"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "e2e-spec-threading": {
+      "id": "e2e-spec-threading",
+      "desc": "E2E test: vague plan → contract → verified output",
+      "produces": [
+        "tests/spec-threading-e2e.test.ts"
+      ],
+      "consumes": [
+        "spec-clarified.json"
+      ],
+      "deps": [
+        "clarify-to-contract",
+        "verify-against-contract",
+        "terminal-gate-update",
+        "term"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test -- tests/spec-threading-e2e.test.ts",
+          "description": "E2E: plan clarity → spec contract → terminal verification"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
+    },
+    "spec-docs": {
+      "id": "spec-docs",
+      "desc": "Document spec contract format, generation, and verification",
+      "produces": [
+        "docs/FR-SPEC-THREADING.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "clarify-to-contract",
+        "verify-against-contract",
+        "term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/FR-SPEC-THREADING.md"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "expandedFrom": "spec-threading-feature"
     }
-  }
+  },
+  "version": "0.3.0",
+  "protocolVersion": "0.3.0"
 }
