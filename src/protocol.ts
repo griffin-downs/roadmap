@@ -417,7 +417,9 @@ export function batchConflicts<T extends string>(g: Graph<T>): BatchConflict[] {
     // Produces overlap: two nodes write the same file
     const writers = new Map<string, string[]>();
     for (const id of batch) {
-      for (const p of nm.get(id)!.produces) {
+      const produces = nm.get(id)!.produces ?? [];
+      if (!Array.isArray(produces)) continue;
+      for (const p of produces) {
         const w = writers.get(p) ?? [];
         w.push(id);
         writers.set(p, w);
@@ -430,10 +432,14 @@ export function batchConflicts<T extends string>(g: Graph<T>): BatchConflict[] {
     // Consumes-produces race: node A consumes what node B in same batch produces
     const producedInBatch = new Map<string, string>();
     for (const id of batch) {
-      for (const p of nm.get(id)!.produces) producedInBatch.set(p, id);
+      const produces = nm.get(id)!.produces ?? [];
+      if (!Array.isArray(produces)) continue;
+      for (const p of produces) producedInBatch.set(p, id);
     }
     for (const id of batch) {
-      for (const c of nm.get(id)!.consumes.map(consumeArtifact)) {
+      const consumes = nm.get(id)!.consumes ?? [];
+      if (!Array.isArray(consumes)) continue;
+      for (const c of consumes.map(consumeArtifact)) {
         const producer = producedInBatch.get(c);
         if (producer && producer !== id) {
           conflicts.push({ level, file: c, writers: [producer, id], type: 'consumes-produces-race' });
