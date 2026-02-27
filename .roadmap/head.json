@@ -2073,7 +2073,7 @@
       "produces": [],
       "consumes": [],
       "deps": [
-        "phase-25-term"
+        "spec-threading-feature"
       ],
       "validate": [
         {
@@ -2083,6 +2083,14 @@
         {
           "type": "shell",
           "command": "npx vitest run --reporter=dot"
+        },
+        {
+          "type": "intent",
+          "statement": "Output implementation matches spec contract: all features visible, interactive, accessible",
+          "confidence": 0,
+          "evaluator": "self",
+          "expandOnFail": true,
+          "maxExpansionDepth": 2
         }
       ],
       "idempotent": false
@@ -3756,6 +3764,24 @@
         }
       ],
       "idempotent": false
+    },
+    "spec-threading-feature": {
+      "id": "spec-threading-feature",
+      "desc": "Init→terminal spec threading: clarified spec contract flows through bookends",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "phase-25-term"
+      ],
+      "validate": [
+        {
+          "type": "expanded",
+          "minNodes": 9
+        }
+      ],
+      "idempotent": true,
+      "mode": "plan",
+      "expandOnFail": true
     }
   },
   "version": "0.3.0",
