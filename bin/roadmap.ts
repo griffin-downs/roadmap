@@ -19,6 +19,7 @@ import { crossOrient } from '../src/lib/cross-orient.ts';
 import { discoverDependencies, resolveSiblingPath } from '../src/lib/dependency-resolver.ts';
 import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, assignBatch } from '../src/lib/claims.ts';
 import { parseTasksMd, tasksToDAG } from '../src/lib/speckit-import.ts';
+import { enrichIntentGate } from '../src/lib/intent-gate-enrichment.ts';
 import { buildSpawnPlan } from '../src/lib/spawn-plan.ts';
 import { buildScaffold } from '../src/lib/scaffold.ts';
 import { buildClusters } from '../src/lib/cluster.ts';
@@ -2429,7 +2430,10 @@ function cmdImport(note: string) {
     process.exit(1);
   }
 
-  const dag = tasksToDAG(tasks, { dagId, dagDesc });
+  let dag = tasksToDAG(tasks, { dagId, dagDesc });
+
+  // Auto-enrich with platform-specific intent-gate validators (Electron detection, spec context)
+  dag = enrichIntentGate(dag, repoRoot);
 
   // Terminal intent gate invariant — warn (non-blocking on import, since enrichment adds gates)
   const terminalError = validateTerminalIntentGate(dag);

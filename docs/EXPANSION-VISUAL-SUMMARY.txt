@@ -1,0 +1,353 @@
+================================================================================
+EXPANSION SCRIPT FILE I/O DESIGN — VISUAL SUMMARY
+================================================================================
+
+INTENT-DRIVEN EXPANSION WORKFLOW
+================================================================================
+
+  1. User validates plan node:
+     $ roadmap complete plan-auth-strategy --evaluate '[{"statement":"...","confidence":0.42}]'
+
+  2. Intent validation fails (expandOnFail=true):
+     cmdComplete() → validateNode() → { passed: false, expandable: true }
+
+  3. Expansion triggered:
+     extractIntentFailures()
+       ↓
+     generateIntentExpansion() → FixNodeSpec[]
+       ↓
+     writeExpansionScript()  [NEW]
+       ↓
+     .roadmap/expansions/plan-auth-strategy-1709078400.ts
+
+  4. User reviews script:
+     $ cat .roadmap/expansions/plan-auth-strategy-1709078400.ts
+
+     #!/usr/bin/env node
+     // Expansion script for: plan-auth-strategy
+     // Generated: 2025-02-27T04:00:00Z
+     // Parent: plan-approvals
+     // Diagnosis: JWT rotation intent failed at 0.42/0.90
+
+     dag.nodes['plan-auth-strategy-fix-0'] = {
+       id: '...',
+       expandedFrom: 'plan-auth-strategy',
+       _intentDiagnosis: {
+         statement: 'JWT module implements rotation',
+         achievedConfidence: 0.42,
+         threshold: 0.90,
+         reasoning: '...',
+         evidence: ['src/auth.ts:45'],
+         expansionDepth: 1,
+       },
+       ...
+     };
+     ...
+
+  5. User approves & expands:
+     $ roadmap expand .roadmap/expansions/plan-auth-strategy-1709078400.ts
+
+  6. DAG updated & committed:
+     git commit -m "roadmap: expand — +1 nodes via plan-auth-strategy-1709078400.ts"
+
+  7. Forensic trail complete:
+     .roadmap/expansions/plan-auth-strategy-1709078400.ts  ← script source
+     .roadmap/head.json                                     ← updated DAG
+     git log                                                ← commit history
+     _intentDiagnosis                                       ← full diagnosis
+
+
+FILE STRUCTURE
+================================================================================
+
+  .roadmap/
+  ├── head.json                              # Active DAG
+  └── expansions/                             # Expansion scripts (NEW)
+      ├── plan-auth-strategy-1709078400.ts   # Timestamp = sorted + unique
+      ├── plan-auth-strategy-1709078401.ts   # Retry with different intents
+      ├── runtime-tests-1709078402.ts        # Different parent node
+      ├── plan-auth-strategy-1709078400-1.ts # Collision handling (rare)
+      └── ...
+
+
+PROVENANCE CHAIN (AUDITABILITY)
+================================================================================
+
+  INTENTION
+    ↓
+    └─ User evaluates plan node
+       { statement: "JWT module implements rotation", confidence: 0.42/0.90 }
+
+  FAILURE
+    ↓
+    └─ validateNode() fails
+       expandOnFail: true → proceed to expansion
+
+  DIAGNOSIS
+    ↓
+    └─ extractIntentFailures()
+       IntentFailure {
+         statement: "JWT module implements rotation",
+         achieved: 0.42,
+         threshold: 0.90,
+         reasoning: "Tokens rotate in-process but no refresh endpoint exists",
+         evidence: ["src/auth.ts:45", "tests/auth.test.ts (no rotation tests)"]
+       }
+
+  FIX NODE CREATED
+    ↓
+    └─ generateIntentExpansion()
+       FixNodeSpec {
+         id: "plan-auth-strategy-fix-0",
+         expandedFrom: "plan-auth-strategy",
+         _intentDiagnosis: {
+           statement: "JWT module implements rotation",
+           achievedConfidence: 0.42,
+           threshold: 0.90,
+           reasoning: "...",
+           evidence: ["src/auth.ts:45"],
+           expansionDepth: 1
+         }
+       }
+
+  SCRIPT WRITTEN
+    ↓
+    └─ writeExpansionScript()
+       .roadmap/expansions/plan-auth-strategy-1709078400.ts
+
+       #!/usr/bin/env node
+       // Expansion script for: plan-auth-strategy
+       // Generated: 2025-02-27T04:00:00Z
+       // Diagnosis: JWT rotation intent failed at 0.42/0.90
+
+       dag.nodes['plan-auth-strategy-fix-0'] = {
+         _intentDiagnosis: {
+           statement: "JWT module implements rotation",
+           achievedConfidence: 0.42,
+           ...  [FULL DIAGNOSIS]
+         }
+       }
+
+  EXECUTED & COMMITTED
+    ↓
+    └─ roadmap expand <path>
+       → executes script
+       → validates DAG
+       → git commit "roadmap: expand — +1 nodes via plan-auth-strategy-1709078400.ts"
+
+  QUERY (FORENSIC)
+    ↓
+    └─ git show <commit>:.roadmap/expansions/plan-auth-strategy-1709078400.ts
+       → see exact script that created node
+       → read _intentDiagnosis
+       → trace from intent failure → fix node
+
+
+KEY DESIGN DECISIONS
+================================================================================
+
+  File location:         .roadmap/expansions/ (dedicated directory)
+  Naming:                <nodeId>-<timestamp>.ts (sortable, collision-free)
+  Format:                TypeScript (executable, human-readable)
+  Collision handling:    Sequence suffix (-1, -2, etc.) if same second
+  Cleanup:               Keep all (history is forensic value)
+  Overwrite:             Refuse (new timestamp if retry)
+  Concurrency:           Timestamp-safe (rarely hit same second)
+  User review:           Two-step (write → review → expand)
+  Auditability:          _intentDiagnosis + expandedFrom + git history
+
+
+INTEGRATION: NEW FUNCTION
+================================================================================
+
+  Location:  src/lib/expansion-writer.ts
+
+  Signature:
+    export function writeExpansionScript(
+      parentId: string,
+      parentNode: NodeSpec<any>,
+      failures: IntentFailure[],
+      fixNodes: FixNodeSpec[],
+      reason: 'intent-expansion' | 'runtime-explore' | 'escalation-recovery',
+      repoRoot: string,
+    ): string  // returns absolute path
+
+  Called from:
+    bin/roadmap.ts → cmdComplete()
+
+    if (result.expansionStatus === 'expanding') {
+      const scriptPath = writeExpansionScript(
+        nodeId, node, result.failingIntents, fixNodes, 'intent-expansion', repoRoot
+      );
+      json({
+        completed: false,
+        expansion: { script: scriptPath, nextStep: "Review then run..." }
+      });
+    }
+
+
+VALIDATION INVARIANTS (AUDITABILITY CONTRACTS)
+================================================================================
+
+  ✓ Every fix node has expandedFrom
+    └─ Back-pointers to parent plan node
+
+  ✓ Every fix node has _intentDiagnosis
+    └─ { statement, achieved, threshold, reasoning, evidence, depth }
+
+  ✓ _intentDiagnosis fully populated
+    └─ statement: what failed
+    └─ achievedConfidence: measured value (0.0–1.0)
+    └─ threshold: required value (0.0–1.0)
+    └─ reasoning: why from evaluator
+    └─ evidence: concrete references (file:line)
+    └─ expansionDepth: recursion count (0 = first, 1 = second, etc.)
+
+  ✓ Fix node consumes include parent produces
+    └─ Data dependency inheritance
+
+  ✓ Script is valid TypeScript
+    └─ Executable, human-editable, not binary
+
+  ✓ Filenames unique
+    └─ Timestamp + optional sequence
+
+  ✓ DAG valid after script execution
+    └─ Validated by cmdExpand() (define + check + verify)
+
+
+AUDIT QUERIES (USER COMMANDS)
+================================================================================
+
+  Q1: What expansions has this node undergone?
+  $ ls -ltr .roadmap/expansions/ | grep "^plan-auth"
+  Output: timestamps, shows revision history
+
+  Q2: Why was this expansion created?
+  $ head -5 .roadmap/expansions/plan-auth-strategy-1709078400.ts
+  Output: parent, diagnosis, timestamp
+
+  Q3: What's in this expansion?
+  $ grep "^dag.nodes\[" .roadmap/expansions/plan-auth-strategy-1709078400.ts
+  Output: fix node IDs created
+
+  Q4: Full diagnosis trace?
+  $ git show <commit>:.roadmap/expansions/plan-auth-strategy-1709078400.ts | grep -A 10 "_intentDiagnosis"
+  Output: complete diagnosis (statement, achieved, threshold, reasoning, evidence)
+
+
+ERROR SCENARIOS
+================================================================================
+
+  1. INTENT FAILS, NOT EXPANDABLE
+     → NO script written
+     → User gets rejection + suggestion to adjust intent or threshold
+
+  2. INTENT FAILS, EXPANDABLE, EXPANSION SUCCEEDS
+     → Script written to disk
+     → User reviews + runs roadmap expand
+     → DAG updated + committed
+
+  3. EXPANSION SCRIPT SYNTAX ERROR
+     → Script fails to execute
+     → User gets clear error message
+     → User edits script + re-runs roadmap expand
+     → No DAG corruption (script didn't run far enough)
+
+  4. CONCURRENT AGENTS
+     → Agent A writes plan-a-1709078400.ts
+     → Agent B writes plan-b-1709078400.ts
+     → Both run independently
+     → No git conflict (different nodes, different parts of DAG)
+
+
+BACKWARD COMPATIBILITY
+================================================================================
+
+  ✓ No breaking changes to existing APIs
+  ✓ Optional feature (only via cmdComplete when intent fails + expandOnFail=true)
+  ✓ Existing manual expansions in scripts/ unaffected
+  ✓ roadmap expand command unchanged (still accepts same arguments)
+  ✓ Protocol types unchanged (writeExpansionScript is new function, not type change)
+  ✓ Existing DAGs work as-is (no migration needed)
+
+
+TESTING CHECKLIST
+================================================================================
+
+  Unit Tests (expansion-writer.test.ts):
+    ✓ Single failure → single fix node
+    ✓ Multiple failures → multiple fix nodes
+    ✓ _intentDiagnosis fully populated
+    ✓ expandedFrom backpointer correct
+    ✓ consumes inherit from parent
+    ✓ Script is valid TypeScript (tsx parser)
+    ✓ Concurrent expansions on different nodes → distinct filenames
+    ✓ Same node, second attempt → new timestamp
+    ✓ Directory created if missing
+    ✓ Existing script not overwritten (collision handling)
+
+  Integration Tests:
+    ✓ Script executes without errors
+    ✓ DAG modified correctly (new nodes added)
+    ✓ Validate passes after execution (define, check, verify)
+    ✓ Git commit succeeds
+    ✓ Trail entry recorded
+
+  Edge Cases:
+    ✓ Parent with mode: 'plan' → deps rewired
+    ✓ Parent with mode: 'execute' → deps unchanged (plan nodes are execute nodes' parents)
+    ✓ Empty failures → error before write
+    ✓ Malformed FixNodeSpec → error before write
+
+
+RELATED FILES & MODULES
+================================================================================
+
+  Existing (unchanged):
+    src/lib/intent-expansion.ts
+      └─ IntentFailure, FixNodeSpec, generateIntentExpansion()
+
+    src/protocol.ts
+      └─ NodeSpec, ValidationRule, Graph, _intentDiagnosis type
+
+    bin/roadmap.ts
+      └─ cmdComplete(), cmdExpand() commands
+
+    src/lib/intent-evaluator.ts
+      └─ Provides IntentJudgment values
+
+  New (this design):
+    src/lib/expansion-writer.ts
+      └─ writeExpansionScript() function
+
+    tests/expansion-writer.test.ts
+      └─ Unit + integration tests
+
+
+PHASE CLASSIFICATION
+================================================================================
+
+  This design supports: Plan Mode Execution (Phase 17) + Intent-Driven Expansion
+
+  Phase 17 deliverables:
+    ✓ mode: 'plan' field on NodeSpec
+    ✓ expandedFrom provenance
+    ✓ expanded validation rule
+    ✓ orient() handles plan completion
+    ✓ Brief surfaces mode to agents
+    ✓ CLI displays plan nodes
+
+  Plan Mode Output deliverables (this design):
+    ✓ Expansion script generation (writeExpansionScript)
+    ✓ File I/O (.roadmap/expansions/)
+    ✓ Auditability (_intentDiagnosis + provenance)
+    ✓ User review workflow (two-step)
+    ✓ Concurrent-safe (timestamps)
+
+
+================================================================================
+Design Status: COMPLETE
+Ready for: Implementation phase approval
+Next Step: Write src/lib/expansion-writer.ts (~100 lines)
+================================================================================

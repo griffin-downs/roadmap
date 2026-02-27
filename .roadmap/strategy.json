@@ -1,0 +1,19 @@
+{
+  "selected": "budget",
+  "runId": "mm4iyyhb",
+  "manualOverride": true,
+  "specSource": "",
+  "ts": "2026-02-27T06:42:30.287Z",
+  "gateProfile": {
+    "deterministic": 6,
+    "intent": 3,
+    "runtime": 1
+  },
+  "estimates": {
+    "nodes": 6,
+    "maxExpansion": 8,
+    "wallClockMinutes": 1.2,
+    "costUSD": 0.014025,
+    "risk": 1
+  }
+}

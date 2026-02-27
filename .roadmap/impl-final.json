@@ -1,0 +1,145 @@
+{
+  "id": "impl-final",
+  "desc": "Skills path fix + intent-expansion implementation — parallel batched execution",
+  "init": "init",
+  "term": "term",
+  "nodes": {
+    "init": {
+      "id": "init",
+      "desc": "Start",
+      "produces": [],
+      "consumes": [],
+      "deps": [],
+      "validate": [],
+      "idempotent": true
+    },
+
+    "fix-skills-path": {
+      "id": "fix-skills-path",
+      "desc": "CRITICAL: Fix skills path — write to .claude/skills/<name>/SKILL.md, clean old .claude/commands/",
+      "produces": ["src/lib/install-skills.ts", "bin/roadmap.ts"],
+      "consumes": ["docs/FIXUP-INSTALL-SKILLS-PATH.md"],
+      "deps": ["init"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/install-skills.ts" },
+        { "type": "shell", "cmd": "npm test -- install-skills 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "design-visual-intent": {
+      "id": "design-visual-intent",
+      "mode": "plan",
+      "desc": "Design: visual intent evaluation path",
+      "produces": [],
+      "consumes": ["docs/FIXUP-RUNTIME-EXPLORE-PATTERNS.md", "src/protocol.ts"],
+      "deps": ["fix-skills-path"],
+      "validate": [{ "type": "expanded" }],
+      "idempotent": false
+    },
+
+    "design-expansion-io": {
+      "id": "design-expansion-io",
+      "mode": "plan",
+      "desc": "Design: expansion script file I/O",
+      "produces": [],
+      "consumes": ["src/lib/intent-expansion.ts"],
+      "deps": ["fix-skills-path"],
+      "validate": [{ "type": "expanded" }],
+      "idempotent": false
+    },
+
+    "design-cost-tracking": {
+      "id": "design-cost-tracking",
+      "mode": "plan",
+      "desc": "Design: cost budget enforcement",
+      "produces": [],
+      "consumes": ["src/lib/intent-expansion.ts"],
+      "deps": ["fix-skills-path"],
+      "validate": [{ "type": "expanded" }],
+      "idempotent": false
+    },
+
+    "impl-visual-intent": {
+      "id": "impl-visual-intent",
+      "desc": "Implement visual intent evaluation",
+      "produces": ["src/protocol.ts", "bin/roadmap.ts"],
+      "consumes": ["src/lib/runtime-explore.ts"],
+      "deps": ["design-visual-intent"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/protocol.ts" },
+        { "type": "shell", "cmd": "npm test -- intent 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "impl-expansion-io": {
+      "id": "impl-expansion-io",
+      "desc": "Implement expansion script I/O",
+      "produces": ["src/lib/intent-expansion.ts"],
+      "consumes": [],
+      "deps": ["design-expansion-io"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/intent-expansion.ts" },
+        { "type": "shell", "cmd": "npm test -- intent 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "impl-cost-tracking": {
+      "id": "impl-cost-tracking",
+      "desc": "Implement cost budget tracking",
+      "produces": ["src/lib/intent-expansion.ts"],
+      "consumes": [],
+      "deps": ["design-cost-tracking"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/intent-expansion.ts" },
+        { "type": "shell", "cmd": "npm test -- intent 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "test-intent-e2e": {
+      "id": "test-intent-e2e",
+      "desc": "E2E tests: intent-expansion full loop",
+      "produces": ["tests/intent-expansion-e2e.test.ts"],
+      "consumes": ["src/lib/intent-expansion.ts"],
+      "deps": ["impl-visual-intent", "impl-expansion-io", "impl-cost-tracking"],
+      "validate": [
+        { "type": "shell", "cmd": "npm test -- intent-expansion-e2e 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "final-validation": {
+      "id": "final-validation",
+      "desc": "All tests pass, tsc clean",
+      "produces": [],
+      "consumes": [],
+      "deps": ["test-intent-e2e"],
+      "validate": [
+        { "type": "shell", "cmd": "npm test 2>&1 | tail -3" },
+        { "type": "shell", "cmd": "npx tsc --noEmit" }
+      ],
+      "idempotent": true
+    },
+
+    "term": {
+      "id": "term",
+      "desc": "Done: skills path fixed, intent-expansion complete",
+      "produces": [],
+      "consumes": [],
+      "deps": ["final-validation"],
+      "validate": [
+        {
+          "type": "intent",
+          "statement": "Skills are invokable via Skill tool, intent-expansion visual path integrated, all tests passing",
+          "confidence": 0.95,
+          "evaluator": "self",
+          "expandOnFail": true
+        }
+      ],
+      "idempotent": true
+    }
+  }
+}

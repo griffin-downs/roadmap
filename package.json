@@ -11,7 +11,8 @@
     "./recovery": "./src/index.recovery.ts",
     "./validation": "./src/index.validation.ts",
     "./versioning": "./src/index.versioning.ts",
-    "./agent": "./src/index.agent.ts"
+    "./agent": "./src/index.agent.ts",
+    "./explore": "./src/index.explore.ts"
   },
   "scripts": {
     "check": "tsc --noEmit",

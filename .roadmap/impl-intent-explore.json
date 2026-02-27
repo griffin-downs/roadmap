@@ -1,0 +1,183 @@
+{
+  "id": "impl-intent-explore",
+  "desc": "Implementation: intent-expansion visual intent + cost tracking; runtime-explore file I/O; skill wiring",
+  "init": "init",
+  "term": "term",
+  "nodes": {
+    "init": {
+      "id": "init",
+      "desc": "Start: implementation planning phase",
+      "produces": [],
+      "consumes": [],
+      "deps": [],
+      "validate": [],
+      "idempotent": true
+    },
+
+    "plan-visual-intent": {
+      "id": "plan-visual-intent",
+      "mode": "plan",
+      "desc": "Design visual intent evaluation: explore observations → intent judgment",
+      "produces": [],
+      "consumes": ["docs/FIXUP-RUNTIME-EXPLORE-PATTERNS.md", "src/protocol.ts", "src/lib/runtime-explore.ts"],
+      "deps": ["init"],
+      "validate": [{ "type": "expanded" }],
+      "idempotent": false
+    },
+
+    "plan-expansion-io": {
+      "id": "plan-expansion-io",
+      "mode": "plan",
+      "desc": "Design expansion script I/O: write .roadmap/expansions/expand-*.ts",
+      "produces": [],
+      "consumes": ["src/lib/intent-expansion.ts"],
+      "deps": ["init"],
+      "validate": [{ "type": "expanded" }],
+      "idempotent": false
+    },
+
+    "plan-cost-tracking": {
+      "id": "plan-cost-tracking",
+      "mode": "plan",
+      "desc": "Design cost budget: track + escalate maxExpansionCost",
+      "produces": [],
+      "consumes": ["src/lib/intent-expansion.ts", "src/protocol.ts"],
+      "deps": ["init"],
+      "validate": [{ "type": "expanded" }],
+      "idempotent": false
+    },
+
+    "plan-skill-wiring": {
+      "id": "plan-skill-wiring",
+      "mode": "plan",
+      "desc": "Design skill engine: SkillTemplate class + cmdInstall flags",
+      "produces": [],
+      "consumes": ["src/lib/install-skills.ts", "bin/roadmap.ts"],
+      "deps": ["init"],
+      "validate": [{ "type": "expanded" }],
+      "idempotent": false
+    },
+
+    "impl-visual-intent": {
+      "id": "impl-visual-intent",
+      "desc": "Implement visual intent: runExplore in validateNode, pass observations to evaluator",
+      "produces": ["src/protocol.ts", "bin/roadmap.ts", "src/lib/intent-expansion.ts"],
+      "consumes": ["src/lib/runtime-explore.ts", "docs/FIXUP-RUNTIME-EXPLORE-PATTERNS.md"],
+      "deps": ["plan-visual-intent"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/protocol.ts" },
+        { "type": "shell", "cmd": "npm test -- intent-expansion 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "impl-expansion-io": {
+      "id": "impl-expansion-io",
+      "desc": "Implement expansion I/O: write .roadmap/expansions/ on generateIntentExpansion",
+      "produces": ["src/lib/intent-expansion.ts"],
+      "consumes": ["docs/FIXUP-INTENT-EXPANSION.md"],
+      "deps": ["plan-expansion-io"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/intent-expansion.ts" },
+        { "type": "shell", "cmd": "npm test -- intent-expansion 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "impl-cost-tracking": {
+      "id": "impl-cost-tracking",
+      "desc": "Implement cost tracking: sum fix node costs, escalate if maxExpansionCost exceeded",
+      "produces": ["src/lib/intent-expansion.ts"],
+      "consumes": ["docs/FIXUP-INTENT-EXPANSION.md"],
+      "deps": ["plan-cost-tracking"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/intent-expansion.ts" },
+        { "type": "shell", "cmd": "npm test -- intent-expansion 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "impl-skill-wiring": {
+      "id": "impl-skill-wiring",
+      "desc": "Implement skill wiring: SkillTemplate + cmdInstall flags (--skills, --constraints, --no-claude-md, --update, --check)",
+      "produces": ["src/lib/install-skills.ts", "bin/roadmap.ts"],
+      "consumes": ["docs/FR-INSTALL-SKILLS.md"],
+      "deps": ["plan-skill-wiring"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/install-skills.ts" },
+        { "type": "shell", "cmd": "npm test 2>&1 | grep -E 'Tests.*passed'" }
+      ],
+      "idempotent": false
+    },
+
+    "impl-history": {
+      "id": "impl-history",
+      "desc": "Implement history collection: track confidence progression across recursion levels",
+      "produces": ["src/lib/intent-expansion.ts"],
+      "consumes": ["docs/FIXUP-INTENT-EXPANSION.md"],
+      "deps": ["impl-visual-intent"],
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/intent-expansion.ts" },
+        { "type": "shell", "cmd": "npm test -- intent-expansion 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "test-e2e-intent": {
+      "id": "test-e2e-intent",
+      "desc": "E2E: visual intent failure → explore → expansion with evidence → history progression",
+      "produces": ["tests/intent-expansion-e2e.test.ts"],
+      "consumes": ["src/lib/intent-expansion.ts", "src/lib/runtime-explore.ts"],
+      "deps": ["impl-visual-intent", "impl-expansion-io", "impl-cost-tracking", "impl-history"],
+      "validate": [
+        { "type": "artifact-exists", "path": "tests/intent-expansion-e2e.test.ts" },
+        { "type": "shell", "cmd": "npm test -- intent-expansion-e2e 2>&1 | grep -E 'passed|failed'" }
+      ],
+      "idempotent": false
+    },
+
+    "test-e2e-skills": {
+      "id": "test-e2e-skills",
+      "desc": "E2E: cmdInstall --skills renders 14 skills, replaces CLAUDE.md protocol block",
+      "produces": ["tests/install-skills.test.ts"],
+      "consumes": ["bin/roadmap.ts", "src/lib/install-skills.ts"],
+      "deps": ["impl-skill-wiring"],
+      "validate": [
+        { "type": "artifact-exists", "path": "tests/install-skills.test.ts" },
+        { "type": "shell", "cmd": "npm test 2>&1 | grep -E 'Tests.*passed'" }
+      ],
+      "idempotent": false
+    },
+
+    "integration": {
+      "id": "integration",
+      "desc": "Integration: all features wired, tests passing, tsc clean",
+      "produces": [],
+      "consumes": [],
+      "deps": ["test-e2e-intent", "test-e2e-skills"],
+      "validate": [
+        { "type": "shell", "cmd": "npm test 2>&1 | tail -5" },
+        { "type": "shell", "cmd": "npx tsc --noEmit" }
+      ],
+      "idempotent": true
+    },
+
+    "term": {
+      "id": "term",
+      "desc": "Done: all intent-expansion + runtime-explore gaps resolved, skill wiring complete",
+      "produces": [],
+      "consumes": [],
+      "deps": ["integration"],
+      "validate": [
+        {
+          "type": "intent",
+          "statement": "Visual intent evaluation, expansion I/O, cost tracking, history collection, skill wiring all integrated and tested",
+          "confidence": 0.95,
+          "evaluator": "self",
+          "expandOnFail": true
+        }
+      ],
+      "idempotent": true
+    }
+  }
+}

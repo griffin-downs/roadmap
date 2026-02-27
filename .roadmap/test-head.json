@@ -1,0 +1,36 @@
+{
+  "id": "test-minimal",
+  "desc": "Test DAG without init gate",
+  "init": "init",
+  "term": "term",
+  "nodes": {
+    "init": {
+      "id": "init",
+      "desc": "Init node",
+      "produces": [],
+      "consumes": [],
+      "deps": [],
+      "validate": [],
+      "idempotent": true
+    },
+    "term": {
+      "id": "term",
+      "desc": "Terminal node",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "intent",
+          "statement": "System works",
+          "confidence": 0,
+          "evaluator": "self",
+          "expandOnFail": true
+        }
+      ],
+      "idempotent": true
+    }
+  }
+}

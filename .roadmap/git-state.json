@@ -1,5 +1,5 @@
 {
-  "lastCommit": "a74db6df7fe1d6ab88f70eb64be4cbf4819c7dee",
-  "timestamp": "2026-02-27T04:53:45.631Z",
-  "message": "roadmap: export validatePlanClarity from main entry point"
+  "lastCommit": "d41d0f50ad95884ca550bc7aa3fef6b023536558",
+  "timestamp": "2026-02-27T08:33:40.095Z",
+  "message": "fix: gallery templates generate valid DAGs with complete node specs"
 }
