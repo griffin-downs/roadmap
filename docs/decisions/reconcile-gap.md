@@ -56,6 +56,6 @@ Property-based tests in `tests/adv-reconcile.test.ts` verify:
 
 ## References
 
-- `src/protocol.ts:190` — implementation
-- `tests/adv-reconcile.test.ts` — adversarial spec and test suite
-- `src/protocol.ts:173-197` — full `reconcile()` function
+- `src/protocol.ts:335` — implementation (`bnArtifacts.filter(c => !fn.produces.includes(c))`)
+- `tests/adv-reconcile.test.ts` — adversarial spec and test suite (8 tests, all passing)
+- `src/protocol.ts:317-342` — full `reconcile()` function
