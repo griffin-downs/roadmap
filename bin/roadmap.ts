@@ -26,6 +26,8 @@ import { buildSchedule } from '../src/lib/schedule.ts';
 import { propagateConstraints } from '../src/lib/propagate.ts';
 import { compilePrompts } from '../src/lib/compile-prompts.ts';
 import { recordEvaluation, judgmentToRecord } from '../src/lib/intent-evaluator.ts';
+import { buildGallery } from '../src/lib/gallery-templates/index.ts';
+import { estimateCost } from '../src/lib/cost-estimator.ts';
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 
@@ -195,6 +197,11 @@ async function main() {
       case 'dig':       return cmdDig();
       case 'propagate': return cmdPropagate(note!);
       case 'compile-prompts': return cmdCompilePrompts(note!);
+      case 'plan':
+        if (args.includes('--gallery')) return await cmdPlanGallery(note!);
+        json({ error: 'Unknown plan subcommand', fix: 'roadmap plan --gallery [--from <specFile>] [--select <id>] [--evaluate <json>] [--json]' });
+        process.exit(1);
+        return;
       case 'help':
       case '--help':
       case '-h':        return cmdHelp();
@@ -2543,6 +2550,250 @@ function cmdPropagate(note: string) {
     constraints: result.constraints,
     dryRun,
   });
+}
+
+// --- plan --gallery: template gallery, candidate selection, judgment recording ---
+
+async function cmdPlanGallery(note: string) {
+  // Parse flags
+  const fromIdx = args.indexOf('--from');
+  let specSource = fromIdx !== -1 ? args[fromIdx + 1] : '';
+
+  // Default specSource: first .specify/specs/**/*.md found, or empty string
+  if (!specSource) {
+    const specsBase = join(repoRoot, '.specify', 'specs');
+    if (existsSync(specsBase)) {
+      try {
+        const found = execSync('find .specify/specs -name "*.md" | head -1', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+        if (found) specSource = found;
+      } catch { /* non-fatal */ }
+    }
+  }
+
+  const selectIdx = args.indexOf('--select');
+  const selectId = selectIdx !== -1 ? args[selectIdx + 1] : undefined;
+
+  const evaluateIdx = args.indexOf('--evaluate');
+  const evaluateJson = evaluateIdx !== -1 ? args[evaluateIdx + 1] : undefined;
+
+  const jsonOutput = args.includes('--json');
+
+  const evalDir = join(repoRoot, '.roadmap', 'evaluations');
+  const headPath = join(repoRoot, '.roadmap', 'head.json');
+  const headPrevPath = join(repoRoot, '.roadmap', 'head-prev.json');
+
+  // --evaluate: record LLM judgments and commit selected candidate
+  if (evaluateJson) {
+    type Judgment = { statement: string; confidence: number; reasoning: string; evidence?: string[] };
+    let judgments: Judgment[];
+    try {
+      judgments = JSON.parse(evaluateJson);
+      if (!Array.isArray(judgments)) throw new Error('--evaluate must be a JSON array');
+    } catch (e: any) {
+      json({ error: `Invalid --evaluate JSON: ${e.message}`, fix: "roadmap plan --gallery --evaluate '[{\"statement\":\"...\",\"confidence\":0.9,\"reasoning\":\"...\"}]'" });
+      process.exit(1);
+      return;
+    }
+
+    // Validate minimum confidence bar
+    const MIN_CONFIDENCE = 0.7;
+    const failing = judgments.filter(j => j.confidence < MIN_CONFIDENCE);
+    if (failing.length > 0) {
+      json({
+        error: `Judgment confidence below minimum (${MIN_CONFIDENCE}) for ${failing.length} statement(s)`,
+        failing: failing.map(j => ({ statement: j.statement, confidence: j.confidence })),
+        fix: `Re-evaluate with confidence >= ${MIN_CONFIDENCE} for all statements`,
+      });
+      process.exit(1);
+      return;
+    }
+
+    // Derive selected candidate id from the judgment statements (first statement encodes id)
+    // Convention: statement is "select candidate <id>"
+    const selectStatement = judgments.find(j => j.statement.startsWith('select candidate '));
+    const candidateId = selectStatement ? selectStatement.statement.replace('select candidate ', '').trim() : undefined;
+
+    const candidates = buildGallery(specSource, evalDir);
+    const selected = candidateId ? candidates.find(c => c.id === candidateId) : candidates[0];
+
+    if (!selected) {
+      json({ error: `Candidate "${candidateId}" not found in gallery`, available: candidates.map(c => c.id) });
+      process.exit(1);
+      return;
+    }
+
+    // Record to .roadmap/evaluations/plan-selection.jsonl
+    if (!existsSync(evalDir)) mkdirSync(evalDir, { recursive: true });
+    const runId = Date.now().toString(36);
+    const selectionRecord = {
+      phase: `plan-selection:${runId}`,
+      selectedId: selected.id,
+      judgments,
+      specSource,
+      ts: new Date().toISOString(),
+    };
+    appendFileSync(join(evalDir, 'plan-selection.jsonl'), JSON.stringify(selectionRecord) + '\n', 'utf-8');
+
+    // Backup existing head.json if present
+    if (existsSync(headPath)) {
+      writeFileSync(headPrevPath, readFileSync(headPath, 'utf-8'));
+    }
+
+    // Write selected candidate dag as head.json
+    const roadmapDir = join(repoRoot, '.roadmap');
+    if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
+    writeFileSync(headPath, JSON.stringify(selected.dag, null, 2) + '\n');
+
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'plan --gallery --evaluate', note,
+      repo: basename(repoRoot),
+      detail: { selectedId: selected.id, runId, specSource, confidence: Math.min(...judgments.map(j => j.confidence)) },
+    });
+
+    json({ selected: selected.id, committed: true, headPath: '.roadmap/head.json' });
+    return;
+  }
+
+  // --select: manual override, same as --evaluate but no confidence requirement
+  if (selectId) {
+    const candidates = buildGallery(specSource, evalDir);
+    const selected = candidates.find(c => c.id === selectId);
+
+    if (!selected) {
+      json({ error: `Candidate "${selectId}" not found in gallery`, available: candidates.map(c => c.id) });
+      process.exit(1);
+      return;
+    }
+
+    // Record to .roadmap/evaluations/plan-selection.jsonl
+    if (!existsSync(evalDir)) mkdirSync(evalDir, { recursive: true });
+    const runId = Date.now().toString(36);
+    const selectionRecord = {
+      phase: `plan-selection:${runId}`,
+      selectedId: selected.id,
+      manualOverride: true,
+      specSource,
+      ts: new Date().toISOString(),
+    };
+    appendFileSync(join(evalDir, 'plan-selection.jsonl'), JSON.stringify(selectionRecord) + '\n', 'utf-8');
+
+    // Backup existing head.json if present
+    if (existsSync(headPath)) {
+      writeFileSync(headPrevPath, readFileSync(headPath, 'utf-8'));
+    }
+
+    // Write selected candidate dag as head.json
+    const roadmapDir = join(repoRoot, '.roadmap');
+    if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
+    writeFileSync(headPath, JSON.stringify(selected.dag, null, 2) + '\n');
+
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'plan --gallery --select', note,
+      repo: basename(repoRoot),
+      detail: { selectedId: selected.id, runId, specSource, manualOverride: true },
+    });
+
+    json({ selected: selected.id, committed: true, headPath: '.roadmap/head.json' });
+    return;
+  }
+
+  // Default: render gallery table + topology + recommendation
+  const candidates = buildGallery(specSource, evalDir);
+
+  if (jsonOutput) {
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'plan --gallery', note,
+      repo: basename(repoRoot),
+      detail: { candidateCount: candidates.length, specSource },
+    });
+    json({ candidates, specSource });
+    return;
+  }
+
+  // ASCII table header
+  const COL_WIDTHS = [20, 6, 14, 10, 8];
+  const headers = ['id', 'nodes', 'wallClockMin', 'costUSD', 'risk'];
+  const sep = headers.map((_, i) => '-'.repeat(COL_WIDTHS[i])).join('-+-');
+  const headerRow = headers.map((h, i) => h.padEnd(COL_WIDTHS[i])).join(' | ');
+
+  const lines: string[] = [];
+  lines.push('');
+  lines.push('Plan Gallery — Pareto-filtered candidates');
+  lines.push('');
+  lines.push(headerRow);
+  lines.push(sep);
+
+  for (const c of candidates) {
+    const row = [
+      c.id.padEnd(COL_WIDTHS[0]),
+      String(c.estimates.nodes).padEnd(COL_WIDTHS[1]),
+      c.estimates.wallClockMinutes.toFixed(1).padEnd(COL_WIDTHS[2]),
+      c.estimates.costUSD.toFixed(4).padEnd(COL_WIDTHS[3]),
+      c.estimates.risk.toFixed(2).padEnd(COL_WIDTHS[4]),
+    ];
+    lines.push(row.join(' | '));
+  }
+
+  lines.push('');
+
+  // Topology diagram per candidate (compact)
+  for (const c of candidates) {
+    const dagNodes = (c.dag as any).nodes ?? {};
+    const nodeIds: string[] = Object.keys(dagNodes);
+
+    // Build adjacency: for each node, collect its dependents
+    const deps: Record<string, string[]> = {};
+    for (const nid of nodeIds) {
+      deps[nid] = (dagNodes[nid] as any).deps ?? [];
+    }
+
+    // Topo order: nodes with no dependents first
+    const inDegree: Record<string, number> = {};
+    for (const nid of nodeIds) inDegree[nid] = 0;
+    for (const nid of nodeIds) {
+      for (const d of deps[nid]) {
+        if (inDegree[d] !== undefined) inDegree[d]++;
+      }
+    }
+
+    // BFS topo levels
+    const queue = nodeIds.filter(n => inDegree[n] === 0);
+    const levels: string[][] = [];
+    const visited = new Set<string>();
+    while (queue.length > 0) {
+      const lvl = queue.splice(0, queue.length);
+      levels.push(lvl);
+      for (const n of lvl) visited.add(n);
+      for (const nid of nodeIds) {
+        if (!visited.has(nid) && deps[nid].every(d => visited.has(d))) {
+          queue.push(nid);
+        }
+      }
+    }
+
+    // Compact topology: levels joined with arrows, parallel nodes with ─┬─
+    const topoStr = levels.map(lvl => lvl.join(' ─┬─ ')).join(' → ');
+    lines.push(`[${c.id}] ${c.summary}`);
+    lines.push(`  ${topoStr}`);
+    lines.push('');
+  }
+
+  // Recommendation: lowest risk
+  const recommended = candidates.reduce((best, c) => c.estimates.risk < best.estimates.risk ? c : best, candidates[0]);
+  lines.push(`Recommendation: ${recommended.id} (risk=${recommended.estimates.risk.toFixed(2)}, cost=$${recommended.estimates.costUSD.toFixed(4)})`);
+  lines.push('');
+  lines.push(`Select [${candidates.map((_, i) => String.fromCharCode(65 + i)).join('/')}]:`);
+  lines.push('  roadmap plan --gallery --select <id> --note "..."');
+  lines.push('  roadmap plan --gallery --evaluate \'[{"statement":"select candidate <id>","confidence":0.9,"reasoning":"..."}]\' --note "..."');
+  lines.push('');
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'plan --gallery', note,
+    repo: basename(repoRoot),
+    detail: { candidateCount: candidates.length, recommended: recommended.id, specSource },
+  });
+
+  console.log(lines.join('\n'));
 }
 
 // --- Helpers ---
