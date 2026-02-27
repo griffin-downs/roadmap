@@ -38,13 +38,15 @@ export const TEMPLATES: Record<'aggressive' | 'corrective' | 'staged' | 'budget'
       // 6-node dag: emit → compile+test (parallel) → runtime → converged
       return {
         id: `aggressive-${specSource.slice(0, 8).replace(/\W/g, '_')}`,
+        init: 'emit',
+        term: 'converged',
         nodes: {
-          emit: { id: 'emit', desc: 'Single-pass emit', deps: [] },
-          compile: { id: 'compile', desc: 'Compile gate', deps: ['emit'] },
-          test: { id: 'test', desc: 'Test gate', deps: ['emit'] },
-          intent: { id: 'intent', desc: 'Intent gate (parallel)', deps: ['emit'] },
-          runtime: { id: 'runtime', desc: 'Runtime check', deps: ['compile', 'test', 'intent'] },
-          converged: { id: 'converged', desc: 'Convergence term', deps: ['runtime'] },
+          emit: { id: 'emit', desc: 'Single-pass emit', produces: [], consumes: [], deps: [], validate: [], idempotent: true },
+          compile: { id: 'compile', desc: 'Compile gate', produces: [], consumes: [], deps: ['emit'], validate: [], idempotent: true },
+          test: { id: 'test', desc: 'Test gate', produces: [], consumes: [], deps: ['emit'], validate: [], idempotent: true },
+          intent: { id: 'intent', desc: 'Intent gate (parallel)', produces: [], consumes: [], deps: ['emit'], validate: [], idempotent: true },
+          runtime: { id: 'runtime', desc: 'Runtime check', produces: [], consumes: [], deps: ['compile', 'test', 'intent'], validate: [], idempotent: true },
+          converged: { id: 'converged', desc: 'Convergence term', produces: [], consumes: [], deps: ['runtime'], validate: [], idempotent: true },
         },
       };
     },
@@ -65,18 +67,18 @@ export const TEMPLATES: Record<'aggressive' | 'corrective' | 'staged' | 'budget'
       // Base: emit → compile → test → intent → runtime → converged (6 nodes)
       // + 2 nodes per historyFailureClass: <class>-detect, <class>-fix
       const baseNodes: Record<string, unknown> = {
-        emit: { id: 'emit', desc: 'Single-pass emit', deps: [] },
-        compile: { id: 'compile', desc: 'Compile gate', deps: ['emit'] },
-        test: { id: 'test', desc: 'Test gate', deps: ['compile'] },
-        intent: { id: 'intent', desc: 'Intent gate', deps: ['test'] },
-        runtime: { id: 'runtime', desc: 'Runtime check', deps: ['intent'] },
-        converged: { id: 'converged', desc: 'Convergence term', deps: ['runtime'] },
+        emit: { id: 'emit', desc: 'Single-pass emit', produces: [], consumes: [], deps: [], validate: [], idempotent: true },
+        compile: { id: 'compile', desc: 'Compile gate', produces: [], consumes: [], deps: ['emit'], validate: [], idempotent: true },
+        test: { id: 'test', desc: 'Test gate', produces: [], consumes: [], deps: ['compile'], validate: [], idempotent: true },
+        intent: { id: 'intent', desc: 'Intent gate', produces: [], consumes: [], deps: ['test'], validate: [], idempotent: true },
+        runtime: { id: 'runtime', desc: 'Runtime check', produces: [], consumes: [], deps: ['intent'], validate: [], idempotent: true },
+        converged: { id: 'converged', desc: 'Convergence term', produces: [], consumes: [], deps: ['runtime'], validate: [], idempotent: true },
       };
 
       for (const cls of historyFailureClasses) {
         const safe = cls.replace(/\W/g, '_');
-        baseNodes[`${safe}-detect`] = { id: `${safe}-detect`, desc: `Detect ${cls}`, deps: ['emit'] };
-        baseNodes[`${safe}-fix`] = { id: `${safe}-fix`, desc: `Fix ${cls}`, deps: [`${safe}-detect`] };
+        baseNodes[`${safe}-detect`] = { id: `${safe}-detect`, desc: `Detect ${cls}`, produces: [], consumes: [], deps: ['emit'], validate: [], idempotent: true };
+        baseNodes[`${safe}-fix`] = { id: `${safe}-fix`, desc: `Fix ${cls}`, produces: [], consumes: [], deps: [`${safe}-detect`], validate: [], idempotent: true };
         // Fold fix nodes into the serial chain before runtime
         const converged = baseNodes['converged'] as { deps: string[] };
         converged.deps = [...converged.deps.filter(d => d !== 'runtime'), `${safe}-fix`, 'runtime'];
@@ -84,6 +86,8 @@ export const TEMPLATES: Record<'aggressive' | 'corrective' | 'staged' | 'budget'
 
       return {
         id: `corrective-${specSource.slice(0, 8).replace(/\W/g, '_')}`,
+        init: 'emit',
+        term: 'converged',
         nodes: baseNodes,
       };
     },
@@ -105,16 +109,18 @@ export const TEMPLATES: Record<'aggressive' | 'corrective' | 'staged' | 'budget'
       // + skeleton-validate, feature-validate for the two emit stages
       return {
         id: `staged-${specSource.slice(0, 8).replace(/\W/g, '_')}`,
+        init: 'emit-skeleton',
+        term: 'converged',
         nodes: {
-          'emit-skeleton': { id: 'emit-skeleton', desc: 'Emit skeleton structure', deps: [] },
-          'skeleton-validate': { id: 'skeleton-validate', desc: 'Validate skeleton shape', deps: ['emit-skeleton'] },
-          compile: { id: 'compile', desc: 'Compile gate', deps: ['skeleton-validate'] },
-          'emit-features': { id: 'emit-features', desc: 'Emit feature implementations', deps: ['compile'] },
-          'feature-validate': { id: 'feature-validate', desc: 'Validate feature completeness', deps: ['emit-features'] },
-          test: { id: 'test', desc: 'Test gate', deps: ['feature-validate'] },
-          intent: { id: 'intent', desc: 'Intent gate', deps: ['test'] },
-          runtime: { id: 'runtime', desc: 'Runtime check', deps: ['intent'] },
-          converged: { id: 'converged', desc: 'Convergence term', deps: ['runtime'] },
+          'emit-skeleton': { id: 'emit-skeleton', desc: 'Emit skeleton structure', produces: [], consumes: [], deps: [], validate: [], idempotent: true },
+          'skeleton-validate': { id: 'skeleton-validate', desc: 'Validate skeleton shape', produces: [], consumes: [], deps: ['emit-skeleton'], validate: [], idempotent: true },
+          compile: { id: 'compile', desc: 'Compile gate', produces: [], consumes: [], deps: ['skeleton-validate'], validate: [], idempotent: true },
+          'emit-features': { id: 'emit-features', desc: 'Emit feature implementations', produces: [], consumes: [], deps: ['compile'], validate: [], idempotent: true },
+          'feature-validate': { id: 'feature-validate', desc: 'Validate feature completeness', produces: [], consumes: [], deps: ['emit-features'], validate: [], idempotent: true },
+          test: { id: 'test', desc: 'Test gate', produces: [], consumes: [], deps: ['feature-validate'], validate: [], idempotent: true },
+          intent: { id: 'intent', desc: 'Intent gate', produces: [], consumes: [], deps: ['test'], validate: [], idempotent: true },
+          runtime: { id: 'runtime', desc: 'Runtime check', produces: [], consumes: [], deps: ['intent'], validate: [], idempotent: true },
+          converged: { id: 'converged', desc: 'Convergence term', produces: [], consumes: [], deps: ['runtime'], validate: [], idempotent: true },
         },
       };
     },
@@ -135,13 +141,15 @@ export const TEMPLATES: Record<'aggressive' | 'corrective' | 'staged' | 'budget'
       // 6-node dag: emit → compile+test (parallel) → runtime → converged
       return {
         id: `budget-${specSource.slice(0, 8).replace(/\W/g, '_')}`,
+        init: 'emit',
+        term: 'converged',
         nodes: {
-          emit: { id: 'emit', desc: 'Single-pass emit (haiku)', deps: [] },
-          compile: { id: 'compile', desc: 'Compile gate', deps: ['emit'] },
-          test: { id: 'test', desc: 'Test gate', deps: ['emit'] },
-          judge: { id: 'judge', desc: 'Opus judge gate (parallel)', deps: ['emit'] },
-          runtime: { id: 'runtime', desc: 'Runtime check', deps: ['compile', 'test', 'judge'] },
-          converged: { id: 'converged', desc: 'Convergence term (fixed passes)', deps: ['runtime'] },
+          emit: { id: 'emit', desc: 'Single-pass emit (haiku)', produces: [], consumes: [], deps: [], validate: [], idempotent: true },
+          compile: { id: 'compile', desc: 'Compile gate', produces: [], consumes: [], deps: ['emit'], validate: [], idempotent: true },
+          test: { id: 'test', desc: 'Test gate', produces: [], consumes: [], deps: ['emit'], validate: [], idempotent: true },
+          judge: { id: 'judge', desc: 'Opus judge gate (parallel)', produces: [], consumes: [], deps: ['emit'], validate: [], idempotent: true },
+          runtime: { id: 'runtime', desc: 'Runtime check', produces: [], consumes: [], deps: ['compile', 'test', 'judge'], validate: [], idempotent: true },
+          converged: { id: 'converged', desc: 'Convergence term (fixed passes)', produces: [], consumes: [], deps: ['runtime'], validate: [], idempotent: true },
         },
       };
     },
