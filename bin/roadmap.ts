@@ -3097,6 +3097,14 @@ async function cmdExplore() {
         { fn: 'checkClass', sig: '(page: Page, selector: string, className: string, label: string) → ObservationResult', desc: 'Element has specific CSS class' },
         { fn: 'checkContrast', sig: '(page: Page, textSel: string, bgSel: string, minRatio: number, label: string) → ObservationResult', desc: 'WCAG 2.1 contrast ratio between text and background' },
         { fn: 'checkOverflow', sig: '(page: Page, selector: string, label: string) → ObservationResult', desc: 'Detect scrollable overflow (clipped content)' },
+        { fn: 'checkDisabled', sig: '(page: Page, selector: string, label: string) → ObservationResult', desc: 'Element is disabled (form control)' },
+        { fn: 'checkChecked', sig: '(page: Page, selector: string, label: string) → ObservationResult', desc: 'Checkbox or radio is checked' },
+        { fn: 'checkContainsText', sig: '(page: Page, selector: string, expectedText: string, label: string) → ObservationResult', desc: 'Element text contains substring' },
+        { fn: 'checkInputValue', sig: '(page: Page, selector: string, expectedValue: string, label: string) → ObservationResult', desc: 'Form field value matches expected' },
+        { fn: 'checkUrl', sig: '(page: Page, pattern: string | RegExp, label: string) → ObservationResult', desc: 'Current URL matches pattern' },
+        { fn: 'checkTitle', sig: '(page: Page, expectedTitle: string, label: string) → ObservationResult', desc: 'Page title contains substring' },
+        { fn: 'checkComputedStyle', sig: '(page: Page, selector: string, property: string, expectedValue: string, label: string) → ObservationResult', desc: 'Computed CSS property equals expected value' },
+        { fn: 'checkInViewport', sig: '(page: Page, selector: string, label: string) → ObservationResult', desc: 'Element is visible in viewport' },
       ],
       interactions: [
         { fn: 'safeClick', sig: '(page: Page, selector: string) → void', desc: 'Click with visibility + enabled guard' },
@@ -3106,6 +3114,18 @@ async function cmdExplore() {
         { fn: 'waitForTransition', sig: '(page: Page, ms?: number) → void', desc: 'Wait for CSS transitions to settle (default 300ms)' },
         { fn: 'connectAndFindPage', sig: '(cdpUrl: string) → { page: Page, browser: Browser }', desc: 'Connect via CDP, filter devtools pages, return app page' },
         { fn: 'resetState', sig: '(page: Page) → void', desc: 'Call window.__DEMO_RESET__() if available' },
+        { fn: 'fillForm', sig: '(page: Page, fields: Record<string, string>) → void', desc: 'Fill multiple form fields at once' },
+        { fn: 'selectFromDropdown', sig: '(page: Page, selectSelector: string, optionText: string) → void', desc: 'Select option from native or custom dropdown' },
+        { fn: 'toggleCheckbox', sig: '(page: Page, selector: string, shouldBeChecked: boolean) → void', desc: 'Check or uncheck, idempotent' },
+        { fn: 'getListItems', sig: '(page: Page, itemSelector: string) → string[]', desc: 'Extract text from all matching list items' },
+        { fn: 'findItemBy', sig: '(page: Page, itemSelector: string, partialText: string) → Locator | null', desc: 'Find list item by partial text match' },
+        { fn: 'getTableData', sig: '(page: Page, tableSelector: string) → Record<string, string>[]', desc: 'Extract table rows as array of objects' },
+        { fn: 'waitForNetwork', sig: '(page: Page, timeout?: number) → void', desc: 'Wait for networkidle state (default 5000ms)' },
+        { fn: 'waitForTextChange', sig: '(page: Page, selector: string, timeout?: number) → string', desc: 'Wait for element text to change' },
+        { fn: 'capturePageState', sig: '(page: Page) → { url, title, domSize, consoleMessages, consoleErrors }', desc: 'Snapshot page state: URL, title, DOM, console' },
+        { fn: 'getConsoleMessages', sig: '(page: Page, fn: () => Promise<void>) → Array<{ type, text }>', desc: 'Collect console output during action' },
+        { fn: 'getNetworkCalls', sig: '(page: Page, fn: () => Promise<void>) → Array<{ url, method, status, resourceType }>', desc: 'Capture HTTP requests/responses during action' },
+        { fn: 'screenshot', sig: '(page: Page, path: string, opts?: { clip?: {...} }) → void', desc: 'Take page or clipped screenshot' },
       ],
       runtime: [
         { fn: 'launchApp', sig: '(opts: { command: string, port?: number, timeout?: number, buildCommand?: string }) → LaunchHandle', desc: 'Build + launch + poll CDP readiness' },
@@ -3126,12 +3146,12 @@ async function cmdExplore() {
 
     // Human-readable output
     console.log('Explore API — import from "roadmap/explore"\n');
-    console.log('Observation helpers (9):');
+    console.log(`Observation helpers (${surface.observations.length}):`);
     for (const o of surface.observations) {
       console.log(`  ${o.fn}${o.sig.slice(o.sig.indexOf('('))}`);
       console.log(`    ${o.desc}\n`);
     }
-    console.log('Interaction helpers (7):');
+    console.log(`Interaction helpers (${surface.interactions.length})`);
     for (const i of surface.interactions) {
       console.log(`  ${i.fn}${i.sig.slice(i.sig.indexOf('('))}`);
       console.log(`    ${i.desc}\n`);
