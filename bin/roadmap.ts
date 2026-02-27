@@ -24,6 +24,8 @@ import { buildScaffold } from '../src/lib/scaffold.ts';
 import { buildClusters } from '../src/lib/cluster.ts';
 import { buildSchedule } from '../src/lib/schedule.ts';
 import { propagateConstraints } from '../src/lib/propagate.ts';
+import { compilePrompts } from '../src/lib/compile-prompts.ts';
+import { makeIntentEvaluator } from '../src/lib/intent-evaluator.ts';
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 
@@ -192,6 +194,7 @@ async function main() {
       case 'iter-id':   return cmdIterId();
       case 'dig':       return cmdDig();
       case 'propagate': return cmdPropagate(note!);
+      case 'compile-prompts': return cmdCompilePrompts(note!);
       case 'help':
       case '--help':
       case '-h':        return cmdHelp();
@@ -1372,10 +1375,33 @@ async function cmdComplete(note: string) {
   }
 
   // 1.5 Validate — run all validation rules before accepting completion
+  // --evaluate: activate intent validators (self tier)
+  // --evaluate=council: activate intent validators (council tier — adversarial)
   const skipValidate = args.includes('--skip-validate');
+  const evaluateArg = args.find(a => a === '--evaluate' || a.startsWith('--evaluate='));
+  const evaluateTier: 'self' | 'council' | null = evaluateArg
+    ? (evaluateArg === '--evaluate=council' ? 'council' : 'self')
+    : null;
+
   if (!skipValidate) {
     const { validateNode } = await import('../src/protocol.ts');
-    const validationResult = await validateNode(dag, nodeId, fileExists(repoRoot));
+    const nodeSpec = (dag.nodes as Record<string, any>)[nodeId];
+    const nodeProduces: string[] = nodeSpec?.produces ?? [];
+
+    const validateOpts = evaluateTier
+      ? {
+          intentEvaluator: makeIntentEvaluator(nodeId, repoRoot),
+          repoRoot,
+        }
+      : undefined;
+
+    const validationResult = await validateNode(dag, nodeId, fileExists(repoRoot), validateOpts);
+
+    // Surface unevaluated intent checks (non-blocking) in the result
+    const unevaluatedIntents = validationResult.checks.filter(
+      (c: any) => c.intentStatus === 'unevaluated',
+    );
+
     if (!validationResult.passed) {
       // Release claim on failure so another attempt can re-claim
       delete claimStore[nodeId];
@@ -1386,8 +1412,14 @@ async function cmdComplete(note: string) {
         checks: validationResult.checks,
         failedCount: validationResult.checks.filter((c: any) => !c.passed).length,
         fix: 'Fix the failing validations and retry. Use --skip-validate to override.',
+        ...(unevaluatedIntents.length ? { unevaluatedIntents: unevaluatedIntents.length } : {}),
       });
       process.exit(1);
+    }
+
+    if (unevaluatedIntents.length && !evaluateTier) {
+      // Attach non-blocking notice to successful completion
+      (validationResult as any)._unevaluatedIntents = unevaluatedIntents.length;
     }
   }
 
@@ -1438,7 +1470,7 @@ async function cmdComplete(note: string) {
   recordTrail({
     ts: new Date().toISOString(), cmd: 'complete', note,
     repo: basename(repoRoot), position: finalPos.position, level: finalPos.level, dagId: dag.id,
-    detail: { nodeId, owner, checkpointId: checkpoint.id, batchComplete: posAfter.batchComplete, advanced: !!advanced, skipValidate, unblocked },
+    detail: { nodeId, owner, checkpointId: checkpoint.id, batchComplete: posAfter.batchComplete, advanced: !!advanced, skipValidate, evaluateTier, unblocked },
   });
 
   json({
@@ -1451,6 +1483,7 @@ async function cmdComplete(note: string) {
     unblocked,
     ...(advanced ? { advanced } : {}),
     ...(posAfter.batchComplete && !advanced && !noAdvance ? { hint: 'roadmap advance --note "batch done"' } : {}),
+    ...(evaluateTier ? { evaluated: evaluateTier } : {}),
   });
 }
 
@@ -2531,6 +2564,78 @@ function scanExports(): Record<string, string[]> {
   }
 
   return result;
+}
+
+// --- compile-prompts: generate per-node worker prompts from DAG + environment ---
+function cmdCompilePrompts(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+  const dag = loadDAG();
+
+  const envIdx = args.indexOf('--env');
+  const envPath = envIdx !== -1 ? resolve(repoRoot, args[envIdx + 1] ?? '') : undefined;
+
+  const templateIdx = args.indexOf('--template');
+  const templatePath = templateIdx !== -1 ? resolve(repoRoot, args[templateIdx + 1] ?? '') : undefined;
+
+  const outIdx = args.indexOf('--out');
+  const outDir = outIdx !== -1 ? args[outIdx + 1] : 'prompts';
+
+  const nodeIdx = args.indexOf('--node');
+  const singleNode = nodeIdx !== -1 ? args[nodeIdx + 1] : undefined;
+
+  const validateOnly = args.includes('--validate-only');
+
+  let envSource: string | undefined;
+  if (envPath) {
+    if (!existsSync(envPath)) { json({ error: `Environment file not found: ${envPath}` }); process.exit(1); }
+    envSource = readFileSync(envPath, 'utf-8');
+  }
+
+  let templateSource: string | undefined;
+  if (templatePath) {
+    if (!existsSync(templatePath)) { json({ error: `Template file not found: ${templatePath}` }); process.exit(1); }
+    templateSource = readFileSync(templatePath, 'utf-8');
+  }
+
+  let currentCommit: string | undefined;
+  try {
+    currentCommit = execSync('git rev-parse HEAD', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+  } catch { /* non-fatal */ }
+
+  const clusterResult = buildClusters(dag);
+
+  const { result, prompts, violations, stale } = compilePrompts(dag as Graph<string>, {
+    envSource, templateSource, out: outDir,
+    nodes: singleNode ? [singleNode] : undefined,
+    validateOnly, clusterResult, currentCommit,
+  });
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'compile-prompts', note,
+    repo: basename(repoRoot), position: ['compile-prompts'], level: -1, dagId: dag.id,
+    detail: { compiled: result.compiled, skipped: result.skipped, violations: violations.length, stale },
+  });
+
+  if (validateOnly) {
+    json({ valid: violations.length === 0, violations, compiled: result.compiled });
+    return;
+  }
+
+  if (violations.length > 0) {
+    json({ error: 'Validation violations found', violations, compiled: 0 });
+    process.exit(1);
+  }
+
+  const absOut = resolve(repoRoot, outDir);
+  if (!existsSync(absOut)) mkdirSync(absOut, { recursive: true });
+  for (const p of prompts) {
+    writeFileSync(join(absOut, basename(p.path)), p.content, 'utf-8');
+  }
+
+  json({ ...result, stale, violations: [] });
 }
 
 await main();

@@ -182,6 +182,7 @@ function buildVerificationChecklist(validate: readonly ValidationRule[]): string
       case 'artifact-schema': return `- [ ] Schema valid: \`${rule.target}\``;
       case 'spec-conformance': return `- [ ] Spec conformance: ${rule.spec}`;
       case 'expanded': return `- [ ] DAG expanded with child nodes`;
+      case 'intent': return `- [ ] Intent (${rule.evaluator}): "${rule.statement}"`;
       default: return `- [ ] ${(rule as any).type}`;
     }
   }).join('\n');

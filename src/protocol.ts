@@ -14,12 +14,33 @@ export type ValidationRule =
   | { type: 'shell'; command: string; expectExitCode?: number }
   | { type: 'build-produces'; command: string; outputs: string[] }
   | { type: 'launch-check'; command: string; timeout?: number; successSignal?: string }
-  | { type: 'spec-conformance'; spec: string; stories: number[]; criteria?: number[] };
+  | { type: 'spec-conformance'; spec: string; stories: number[]; criteria?: number[] }
+  | { type: 'intent'; statement: string; confidence: number; evaluator: 'self' | 'council'; context?: string[] };
+
+// Result of an LLM intent evaluation.
+export interface IntentEvaluation {
+  pass: boolean;           // confidence >= threshold
+  confidence: number;      // 0.0–1.0 from the evaluator
+  reasoning: string;       // one-paragraph explanation
+  evidence: string[];      // file:line references
+}
+
+// Evaluator callback injected into validateNode opts. Handles file loading,
+// LLM call, confidence threshold comparison, and audit recording.
+export type IntentEvaluatorFn = (
+  statement: string,
+  contextPaths: string[],
+  evaluator: 'self' | 'council',
+  repoRoot: string,
+  confidenceThreshold: number,
+) => Promise<IntentEvaluation>;
 
 export interface ValidationCheck {
   rule: ValidationRule;
   passed: boolean;
   evidence?: string;
+  evaluation?: IntentEvaluation;               // populated for evaluated intent rules
+  intentStatus?: 'evaluated' | 'unevaluated'; // present only for intent rules
 }
 
 export interface ValidationResult {
@@ -979,6 +1000,7 @@ export async function validateNode<T extends string>(
   g: Graph<T>,
   nodeId: string,
   exists: (artifact: string) => boolean,
+  opts?: { intentEvaluator?: IntentEvaluatorFn; repoRoot?: string },
 ): Promise<ValidationResult> {
   const node = g.nodes[nodeId as keyof typeof g.nodes] as any;
 
@@ -1140,6 +1162,38 @@ export async function validateNode<T extends string>(
       } catch (e: any) {
         passed = false;
         evidence = `spec-conformance error: ${String(e.message).slice(0, 200)}`;
+      }
+    } else if (rule.type === 'intent') {
+      // Intent constraints are LLM-evaluated. Non-blocking by default (unevaluated).
+      // Activated by passing opts.intentEvaluator (via complete --evaluate).
+      if (opts?.intentEvaluator && opts?.repoRoot) {
+        try {
+          const contextPaths: string[] = rule.context ?? (node.produces ?? []);
+          const evaluation = await opts.intentEvaluator(
+            rule.statement,
+            contextPaths,
+            rule.evaluator,
+            opts.repoRoot,
+            rule.confidence,
+          );
+          passed = evaluation.pass;
+          evidence = `evaluated: confidence=${evaluation.confidence.toFixed(2)} (threshold=${rule.confidence}) — ${evaluation.reasoning.slice(0, 120)}`;
+          checks.push({ rule, passed, evidence, evaluation, intentStatus: 'evaluated' });
+          if (!passed) allPassed = false;
+          continue;
+        } catch (e: any) {
+          passed = false;
+          evidence = `intent evaluation error: ${String(e.message).slice(0, 200)}`;
+          checks.push({ rule, passed, evidence, intentStatus: 'evaluated' });
+          allPassed = false;
+          continue;
+        }
+      } else {
+        // Unevaluated — visible but non-blocking
+        passed = true;
+        evidence = `unevaluated (run complete --evaluate to activate)`;
+        checks.push({ rule, passed, evidence, intentStatus: 'unevaluated' });
+        continue;
       }
     }
 
