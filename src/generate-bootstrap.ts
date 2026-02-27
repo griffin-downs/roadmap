@@ -135,34 +135,100 @@ export { g, pos };
 }
 
 function generateHeadJson(name: string, template: BootstrapTemplate): string {
-  const baseNode = {
-    id: 'scaffold',
-    desc: 'Initial state',
-    produces: ['src/index.ts'],
-    consumes: [],
-    deps: [],
-    validate: [{ type: 'artifact-exists', target: 'src/index.ts' }],
-    idempotent: true,
-  };
+  if (template === 'monorepo') {
+    const graph = {
+      id: name,
+      desc: `${name} project roadmap`,
+      init: 'setup',
+      term: 'shipped',
+      nodes: {
+        setup: {
+          id: 'setup',
+          desc: 'Install dependencies',
+          produces: ['node_modules/.bin/tsc'],
+          consumes: [],
+          deps: [],
+          validate: [{ type: 'artifact-exists', target: 'node_modules/.bin/tsc' }],
+          idempotent: true,
+        },
+        build: {
+          id: 'build',
+          desc: 'Build packages',
+          produces: ['packages/*/dist'],
+          consumes: ['node_modules/.bin/tsc'],
+          deps: ['setup'],
+          validate: [],
+          idempotent: true,
+        },
+        shipped: {
+          id: 'shipped',
+          desc: 'Ready for production',
+          produces: [],
+          consumes: ['packages/*/dist'],
+          deps: ['build'],
+          validate: [],
+          idempotent: false,
+        },
+      },
+    };
+    return JSON.stringify(graph, null, 2);
+  }
 
-  const termNode = {
-    id: 'done',
-    desc: 'Ready to develop',
-    produces: [],
-    consumes: ['src/index.ts'],
-    deps: ['scaffold'],
-    validate: [],
-    idempotent: false,
-  };
+  if (template === 'multi-repo') {
+    const graph = {
+      id: name,
+      desc: `${name} project roadmap`,
+      init: 'setup',
+      term: 'deployed',
+      nodes: {
+        setup: {
+          id: 'setup',
+          desc: 'Check all repos ready',
+          produces: [],
+          consumes: [],
+          deps: [],
+          validate: [],
+          idempotent: true,
+        },
+        deployed: {
+          id: 'deployed',
+          desc: 'Workspace deployed',
+          produces: [],
+          consumes: [],
+          deps: ['setup'],
+          validate: [],
+          idempotent: false,
+        },
+      },
+    };
+    return JSON.stringify(graph, null, 2);
+  }
 
+  // Default: init template
   const graph = {
     id: name,
     desc: `${name} project roadmap`,
     init: 'scaffold',
     term: 'done',
     nodes: {
-      scaffold: baseNode,
-      done: termNode,
+      scaffold: {
+        id: 'scaffold',
+        desc: 'Initial state',
+        produces: ['src/index.ts'],
+        consumes: [],
+        deps: [],
+        validate: [{ type: 'artifact-exists', target: 'src/index.ts' }],
+        idempotent: true,
+      },
+      done: {
+        id: 'done',
+        desc: 'Ready to develop',
+        produces: [],
+        consumes: ['src/index.ts'],
+        deps: ['scaffold'],
+        validate: [],
+        idempotent: false,
+      },
     },
   };
 

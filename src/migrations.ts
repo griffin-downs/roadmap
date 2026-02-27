@@ -7,7 +7,7 @@ import path from 'path';
 
 export type GraphVersion = '1' | '2';
 
-export const CURRENT_VERSION: GraphVersion = '1';
+export const CURRENT_VERSION: GraphVersion = '2';
 
 /**
  * Load DAG from file with automatic migration.
@@ -40,9 +40,10 @@ export function applyMigrations(graph: any): any {
   }
 
   // Sequential migrations: v1 -> v2 -> current
+  // Only migrate when graph has nodes requiring field additions
   let migrated = graph;
 
-  if (version === '1' && CURRENT_VERSION === '2') {
+  if (version === '1' && CURRENT_VERSION === '2' && Object.keys(graph.nodes || {}).length > 0) {
     migrated = migrateV1ToV2(migrated);
   }
 
