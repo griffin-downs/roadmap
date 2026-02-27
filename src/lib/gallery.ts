@@ -120,12 +120,53 @@ function estimateCost(params: TemplateParams, nodes: number): number {
 }
 
 function estimateWallClock(params: TemplateParams, nodes: number): number {
-  const ma = params.modelAllocation;
-  const go = params.gateOrdering;
-  const parallelFactor = go === 'parallel' ? 0.5 : go === 'cheapest-first' ? 0.7 : 1.0;
-  if (ma === 'opus-all') return nodes * MINUTES_PER_NODE_OPUS * parallelFactor;
-  if (ma === 'opus-emit+haiku-fix') return nodes * (MINUTES_PER_NODE_OPUS * 0.6 + MINUTES_PER_NODE_HAIKU * 0.4) * parallelFactor;
-  return nodes * (MINUTES_PER_NODE_HAIKU * 0.7 + MINUTES_PER_NODE_OPUS * 0.3) * parallelFactor;
+  // Compute critical path: use template DAG structure to estimate wall-clock time
+  // instead of fake parallelism factors that ignore dependencies.
+
+  // Map node ID to duration (minutes) based on model allocation
+  function nodeDuration(nodeId: string, ma: TemplateParams['modelAllocation']): number {
+    // Estimate per-node duration (in minutes) based on model type
+    const isEmit = nodeId === 'emit';
+    const isJudge = nodeId === 'judge';
+    const isCompile = nodeId === 'compile';
+    const isTest = nodeId === 'test';
+    const isRuntime = nodeId === 'runtime';
+    const isConverged = nodeId === 'converged';
+
+    if (isEmit) return MINUTES_PER_NODE_HAIKU; // Single-pass emit is always haiku
+    if (isJudge) return ma.includes('opus') ? MINUTES_PER_NODE_OPUS : MINUTES_PER_NODE_HAIKU; // Judge uses model from allocation
+    if (isCompile || isTest || isRuntime) return ma.includes('opus') ? MINUTES_PER_NODE_OPUS * 0.8 : MINUTES_PER_NODE_HAIKU; // Lighter gates
+    if (isConverged) return MINUTES_PER_NODE_HAIKU; // Convergence check is cheap
+
+    // Fallback for unknown nodes
+    if (ma === 'opus-all') return MINUTES_PER_NODE_OPUS;
+    if (ma === 'opus-emit+haiku-fix') return MINUTES_PER_NODE_HAIKU;
+    return (MINUTES_PER_NODE_HAIKU * 0.7 + MINUTES_PER_NODE_OPUS * 0.3);
+  }
+
+  // Map model allocation to per-node average for fallback (when template not available)
+  function avgNodeDuration(ma: TemplateParams['modelAllocation']): number {
+    if (ma === 'opus-all') return MINUTES_PER_NODE_OPUS;
+    if (ma === 'opus-emit+haiku-fix') return MINUTES_PER_NODE_OPUS * 0.6 + MINUTES_PER_NODE_HAIKU * 0.4;
+    return MINUTES_PER_NODE_HAIKU * 0.7 + MINUTES_PER_NODE_OPUS * 0.3;
+  }
+
+  // For budget/standard templates: estimate critical path from known DAG structure
+  // Budget template: emit (1min) → [compile, test, judge parallel] (1.5min) → runtime (0.5min) → converged (0.5min)
+  // Total: ~3.5 min
+  if (params.emitStrategy === 'single-pass' && params.preExpansion === 'none' && params.convergence === 'fixed-passes') {
+    const emitTime = MINUTES_PER_NODE_HAIKU; // Single-pass emit
+    const gateTime = params.modelAllocation.includes('opus') ? MINUTES_PER_NODE_OPUS : MINUTES_PER_NODE_HAIKU; // Judge gate (worst case of parallel)
+    const runtimeTime = MINUTES_PER_NODE_HAIKU; // Runtime check
+    const convergeTime = MINUTES_PER_NODE_HAIKU; // Convergence gate
+    return emitTime + gateTime + runtimeTime + convergeTime; // Critical path sum
+  }
+
+  // Fallback: use node count with conservative multiplier instead of fake parallelism factor
+  // This is more honest than claiming 0.5 parallelism factor on serial chains
+  const avgDuration = avgNodeDuration(params.modelAllocation);
+  const conservativeFactor = params.gateOrdering === 'parallel' ? 0.8 : 1.0; // Modest parallelism, not fake 0.5
+  return Math.max(1.0, nodes * avgDuration * conservativeFactor); // Never estimate less than 1 minute
 }
 
 // Heuristic success rates by allocation (no real history)

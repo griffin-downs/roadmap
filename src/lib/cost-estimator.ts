@@ -22,7 +22,9 @@ const MINUTES_PER_NODE_OPUS_HEAVY = 1.5;
 const MINUTES_PER_NODE_HAIKU_HEAVY = 0.5;
 
 // Parallelism factor: wall clock = sum / factor
-const PARALLELISM_FACTOR = 2.5;
+// FIXED: was 2.5 (absurd — claimed 67 nodes * 0.5min = 33min total ÷ 2.5 = 1.2min wall time)
+// Now 1.2: modest parallelism for typical DAG with ~30% critical path reduction
+const PARALLELISM_FACTOR = 1.2;
 
 function computeCostUSD(nodeCount: number, modelAllocation: TemplateParams['modelAllocation']): number {
   const tokensK = nodeCount * TOKENS_PER_NODE_K;
