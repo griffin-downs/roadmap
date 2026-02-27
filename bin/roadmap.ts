@@ -273,13 +273,14 @@ async function cmdOrient(note: string | undefined) {
   // --assign: round-robin assign batchRemaining to owners
   if (args.includes('--assign')) {
     const ownersIdx = args.indexOf('--owners');
-    if (ownersIdx === -1 || !args[ownersIdx + 1]) {
+    if (ownersIdx === -1) {
       json({ error: 'Missing --owners', fix: 'roadmap orient --assign --owners w1,w2,w3 --note "reason"' });
       process.exit(1);
     }
-    const owners = args[ownersIdx + 1].split(',').filter(Boolean);
+    const ownersRaw = args[ownersIdx + 1] ?? '';
+    const owners = ownersRaw.split(',').filter(Boolean);
     if (owners.length === 0) {
-      json({ error: 'Empty --owners list' });
+      json({ error: 'Empty --owners', fix: 'roadmap orient --assign --owners w1,w2,w3 --note "reason"' });
       process.exit(1);
     }
     const ttlIdx = args.indexOf('--ttl');
@@ -289,9 +290,13 @@ async function cmdOrient(note: string | undefined) {
       process.exit(1);
     }
 
+    // When batchRemaining is empty but position has nodes (e.g. term with artifacts
+    // present but validation not yet run), fall back to position as the assignable set.
+    const assignableNodes = pos.batchRemaining.length > 0 ? pos.batchRemaining : pos.position;
+
     const conflicts = batchConflicts(dag);
     const currentBatchConflicts = conflicts
-      .filter(c => c.writers.some(w => pos.batchRemaining.includes(w)))
+      .filter(c => c.writers.some(w => assignableNodes.includes(w)))
       .map(c => ({ file: c.file, writers: c.writers }));
 
     // --by-cluster: assign clusters to owners instead of individual nodes
@@ -299,8 +304,8 @@ async function cmdOrient(note: string | undefined) {
       const maxSizeIdx = args.indexOf('--max-size');
       const maxSize = maxSizeIdx !== -1 ? parseInt(args[maxSizeIdx + 1] ?? '8', 10) : undefined;
       const clusters = buildClusters(dag, { maxSize });
-      // Filter to clusters containing batchRemaining nodes
-      const remainingSet = new Set(pos.batchRemaining);
+      // Filter to clusters containing assignable nodes
+      const remainingSet = new Set(assignableNodes);
       const activeClusters = clusters.clusters.filter(c => c.nodes.some(n => remainingSet.has(n)));
       const clusterAssignments: Record<string, { cluster: string; nodes: string[] }> = {};
       for (let i = 0; i < activeClusters.length; i++) {
@@ -323,7 +328,7 @@ async function cmdOrient(note: string | undefined) {
       }));
     } else {
       const { store: newStore, result: assignResult } = assignBatch(
-        pos.batchRemaining, owners, claimStore, currentBatchConflicts, ttlSeconds,
+        assignableNodes, owners, claimStore, currentBatchConflicts, ttlSeconds,
       );
       saveClaims(repoRoot, newStore);
       result.assignments = assignResult.assignments;
@@ -1393,6 +1398,7 @@ async function cmdComplete(note: string) {
   const skipValidate = args.includes('--skip-validate');
   const evaluateIdx = args.indexOf('--evaluate');
   const evaluateJson = evaluateIdx !== -1 ? args[evaluateIdx + 1] : undefined;
+  const useExplore = args.includes('--explore');
 
   let intentJudgments: Array<{ statement: string; confidence: number; reasoning: string; evidence?: string[] }> | undefined;
   if (evaluateJson) {
@@ -1405,10 +1411,50 @@ async function cmdComplete(note: string) {
     }
   }
 
+  // Collect runtime-explore results when --explore is passed
+  let exploreResults: Array<{ script: string; success: boolean; result?: import('../src/protocol.ts').ExploreResult; error?: string }> | undefined;
+  if (useExplore && !skipValidate) {
+    const nodeSpec = (dag.nodes as Record<string, any>)[nodeId];
+    const exploreRules = ((nodeSpec?.validate ?? []) as any[]).filter((r: any) => r.type === 'runtime-explore');
+
+    if (exploreRules.length > 0) {
+      const { launchApp, runExploreScript, teardown: teardownApp } = await import('../src/lib/runtime-explore.ts');
+      exploreResults = [];
+
+      for (const rule of exploreRules) {
+        let handle: import('../src/lib/runtime-explore.ts').LaunchHandle | undefined;
+        try {
+          handle = await launchApp({
+            command: rule.launch ?? 'npx electron .',
+            port: rule.port ?? 9222,
+            timeout: rule.timeout ?? 10000,
+            buildCommand: undefined,
+          });
+
+          const scriptResult = await runExploreScript({
+            script: rule.script,
+            cdpUrl: handle.cdpUrl,
+            port: handle.port,
+            timeout: rule.timeout ?? 30000,
+          });
+
+          exploreResults.push({ script: rule.script, ...scriptResult });
+        } catch (e: any) {
+          exploreResults.push({ script: rule.script, success: false, error: e.message });
+        } finally {
+          if (handle) teardownApp(handle.process);
+        }
+      }
+    }
+  }
+
   if (!skipValidate) {
     const { validateNode } = await import('../src/protocol.ts');
+    const validationOpts: Record<string, any> = {};
+    if (intentJudgments) validationOpts.intentJudgments = intentJudgments;
+    if (exploreResults) validationOpts.exploreResults = exploreResults;
     const validationResult = await validateNode(dag, nodeId, fileExists(repoRoot),
-      intentJudgments ? { intentJudgments } : undefined,
+      Object.keys(validationOpts).length > 0 ? validationOpts : undefined,
     );
 
     // Collect intent checks for surfacing in output
@@ -1497,7 +1543,7 @@ async function cmdComplete(note: string) {
   recordTrail({
     ts: new Date().toISOString(), cmd: 'complete', note,
     repo: basename(repoRoot), position: finalPos.position, level: finalPos.level, dagId: dag.id,
-    detail: { nodeId, owner, checkpointId: checkpoint.id, batchComplete: posAfter.batchComplete, advanced: !!advanced, skipValidate, evaluated: !!intentJudgments, unblocked },
+    detail: { nodeId, owner, checkpointId: checkpoint.id, batchComplete: posAfter.batchComplete, advanced: !!advanced, skipValidate, evaluated: !!intentJudgments, explored: !!exploreResults, unblocked },
   });
 
   json({
@@ -1511,6 +1557,7 @@ async function cmdComplete(note: string) {
     ...(advanced ? { advanced } : {}),
     ...(posAfter.batchComplete && !advanced && !noAdvance ? { hint: 'roadmap advance --note "batch done"' } : {}),
     ...(intentJudgments ? { evaluated: intentJudgments.length } : {}),
+    ...(exploreResults ? { explored: exploreResults.length, exploreResults: exploreResults.map(r => ({ script: r.script, success: r.success, observations: r.result?.observations?.length ?? 0, error: r.error })) } : {}),
   });
 }
 
