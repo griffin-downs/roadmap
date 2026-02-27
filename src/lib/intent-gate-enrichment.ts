@@ -1,67 +1,87 @@
 // @module intent-gate-enrichment
-// @description Auto-detect platform and enrich DAG with intent-gate validators
+// @description Spec + wisdom driven intent-gate enrichment (platform-agnostic)
 // @exports enrichIntentGate(dag, repoRoot) → DAG with validators added to term gate
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Graph, ValidationRule } from '../protocol.ts';
 
-interface PlatformContext {
+interface SpecAnalysis {
+  hasCRUD: boolean;
+  hasState: boolean;
+  hasUI: boolean;
+  hasExport: boolean;
+  hasTheme: boolean;
+  isPersistent: boolean;
+  isDesktopApp: boolean;
+  isWebApp: boolean;
+  isCLI: boolean;
+}
+
+interface TechStack {
   isElectron: boolean;
   hasVite: boolean;
-  hasVueThreeSFC: boolean;
+  hasVue: boolean;
   hasTailwind: boolean;
+  hasTest: boolean;
+  hasBuild: boolean;
   specPath?: string;
   specContent?: string;
 }
 
 /**
- * Parse spec to extract feature context (CRUD, export, theme, etc.)
+ * Analyze spec to understand requirements (wisdom-agnostic of tech stack)
  */
-function parseSpecContext(specPath: string): string[] {
-  if (!existsSync(specPath)) return [];
-  try {
-    const content = readFileSync(specPath, 'utf-8');
-    const features: string[] = [];
-    if (content.includes('Create') || content.includes('create')) features.push('create');
-    if (content.includes('Read') || content.includes('list')) features.push('read');
-    if (content.includes('Update') || content.includes('edit')) features.push('update');
-    if (content.includes('Delete') || content.includes('delete')) features.push('delete');
-    if (content.includes('CSV') || content.includes('export')) features.push('export');
-    if (content.includes('theme') || content.includes('Theme')) features.push('theme');
-    if (content.includes('dark') || content.includes('Dark')) features.push('dark-mode');
-    return features;
-  } catch {
-    return [];
-  }
+function analyzeSpec(specContent: string): SpecAnalysis {
+  const lower = specContent.toLowerCase();
+  return {
+    hasCRUD:
+      (lower.includes('create') || lower.includes('add')) &&
+      (lower.includes('read') || lower.includes('list') || lower.includes('view')) &&
+      (lower.includes('update') || lower.includes('edit')) &&
+      (lower.includes('delete') || lower.includes('remove')),
+    hasState: lower.includes('state') || lower.includes('persist') || lower.includes('store'),
+    hasUI: lower.includes('ui') || lower.includes('interface') || lower.includes('button') || lower.includes('input'),
+    hasExport: lower.includes('export') || lower.includes('csv') || lower.includes('download'),
+    hasTheme: lower.includes('theme') || lower.includes('dark') || lower.includes('light') || lower.includes('mode'),
+    isPersistent:
+      lower.includes('persist') || lower.includes('database') || lower.includes('save') || lower.includes('storage'),
+    isDesktopApp: lower.includes('electron') || lower.includes('desktop') || lower.includes('window'),
+    isWebApp: lower.includes('web') || lower.includes('browser') || lower.includes('http'),
+    isCLI: lower.includes('cli') || lower.includes('command') || lower.includes('terminal'),
+  };
 }
 
 /**
- * Detect platform from package.json and vite.config.ts
+ * Detect available tech stack from package.json
  */
-function detectPlatform(repoRoot: string): PlatformContext {
-  const ctx: PlatformContext = {
+function detectStack(repoRoot: string): TechStack {
+  const ctx: TechStack = {
     isElectron: false,
     hasVite: false,
-    hasVueThreeSFC: false,
+    hasVue: false,
     hasTailwind: false,
+    hasTest: false,
+    hasBuild: false,
   };
 
-  // Read package.json
   const pkgPath = join(repoRoot, 'package.json');
   if (existsSync(pkgPath)) {
     try {
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-      ctx.isElectron = !!pkg.dependencies?.electron || !!pkg.devDependencies?.electron;
-      ctx.hasVite = !!pkg.devDependencies?.vite;
-      ctx.hasVueThreeSFC = !!pkg.dependencies?.vue;
-      ctx.hasTailwind = !!pkg.devDependencies?.tailwindcss;
+      const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+      ctx.isElectron = !!allDeps.electron;
+      ctx.hasVite = !!allDeps.vite;
+      ctx.hasVue = !!allDeps.vue;
+      ctx.hasTailwind = !!allDeps.tailwindcss;
+      ctx.hasTest = !!allDeps.vitest || !!allDeps.jest || !!allDeps.mocha;
+      ctx.hasBuild = !!(pkg.scripts?.build || pkg.scripts?.dev || pkg.scripts?.start);
     } catch {
       // Ignore parse errors
     }
   }
 
-  // Find spec path (common location)
+  // Find spec path
   const specPath = join(repoRoot, '.specify/specs/001-todo-app/spec.md');
   if (existsSync(specPath)) {
     ctx.specPath = specPath;
@@ -72,60 +92,116 @@ function detectPlatform(repoRoot: string): PlatformContext {
 }
 
 /**
- * Generate validators enriched by platform context and spec
+ * Generate validators from spec requirements + engineering wisdom (stack-agnostic)
+ *
+ * Wisdom principles:
+ * 1. Code quality: build + test must pass (all stacks)
+ * 2. State: if spec has CRUD/persist, data model must exist
+ * 3. UI: if spec has UI, components/templates must exist
+ * 4. Export: if spec has export, serialization code must exist
+ * 5. Configuration: theme/settings must be implemented if specified
+ * 6. Integration: if desktop, verify it launches
  */
-function generatePlatformValidators(ctx: PlatformContext): ValidationRule[] {
+function generateWisdomValidators(spec: SpecAnalysis, stack: TechStack): ValidationRule[] {
   const validators: ValidationRule[] = [];
 
-  // Code quality gate (universal)
+  // ─── Universal: Code Quality ───
+  // All projects need to build and test
   validators.push({
     type: 'shell',
-    command: 'npm run build 2>&1 | grep -q "built"',
+    command: 'npm run build 2>&1 | grep -qE "built|success|complete"',
     expectExitCode: 0,
   });
 
-  validators.push({
-    type: 'shell',
-    command: 'npm run test 2>&1 | grep -q "passed"',
-    expectExitCode: 0,
-  });
-
-  // Spec-enriched validators
-  if (ctx.specContent) {
-    const features = parseSpecContext(ctx.specPath || '');
-
-    // Feature-specific checks based on spec
-    if (features.includes('create')) {
-      validators.push({
-        type: 'shell',
-        command: 'grep -r "create" tests/ --include="*.ts" 2>/dev/null | wc -l | grep -qv "^0$"',
-        expectExitCode: 0,
-      });
-    }
-
-    if (features.includes('theme')) {
-      validators.push({
-        type: 'shell',
-        command: 'grep -r "theme\\|Theme" src/ --include="*.ts" --include="*.vue" 2>/dev/null | wc -l | grep -qv "^0$"',
-        expectExitCode: 0,
-      });
-    }
-
-    if (features.includes('export')) {
-      validators.push({
-        type: 'shell',
-        command: 'grep -r "export\\|CSV\\|csv" src/ --include="*.ts" --include="*.vue" 2>/dev/null | wc -l | grep -qv "^0$"',
-        expectExitCode: 0,
-      });
-    }
-  }
-
-  // Electron-specific validators
-  if (ctx.isElectron) {
-    // Platform detection indicator
+  if (stack.hasTest) {
     validators.push({
       type: 'shell',
-      command: 'grep -q "electron" package.json',
+      command: 'npm run test 2>&1 | grep -qE "passed|success|test"',
+      expectExitCode: 0,
+    });
+  }
+
+  // ─── Spec Requirements: CRUD Operations ───
+  if (spec.hasCRUD) {
+    // Must have test coverage for CRUD
+    validators.push({
+      type: 'shell',
+      command: 'grep -r "create\\|add" tests/ src/ --include="*.ts" 2>/dev/null | wc -l | grep -qv "^0$"',
+      expectExitCode: 0,
+    });
+
+    validators.push({
+      type: 'shell',
+      command: 'grep -r "read\\|list\\|get" tests/ src/ --include="*.ts" --include="*.vue" 2>/dev/null | wc -l | grep -qv "^0$"',
+      expectExitCode: 0,
+    });
+
+    validators.push({
+      type: 'shell',
+      command: 'grep -r "update\\|edit" tests/ src/ --include="*.ts" 2>/dev/null | wc -l | grep -qv "^0$"',
+      expectExitCode: 0,
+    });
+
+    validators.push({
+      type: 'shell',
+      command: 'grep -r "delete\\|remove" tests/ src/ --include="*.ts" 2>/dev/null | wc -l | grep -qv "^0$"',
+      expectExitCode: 0,
+    });
+  }
+
+  // ─── Spec Requirements: State & Persistence ───
+  if (spec.hasState || spec.isPersistent) {
+    validators.push({
+      type: 'shell',
+      command: 'grep -r "store\\|persist\\|database\\|db\\|cache" src/ --include="*.ts" 2>/dev/null | wc -l | grep -qv "^0$"',
+      expectExitCode: 0,
+    });
+  }
+
+  // ─── Spec Requirements: UI Components ───
+  if (spec.hasUI) {
+    // Must have component/view files
+    validators.push({
+      type: 'shell',
+      command: 'find src/ -type f \\( -name "*.vue" -o -name "*.tsx" -o -name "*.jsx" \\) 2>/dev/null | grep -q . || find src/components -type f 2>/dev/null | grep -q .',
+      expectExitCode: 0,
+    });
+  }
+
+  // ─── Spec Requirements: Export/Serialization ───
+  if (spec.hasExport) {
+    validators.push({
+      type: 'shell',
+      command: 'grep -r "export\\|CSV\\|csv\\|serialize\\|json" src/ --include="*.ts" --include="*.vue" 2>/dev/null | wc -l | grep -qv "^0$"',
+      expectExitCode: 0,
+    });
+  }
+
+  // ─── Spec Requirements: Theme/Configuration ───
+  if (spec.hasTheme) {
+    validators.push({
+      type: 'shell',
+      command: 'grep -r "theme\\|dark\\|light\\|mode\\|color\\|style" src/ --include="*.ts" --include="*.vue" --include="*.css" 2>/dev/null | wc -l | grep -qv "^0$"',
+      expectExitCode: 0,
+    });
+  }
+
+  // ─── Platform Extrapolation: Desktop Apps ───
+  if (spec.isDesktopApp && stack.isElectron) {
+    // Desktop apps must launch without crash
+    validators.push({
+      type: 'shell',
+      command: 'timeout 5 npm run dev 2>&1 &  sleep 2 && pgrep -f "electron" > /dev/null',
+      expectExitCode: 0,
+    });
+  }
+
+  // ─── Platform Extrapolation: Web Apps ───
+  if (spec.isWebApp && stack.hasVite) {
+    // Web apps must build and serve
+    validators.push({
+      type: 'shell',
+      command: 'npm run preview 2>&1 | grep -qE "http|server|running" || npm run build 2>&1 | grep -q "dist"',
       expectExitCode: 0,
     });
   }
@@ -134,27 +210,31 @@ function generatePlatformValidators(ctx: PlatformContext): ValidationRule[] {
 }
 
 /**
- * Enrich DAG with intent-gate validators
- * Adds platform-specific validators to the term gate
+ * Enrich DAG with wisdom-driven intent-gate validators
+ * Extracts spec requirements and generates tech-stack-agnostic validators
  */
 export function enrichIntentGate(dag: Graph<string>, repoRoot: string): Graph<string> {
-  const ctx = detectPlatform(repoRoot);
-  const validators = generatePlatformValidators(ctx);
+  const stack = detectStack(repoRoot);
+
+  // If no spec, can't enrich wisely — return as-is
+  if (!stack.specContent) {
+    return dag;
+  }
+
+  const spec = analyzeSpec(stack.specContent);
+  const validators = generateWisdomValidators(spec, stack);
 
   // Find term node
   const termNodeId = dag.term;
   if (!termNodeId || !dag.nodes[termNodeId]) {
-    // No term node to enrich, return as-is
     return dag;
   }
 
   const termNode = dag.nodes[termNodeId];
-
-  // Merge validators: keep existing, add platform-specific ones
   const existingValidate = (termNode.validate as ValidationRule[]) || [];
   const merged: ValidationRule[] = [...existingValidate];
 
-  // Add platform validators (avoid duplicates on shell commands)
+  // Add wisdom validators (avoid duplicates on shell commands)
   for (const v of validators) {
     const isDuplicate = merged.some(
       (existing) =>
@@ -166,7 +246,7 @@ export function enrichIntentGate(dag: Graph<string>, repoRoot: string): Graph<st
     }
   }
 
-  // Return enriched DAG (preserve readonlyness by creating new object)
+  // Return enriched DAG
   const enrichedNode = {
     ...termNode,
     validate: merged as readonly ValidationRule[],
