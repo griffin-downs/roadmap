@@ -13,6 +13,153 @@ import { resolve } from 'node:path';
 import { checkVisible, checkCount, checkContrast } from '../src/lib/explore-helpers.ts';
 import type { ObservationResult, ExploreResult } from '../src/protocol.ts';
 
+// ─────────────────────────────────────────────────────────────────────────────
+
+function printAPIReference() {
+  console.error(`
+╔════════════════════════════════════════════════════════════════════════════╗
+║                      EXPLORE FACILITIES API REFERENCE                      ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+📋 OBSERVATION PATTERNS (9 available):
+
+  • checkVisible(page, selector, label)
+    → Test if element is visible in viewport
+    → Returns: { id, pass, evidence }
+
+  • checkInteractive(page, selector, label)
+    → Test if element is visible AND enabled (keyboard-accessible)
+    → Returns: { id, pass, evidence, value: boolean }
+
+  • checkCount(page, selector, minCount, label)
+    → Test DOM match count against threshold
+    → Returns: { id, pass, evidence, value: count }
+
+  • checkContrast(page, selector, minRatio, label)
+    → Test WCAG AA contrast ratio (4.5:1 or custom)
+    → Returns: { id, pass, evidence, value: ratio }
+
+  • checkText(page, selector, expectedPattern, label)
+    → Extract & validate text content
+    → Returns: { id, pass, evidence, value: text }
+
+  • checkStyle(page, selector, cssProperty, expectedValue, label)
+    → Validate computed CSS properties
+    → Returns: { id, pass, evidence, value: cssValue }
+
+  • checkSize(page, selector, minWidth, minHeight, label)
+    → Test element dimensions (touch targets ≥56px, etc)
+    → Returns: { id, pass, evidence, value: { width, height } }
+
+  • checkAttribute(page, selector, attrName, expectedValue, label)
+    → Validate HTML attributes (data-*, aria-*, etc)
+    → Returns: { id, pass, evidence, value: attrValue }
+
+  • checkClass(page, selector, className, label)
+    → Test CSS class presence (state, accessibility markers)
+    → Returns: { id, pass, evidence, value: boolean }
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔗 SETUP REQUIREMENTS:
+
+  1. Start your app with CDP debugging enabled:
+     → Electron:      --remote-debugging-port=9222
+     → Chrome/Chromium: chrome --remote-debugging-port=9222
+     → Web (vite):    vite (then use playwright test)
+
+  2. Set CDP connection URL (default: http://localhost:9222):
+     → export CDP_URL=http://localhost:9222
+     → OR: export CDP_PORT=9222
+
+  3. Provide contract file (spec-clarified.json):
+     → npx tsx scripts/explore-validate-contract.ts ./spec-clarified.json
+     → Default path: ./spec-clarified.json
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 CONTRACT FORMAT (spec-clarified.json):
+
+  {
+    "features": [
+      {
+        "id": "crud-add",
+        "selector": "input[placeholder*=Add]",
+        "observation": "visible",
+        "evidence": "...",
+        "minCount": 1,      // optional: for count observations
+        "minRatio": 4.5     // optional: for contrast observations
+      },
+      ...
+    ],
+    "gaps": [],
+    "confidence": 0.95,
+    "generated": "2026-02-27T...",
+    "source": { ... }
+  }
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 OUTPUT FORMAT (ExploreResult JSON):
+
+  {
+    "observations": [
+      {
+        "id": "crud-add",
+        "pass": true,
+        "evidence": "Input[placeholder*=Add] found and visible",
+        "value": true  // observation-specific value
+      },
+      ...
+    ],
+    "duration": 1234
+  }
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🧠 INTEGRATION FLOW:
+
+  init-gate (vague plan)
+    ↓ produces PlanClarityGap[]
+    ↓
+  spec-generator (clarify-to-contract)
+    ↓ produces spec-clarified.json
+    ↓
+  explore-validate-contract (THIS SCRIPT)
+    ↓ runs observations via CDP/Playwright
+    ↓
+  spec-verifier (verify-against-contract)
+    ↓ validates observations match contract
+    ↓
+  terminal-gate (validate-terminal-gate-spec)
+    ↓
+  ✅ E2E spec-threading closure
+
+═══════════════════════════════════════════════════════════════════════════════
+
+❓ EXAMPLES:
+
+  # Start app with CDP, then run:
+  npx tsx scripts/explore-validate-contract.ts
+
+  # With custom contract path:
+  npx tsx scripts/explore-validate-contract.ts ./contracts/todo-spec.json
+
+  # With custom CDP URL:
+  CDP_URL=http://192.168.1.100:9222 npx tsx scripts/explore-validate-contract.ts
+
+═══════════════════════════════════════════════════════════════════════════════
+`);
+}
+
+function printError(title: string, message: string) {
+  console.error(`\n❌ ${title}`);
+  console.error(`   ${message}\n`);
+  printAPIReference();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const CDP_URL = process.env.CDP_URL ?? `http://localhost:${process.env.CDP_PORT ?? '9222'}`;
 
 interface ContractFeature {
@@ -31,12 +178,32 @@ interface ClarifiedContract {
 }
 
 function loadContract(path: string): ClarifiedContract {
-  const raw = readFileSync(path, 'utf-8');
-  const contract = JSON.parse(raw) as ClarifiedContract;
-  if (!Array.isArray(contract.features) || contract.features.length === 0) {
-    throw new Error(`Contract has no features: ${path}`);
+  try {
+    const raw = readFileSync(path, 'utf-8');
+    const contract = JSON.parse(raw) as ClarifiedContract;
+    if (!Array.isArray(contract.features) || contract.features.length === 0) {
+      throw new Error(`Contract has no features: ${path}`);
+    }
+    return contract;
+  } catch (err: any) {
+    if (err.code === 'ENOENT') {
+      printError(
+        'Contract file not found',
+        `Could not read: ${path}\n\n   Make sure spec-clarified.json exists in the project root,\n   or pass a valid path as the first argument.\n\n   Run: npx tsx scripts/explore-validate-contract.ts ./path/to/contract.json`
+      );
+    } else if (err instanceof SyntaxError) {
+      printError(
+        'Invalid JSON in contract file',
+        `${path} contains invalid JSON:\n\n   ${err.message}`
+      );
+    } else {
+      printError(
+        'Failed to load contract',
+        `${err.message}`
+      );
+    }
+    process.exit(1);
   }
-  return contract;
 }
 
 async function observeFeature(
@@ -112,35 +279,80 @@ async function run() {
   const contractPath = resolve(process.argv[2] ?? 'spec-clarified.json');
   const contract = loadContract(contractPath);
 
-  const start = Date.now();
-  const browser = await chromium.connectOverCDP(CDP_URL);
-  const contexts = browser.contexts();
-  if (contexts.length === 0) throw new Error('No browser contexts found');
+  let browser;
+  try {
+    const start = Date.now();
 
-  const page = contexts[0].pages().find(p => !p.url().startsWith('devtools://'));
-  if (!page) throw new Error('No application page found (only devtools pages)');
+    // Connect to CDP with helpful error messaging
+    try {
+      browser = await chromium.connectOverCDP(CDP_URL);
+    } catch (err: any) {
+      if (err.message?.includes('ECONNREFUSED') || err.message?.includes('connect')) {
+        printError(
+          'Cannot connect to browser via CDP',
+          `Failed to connect to ${CDP_URL}\n\n   Make sure your app is running with Chrome DevTools Protocol enabled:\n\n   • Electron:        npx npm run electron:dev (with --remote-debugging-port=9222)\n   • Chrome/Chromium: chrome --remote-debugging-port=9222 http://localhost:5173\n   • Web (Vite):      npm run dev (then use: playwright test)\n\n   Or set a custom CDP URL:\n   export CDP_URL=http://your-host:9222\n   export CDP_PORT=9222`
+        );
+      }
+      throw err;
+    }
 
-  const observations: ObservationResult[] = [];
-  for (const feature of contract.features) {
-    observations.push(await observeFeature(page, feature));
-  }
+    const contexts = browser.contexts();
+    if (contexts.length === 0) {
+      printError(
+        'No browser contexts found',
+        `The browser is running but has no windows/tabs open.\n\n   Make sure your app window is visible and running.`
+      );
+      throw new Error('No browser contexts found');
+    }
 
-  await browser.close();
+    const page = contexts[0].pages().find(p => !p.url().startsWith('devtools://'));
+    if (!page) {
+      printError(
+        'No application page found',
+        `Connected to browser but only found DevTools pages.\n\n   Make sure your app page is loaded and not minimized.\n   Current pages: ${contexts[0].pages().map(p => p.url()).join(', ')}`
+      );
+      throw new Error('No application page found (only devtools pages)');
+    }
 
-  const result: ExploreResult = {
-    observations,
-    duration: Date.now() - start,
-  };
+    console.log(`\n📊 Validating contract against: ${page.url()}\n`);
 
-  console.log(JSON.stringify(result));
+    const observations: ObservationResult[] = [];
+    for (const feature of contract.features) {
+      observations.push(await observeFeature(page, feature));
+    }
 
-  const failed = observations.filter(o => !o.pass);
-  if (failed.length > 0) {
-    process.exit(1);
+    await browser.close();
+
+    const result: ExploreResult = {
+      observations,
+      duration: Date.now() - start,
+    };
+
+    console.log(JSON.stringify(result, null, 2));
+
+    const failed = observations.filter(o => !o.pass);
+    if (failed.length > 0) {
+      console.error(`\n⚠️  ${failed.length}/${observations.length} observations failed\n`);
+      process.exit(1);
+    } else {
+      console.log(`\n✅ All ${observations.length} observations passed!\n`);
+    }
+  } catch (err: any) {
+    if (browser) {
+      try {
+        await browser.close();
+      } catch {}
+    }
+    throw err;
   }
 }
 
 run().catch((err) => {
-  console.error(err);
+  if (!err.message?.startsWith('❌')) {
+    printError(
+      'Unexpected error',
+      `${err.message || String(err)}`
+    );
+  }
   process.exit(1);
 });
