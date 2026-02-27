@@ -2073,7 +2073,7 @@
       "produces": [],
       "consumes": [],
       "deps": [
-        "spec-threading-feature"
+        "phase-26-term"
       ],
       "validate": [
         {
@@ -3943,8 +3943,7 @@
       "deps": [
         "clarify-to-contract",
         "verify-against-contract",
-        "terminal-gate-update",
-        "term"
+        "terminal-gate-update"
       ],
       "validate": [
         {
@@ -3966,8 +3965,7 @@
       "consumes": [],
       "deps": [
         "clarify-to-contract",
-        "verify-against-contract",
-        "term"
+        "verify-against-contract"
       ],
       "validate": [
         {
@@ -3978,6 +3976,100 @@
       "idempotent": true,
       "mode": "execute",
       "expandedFrom": "spec-threading-feature"
+    },
+    "phase-26-init": {
+      "id": "phase-26-init",
+      "desc": "Phase 26 begins: Example phase for demonstration",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "e2e-spec-threading"
+      ],
+      "validate": [],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "example-task-a": {
+      "id": "example-task-a",
+      "desc": "Example task A: demonstrates node structure",
+      "produces": [
+        "examples/task-a.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-26-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "examples/task-a.md"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "example-task-b": {
+      "id": "example-task-b",
+      "desc": "Example task B: demonstrates parallel execution",
+      "produces": [
+        "examples/task-b.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "phase-26-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "examples/task-b.md"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "example-integration": {
+      "id": "example-integration",
+      "desc": "Example integration: demonstrates dependency convergence",
+      "produces": [
+        "examples/integration.md"
+      ],
+      "consumes": [
+        "examples/task-a.md",
+        "examples/task-b.md"
+      ],
+      "deps": [
+        "example-task-a",
+        "example-task-b"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "examples/integration.md"
+        }
+      ],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "phase-26-term": {
+      "id": "phase-26-term",
+      "desc": "Phase 26 complete: Example phase demonstrates expansion and parallel execution",
+      "produces": [],
+      "consumes": [
+        "examples/task-a.md",
+        "examples/task-b.md",
+        "examples/integration.md"
+      ],
+      "deps": [
+        "example-integration"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test -f examples/task-a.md && test -f examples/task-b.md && test -f examples/integration.md"
+        }
+      ],
+      "idempotent": false,
+      "mode": "execute"
     }
   },
   "version": "0.3.0",
