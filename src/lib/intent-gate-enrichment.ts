@@ -206,6 +206,48 @@ function generateWisdomValidators(spec: SpecAnalysis, stack: TechStack): Validat
     });
   }
 
+  // ─── Runtime: Visible & Traceable (Explore-based Behavioral Validation) ───
+  // If this is a UI app, verify the running instance actually works
+  if (spec.hasUI) {
+    // Launch check: app must start without crash
+    validators.push({
+      type: 'launch-check',
+      command: spec.isDesktopApp && stack.isElectron
+        ? 'npm run dev'  // Electron: launch with npm run dev
+        : 'npm run preview',  // Web: launch preview server
+      timeout: 10000,  // 10 seconds to start
+      successSignal: 'listening|running|ready|started|launched',  // App indicates readiness
+    } as any);
+
+    // Runtime explore: verify UI elements are visible + interactive
+    // This connects via CDP and checks that features are present
+    validators.push({
+      type: 'runtime-explore',
+      script: 'scripts/explore/validate-intent-gate.ts',
+      launch: spec.isDesktopApp && stack.isElectron
+        ? 'npm run dev'
+        : undefined,
+      port: spec.isDesktopApp && stack.isElectron ? 9222 : 3000,  // CDP port or web port
+      timeout: 30000,  // 30 seconds for full validation
+      observations: [
+        { id: 'app-loads', type: 'assertion', description: 'App loads without errors' },
+        { id: 'ui-renders', type: 'assertion', description: 'UI elements are rendered and visible' },
+        { id: 'features-present', type: 'assertion', description: 'Spec-required features are implemented' },
+        ...(spec.hasCRUD ? [
+          { id: 'crud-input', type: 'assertion', description: 'Input field for creating items exists' },
+          { id: 'crud-list', type: 'assertion', description: 'List of items is visible' },
+        ] : []),
+        ...(spec.hasTheme ? [
+          { id: 'theme-toggle', type: 'assertion', description: 'Theme toggle control is present' },
+          { id: 'theme-applied', type: 'assertion', description: 'Theme is visually applied' },
+        ] : []),
+        ...(spec.hasExport ? [
+          { id: 'export-button', type: 'assertion', description: 'Export button is accessible' },
+        ] : []),
+      ],
+    } as any);
+  }
+
   return validators;
 }
 
