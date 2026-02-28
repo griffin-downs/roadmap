@@ -1,6 +1,6 @@
 // @module intake
-// @exports IntakeCandidate, IntakeScanResult, IntakeImportResult, IntakeCertifyResult, scanIntake, importIntake, certifyIntake
-// @types IntakeCandidate, IntakeScanResult, IntakeImportResult, IntakeCertifyResult
+// @exports IntakeCandidate, IntakeScanResult, IntakeImportResult, IntakeCertifyResult, scanIntake, importIntake, certifyIntake, IntakeCommit, DetectedCluster, ProposedNodeSpec, IntakeRecord, IntakeReceipt, INTAKE_DIR, INTAKE_RECEIPT_PREFIX, isIntakeRecord, isIntakeReceipt
+// @types IntakeCandidate, IntakeScanResult, IntakeImportResult, IntakeCertifyResult, IntakeCommit, DetectedCluster, ProposedNodeSpec, IntakeRecord, IntakeReceipt
 // @entry roadmap
 
 // Intake compiler: scan git diffs against last attested commit,
@@ -249,4 +249,107 @@ export function certifyIntake(
 
 function getFirstCommit(repoRoot: string): string {
   return execSync('git rev-list --max-parents=0 HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim().split('\n')[0];
+}
+
+// --- rkg7 intake schema types ---
+
+/** A single git commit captured during intake scan. */
+export interface IntakeCommit {
+  sha: string;
+  parentSha: string;
+  treeSha: string;
+  touchedPaths: string[];
+  author: string;
+  msg: string;
+  timestamp: string;
+}
+
+/** A cluster of commits grouped by path overlap (Jaccard similarity). */
+export interface DetectedCluster {
+  clusterId: string;
+  commitShas: string[];
+  paths: string[];
+  jaccardScore: number;
+}
+
+/** A DAG node proposed from intake analysis. */
+export interface ProposedNodeSpec {
+  id: string;
+  desc: string;
+  produces: string[];
+  consumes: string[];
+  deps: string[];
+}
+
+/** Full intake scan record: commits, clusters, and proposed nodes. */
+export interface IntakeRecord {
+  intakeId: string;
+  fromSha: string;
+  toSha: string;
+  repoRoot: string;
+  timestamp: string;
+  commits: IntakeCommit[];
+  treeShaSet: string[];
+  detectedClusters: DetectedCluster[];
+  proposedNodes: ProposedNodeSpec[];
+  inputHash: string;
+}
+
+/** Receipt emitted after an intake-absorb operation. */
+export interface IntakeReceipt {
+  schemaVersion: 1;
+  receiptType: 'intake-absorb';
+  intakeId: string;
+  fromSha: string;
+  toSha: string;
+  treeShaSet: string[];
+  clusterCount: number;
+  proposedNodeCount: number;
+  inputHash: string;
+  timestamp: string;
+}
+
+export const INTAKE_DIR = '.roadmap/intake' as const;
+export const INTAKE_RECEIPT_PREFIX = 'intake-absorb' as const;
+
+function isObject(x: unknown): x is Record<string, unknown> {
+  return typeof x === 'object' && x !== null && !Array.isArray(x);
+}
+
+function isStringArray(x: unknown): x is string[] {
+  return Array.isArray(x) && x.every((v) => typeof v === 'string');
+}
+
+/** Type guard for IntakeRecord. */
+export function isIntakeRecord(x: unknown): x is IntakeRecord {
+  if (!isObject(x)) return false;
+  return (
+    typeof x.intakeId === 'string' &&
+    typeof x.fromSha === 'string' &&
+    typeof x.toSha === 'string' &&
+    typeof x.repoRoot === 'string' &&
+    typeof x.timestamp === 'string' &&
+    typeof x.inputHash === 'string' &&
+    Array.isArray(x.commits) &&
+    isStringArray(x.treeShaSet) &&
+    Array.isArray(x.detectedClusters) &&
+    Array.isArray(x.proposedNodes)
+  );
+}
+
+/** Type guard for IntakeReceipt. */
+export function isIntakeReceipt(x: unknown): x is IntakeReceipt {
+  if (!isObject(x)) return false;
+  return (
+    x.schemaVersion === 1 &&
+    x.receiptType === 'intake-absorb' &&
+    typeof x.intakeId === 'string' &&
+    typeof x.fromSha === 'string' &&
+    typeof x.toSha === 'string' &&
+    isStringArray(x.treeShaSet) &&
+    typeof x.clusterCount === 'number' &&
+    typeof x.proposedNodeCount === 'number' &&
+    typeof x.inputHash === 'string' &&
+    typeof x.timestamp === 'string'
+  );
 }
