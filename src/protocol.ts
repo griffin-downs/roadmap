@@ -1152,7 +1152,7 @@ export async function validateNode<T extends string>(
       // Run shell command synchronously; exit 0 = pass, non-zero = fail
       // Guard against recursion (e.g. vitest validate → spawns vitest → validate → ...)
       // Primary: opts.validating (call-stack). Fallback: ROADMAP_VALIDATING env (child process recursion guard).
-      const fnValidating = opts?.validating || !!process.env.ROADMAP_VALIDATING;
+      const fnValidating = opts?.validating ?? !!process.env.ROADMAP_VALIDATING;
       if (fnValidating) {
         passed = true;
         evidence = `skipped (already inside validation): ${rule.fn}`;
@@ -1184,7 +1184,7 @@ export async function validateNode<T extends string>(
     } else if (rule.type === 'shell') {
       // Run shell command; check exit code matches expectExitCode (default 0)
       // Primary: opts.validating (call-stack). Fallback: ROADMAP_VALIDATING env (child process recursion guard).
-      const shellValidating = opts?.validating || !!process.env.ROADMAP_VALIDATING;
+      const shellValidating = opts?.validating ?? !!process.env.ROADMAP_VALIDATING;
       if (shellValidating) {
         passed = true;
         evidence = `skipped (already inside validation): ${rule.command}`;
@@ -1209,7 +1209,7 @@ export async function validateNode<T extends string>(
     } else if (rule.type === 'build-produces') {
       // Run build command, then check all outputs exist
       // Primary: opts.validating (call-stack). Fallback: ROADMAP_VALIDATING env (child process recursion guard).
-      const buildValidating = opts?.validating || !!process.env.ROADMAP_VALIDATING;
+      const buildValidating = opts?.validating ?? !!process.env.ROADMAP_VALIDATING;
       if (buildValidating) {
         passed = true;
         evidence = `skipped (already inside validation): ${rule.command}`;
@@ -1231,7 +1231,7 @@ export async function validateNode<T extends string>(
     } else if (rule.type === 'launch-check') {
       // Start a process, verify it produces a success signal or exits 0 within timeout
       // Primary: opts.validating (call-stack). Fallback: ROADMAP_VALIDATING env (child process recursion guard).
-      const launchValidating = opts?.validating || !!process.env.ROADMAP_VALIDATING;
+      const launchValidating = opts?.validating ?? !!process.env.ROADMAP_VALIDATING;
       if (launchValidating) {
         passed = true;
         evidence = `skipped (already inside validation): ${rule.command}`;
@@ -1266,7 +1266,7 @@ export async function validateNode<T extends string>(
     } else if (rule.type === 'runtime-explore') {
       // CDP-based behavioral observation: launch app, run explore script, map observations
       // Primary: opts.validating (call-stack). Fallback: ROADMAP_VALIDATING env (child process recursion guard).
-      const exploreValidating = opts?.validating || !!process.env.ROADMAP_VALIDATING;
+      const exploreValidating = opts?.validating ?? !!process.env.ROADMAP_VALIDATING;
       if (exploreValidating) {
         passed = true;
         evidence = `skipped (already inside validation): ${rule.script}`;
