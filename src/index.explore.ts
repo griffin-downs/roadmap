@@ -5,7 +5,7 @@
  *   import { checkVisible, checkContrast, safeClick, connectAndFindPage } from 'roadmap/explore'
  */
 
-// Observation helpers (9)
+// Observation helpers (17)
 export {
   checkVisible,
   checkText,
@@ -16,9 +16,17 @@ export {
   checkClass,
   checkContrast,
   checkOverflow,
+  checkDisabled,
+  checkChecked,
+  checkContainsText,
+  checkInputValue,
+  checkUrl,
+  checkTitle,
+  checkComputedStyle,
+  checkInViewport,
 } from './lib/explore-helpers.ts';
 
-// Interaction helpers (7)
+// Interaction helpers (19)
 export {
   safeClick,
   typeAndSubmit,
@@ -27,6 +35,18 @@ export {
   waitForTransition,
   connectAndFindPage,
   resetState,
+  fillForm,
+  selectFromDropdown,
+  toggleCheckbox,
+  getListItems,
+  findItemBy,
+  getTableData,
+  waitForNetwork,
+  waitForTextChange,
+  capturePageState,
+  getConsoleMessages,
+  getNetworkCalls,
+  screenshot,
 } from './lib/explore-interactions.ts';
 
 // Runtime orchestration (launch, run, teardown)

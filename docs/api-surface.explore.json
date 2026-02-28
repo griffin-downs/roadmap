@@ -1,0 +1,57 @@
+{
+  "package": "roadmap/explore",
+  "exports": {
+    "observations": [
+      "checkAttribute",
+      "checkChecked",
+      "checkClass",
+      "checkComputedStyle",
+      "checkContainsText",
+      "checkContrast",
+      "checkCount",
+      "checkDisabled",
+      "checkInViewport",
+      "checkInputValue",
+      "checkOverflow",
+      "checkSize",
+      "checkStyle",
+      "checkText",
+      "checkTitle",
+      "checkUrl",
+      "checkVisible"
+    ],
+    "interactions": [
+      "capturePageState",
+      "connectAndFindPage",
+      "drag",
+      "fillForm",
+      "findItemBy",
+      "getConsoleMessages",
+      "getListItems",
+      "getNetworkCalls",
+      "getTableData",
+      "resetState",
+      "safeClick",
+      "screenshot",
+      "selectFromDropdown",
+      "toggleCheckbox",
+      "typeAndSubmit",
+      "waitFor",
+      "waitForNetwork",
+      "waitForTextChange",
+      "waitForTransition"
+    ],
+    "runtime": [
+      "launchApp",
+      "mapObservationsToChecks",
+      "runExploreScript",
+      "teardown"
+    ],
+    "types": [
+      "ExploreResult",
+      "ExploreScriptResult",
+      "LaunchHandle",
+      "ObservationResult"
+    ]
+  }
+}

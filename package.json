@@ -16,6 +16,7 @@
   },
   "scripts": {
     "check": "tsc --noEmit",
+    "check:surface": "npx tsx scripts/check-explore-surface.ts",
     "test": "vitest run",
     "seed": "node --experimental-strip-types roadmap.ts",
     "postinstall": "node --experimental-strip-types bin/install-hooks.ts || true"
