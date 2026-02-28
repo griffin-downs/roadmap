@@ -43,6 +43,7 @@ import { addPeer, removePeer, buildFederationView, federationStatus } from '../s
 import { buildPlanOverlay, writePlanOverlay, loadPlanOverlay, isOverlayValid } from '../src/lib/plan-overlay.ts';
 import { createDispatchPlan, applyDispatchPlan, loadDispatchPlan, dispatchStatus } from '../src/lib/dispatch.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
+import { listNodeReceipts, completionDoctor, completionCompact } from '../src/lib/receipts-ux.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
 import type { Graph } from '../src/protocol.ts';
@@ -104,7 +105,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 
 // Commands that don't require a note
 // Special case: orient/position with --check is note-exempt (silent polling)
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor', 'status', 'explain', 'receipts', 'artifacts', 'env-audit']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor', 'status', 'explain', 'receipts', 'artifacts', 'env-audit', 'completion']);
 const isOrientCheck = (cmd === 'orient' || cmd === 'position') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -285,6 +286,7 @@ async function main() {
       case 'status':    return cmdStatus();
       case 'explain':   return cmdExplain();
       case 'receipts':  return cmdReceipts();
+      case 'completion': return cmdCompletion();
       case 'artifacts': return cmdArtifacts();
       case 'gallery':   return cmdGallery();
       case 'blend':     return cmdBlend();
@@ -1753,6 +1755,56 @@ function cmdReceipts() {
   }
 
   json({ receipts, count: receipts.length });
+}
+
+function cmdCompletion() {
+  const sub = args[1];
+
+  if (sub === 'doctor') return cmdCompletionDoctor();
+  if (sub === 'compact') return cmdCompletionCompact();
+  if (sub === 'ls') return cmdReceiptsLs();
+
+  json({ error: 'Unknown completion subcommand', fix: 'roadmap completion doctor | completion compact [--dry-run] | completion ls --node <id>' });
+  process.exit(1);
+}
+
+function cmdReceiptsLs() {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const nodeIdx = args.indexOf('--node');
+  if (nodeIdx === -1 || !args[nodeIdx + 1]) {
+    json({ error: 'Missing --node <id>', fix: 'roadmap completion ls --node <nodeId>' });
+    process.exit(1);
+  }
+
+  const nodeId = args[nodeIdx + 1];
+  const receipts = listNodeReceipts(repoRoot, nodeId);
+  json({ nodeId, receipts, count: receipts.length });
+}
+
+function cmdCompletionDoctor() {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const result = completionDoctor(repoRoot);
+  json(result);
+  if (!result.ok) process.exit(1);
+}
+
+function cmdCompletionCompact() {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const dryRun = args.includes('--dry-run');
+  const result = completionCompact(repoRoot, { dryRun });
+  json(result);
 }
 
 function cmdArtifacts() {
