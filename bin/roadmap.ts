@@ -659,6 +659,12 @@ async function cmdAdvance(note: string) {
     return;
   }
 
+  if (!process.env['SKIP_PLAN_GATE']) {
+    const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
+    const gate = requirePlanGate(repoRoot);
+    if (!gate.ok) { json({ error: gate.reason, fix: gate.fix }); process.exit(1); }
+  }
+
   const { advanceBatch, validateBatch } = await import('../src/protocol.ts');
   const dag = loadDAG();
   const predicate = fileExists(repoRoot);
@@ -816,6 +822,12 @@ async function cmdValidate(note: string) {
 }
 
 async function cmdExpand(note: string) {
+  if (!process.env['SKIP_PLAN_GATE']) {
+    const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
+    const gate = requirePlanGate(repoRoot);
+    if (!gate.ok) { json({ error: gate.reason, fix: gate.fix }); process.exit(1); }
+  }
+
   const scriptPath = args[1];
   if (!scriptPath) {
     throw new RoadmapError('VALIDATION_FAILED', {
@@ -1783,6 +1795,12 @@ async function cmdComplete(note: string) {
   if (!hasLocalDAG) {
     json({ error: 'No roadmap in this repo.' });
     process.exit(1);
+  }
+
+  if (!process.env['SKIP_PLAN_GATE']) {
+    const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
+    const gate = requirePlanGate(repoRoot);
+    if (!gate.ok) { json({ error: gate.reason, fix: gate.fix }); process.exit(1); }
   }
 
   const nodeId = args[1];
