@@ -1,9 +1,12 @@
 // @module intent-expansion
-// @exports IntentFailure, PlanClarityGap, ConvergenceLimits, CostHistory, FixNodeSpec, ExpansionResult, generateIntentExpansion, generateInitGateExpansion, resolveProduces, isInitGateFailure, extractPlanClarityGaps, detectStall, buildEscalation, extractIntentFailures, extractObservationFailures, enrichIntentFailuresWithObservations, fixNodeCost
+// @exports IntentFailure, PlanClarityGap, ConvergenceLimits, CostHistory, FixNodeSpec, ExpansionResult, generateIntentExpansion, generateInitGateExpansion, resolveProduces, isInitGateFailure, extractPlanClarityGaps, detectStall, buildEscalation, extractIntentFailures, extractObservationFailures, enrichIntentFailuresWithObservations, fixNodeCost, buildDiagnosisBlock, EvidenceMode, EvidenceItem, validateEvidenceAlgebra, ExpansionReceipt, writeExpansionReceipt, checkSiblingInvariants, ConvergenceIteration, ConvergenceHistory, recordConvergenceIteration, readConvergenceHistory
 // @entry roadmap
 
+import { appendFileSync, readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { ValidationRule, ValidationCheck, IntentJudgment, EscalationResult, ObservationResult } from '../protocol.ts';
 export type { EscalationResult } from '../protocol.ts';
+import type { DiagnosisBlock } from './judgment-receipt.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -121,6 +124,47 @@ export function fixNodeCost(
   const totalTokens = scopeTokens * depthMultiplier;
   const costUsd = totalTokens * costPerToken(modelAllocation);
   return costUsd;
+}
+
+// ── Structured Diagnosis ──────────────────────────────────────────────────────
+
+/**
+ * Build a structured DiagnosisBlock from an IntentFailure.
+ * Code is derived structurally from numeric threshold comparison, not keyword matching.
+ */
+export function buildDiagnosisBlock(nodeId: string, intent: IntentFailure): DiagnosisBlock {
+  // Structural code derivation: based on numeric relationship between achieved and threshold
+  let code: string;
+  const gap = intent.threshold - intent.achieved;
+  if (intent.achieved <= 0) {
+    code = 'intent-no-confidence';
+  } else if (gap > 0.5) {
+    code = 'intent-confidence-critical';
+  } else if (gap > 0.2) {
+    code = 'intent-confidence-low';
+  } else {
+    code = 'intent-confidence-marginal';
+  }
+
+  const evidenceIds = intent.evidence.map((_, i) => `evidence-${i}`);
+
+  const remediationSteps: string[] = [];
+  if (intent.rule.context && intent.rule.context.length > 0) {
+    remediationSteps.push(`Review context files: ${intent.rule.context.join(', ')}`);
+  }
+  if (intent.observationFailures && intent.observationFailures.length > 0) {
+    remediationSteps.push(
+      `Fix failing observations: ${intent.observationFailures.map(o => o.id).join(', ')}`,
+    );
+  }
+  remediationSteps.push(`Achieve confidence >= ${intent.threshold} (currently ${intent.achieved.toFixed(2)})`);
+
+  return {
+    code,
+    affectedNode: nodeId,
+    evidenceIds,
+    remediationSteps,
+  };
 }
 
 // ── Core ──────────────────────────────────────────────────────────────────────
@@ -539,6 +583,74 @@ export function generateInitGateExpansion(
   };
 }
 
+// ── Evidence Algebra ──────────────────────────────────────────────────────────
+
+export type EvidenceMode = 'observation' | 'assertion' | 'counter';
+
+export interface EvidenceItem {
+  id: string;
+  content: string;
+  mode: EvidenceMode;
+}
+
+/**
+ * Validate evidence algebra before committing expansion.
+ * Confirmation requires: >=1 observation + >=1 assertion + 0 counter-evidence.
+ */
+export function validateEvidenceAlgebra(evidence: EvidenceItem[]): { valid: boolean; reason?: string } {
+  const observations = evidence.filter(e => e.mode === 'observation');
+  const assertions = evidence.filter(e => e.mode === 'assertion');
+  const counters = evidence.filter(e => e.mode === 'counter');
+
+  if (counters.length > 0) {
+    return { valid: false, reason: `counter-evidence present: ${counters.map(c => c.id).join(', ')}` };
+  }
+  if (observations.length === 0) {
+    return { valid: false, reason: 'confirmation requires at least one observation' };
+  }
+  if (assertions.length === 0) {
+    return { valid: false, reason: 'confirmation requires at least one assertion' };
+  }
+  return { valid: true };
+}
+
+// ── Expansion Receipt ─────────────────────────────────────────────────────────
+
+export interface ExpansionReceipt {
+  expansionId: string;
+  parentNodeId: string;
+  childNodeIds: string[];
+  siblingInvariants: string[];  // e.g. "rkg-a and rkg-b must not produce the same path"
+  timestamp: string;
+}
+
+const EXPANSION_RECEIPTS_PATH = (repoRoot: string) =>
+  join(repoRoot, '.roadmap', 'expansion-receipts.jsonl');
+
+export function writeExpansionReceipt(receipt: ExpansionReceipt, repoRoot: string): void {
+  appendFileSync(EXPANSION_RECEIPTS_PATH(repoRoot), JSON.stringify(receipt) + '\n', 'utf-8');
+}
+
+/**
+ * Verify no two sibling child nodes produce the same path.
+ * Returns violation strings; empty array means no conflicts.
+ */
+export function checkSiblingInvariants(children: Array<{ nodeId: string; produces: string[] }>): string[] {
+  const pathWriters = new Map<string, string[]>();
+  for (const child of children) {
+    for (const path of child.produces) {
+      const writers = pathWriters.get(path) ?? [];
+      writers.push(child.nodeId);
+      pathWriters.set(path, writers);
+    }
+  }
+  const violations: string[] = [];
+  for (const [path, writers] of pathWriters) {
+    if (writers.length > 1) violations.push(`${writers.join(' and ')} both produce '${path}'`);
+  }
+  return violations;
+}
+
 // ── Convergence checks ────────────────────────────────────────────────────────
 
 export function detectStall(
@@ -643,4 +755,49 @@ export function enrichIntentFailuresWithObservations(
       informedBy: 'llm',
     };
   });
+}
+
+// ── Convergence Metrics ────────────────────────────────────────────────────────
+
+export interface ConvergenceIteration {
+  recursionLevel: number;
+  coverageDelta: number;   // improvement since last iteration
+  expandedCount: number;   // nodes expanded in this iteration
+}
+
+export interface ConvergenceHistory {
+  iterations: ConvergenceIteration[];
+  stalled: boolean;
+  stalledAt?: number;      // recursionLevel where stall detected
+}
+
+const CONVERGENCE_PATH = (repoRoot: string) =>
+  join(repoRoot, '.roadmap', 'convergence-history.jsonl');
+
+export function recordConvergenceIteration(iter: ConvergenceIteration, repoRoot: string): void {
+  appendFileSync(CONVERGENCE_PATH(repoRoot), JSON.stringify(iter) + '\n', 'utf-8');
+}
+
+export function readConvergenceHistory(repoRoot: string): ConvergenceHistory {
+  const path = CONVERGENCE_PATH(repoRoot);
+  if (!existsSync(path)) return { iterations: [], stalled: false };
+  const iterations = readFileSync(path, 'utf-8')
+    .trim().split('\n').filter(Boolean)
+    .map(line => JSON.parse(line) as ConvergenceIteration);
+
+  // Detect stall: coverageDelta < 0.02 for 3 consecutive iterations
+  const STALL_THRESHOLD = 0.02;
+  const STALL_WINDOW = 3;
+  let stalled = false;
+  let stalledAt: number | undefined;
+
+  for (let i = STALL_WINDOW - 1; i < iterations.length; i++) {
+    const window = iterations.slice(i - STALL_WINDOW + 1, i + 1);
+    if (window.every(it => it.coverageDelta < STALL_THRESHOLD)) {
+      stalled = true;
+      stalledAt = iterations[i].recursionLevel;
+      break;
+    }
+  }
+  return { iterations, stalled, stalledAt };
 }
