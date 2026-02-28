@@ -62,6 +62,10 @@ jobs:
         if: needs.setup.outputs.mode == 'promote'
         run: npm run check:intent
 
+      - name: Plan gate
+        if: needs.setup.outputs.mode == 'promote'
+        run: npx tsx scripts/ci/roadmap-plan-gate.ts
+
       - name: DAG integrity (hard)
         if: needs.setup.outputs.mode == 'promote' || needs.setup.outputs.mode == 'main'
         run: npm run check:dag:define
