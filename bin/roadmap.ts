@@ -48,6 +48,7 @@ import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { listNodeReceipts, completionDoctor, completionCompact } from '../src/lib/receipts-ux.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { runEnvAudit } from '../src/lib/env-audit.ts';
+import { runProfile } from '../src/lib/profile-cmd.ts';
 import { runPatchStack } from '../src/lib/patch-stack-cmd.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
 import type { Graph } from '../src/protocol.ts';
@@ -297,6 +298,7 @@ async function main() {
       case 'explore':   return await cmdExplore();
       case 'contract':  return cmdContract(note!);
       case 'env-audit': return cmdEnvAudit();
+      case 'patch':     return cmdPatch(note!);
       case 'compile-prompts': return cmdCompilePrompts(note!);
       case 'compile-brief': return cmdCompileBrief(note!);
       case 'gate':      return cmdGate(note!);
@@ -1962,55 +1964,9 @@ function cmdContract(note: string) {
 }
 
 function cmdEnvAudit() {
-  // Load kernel for allowed env vars
-  const kernelPath = join(repoRoot, '.roadmap', 'kernel.json');
-  let allowedVars: string[] = [];
-  if (existsSync(kernelPath)) {
-    try {
-      const kernel = JSON.parse(readFileSync(kernelPath, 'utf-8'));
-      const policy = kernel.policies?.find((p: any) => p.id === 'env-bypass-audit');
-      allowedVars = policy?.allowedEnvVars ?? [];
-    } catch { /* ignore */ }
-  }
-
-  // Scan src/ and bin/ for process.env references
-  const scanDirs = ['src', 'bin'].map(d => join(repoRoot, d)).filter(d => existsSync(d));
-  const findings: { file: string; line: number; envVar: string; allowed: boolean }[] = [];
-
-  for (const dir of scanDirs) {
-    try {
-      const result = execSync(
-        `grep -rn "process\\.env\\[" "${dir}" --include="*.ts" 2>/dev/null || true`,
-        { encoding: 'utf-8', timeout: 5000 },
-      );
-
-      for (const line of result.split('\n')) {
-        if (!line.trim()) continue;
-        const match = line.match(/^(.+?):(\d+):.*process\.env\['([^']+)'\]/);
-        if (match) {
-          findings.push({
-            file: match[1].replace(repoRoot + '/', ''),
-            line: parseInt(match[2]),
-            envVar: match[3],
-            allowed: allowedVars.includes(match[3]),
-          });
-        }
-      }
-    } catch { /* ignore */ }
-  }
-
-  const unauthorized = findings.filter(f => !f.allowed);
-
-  json({
-    totalReferences: findings.length,
-    authorized: findings.filter(f => f.allowed).length,
-    unauthorized: unauthorized.length,
-    findings: unauthorized,
-    allowedVars,
-    passed: unauthorized.length === 0,
-  });
-
-  if (unauthorized.length > 0) process.exit(1);
+  const result = runEnvAudit(repoRoot);
+  json(result);
+  if (!result.pass) process.exit(1);
 }
 
 function cmdDiff() {
