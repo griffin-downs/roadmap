@@ -2964,6 +2964,16 @@ function cmdImport(note: string) {
   if (terminalError) warnings.push(`terminal-intent: ${terminalError.message}`);
   if (initError) warnings.push(`init-intent: ${initError.message}`);
 
+  // FR-SPEC-003: Embed spec provenance in head.json before writing
+  dag = {
+    ...dag,
+    spec: {
+      compiled_sha256: inputHash,
+      engine: { name: ir.engine.name, version: ir.engine.version },
+      inputs: ir.inputs.map((i: any) => ({ path: i.path, sha256: i.sha256, role: i.role })),
+    },
+  };
+
   // --- FR-GOV-001: compute DAG hash ---
   const dagJson = JSON.stringify(dag, null, 2) + '\n';
   const dagHash = createHash('sha256').update(dagJson).digest('hex');
@@ -3189,10 +3199,25 @@ function cmdImportCompiled(note: string, irPath: string | undefined) {
   const receiptPath = join(receiptsDir, `import-${gitSha.slice(0, 8)}.json`);
   writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
 
+  // FR-SPEC-003: Write spec-compile receipt chain entry
+  const specCompileReceipt = {
+    schema_version: 1,
+    type: 'spec-compile',
+    dag_id: ir.dag_id,
+    compiled_sha256: inputHash,
+    dag_hash: dagHash,
+    git_sha: gitSha,
+    timestamp: commitTimestamp,
+    engine: ir.engine,
+    inputs: ir.inputs.map((i: any) => ({ path: i.path, sha256: i.sha256, role: i.role })),
+    compile_hash: ir.metadata.compile_hash,
+  };
+  writeFileSync(join(receiptsDir, `spec-compile-${inputHash.slice(0, 12)}.json`), JSON.stringify(specCompileReceipt, null, 2) + '\n');
+
   recordTrail({
     ts: new Date().toISOString(), cmd: 'import', note,
     repo: basename(repoRoot), position: ['init'], level: 0, dagId: ir.dag_id,
-    detail: { source: irPath, type: 'spec-compiled', engine: ir.engine.name, nodes: Object.keys(dag.nodes).length, receiptPath, dagHash: dagHash.slice(0, 12) },
+    detail: { source: irPath, type: 'spec-compiled', engine: ir.engine.name, nodes: Object.keys(dag.nodes).length, receiptPath, dagHash: dagHash.slice(0, 12), compiled_sha256: inputHash.slice(0, 12) },
   });
 
   const spawnPlan = buildSpawnPlan(dag);
@@ -3480,10 +3505,12 @@ function cmdSpecCompile(note: string) {
   const receiptPath = join(receiptsDir, `spec-compile-${gitSha.slice(0, 8)}.json`);
   writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
 
+  const compiledSha256 = createHash('sha256').update(readFileSync(compiledPath)).digest('hex');
+
   recordTrail({
     ts: new Date().toISOString(), cmd: 'spec-compile', note,
     repo: basename(repoRoot), position: ['untracked'], level: 0, dagId: config.dag_id,
-    detail: { tasks: tasks.length, compileHash: compileHash.slice(0, 12) },
+    detail: { tasks: tasks.length, compileHash: compileHash.slice(0, 12), compiled_sha256: compiledSha256.slice(0, 12) },
   });
 
   json({
