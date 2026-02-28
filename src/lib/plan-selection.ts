@@ -60,3 +60,12 @@ export function isPlanSelectedPointer(x: unknown): x is PlanSelectedPointer {
 export function planSelectReceiptPath(headSha: string): string {
   return `${PLAN_SELECT_RECEIPT_DIR}/plan-select-${headSha.slice(0, 12)}.json`;
 }
+
+// Re-exports from receipts module for CLI convenience
+export {
+  writePlanSelectReceipt,
+  loadPlanSelectReceipt,
+  computeHeadSha,
+  validatePlanSelection,
+} from './receipts/plan-select.ts';
+export { readPointer, writePointer, pointerValid } from './receipts/plan-selected-pointer.ts';

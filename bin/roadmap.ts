@@ -4388,7 +4388,7 @@ async function cmdPlanSelect(note: string) {
     process.exit(1);
   }
 
-  const { writePlanSelectReceipt } = await import('../src/lib/receipts/plan-select.ts');
+  const { writePlanSelectReceipt } = await import('../src/lib/plan-selection.ts');
 
   const galleryJsonIdx = args.indexOf('--gallery-json');
   let galleryHash: string | undefined;
@@ -4427,8 +4427,8 @@ async function cmdPlanStatus() {
   }
 
   const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
-  const { readPointer } = await import('../src/lib/receipts/plan-selected-pointer.ts');
-  const { loadPlanSelectReceipt, computeHeadSha } = await import('../src/lib/receipts/plan-select.ts');
+  const { readPointer, computeHeadSha } = await import('../src/lib/plan-selection.ts');
+  const { loadPlanSelectReceipt } = await import('../src/lib/plan-selection.ts');
   const gate = requirePlanGate(repoRoot);
   const pointer = readPointer(repoRoot);
 
