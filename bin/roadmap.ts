@@ -57,7 +57,9 @@ import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } 
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 import type { OrientV1, OrientDag, OrientDagNode, OrientDagEdge, OrientBlockedNode } from '../src/lib/orient-schema.ts';
-import { emit, emitError, parseOutputOpts, ErrorCode, type OutputFormat } from '../src/lib/cli-envelope.ts';
+import { emit, emitError, parseOutputOpts, ErrorCode, type OutputFormat, type RenderV1 } from '../src/lib/cli-envelope.ts';
+import { render, renderDagLayers, type RenderOpts, type RenderModel, type RenderOutput, type DagLayer, type DagNode } from '../src/lib/render/index.ts';
+import { resolveWidth } from '../src/lib/render/layout.ts';
 import { renderOrient, renderChart, renderPlanGallery, renderPlanSelect, renderPlanStatus, renderDoctor, renderValidate, renderTrail, renderRemaining } from '../src/lib/cli-human.ts';
 import type { OrientData, ChartData, GalleryData, PlanSelectData, PlanStatusData, DoctorData, ValidateData, TrailData, RemainingData } from '../src/lib/cli-human.ts';
 
@@ -96,6 +98,14 @@ function deriveEnvelopeCmd(): string {
   return cmd;
 }
 const _outputOpts = parseOutputOpts(rawArgs, deriveEnvelopeCmd());
+
+// --- Render opts (FR-UI-001) ---
+const _renderOpts: RenderOpts = {
+  tty: process.stderr.isTTY ?? false,
+  width: resolveWidth(process.stderr.columns),
+  color: (process.stderr.isTTY ?? false) && !process.env['NO_COLOR'],
+  emoji: true,
+};
 
 // --- Human renderer dispatch (FR-CLI-001) ---
 const _humanRenderers: Record<string, (data: unknown) => string> = {
@@ -605,12 +615,37 @@ async function cmdOrient(note: string | undefined) {
       detail: trailDetail,
     });
   }
+  // Build orient RenderModel
+  const orientBatches = parallelOrder(dag);
+  const doneSet = new Set(pos.done);
+  const orientLayers: DagLayer[] = orientBatches.map((batch, i) => ({
+    level: i,
+    nodes: batch.map((id): DagNode => {
+      const status: DagNode['status'] = doneSet.has(id) ? 'done'
+        : pos.position.includes(id) ? 'current'
+        : 'pending';
+      const node = dag.nodes[id as keyof typeof dag.nodes] as any;
+      return { id, status, desc: node?.desc };
+    }),
+  }));
+  const orientRenderModel: RenderModel = {
+    kind: 'orient',
+    title: `orient: ${dag.id}`,
+    nodes: [
+      { t: 'kv', key: 'position', value: (result.position as string[]).join(', ') || '(none)' },
+      { t: 'kv', key: 'level', value: String(result.level) },
+      { t: 'bar', label: 'progress', cur: pos.done.length, total: pos.done.length + pos.remaining.length },
+      { t: 'line' },
+      { t: 'dagLayers', layers: orientLayers },
+    ],
+  };
+
   // --json: emit v1 machine envelope
   if (args.includes('--json')) {
     const v1 = buildOrientV1(dag, result, pos);
-    json(v1);
+    json(v1, orientRenderModel);
   } else {
-    json(result);
+    json(result, orientRenderModel);
   }
 }
 
@@ -1474,6 +1509,35 @@ async function cmdChart() {
   }
 
   console.log('');
+
+  // When --json requested, also emit structured envelope with chart RenderModel
+  if (_outputOpts.format === 'json') {
+    const chartLayers: DagLayer[] = batches.map((batch, i) => ({
+      level: i,
+      nodes: batch.map((id): DagNode => {
+        const status: DagNode['status'] = retired.has(id) ? 'retired'
+          : doneSet.has(id) ? 'done'
+          : pos.position.includes(id) ? 'current'
+          : completion.hasFailing(id) ? 'fail'
+          : 'pending';
+        const node = dag.nodes[id as keyof typeof dag.nodes] as any;
+        return { id, status, desc: node?.desc };
+      }),
+    }));
+    const chartRenderModel: RenderModel = {
+      kind: 'chart',
+      title: `chart: ${dag.id}`,
+      nodes: [
+        { t: 'h1', s: `${dag.id} \u2014 ${dag.desc}` },
+        { t: 'bar', label: 'progress', cur: doneCount, total: totalNodes },
+        { t: 'kv', key: 'position', value: pos.position.join(', ') || '(complete)' },
+        { t: 'line' },
+        { t: 'dagLayers', layers: chartLayers },
+      ],
+    };
+    const chartData = { dagId: dag.id, done: doneCount, total: totalNodes, pct, position: pos.position, level: pos.level };
+    json(chartData, chartRenderModel);
+  }
 }
 
 function cmdDoctor() {
@@ -5719,8 +5783,27 @@ function cmdGate(note: string) {
   if (!result.pass) process.exit(1);
 }
 
-function json(obj: unknown) {
+function json(obj: unknown, renderModel?: RenderModel) {
   const hasError = typeof obj === 'object' && obj !== null && 'error' in obj;
+
+  // Build render output + RenderV1 envelope field
+  let renderV1: RenderV1 | undefined;
+  if (renderModel && !_outputOpts.quiet) {
+    const renderOutput = render(renderModel, _renderOpts);
+    renderV1 = {
+      format: _renderOpts.tty ? 'ansi' : 'plain',
+      mime: 'text/x-roadmap-ui',
+      title: renderModel.title,
+      body: renderOutput.plain,
+    };
+    process.stderr.write((renderOutput.ansi ?? renderOutput.plain) + '\n');
+  } else if (!_outputOpts.quiet) {
+    // Minimal stderr render for commands without a RenderModel
+    process.stderr.write(`\u2501\u2501 ${_outputOpts.cmd} \u2501\u2501\n${JSON.stringify(obj, null, 2).slice(0, 500)}\n`);
+  }
+
+  const emitOpts = { ..._outputOpts, render: renderV1 };
+
   if (hasError) {
     const e = obj as Record<string, unknown>;
     emit({
@@ -5731,9 +5814,9 @@ function json(obj: unknown) {
         message: typeof e.error === 'string' ? e.error : String(e.error),
         fix: Array.isArray(e.fix) ? e.fix : typeof e.fix === 'string' ? [e.fix] : undefined,
       },
-    }, _outputOpts);
+    }, emitOpts);
   } else {
-    emit({ ok: true, cmd: _outputOpts.cmd, data: obj }, _outputOpts);
+    emit({ ok: true, cmd: _outputOpts.cmd, data: obj }, emitOpts);
   }
 }
 

@@ -115,6 +115,7 @@ interface EmitOpts {
   format: OutputFormat;
   quiet: boolean;
   humanRenderer?: (data: unknown) => string;
+  render?: RenderV1;
 }
 
 /** Single output funnel. Wraps result in envelope, writes to stdout. */
@@ -131,6 +132,10 @@ export function emit(result: EmitResult, opts: EmitOpts): void {
     envelope.data = result.data;
   } else {
     envelope.error = result.error;
+  }
+
+  if (opts.render) {
+    envelope.render = opts.render;
   }
 
   if (opts.quiet && result.ok) return;
