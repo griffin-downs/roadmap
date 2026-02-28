@@ -39,12 +39,16 @@ import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } 
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/spec-origin.ts';
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/spec-origin.ts';
 import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake.ts';
+import { runIntakeAbsorb } from '../src/lib/intake-cmd.ts';
 import { addPeer, removePeer, buildFederationView, federationStatus } from '../src/lib/federation.ts';
 import { buildPlanOverlay, writePlanOverlay, loadPlanOverlay, isOverlayValid } from '../src/lib/plan-overlay.ts';
+import { runOverlayFromIntake } from '../src/lib/overlay-cmd.ts';
 import { createDispatchPlan, applyDispatchPlan, loadDispatchPlan, dispatchStatus } from '../src/lib/dispatch.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { listNodeReceipts, completionDoctor, completionCompact } from '../src/lib/receipts-ux.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
+import { runEnvAudit } from '../src/lib/env-audit.ts';
+import { runPatchStack } from '../src/lib/patch-stack-cmd.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
@@ -295,6 +299,7 @@ async function main() {
       case 'env-audit': return cmdEnvAudit();
       case 'compile-prompts': return cmdCompilePrompts(note!);
       case 'compile-brief': return cmdCompileBrief(note!);
+      case 'gate':      return cmdGate(note!);
       case 'plan':
         if (args.includes('--gallery')) return await cmdPlanGallery(note!);
         if (args[1] === 'select') return await cmdPlanSelect(note!);
@@ -3557,8 +3562,28 @@ function cmdIntake(note: string) {
       json(result);
       return;
     }
+    case 'absorb': {
+      const fromIdx = args.indexOf('--from');
+      if (fromIdx === -1 || !args[fromIdx + 1]) {
+        json({ error: 'Missing --from <sha>', fix: 'roadmap intake absorb --from <sha> [--to <sha>] --note "..."' });
+        process.exit(1);
+      }
+      const fromSha = args[fromIdx + 1];
+      const toIdx = args.indexOf('--to');
+      const toSha = toIdx !== -1 ? args[toIdx + 1] : undefined;
+      const sinceIdx = args.indexOf('--since');
+      const since = sinceIdx !== -1 ? args[sinceIdx + 1] : undefined;
+      const result = runIntakeAbsorb({ fromSha, toSha, since, repoRoot });
+      recordTrail({
+        ts: new Date().toISOString(), cmd: 'intake absorb', note,
+        repo: basename(repoRoot), position: [], level: 0,
+        detail: { intakeId: result.intakeId, commits: result.commits.length, clusters: result.detectedClusters.length, proposedNodes: result.proposedNodes.length },
+      });
+      json(result);
+      return;
+    }
     default:
-      json({ error: `Unknown intake subcommand: ${sub}`, fix: 'roadmap intake scan|import|certify --note "..."' });
+      json({ error: `Unknown intake subcommand: ${sub}`, fix: 'roadmap intake scan|import|certify|absorb --note "..."' });
       process.exit(1);
   }
 }
@@ -4752,6 +4777,8 @@ Commands:
   explore --run <script> [--launch <cmd>] [--port N] [--keep-alive]  Run explore script with managed lifecycle
   compile-brief --node <id> [--env path]  Generate agent-ready work brief from node spec + environment
   compile-prompts --node <id> [--env path] Generate agent prompts from DAG nodes
+  plan overlay --from-intake <id>  Write candidate nodes to .roadmap/overlays/ (no head.json mutation)
+  gate merge [--target <branch>]  Local merge gate: verify required receipts before merge
   dig [path]          Browse archived files in git history
   dig <path> --restore  Recover archived file to working tree
   help                This message
@@ -5168,10 +5195,36 @@ function cmdPlanOverlay(note: string) {
     process.exit(1);
   }
 
+  // --from-intake <intakeId>: build overlay from intake record (no DAG cluster/schedule)
+  const fromIntakeIdx = args.indexOf('--from-intake');
+  if (fromIntakeIdx !== -1) {
+    const intakeId = args[fromIntakeIdx + 1];
+    if (!intakeId) {
+      json({ error: 'Missing intake ID', fix: 'roadmap plan overlay --from-intake <intakeId> --note "..."' });
+      process.exit(1);
+    }
+    const headSha = execSync('git rev-parse HEAD', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+    const treeSha = execSync('git rev-parse HEAD^{tree}', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+    const record = runOverlayFromIntake({ intakeId, repoRoot, headSha, treeSha });
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'plan overlay --from-intake', note,
+      repo: basename(repoRoot), position: [], level: 0,
+      detail: { intakeId, overlayId: record.overlayId.slice(0, 12), candidateNodes: record.candidateNodes.length },
+    });
+    json({
+      overlay: true,
+      fromIntake: intakeId,
+      overlayId: record.overlayId.slice(0, 12),
+      candidateNodes: record.candidateNodes.length,
+      applied: false,
+    });
+    return;
+  }
+
   const selectIdx = args.indexOf('--select');
   const candidateId = selectIdx !== -1 ? args[selectIdx + 1] : undefined;
   if (!candidateId) {
-    json({ error: 'Missing --select <candidateId>', fix: 'roadmap plan overlay --select <id> --note "..."' });
+    json({ error: 'Missing --select <candidateId> or --from-intake <intakeId>', fix: 'roadmap plan overlay --select <id> --note "..." | --from-intake <intakeId> --note "..."' });
     process.exit(1);
   }
 
