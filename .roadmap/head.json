@@ -6,7 +6,7 @@
   "nodes": {
     "_term": {
       "id": "_term",
-      "desc": "Synthetic term — gates on all leaf tasks",
+      "desc": "Synthetic term \u2014 gates on all leaf tasks",
       "produces": [],
       "consumes": [
         "src/lib/profile-cmd.ts",
@@ -31,7 +31,7 @@
         },
         {
           "type": "shell",
-          "command": "npm run build 2>&1 | grep -q \"built\"",
+          "command": "npx tsc --noEmit",
           "expectExitCode": 0
         }
       ],
@@ -40,7 +40,7 @@
     },
     "init": {
       "id": "init",
-      "desc": "Existing roadmap codebase — src/protocol.ts, src/lib/kernel-config.ts, src/lib/completion-store.ts, src/lib/validator-runner.ts, src/lib/blend.ts, src/lib/emit-gallery.ts, src/lib/intent-expansion.ts, bin/roadmap.ts",
+      "desc": "Existing roadmap codebase \u2014 src/protocol.ts, src/lib/kernel-config.ts, src/lib/completion-store.ts, src/lib/validator-runner.ts, src/lib/blend.ts, src/lib/emit-gallery.ts, src/lib/intent-expansion.ts, bin/roadmap.ts",
       "produces": [
         "src/protocol.ts",
         "src/lib/kernel-config.ts",
@@ -65,7 +65,7 @@
     },
     "rkg7-intake-schema": {
       "id": "rkg7-intake-schema",
-      "desc": "IntakeRecord type — commits[], treeSha, parentSha, touchedPaths, author, msg, detectedClusters[], proposedNodes[]. Write src/lib/intake.ts with type + schema constants + dir spec (.roadmap/intake/). Write IntakeReceipt type for intake-absorb-<sha>.json bound to range + treeSha set.",
+      "desc": "IntakeRecord type \u2014 commits[], treeSha, parentSha, touchedPaths, author, msg, detectedClusters[], proposedNodes[]. Write src/lib/intake.ts with type + schema constants + dir spec (.roadmap/intake/). Write IntakeReceipt type for intake-absorb-<sha>.json bound to range + treeSha set.",
       "produces": [
         "src/lib/intake.ts"
       ],
@@ -83,7 +83,7 @@
     },
     "rkg7-overlay-schema": {
       "id": "rkg7-overlay-schema",
-      "desc": "OverlayRecord type — intakeId, headSha, treeSha, candidateNodes[] (NodeSpec[], not yet in DAG). Write src/lib/overlay.ts. Must not reference head.json mutation — candidates only.",
+      "desc": "OverlayRecord type \u2014 intakeId, headSha, treeSha, candidateNodes[] (NodeSpec[], not yet in DAG). Write src/lib/overlay.ts. Must not reference head.json mutation \u2014 candidates only.",
       "produces": [
         "src/lib/overlay.ts"
       ],
@@ -101,7 +101,7 @@
     },
     "rkg7-patch-schema": {
       "id": "rkg7-patch-schema",
-      "desc": "PatchRecord type — patchId, baseSha, commitShas[], nodeMapping (nodeId → commitSha[]), branchPattern (rm/stack/<id>/<n>-<node>). Write src/lib/patch-stack.ts. Reproducibility invariant: same nodes+base → same diff.",
+      "desc": "PatchRecord type \u2014 patchId, baseSha, commitShas[], nodeMapping (nodeId \u2192 commitSha[]), branchPattern (rm/stack/<id>/<n>-<node>). Write src/lib/patch-stack.ts. Reproducibility invariant: same nodes+base \u2192 same diff.",
       "produces": [
         "src/lib/patch-stack.ts"
       ],
@@ -119,7 +119,7 @@
     },
     "rkg7-merge-gate-schema": {
       "id": "rkg7-merge-gate-schema",
-      "desc": "MergeGateResult type — pass: boolean, missingReceipts[], error.fix[], checked[] with receipt name + found flag. Write src/lib/merge-gate.ts. Required receipts list: plan-select, spec-origin (if configured), kernel-verify, no orphan receipts, intake receipt for external patches.",
+      "desc": "MergeGateResult type \u2014 pass: boolean, missingReceipts[], error.fix[], checked[] with receipt name + found flag. Write src/lib/merge-gate.ts. Required receipts list: plan-select, spec-origin (if configured), kernel-verify, no orphan receipts, intake receipt for external patches.",
       "produces": [
         "src/lib/merge-gate.ts"
       ],
@@ -137,7 +137,7 @@
     },
     "rkg7-completion-ux": {
       "id": "rkg7-completion-ux",
-      "desc": "completed.json ergonomics — `roadmap receipts ls --node <id>` lists evidence records + treeSha + validator outputs. `roadmap completion doctor` diagnoses why chart shows 0% (legacy receipt schema, missing completed.json, version mismatch). `roadmap completion compact` prunes legacy receipts while preserving proofs (--dry-run required before destructive). Wire into bin/roadmap.ts.",
+      "desc": "completed.json ergonomics \u2014 `roadmap receipts ls --node <id>` lists evidence records + treeSha + validator outputs. `roadmap completion doctor` diagnoses why chart shows 0% (legacy receipt schema, missing completed.json, version mismatch). `roadmap completion compact` prunes legacy receipts while preserving proofs (--dry-run required before destructive). Wire into bin/roadmap.ts.",
       "produces": [
         "src/lib/receipts-ux.ts",
         "bin/roadmap.ts"
@@ -156,7 +156,7 @@
     },
     "rkg8-transcript-schema": {
       "id": "rkg8-transcript-schema",
-      "desc": "TranscriptSession type — sessionId, toolCalls[], retries (repeated cmd+args), failures by error.code, bypassFlagsUsed[], envVarUsage[], orphanedAttempts (cmds outside roadmap CLI), crossWorkerContaminationEvents[]. Write src/lib/transcript-schema.ts with type guards.",
+      "desc": "TranscriptSession type \u2014 sessionId, toolCalls[], retries (repeated cmd+args), failures by error.code, bypassFlagsUsed[], envVarUsage[], orphanedAttempts (cmds outside roadmap CLI), crossWorkerContaminationEvents[]. Write src/lib/transcript-schema.ts with type guards.",
       "produces": [
         "src/lib/transcript-schema.ts"
       ],
@@ -174,7 +174,7 @@
     },
     "rkg8-escape-detector-schema": {
       "id": "rkg8-escape-detector-schema",
-      "desc": "EscapeEvent type — UNACCOUNTED_COMMIT | OUT_OF_BOUNDS_TOOL | DIRECT_GIT_COMMIT. GovernanceBreach type — sha, eventType, missingReceiptTypes[], timestamp. GovernanceBreachReceipt format: governance-breach-<sha>.json. Write src/lib/escape-detector.ts.",
+      "desc": "EscapeEvent type \u2014 UNACCOUNTED_COMMIT | OUT_OF_BOUNDS_TOOL | DIRECT_GIT_COMMIT. GovernanceBreach type \u2014 sha, eventType, missingReceiptTypes[], timestamp. GovernanceBreachReceipt format: governance-breach-<sha>.json. Write src/lib/escape-detector.ts.",
       "produces": [
         "src/lib/escape-detector.ts"
       ],
@@ -192,7 +192,7 @@
     },
     "rkg8-profile-schema": {
       "id": "rkg8-profile-schema",
-      "desc": "ProfileReport type — commandsPerNode: Record<nodeId, number>, validatorRunsPerNode, avgLatencyMs, batchParallelismUtilization (0–1), efficiencyWarnings[] (nodeId + reason when threshold exceeded). Write src/lib/profile-schema.ts. Deterministic across runs given same input data.",
+      "desc": "ProfileReport type \u2014 commandsPerNode: Record<nodeId, number>, validatorRunsPerNode, avgLatencyMs, batchParallelismUtilization (0\u20131), efficiencyWarnings[] (nodeId + reason when threshold exceeded). Write src/lib/profile-schema.ts. Deterministic across runs given same input data.",
       "produces": [
         "src/lib/profile-schema.ts"
       ],
@@ -210,7 +210,7 @@
     },
     "rkg7-intake-absorb-cmd": {
       "id": "rkg7-intake-absorb-cmd",
-      "desc": "`roadmap intake absorb --from <sha> --to <sha> [--since <date>]` command — iterates git log range, extracts commits[], touchedPaths via git diff-tree, writes .roadmap/intake/<intakeId>.json. Deterministic: sha256(range) → stable intakeId. Validates: range exists, no dirty working tree. Emits intake-absorb-<sha>.json receipt with range + treeSha set. Wire into bin/roadmap.ts.",
+      "desc": "`roadmap intake absorb --from <sha> --to <sha> [--since <date>]` command \u2014 iterates git log range, extracts commits[], touchedPaths via git diff-tree, writes .roadmap/intake/<intakeId>.json. Deterministic: sha256(range) \u2192 stable intakeId. Validates: range exists, no dirty working tree. Emits intake-absorb-<sha>.json receipt with range + treeSha set. Wire into bin/roadmap.ts.",
       "produces": [
         "src/lib/intake-cmd.ts",
         "bin/roadmap.ts"
@@ -229,7 +229,7 @@
     },
     "rkg7-intake-cluster": {
       "id": "rkg7-intake-cluster",
-      "desc": "Cluster detection — group commits by touchedPaths overlap (jaccard similarity). Each cluster becomes a proposedNodeSpec (id: intake::<intakeId>::<n>, produces: touchedPaths, consumes: []). Stable across reruns: same commits → same clusters → same NodeSpecs. Write src/lib/intake-cluster.ts. Wire into intake-absorb-cmd output.",
+      "desc": "Cluster detection \u2014 group commits by touchedPaths overlap (jaccard similarity). Each cluster becomes a proposedNodeSpec (id: intake::<intakeId>::<n>, produces: touchedPaths, consumes: []). Stable across reruns: same commits \u2192 same clusters \u2192 same NodeSpecs. Write src/lib/intake-cluster.ts. Wire into intake-absorb-cmd output.",
       "produces": [
         "src/lib/intake-cluster.ts"
       ],
@@ -247,7 +247,7 @@
     },
     "rkg7-overlay-from-intake": {
       "id": "rkg7-overlay-from-intake",
-      "desc": "`roadmap plan overlay --from-intake <intakeId>` — reads .roadmap/intake/<id>.json, writes .roadmap/overlays/intake-<id>.json with candidateNodes[]. Does NOT mutate head.json (--apply flag required for that, implement as error for now). Emits receipt bound to headSha + intakeId + treeSha.",
+      "desc": "`roadmap plan overlay --from-intake <intakeId>` \u2014 reads .roadmap/intake/<id>.json, writes .roadmap/overlays/intake-<id>.json with candidateNodes[]. Does NOT mutate head.json (--apply flag required for that, implement as error for now). Emits receipt bound to headSha + intakeId + treeSha.",
       "produces": [
         "src/lib/overlay-cmd.ts",
         "bin/roadmap.ts"
@@ -267,7 +267,7 @@
     },
     "rkg7-patch-stack": {
       "id": "rkg7-patch-stack",
-      "desc": "`roadmap patch stack --nodes <id,...> --base <sha>` — creates branch rm/stack/<patchId>/<n>-<nodeId> with ordered commits per node. Writes .roadmap/patch/<patchId>.json. Reproducibility: same nodes+base → same diff (deterministic commit ordering). Wire into bin/roadmap.ts.",
+      "desc": "`roadmap patch stack --nodes <id,...> --base <sha>` \u2014 creates branch rm/stack/<patchId>/<n>-<nodeId> with ordered commits per node. Writes .roadmap/patch/<patchId>.json. Reproducibility: same nodes+base \u2192 same diff (deterministic commit ordering). Wire into bin/roadmap.ts.",
       "produces": [
         "src/lib/patch-stack-cmd.ts",
         "bin/roadmap.ts"
@@ -286,7 +286,7 @@
     },
     "rkg7-merge-gate": {
       "id": "rkg7-merge-gate",
-      "desc": "`roadmap gate merge [--target <branch>]` — checks plan-select receipt exists, spec-origin receipt if .roadmap/spec-origin.json present, kernel verify passes (loadKernel() + validateKernel()), no orphan receipts (receipts not bound to any node), intake receipt for any commit in range not tracked by roadmap. On any failure: exits non-zero with MergeGateResult.error.fix[]. Wire into bin/roadmap.ts.",
+      "desc": "`roadmap gate merge [--target <branch>]` \u2014 checks plan-select receipt exists, spec-origin receipt if .roadmap/spec-origin.json present, kernel verify passes (loadKernel() + validateKernel()), no orphan receipts (receipts not bound to any node), intake receipt for any commit in range not tracked by roadmap. On any failure: exits non-zero with MergeGateResult.error.fix[]. Wire into bin/roadmap.ts.",
       "produces": [
         "src/lib/merge-gate-cmd.ts",
         "bin/roadmap.ts"
@@ -305,7 +305,7 @@
     },
     "rkg7-env-audit-hardening": {
       "id": "rkg7-env-audit-hardening",
-      "desc": "Replace SKIP_PLAN_GATE, SKIP_BATCH_COMMIT, ROADMAP_VALIDATING env vars with kernel.json toggles (policy.skipPlanGate, policy.skipBatchCommit, policy.validating). CLI --bypass-* flags emit a bypass receipt (bypass-<flag>-<sha>.json) when used. `roadmap env-audit` command — scans process.env at runtime, fails with non-zero exit if any deprecated bypass env var is set, outputs which vars + recommended kernel.json keys. Wire into bin/roadmap.ts.",
+      "desc": "Replace SKIP_PLAN_GATE, SKIP_BATCH_COMMIT, ROADMAP_VALIDATING env vars with kernel.json toggles (policy.skipPlanGate, policy.skipBatchCommit, policy.validating). CLI --bypass-* flags emit a bypass receipt (bypass-<flag>-<sha>.json) when used. `roadmap env-audit` command \u2014 scans process.env at runtime, fails with non-zero exit if any deprecated bypass env var is set, outputs which vars + recommended kernel.json keys. Wire into bin/roadmap.ts.",
       "produces": [
         "src/lib/env-audit.ts",
         "bin/roadmap.ts"
@@ -324,7 +324,7 @@
     },
     "rkg8-audit-ingest": {
       "id": "rkg8-audit-ingest",
-      "desc": "`roadmap audit ingest <transcriptPath> [--dag-id <id>]` — parses regent JSONL or equivalent transcript, writes .roadmap/audit/<sessionId>.json with TranscriptSession. Extracts: toolCalls[], retryRate (repeated cmd+args), failures by error.code, bypassFlagsUsed[], timeBetweenBatches[], crossWorkerContaminationEvents (files staged outside produces allowlist), envVarUsage[], orphanedAttempts (shell invocations outside roadmap CLI). Wire into bin/roadmap.ts.",
+      "desc": "`roadmap audit ingest <transcriptPath> [--dag-id <id>]` \u2014 parses regent JSONL or equivalent transcript, writes .roadmap/audit/<sessionId>.json with TranscriptSession. Extracts: toolCalls[], retryRate (repeated cmd+args), failures by error.code, bypassFlagsUsed[], timeBetweenBatches[], crossWorkerContaminationEvents (files staged outside produces allowlist), envVarUsage[], orphanedAttempts (shell invocations outside roadmap CLI). Wire into bin/roadmap.ts.",
       "produces": [
         "src/lib/audit-ingest.ts",
         "bin/roadmap.ts"
@@ -343,7 +343,7 @@
     },
     "rkg8-friction-engine": {
       "id": "rkg8-friction-engine",
-      "desc": "Friction heuristics — compute per-node metrics: toolEntropy (unique tool invocations / total), retryRate (retried cmds / total), crossIndexContamination (staged files outside produces / total staged), bypassUsage (bypass receipts emitted), headDrift (HEAD changes during execution window), expansionChurn (intent expansions > 1 depth). Output: frictionScore (0–1 weighted sum), frictionClassifications[]. Write src/lib/friction-engine.ts.",
+      "desc": "Friction heuristics \u2014 compute per-node metrics: toolEntropy (unique tool invocations / total), retryRate (retried cmds / total), crossIndexContamination (staged files outside produces / total staged), bypassUsage (bypass receipts emitted), headDrift (HEAD changes during execution window), expansionChurn (intent expansions > 1 depth). Output: frictionScore (0\u20131 weighted sum), frictionClassifications[]. Write src/lib/friction-engine.ts.",
       "produces": [
         "src/lib/friction-engine.ts"
       ],
@@ -361,7 +361,7 @@
     },
     "rkg8-profile": {
       "id": "rkg8-profile",
-      "desc": "`roadmap profile [--node <id>] [--last-n <n>]` — reads .roadmap/audit/ session files, aggregates ProfileReport. Nodes exceeding commandsPerNode threshold (default: 20) emit efficiencyWarning. Outputs profile-report.json + console table. Deterministic: same audit inputs → same report. Wire into bin/roadmap.ts.",
+      "desc": "`roadmap profile [--node <id>] [--last-n <n>]` \u2014 reads .roadmap/audit/ session files, aggregates ProfileReport. Nodes exceeding commandsPerNode threshold (default: 20) emit efficiencyWarning. Outputs profile-report.json + console table. Deterministic: same audit inputs \u2192 same report. Wire into bin/roadmap.ts.",
       "produces": [
         "src/lib/profile-cmd.ts",
         "bin/roadmap.ts"
@@ -380,7 +380,7 @@
     },
     "rkg8-kernel-enforcement-hook": {
       "id": "rkg8-kernel-enforcement-hook",
-      "desc": "Kernel enforcement mode — when .roadmap/ exists, auto-enable merge gate enforcement (kernel.policy.mergeGateEnforced = true default) and escape detection. When .roadmap/kernel.json has federation.enabled, propagate kernel policy changes to sibling repos listed in federation.repos[] + emit federation receipt (federation-sync-<sha>.json). Write src/lib/kernel-enforcement.ts.",
+      "desc": "Kernel enforcement mode \u2014 when .roadmap/ exists, auto-enable merge gate enforcement (kernel.policy.mergeGateEnforced = true default) and escape detection. When .roadmap/kernel.json has federation.enabled, propagate kernel policy changes to sibling repos listed in federation.repos[] + emit federation receipt (federation-sync-<sha>.json). Write src/lib/kernel-enforcement.ts.",
       "produces": [
         "src/lib/kernel-enforcement.ts"
       ],
@@ -398,7 +398,7 @@
     },
     "rkg7-intake-receipt": {
       "id": "rkg7-intake-receipt",
-      "desc": "intake receipt binding — intake-absorb-<sha>.json written by intake-absorb-cmd with: intakeId, fromSha, toSha, treeShaSet[], clusterCount, proposedNodeCount, inputHash (deterministic). Verify: rerun same range → same inputHash. Add receipt verification predicate isIntakeReceiptValid(). Wire into merge-gate checks for external patch ranges.",
+      "desc": "intake receipt binding \u2014 intake-absorb-<sha>.json written by intake-absorb-cmd with: intakeId, fromSha, toSha, treeShaSet[], clusterCount, proposedNodeCount, inputHash (deterministic). Verify: rerun same range \u2192 same inputHash. Add receipt verification predicate isIntakeReceiptValid(). Wire into merge-gate checks for external patch ranges.",
       "produces": [
         "src/lib/intake-receipt.ts"
       ],
@@ -417,7 +417,7 @@
     },
     "rkg8-audit-recommend": {
       "id": "rkg8-audit-recommend",
-      "desc": "`roadmap audit recommend [--session <id>]` — reads .roadmap/audit/<id>.json + frictionEngine output, emits candidate governance deltas: suggested kernel.json modifications (tolerance thresholds), new spec-kit node suggestions (high-friction patterns → structured DAG nodes), index-isolation warnings, env-var deprecation notices. Writes audit-recommendation-<sha>.json receipt. Wire into bin/roadmap.ts.",
+      "desc": "`roadmap audit recommend [--session <id>]` \u2014 reads .roadmap/audit/<id>.json + frictionEngine output, emits candidate governance deltas: suggested kernel.json modifications (tolerance thresholds), new spec-kit node suggestions (high-friction patterns \u2192 structured DAG nodes), index-isolation warnings, env-var deprecation notices. Writes audit-recommendation-<sha>.json receipt. Wire into bin/roadmap.ts.",
       "produces": [
         "src/lib/audit-recommend.ts",
         "bin/roadmap.ts"
@@ -437,7 +437,7 @@
     },
     "rkg8-auto-intake": {
       "id": "rkg8-auto-intake",
-      "desc": "Auto-intake trigger — detectUnaccountedCommits() compares HEAD commit range against roadmap receipts (plan-select, dispatch, intake). On UNACCOUNTED_COMMIT: auto-invokes intake-absorb-cmd for the gap range, writes .roadmap/pending-certify.json, blocks advanceBatch() until intake-certify is run. `roadmap intake certify` clears pending-certify.json. In kernel.policy.strictMode, also blocks gate merge. Write src/lib/auto-intake.ts.",
+      "desc": "Auto-intake trigger \u2014 detectUnaccountedCommits() compares HEAD commit range against roadmap receipts (plan-select, dispatch, intake). On UNACCOUNTED_COMMIT: auto-invokes intake-absorb-cmd for the gap range, writes .roadmap/pending-certify.json, blocks advanceBatch() until intake-certify is run. `roadmap intake certify` clears pending-certify.json. In kernel.policy.strictMode, also blocks gate merge. Write src/lib/auto-intake.ts.",
       "produces": [
         "src/lib/auto-intake.ts",
         "bin/roadmap.ts"
@@ -457,7 +457,7 @@
     },
     "rkg8-governance-breach-receipt": {
       "id": "rkg8-governance-breach-receipt",
-      "desc": "GovernanceBreach receipt emission — detectGovernanceBreach() checks: (1) commits without any roadmap receipt, (2) direct git commit detected in transcript outside patch-stack path, (3) OUT_OF_BOUNDS tool calls in session. On detection: writes governance-breach-<sha>.json to .roadmap/receipts/. Merge gate checks for breach receipts and fails with actionable error.fix[]. Write src/lib/governance-breach.ts.",
+      "desc": "GovernanceBreach receipt emission \u2014 detectGovernanceBreach() checks: (1) commits without any roadmap receipt, (2) direct git commit detected in transcript outside patch-stack path, (3) OUT_OF_BOUNDS tool calls in session. On detection: writes governance-breach-<sha>.json to .roadmap/receipts/. Merge gate checks for breach receipts and fails with actionable error.fix[]. Write src/lib/governance-breach.ts.",
       "produces": [
         "src/lib/governance-breach.ts"
       ],
@@ -476,7 +476,7 @@
     },
     "rkg7-fixtures": {
       "id": "rkg7-fixtures",
-      "desc": "Test suite for RKG-7. AT-1: intake absorb on range with no .roadmap/ touches → artifact produced, hash stable across reruns. AT-2: overlay from intake → candidateNodes written, head.json NOT mutated. AT-3: patch stack generated → applies cleanly onto baseSha, reruns produce identical diffs. AT-4: gate merge fails with error.fix[] when plan-select receipt missing. AT-5: env-audit catches SKIP_PLAN_GATE=1 and exits non-zero. AT-6: all commands emit envelope v1; --human prints stable output. Minimum 20 test cases.",
+      "desc": "Test suite for RKG-7. AT-1: intake absorb on range with no .roadmap/ touches \u2192 artifact produced, hash stable across reruns. AT-2: overlay from intake \u2192 candidateNodes written, head.json NOT mutated. AT-3: patch stack generated \u2192 applies cleanly onto baseSha, reruns produce identical diffs. AT-4: gate merge fails with error.fix[] when plan-select receipt missing. AT-5: env-audit catches SKIP_PLAN_GATE=1 and exits non-zero. AT-6: all commands emit envelope v1; --human prints stable output. Minimum 20 test cases.",
       "produces": [
         "tests/rkg7-fixtures.test.ts"
       ],
@@ -499,7 +499,7 @@
     },
     "rkg8-fixtures": {
       "id": "rkg8-fixtures",
-      "desc": "Test suite for RKG-8. AT-1: ingest transcript with crossIndexContamination → frictionScore > 0, recommendation emitted. AT-2: commit outside roadmap → escape detected, auto-intake triggered, certify required before advance. AT-3: direct git commit + no receipt → merge gate fails with actionable fix. AT-4: kernel strict mode blocks advanceBatch() until governance breach resolved. AT-5: profile report stable across deterministic reruns. Minimum 20 test cases.",
+      "desc": "Test suite for RKG-8. AT-1: ingest transcript with crossIndexContamination \u2192 frictionScore > 0, recommendation emitted. AT-2: commit outside roadmap \u2192 escape detected, auto-intake triggered, certify required before advance. AT-3: direct git commit + no receipt \u2192 merge gate fails with actionable fix. AT-4: kernel strict mode blocks advanceBatch() until governance breach resolved. AT-5: profile report stable across deterministic reruns. Minimum 20 test cases.",
       "produces": [
         "tests/rkg8-fixtures.test.ts"
       ],
@@ -518,7 +518,7 @@
     },
     "term": {
       "id": "term",
-      "desc": "RKG-7/8 complete — federated intake, overlay, patch stack, merge gate, env-audit hardening, completion UX, audit ingest, friction engine, auto-intake, governance breach, profile, kernel enforcement all verified.",
+      "desc": "RKG-7/8 complete \u2014 federated intake, overlay, patch stack, merge gate, env-audit hardening, completion UX, audit ingest, friction engine, auto-intake, governance breach, profile, kernel enforcement all verified.",
       "produces": [
         ".roadmap/completed.json"
       ],
