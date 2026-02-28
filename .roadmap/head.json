@@ -1,15 +1,15 @@
 {
-  "id": "ui-rich-render",
+  "id": "metaflow-ux-2",
   "desc": "Imported from spec-kit",
-  "init": "init",
-  "term": "term",
+  "init": "mf-init",
+  "term": "intent-metaflow-guided-ux",
   "nodes": {
-    "init": {
-      "id": "init",
-      "desc": "Existing codebase — cli-envelope.ts, cli-human.ts, bin/roadmap.ts, all command functions",
+    "mf-init": {
+      "id": "mf-init",
+      "desc": "Existing codebase — cli-envelope.ts, render library, bin/roadmap.ts, existing DAG engine",
       "produces": [
         "src/lib/cli-envelope.ts",
-        "src/lib/cli-human.ts",
+        "src/lib/render/index.ts",
         "bin/roadmap.ts"
       ],
       "consumes": [],
@@ -17,25 +17,53 @@
       "validate": [
         {
           "type": "spec-conformance",
-          "spec": ".specify/specs/ui-rich-render/spec.md",
+          "spec": ".specify/specs/metaflow-ux-2/spec.md",
           "scenario": "Plan clarity validated against feature spec",
           "section": "Specification"
         }
       ],
       "idempotent": true,
       "ambient": [
-        ".specify/specs/ui-rich-render/tasks.md"
+        ".specify/specs/metaflow-ux-2/tasks.md"
       ]
     },
-    "ui-envelope-v1_1": {
-      "id": "ui-envelope-v1_1",
-      "desc": "Add RenderV1 type and render field to CliEnvelope. RenderV1: { format: 'ansi' | 'plain'; mime: 'text/x-roadmap-ui'; title: string; body: string; sections?: Array<{id: string; title: string; body: string}> }. CliEnvelope gets optional render?: RenderV1. Add RENDER_MISSING = 'RENDER_MISSING' to ErrorCode. Add RenderV1 to exports. Do NOT change emit() signature yet — that happens in ui-command-integration.",
+    "mf-init-schemas": {
+      "id": "mf-init-schemas",
+      "desc": "TypeScript types and filesystem helpers for MetaFlow. **Types** in src/lib/metaflow/types.ts: `RunId` (branded string: `mf_${YYYYMMDD}_${HHMMSSz}_${sha6}`), `StepId` (branded string), `RunMeta` ({ schema_version:1, runId, repoRoot, headSha, createdAt, strictReceipts: boolean }), `InteractionReceipt` ({ schema_version:1, runId, stepId, cmd, intent, audience, render: { plainPath, ansiPath, width, emoji, color }, tutorial?: TutorialBlock, evidence: { headSha, toolCalls, latencyMs } }), `TutorialBlock` ({ mode: 'guided'|'inform', askedQuestions?: QuestionBlock[], nextStepHints: string[] }), `QuestionBlock` ({ id, text, type: 'choice'|'text', choices?: string[] }), `AnswerRecord` ({ questionId, value, recordedAt }), `SessionBinding` ({ workerId, agentSessionId, headSha, gitIndexFile, hookProfile, lastSeenAt, capabilities: string[], status: 'idle'|'running'|'blocked' }), `SessionsStore` ({ schema_version:1, teamId, sessions: SessionBinding[] }), `MiningResult` ({ schema_version:1, runId, computedAt, latencyP50Ms, latencyP95Ms, toolCallTotal, hotspots: ToolHotspot[], friction: FrictionFinding[], teamReuseMissed: boolean }), `ToolHotspot` ({ tool, count, agentIds: string[] }), `FrictionFinding` ({ category: FrictionCategory, subcategory: string, agent: string, detail: string, time?: number }), `FrictionCategory` ('orient-churn'|'validate-loop'|'tool-inflation'|'ask-churn'|'enforcement-retry'), `GanttEntry` ({ nodeId, batchLevel, deps: string[], startOffset?: number, endOffset?: number }), `GanttChart` ({ schema_version:1, runId, entries: GanttEntry[], generatedAt }), `OptimizationNode` ({ id, desc, produces: string[], consumes: string[], rationale: string }). **FS helpers** in src/lib/metaflow/fs.ts: `runDir(runId, base?)` → string, `renderDir(runId, base?)` → string, `plainPath(runId, stepId, base?)` → string, `ansiPath(runId, stepId, base?)` → string, `ensureRunDir(runId, base?)` → void (mkdirSync recursive), `readMeta(runId, base?)` → RunMeta, `writeMeta(runId, meta, base?)` → void, `appendReceipt(runId, receipt, base?)` → void (append NDJSON line), `readSphinctreceipts(runId, base?)` → InteractionReceipt[], `readSessions(runId, base?)` → SessionsStore, `writeSessions(runId, store, base?)` → void. **runId generation** in src/lib/metaflow/run-id.ts: `generateRunId(headSha)` → RunId. **Command** `roadmap mf init [--run <id>] --note \"...\"` in bin/roadmap.ts: creates `.roadmap/metaflow/runs/<runId>/` directory tree, writes meta.json with strictReceipts defaulting to true (from .roadmap/metaflow/config.json if present, else true), prints JSON envelope with runId.",
       "produces": [
-        "src/lib/cli-envelope.ts"
+        "src/lib/metaflow/types.ts",
+        "src/lib/metaflow/fs.ts",
+        "src/lib/metaflow/run-id.ts"
       ],
       "consumes": [],
       "deps": [
-        "init"
+        "mf-init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        },
+        {
+          "type": "intent",
+          "statement": "The RENDER/UX-2 MetaFlow plan is unambiguous and complete: all types, FS helpers, CLI commands, enforcement boundaries, and per-node acceptance criteria are defined with zero-question precision",
+          "confidence": 0.9,
+          "evaluator": "self",
+          "expandOnFail": true
+        }
+      ],
+      "idempotent": true
+    },
+    "mf-interaction-receipt-writer": {
+      "id": "mf-interaction-receipt-writer",
+      "desc": "`InteractionReceiptWriter` class in src/lib/metaflow/receipt-writer.ts. Constructor: `(runId: RunId, opts: { base?: string })`. Methods: `begin(stepId, cmd, intent, audience)` → starts a step timer; `writeSnapshot(stepId, plain: string, ansi?: string)` → writes render/<stepId>.plain.txt and render/<stepId>.ansi.txt; `commit(stepId, evidence: { toolCalls: number })` → builds InteractionReceipt, appends to interactions.ndjson via appendReceipt(), returns receipt. **Envelope integration**: add optional `receiptRequired?: boolean` field to command registry (src/lib/metaflow/command-registry.ts — a JSON-keyed map of commandKey → { receiptRequired: boolean }; commandKey = first two argv tokens e.g. \"mf step\"). In bin/roadmap.ts emit(), after writing JSON to stdout: if strictReceipts (from current run meta.json if --mf-run is active, else false) AND commandKey is receipt-required AND no receipt committed → process.stderr.write error JSON + process.exit(3) with code INTERACTION_RECEIPT_MISSING. No env vars — strictReceipts comes only from meta.json or .roadmap/metaflow/config.json.",
+      "produces": [
+        "src/lib/metaflow/receipt-writer.ts",
+        "src/lib/metaflow/command-registry.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "mf-init-schemas"
       ],
       "validate": [
         {
@@ -45,20 +73,52 @@
       ],
       "idempotent": true
     },
-    "ui-render-core": {
-      "id": "ui-render-core",
-      "desc": "Build src/lib/render/ library. Files: types.ts (RenderOpts, RenderModel union, Node AST), style.ts (STATUS_PALETTE, EMOJI map, ansiEnabled(opts)), layout.ts (wrapText, truncate, resolveWidth — min(ttyWidth,140) fallback 120), box.ts (boxTable, panel — box-drawing chars), bars.ts (progressBar with unicode blocks █░, sparkline), index.ts (public render(model, opts): {ansi?: string; plain: string} — dispatches on model.kind). No timestamps in any render output. plain is always escape-code-free.",
+    "mf-session-binding": {
+      "id": "mf-session-binding",
+      "desc": "`SessionStore` class in src/lib/metaflow/session-store.ts. Methods: `register(runId, binding: Omit<SessionBinding, 'lastSeenAt' | 'status'>)` → writes/merges entry into sessions.json, status='running'; `touch(runId, workerId)` → updates lastSeenAt; `retire(runId, workerId)` → status='idle'; `findReusable(runId, capabilities: string[])` → returns first SessionBinding with status='idle' and superset capabilities, or null; `validate(runId)` → if sessions.json absent or empty → throws with code SESSION_BINDING_MISSING. **Command** `roadmap mf dispatch --run <runId> --worker-id <id> --agent-session <id> --git-index <path> --hook-profile <path> --capabilities <csv> --note \"...\"` → registers session; if findReusable() returns non-null AND a new registration is being added → appends TEAM_REUSE_MISSED finding to mining pre-findings (sessions.json reuse field). **Command** `roadmap mf retire-team --run <runId> --note \"...\"` → sets all sessions to idle. **Exit code enforcement**: any dispatch subcommand (mf dispatch, mf wrap) calls validate() first; SESSION_BINDING_MISSING → exit(3).",
       "produces": [
-        "src/lib/render/types.ts",
-        "src/lib/render/style.ts",
-        "src/lib/render/layout.ts",
-        "src/lib/render/box.ts",
-        "src/lib/render/bars.ts",
+        "src/lib/metaflow/session-store.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "mf-init-schemas"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "mf-guided-ask-answer": {
+      "id": "mf-guided-ask-answer",
+      "desc": "Commands in bin/roadmap.ts and logic in src/lib/metaflow/ask.ts. `roadmap mf ask --run <runId> --step <stepId> --question-id <id> --text \"...\" --type choice --choices \"a,b,c\" --note \"...\"` → builds QuestionBlock, appends to meta.json questions[] array, emits it as a TutorialBlock in a receipt via InteractionReceiptWriter (receipt-required for this command). `roadmap mf answer --run <runId> --question-id <id> --value \"...\" --note \"...\"` → validates questionId exists in meta.json questions, appends AnswerRecord to meta.json answers[] array. Export types from src/lib/metaflow/ask.ts: `buildQuestionBlock`, `recordAnswer`, `getAnswers`.",
+      "produces": [
+        "src/lib/metaflow/ask.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "mf-interaction-receipt-writer"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "mf-gantt-render": {
+      "id": "mf-gantt-render",
+      "desc": "`render.gantt(dag, receipts, opts)` function in src/lib/render/gantt.ts. **Primary input**: DAG graph — uses `parallelOrder(g)` to compute batch levels → GanttEntry[]. Each node gets batchLevel = its parallelOrder index, deps from NodeSpec.deps, startOffset/endOffset from receipt latencyMs if a matching stepId exists in receipts[] (match by nodeId === stepId prefix). **ASCII renderer**: `renderGantt(chart: GanttChart, opts: RenderOpts)` → string with batch-level columns: node labels left-padded, bar blocks `█` proportional to endOffset-startOffset (or unit if no timing data), batch level as column header. **Command** `roadmap mf gantt --run <runId> [--dag-id <id>] --note \"...\"` → loads DAG from .roadmap/head.json, reads receipts via readReceipts(), calls gantt(), writes .roadmap/metaflow/runs/<runId>/gantt.json, renders ASCII to RenderV1 in envelope. Export from src/lib/render/index.ts. Snapshot-test against a fixture DAG.",
+      "produces": [
+        "src/lib/render/gantt.ts",
         "src/lib/render/index.ts"
       ],
       "consumes": [],
       "deps": [
-        "init"
+        "mf-init-schemas"
       ],
       "validate": [
         {
@@ -68,17 +128,15 @@
       ],
       "idempotent": true
     },
-    "ui-dag-render": {
-      "id": "ui-dag-render",
-      "desc": "Add src/lib/render/dag.ts and src/lib/render/errors.ts. dag.ts: renderDagLayers(layers, opts) — layered batch view with status emoji (✅🟡⛔💤🧨) per node, progress bar header, HEAD sha header. renderCriticalPath(path, opts) — single highlighted chain. errors.ts: renderErrorPanel(error, opts) — boxed error with fix[] steps, code, message. Export from src/lib/render/index.ts. Extend RenderModel with kinds: 'orient', 'chart', 'error'.",
+    "mf-transcript-miner": {
+      "id": "mf-transcript-miner",
+      "desc": "First-class miner module in src/lib/metaflow/miner.ts. **Inputs**: InteractionReceipt[] (from readReceipts), SessionsStore (from readSessions), optional hooks.log path. **Friction detectors** (port + extend from regent transcript-pathology pattern): (1) `detectOrientChurn(receipts)` — counts receipts where cmd starts with \"roadmap orient\" within a run; flags if >3 sequential orients with no intervening \"complete\"; (2) `detectValidateLoop(receipts)` — cmd \"roadmap complete\" → \"roadmap validate\" pattern repeating >2x; (3) `detectToolInflation(sessions)` — same tool appearing in hotspots >5x for a single workerId within 60s window; (4) `detectAskChurn(receipts)` — mf ask/answer cycles >4 for same questionId; (5) `detectEnforcementRetry(hooksLog?)` — port of extractRetryPatterns from regent-transcript-pathology (denial of same tool within 10s). **Output**: `mine(receipts, sessions, hooksLogPath?)` → MiningResult: latencyP50/P95 computed from receipt evidence.latencyMs array, toolCallTotal summed, hotspots ranked, friction[] assembled, teamReuseMissed from sessions reuse field. Export: `mine`, `detectOrientChurn`, `detectValidateLoop`, `detectToolInflation`, `detectAskChurn`, `detectEnforcementRetry`.",
       "produces": [
-        "src/lib/render/dag.ts",
-        "src/lib/render/errors.ts",
-        "src/lib/render/index.ts"
+        "src/lib/metaflow/miner.ts"
       ],
       "consumes": [],
       "deps": [
-        "ui-render-core"
+        "mf-init-schemas"
       ],
       "validate": [
         {
@@ -88,17 +146,16 @@
       ],
       "idempotent": true
     },
-    "ui-command-integration": {
-      "id": "ui-command-integration",
-      "desc": "Wire all commands through centralized render. Three changes to bin/roadmap.ts: (1) At CLI entrypoint, resolve RenderOpts once: { tty: process.stderr.isTTY ?? false, width: resolveWidth(), color: tty && !process.env.NO_COLOR, emoji: true }. (2) After every json() call, build RenderModel from result data, call render(model, renderOpts), embed render.plain in JSON envelope (stdout), print render.ansi or render.plain to stderr unless --quiet flag set. (3) If render field absent on non-quiet envelope: print to stderr \"RENDER_MISSING\" warning (do NOT exit 3 — that's too breaking; warn instead). Update existing cli-human.ts renderOrient / renderChart to return RenderModel-compatible output so they can feed into the new render pipeline. Commands that don't have a specific RenderModel kind use 'generic' with title + kv pairs from data.",
+    "mf-wrap-subcommand": {
+      "id": "mf-wrap-subcommand",
+      "desc": "`roadmap mf wrap --run <runId> --cmd \"roadmap complete X\" --step <stepId> --note \"...\"` in bin/roadmap.ts + src/lib/metaflow/wrap.ts. Logic: (1) validate run exists (readMeta); (2) validate session binding (SessionStore.validate); (3) begin receipt (InteractionReceiptWriter.begin); (4) spawn subprocess via `spawnSync` passing the command with shell:true; capture stdout+stderr buffers; (5) writeSnapshot with captured stderr as plain; (6) commit receipt with toolCalls:0 (subcommand is opaque) and actual latency; (7) write subprocess stdout to own stdout, subprocess stderr to own stderr. If strictReceipts and receipt not committed on subprocess error → exit(3) INTERACTION_RECEIPT_MISSING. `--mf-run <runId>` flag: wrap passes it as an extra arg to the subcommand if the subcommand is a roadmap command (detected by argv[0] === \"roadmap\"). Not an env var.",
       "produces": [
-        "bin/roadmap.ts",
-        "src/lib/cli-envelope.ts"
+        "src/lib/metaflow/wrap.ts"
       ],
       "consumes": [],
       "deps": [
-        "ui-envelope-v1_1",
-        "ui-dag-render"
+        "mf-interaction-receipt-writer",
+        "mf-session-binding"
       ],
       "validate": [
         {
@@ -108,42 +165,68 @@
       ],
       "idempotent": true
     },
-    "ui-snapshot-tests": {
-      "id": "ui-snapshot-tests",
-      "desc": "Write tests/ui-snapshot.test.ts. Test pattern: invoke bin/roadmap commands via execFileSync capturing both stdout and stderr. Assert: stdout parses as valid JSON with schema_version:1 and render.plain present. stderr contains 'text/x-roadmap-ui' marker string. ANSI-stripped render.plain is byte-identical to a golden string (inline snapshot). Stable: no timestamps, deterministic ordering. Cover: orient (with empty DAG), chart (with rkg-harvest-complete fixture or mock), env-audit, completion doctor. Minimum 12 test cases.",
+    "mf-mine-run": {
+      "id": "mf-mine-run",
+      "desc": "`roadmap mf mine --run <runId> --note \"...\"` in bin/roadmap.ts + src/lib/metaflow/mine-run.ts. Logic: (1) readReceipts(runId); (2) readSessions(runId); (3) optionally read ~/.claude/regent/hooks.log if it exists; (4) call mine(receipts, sessions, hooksLogPath); (5) write mining.json to run dir; (6) render MiningResult as RenderV1: latency table (p50/p95/total), hotspots table (tool | count | agents), friction list with category badges, teamReuseMissed warning if true; (7) emit envelope. A run is not \"complete\" until mining.json exists — mf-complete command (bonus: add `roadmap mf complete --run <runId>`) checks for mining.json presence and exits 3 with MINING_REQUIRED if absent.",
       "produces": [
-        "tests/ui-snapshot.test.ts"
+        "src/lib/metaflow/mine-run.ts"
       ],
       "consumes": [],
       "deps": [
-        "ui-command-integration"
+        "mf-transcript-miner",
+        "mf-wrap-subcommand"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "npx vitest run tests/ui-snapshot.test.ts"
+          "command": "npx tsc --noEmit"
         }
       ],
       "idempotent": true
     },
-    "term": {
-      "id": "term",
-      "desc": "FR-UI-001 complete — RenderV1 in envelope, render library (6 files), DAG + error renderers, all commands emit to stderr by default, 12+ snapshot tests passing. tsc clean.",
+    "mf-opt-dag-generator": {
+      "id": "mf-opt-dag-generator",
+      "desc": "`roadmap mf opt --run <runId> [--emit] --note \"...\"` in bin/roadmap.ts + src/lib/metaflow/opt-dag.ts. Reads mining.json. **Mapping rules** (friction → optimization node): orient-churn → `opt-reduce-orient-churn` (desc: \"Cache orient result in run context; skip re-orient if headSha unchanged\"); validate-loop → `opt-validate-cache` (desc: \"Cache validator output keyed by nodeId+headSha\"); tool-inflation → `opt-merge-toolcalls` (desc: \"Batch repeated tool calls into single aggregate call\"); ask-churn → `opt-streamline-questions` (desc: \"Merge redundant questions into single decision block\"); enforcement-retry → `opt-fix-enforcement-gaps` (desc: \"Add pre-check before blocked tool call\"). teamReuseMissed → `opt-enforce-team-reuse` node. Each OptimizationNode gets: id, desc, produces: [`mining.json` patch path], consumes: [`mining.json`], rationale (friction detail). With `--emit`: writes optimization nodes to .roadmap/expansions/expand-opt-<runId>.ts and runs `roadmap expand` on it to commit the sub-DAG. Without `--emit`: dry-run, prints proposed nodes as JSON.",
       "produces": [
-        ".roadmap/completed.json"
+        "src/lib/metaflow/opt-dag.ts"
       ],
       "consumes": [],
       "deps": [
-        "ui-snapshot-tests"
+        "mf-mine-run"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/ui-snapshot.test.ts"
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "intent-metaflow-guided-ux": {
+      "id": "intent-metaflow-guided-ux",
+      "desc": "Fixture-backed demonstration and full acceptance test suite. **Fixture run**: commit a synthetic MF run at `.roadmap/metaflow/runs/mf-fixture-001/` containing: meta.json (strictReceipts:true, runId:\"mf-fixture-001\"), interactions.ndjson (4 receipts: mf-init, mf ask, mf answer, mf wrap), sessions.json (1 session, status:idle), gantt.json (DAG-derived from mf-init-schemas node), mining.json (computed from fixture receipts — latencyP50:120, 2 friction findings). **Test file** tests/metaflow.test.ts — minimum 15 tests: (1) INTERACTION_RECEIPT_MISSING: invoke mf step with strictReceipts:true + no receipt committed → process exits 3; (2) receipt written: InteractionReceiptWriter.commit() → appends valid NDJSON to interactions.ndjson; (3) plain snapshot deterministic: same receipt input → identical .plain.txt on two writes; (4) ansi snapshot deterministic: same receipt → identical .ansi.txt; (5) SESSION_BINDING_MISSING: mf dispatch without prior register → exit 3; (6) session register + retire round-trip: register → status running, retire → idle; (7) TEAM_REUSE_MISSED: register when findReusable() non-null → reuse field set; (8) gantt from DAG: parallelOrder produces correct batchLevel assignments; (9) gantt ASCII render: stable snapshot against fixture; (10) orient churn detection: >3 sequential orient receipts → FrictionFinding category=orient-churn; (11) validate loop detection: complete→validate>2x → friction finding; (12) tool inflation: same tool >5x in 60s → hotspot; (13) mine produces mining.json with p50/p95; (14) opt-dag-generator maps friction → OptimizationNode correctly; (15) mf complete exits 3 MINING_REQUIRED if mining.json absent. tsc clean. All tests passing.",
+      "produces": [
+        "tests/metaflow.test.ts",
+        ".roadmap/metaflow/runs/mf-fixture-001/meta.json",
+        ".roadmap/metaflow/runs/mf-fixture-001/interactions.ndjson",
+        ".roadmap/metaflow/runs/mf-fixture-001/sessions.json",
+        ".roadmap/metaflow/runs/mf-fixture-001/gantt.json",
+        ".roadmap/metaflow/runs/mf-fixture-001/mining.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "mf-opt-dag-generator",
+        "mf-gantt-render",
+        "mf-guided-ask-answer"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit && npx vitest run tests/metaflow.test.ts"
         },
         {
           "type": "spec-conformance",
-          "spec": ".specify/specs/ui-rich-render/spec.md",
+          "spec": ".specify/specs/metaflow-ux-2/spec.md",
           "scenario": "All acceptance scenarios pass (User Stories 1-6)",
           "section": "Feature Specification"
         },
@@ -156,6 +239,18 @@
           "type": "shell",
           "command": "npm run build 2>&1 | grep -q \"built\"",
           "expectExitCode": 0
+        },
+        {
+          "type": "intent",
+          "statement": "MetaFlow is a complete governed interaction system: INTERACTION_RECEIPT_MISSING exits 3 on missing receipt, SESSION_BINDING_MISSING gates dispatch, mining.json is produced with friction taxonomy and latency percentiles, gantt derives from DAG parallelOrder, opt DAG generator maps friction findings to optimization nodes, all 15 acceptance tests pass, tsc clean",
+          "confidence": 0.85,
+          "evaluator": "self",
+          "expandOnFail": true,
+          "context": [
+            "src/lib/metaflow/",
+            "tests/metaflow.test.ts",
+            ".roadmap/metaflow/runs/mf-fixture-001/"
+          ]
         }
       ],
       "idempotent": true,
@@ -165,15 +260,15 @@
   "version": "0.3.0",
   "protocolVersion": "0.3.0",
   "spec": {
-    "compiled_sha256": "b80322cedb9d6b89671c3e01081cd7558f6532e8ac7d2b4f60ae1218c5badc06",
+    "compiled_sha256": "c4487e0651c83efc20904a5c1baba0f8b0ff3cbb7d6752c2b2bce8b236792e8a",
     "engine": {
       "name": "speckit",
       "version": "0.1.0"
     },
     "inputs": [
       {
-        "path": ".specify/specs/ui-rich-render/tasks.md",
-        "sha256": "b80322cedb9d6b89671c3e01081cd7558f6532e8ac7d2b4f60ae1218c5badc06"
+        "path": ".specify/specs/metaflow-ux-2/tasks.md",
+        "sha256": "c4487e0651c83efc20904a5c1baba0f8b0ff3cbb7d6752c2b2bce8b236792e8a"
       }
     ]
   }
