@@ -154,7 +154,7 @@ export interface EmitGalleryNodeSpec {
   selectionMode: 'auto' | 'manual'  // auto = LLM selects via Judgment
   validate: ValidationRule[]         // gate suite applied to each candidate
   produces: string[]
-  deps?: string[]
+  deps?: string[]               // local node IDs or cross-repo: "peer::<repoId>::<nodeId>"
   desc?: string
 }
 
