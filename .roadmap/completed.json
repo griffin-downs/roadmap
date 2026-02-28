@@ -3106,5 +3106,140 @@
     ],
     "gitSha": "9ddf7370ba1efb7ded2fb8fde6993dc7f2045ec1",
     "treeSha": "6663e91d34babf44326878193b7583f1e3e6abbf"
+  },
+  {
+    "nodeId": "mf-init",
+    "completedAt": "2026-02-28T23:58:57.671Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260228235857",
+    "validationChecks": [
+      {
+        "rule": "spec-conformance",
+        "passed": true,
+        "evidence": "spec conformance: stories [] found in .specify/specs/metaflow-ux-2/spec.md"
+      }
+    ],
+    "gitSha": "18b2cfdbcab67f74226119c523a6c2f94acafabe",
+    "treeSha": "cc8e9b8d48609917c6b3793885311957573bd141"
+  },
+  {
+    "nodeId": "mf-init-schemas",
+    "completedAt": "2026-02-28T23:59:00.008Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260228235858",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "intent",
+        "passed": true,
+        "evidence": "unevaluated"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "18b2cfdbcab67f74226119c523a6c2f94acafabe",
+    "treeSha": "cc8e9b8d48609917c6b3793885311957573bd141"
+  },
+  {
+    "nodeId": "mf-gantt-render",
+    "completedAt": "2026-02-28T23:59:02.345Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260228235901",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "18b2cfdbcab67f74226119c523a6c2f94acafabe",
+    "treeSha": "cc8e9b8d48609917c6b3793885311957573bd141"
+  },
+  {
+    "nodeId": "mf-interaction-receipt-writer",
+    "completedAt": "2026-02-28T23:59:04.679Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260228235903",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "18b2cfdbcab67f74226119c523a6c2f94acafabe",
+    "treeSha": "cc8e9b8d48609917c6b3793885311957573bd141"
+  },
+  {
+    "nodeId": "mf-session-binding",
+    "completedAt": "2026-02-28T23:59:07.062Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260228235905",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "18b2cfdbcab67f74226119c523a6c2f94acafabe",
+    "treeSha": "cc8e9b8d48609917c6b3793885311957573bd141"
+  },
+  {
+    "nodeId": "mf-transcript-miner",
+    "completedAt": "2026-02-28T23:59:09.436Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260228235908",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "18b2cfdbcab67f74226119c523a6c2f94acafabe",
+    "treeSha": "cc8e9b8d48609917c6b3793885311957573bd141"
   }
 ]
