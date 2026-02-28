@@ -39,6 +39,7 @@ import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } 
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/spec-origin.ts';
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/spec-origin.ts';
 import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake.ts';
+import { addPeer, removePeer, buildFederationView, federationStatus } from '../src/lib/federation.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
@@ -259,6 +260,7 @@ async function main() {
       case 'claim':     return cmdClaim();
       case 'import':    return cmdImport(note!);
       case 'intake':    return cmdIntake(note!);
+      case 'federation': return cmdFederation(note!);
       case 'spec':      return cmdSpec(note!);
       case 'init':      return cmdInit(note!);
       case 'report':    return await cmdReport(note!);
@@ -3089,6 +3091,64 @@ function cmdIntake(note: string) {
     }
     default:
       json({ error: `Unknown intake subcommand: ${sub}`, fix: 'roadmap intake scan|import|certify --note "..."' });
+      process.exit(1);
+  }
+}
+
+// --- federation: multi-repo DAG management ---
+function cmdFederation(note: string) {
+  const sub = args[1];
+  switch (sub) {
+    case 'add': {
+      const pathIdx = args.indexOf('--path');
+      const peerPath = pathIdx !== -1 ? args[pathIdx + 1] : undefined;
+      const idIdx = args.indexOf('--id');
+      const peerId = idIdx !== -1 ? args[idIdx + 1] : undefined;
+      if (!peerPath) {
+        json({ error: 'Missing --path', fix: 'roadmap federation add --path <repo> --id <peer-id> --note "..."' });
+        process.exit(1);
+      }
+      if (!peerId) {
+        json({ error: 'Missing --id', fix: 'roadmap federation add --path <repo> --id <peer-id> --note "..."' });
+        process.exit(1);
+      }
+      const peer = addPeer(repoRoot, peerId, peerPath);
+      recordTrail({
+        ts: new Date().toISOString(), cmd: 'federation add', note,
+        repo: basename(repoRoot), position: [], level: 0,
+        detail: { peerId, peerPath },
+      });
+      json({ added: true, peer });
+      return;
+    }
+    case 'remove': {
+      const idIdx = args.indexOf('--id');
+      const peerId = idIdx !== -1 ? args[idIdx + 1] : undefined;
+      if (!peerId) {
+        json({ error: 'Missing --id', fix: 'roadmap federation remove --id <peer-id> --note "..."' });
+        process.exit(1);
+      }
+      const removed = removePeer(repoRoot, peerId);
+      json({ removed, peerId });
+      return;
+    }
+    case 'build': {
+      const view = buildFederationView(repoRoot);
+      recordTrail({
+        ts: new Date().toISOString(), cmd: 'federation build', note,
+        repo: basename(repoRoot), position: [], level: 0,
+        detail: { peers: view.peers.length, nodes: view.nodes.length, viewHash: view.viewHash.slice(0, 12) },
+      });
+      json({ built: true, peers: view.peers.length, nodes: view.nodes.length, viewHash: view.viewHash.slice(0, 12) });
+      return;
+    }
+    case 'status': {
+      const status = federationStatus(repoRoot);
+      json(status);
+      return;
+    }
+    default:
+      json({ error: `Unknown federation subcommand: ${sub}`, fix: 'roadmap federation add|remove|build|status --note "..."' });
       process.exit(1);
   }
 }
