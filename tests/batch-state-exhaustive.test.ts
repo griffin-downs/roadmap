@@ -142,9 +142,10 @@ describe('Batch State Synchronization - Exhaustive', () => {
       expect(pos.position[0]).toBe('init');
     });
 
-    it('term is always last batch', () => {
+    it('term is in done when all complete', () => {
       const pos = orient(testDAG, CompletionStore.from(['init', 'a', 'b', 'c', 'term']));
-      expect(pos.position).toContain('term');
+      expect(pos.done).toContain('term');
+      expect(pos.position).toEqual([]);
       expect(pos.remaining).toEqual([]);
     });
   });

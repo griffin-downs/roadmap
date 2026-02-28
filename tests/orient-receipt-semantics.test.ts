@@ -45,7 +45,8 @@ describe('orient receipt semantics (CompletionStore)', () => {
     const pos = orient(g, CompletionStore.from(['init', 'a', 'term']));
     expect(pos.done).toContain('init');
     expect(pos.done).toContain('a');
-    expect(pos.position).toContain('term');
+    expect(pos.done).toContain('term');
+    expect(pos.position).toEqual([]);
     expect(pos.batchComplete).toBe(true);
     expect(pos.remaining).toEqual([]);
   });

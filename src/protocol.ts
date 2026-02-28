@@ -603,19 +603,19 @@ export function orient<T extends string>(
     done.push(...batch);
   }
 
-  // All batches complete - position is term batch (which contains only term node)
+  // All batches complete — DAG is done.
   const termNode = nm.get(g.term);
   const termLoop = termNode?.loopTarget
     ? { target: termNode.loopTarget, ...(termNode.convergenceCheck ? { convergenceCheck: termNode.convergenceCheck } : {}) }
     : undefined;
 
   return {
-    position: [g.term],
-    level: batches.length - 1,
+    position: [],
+    level: batches.length,
     batchRemaining: [],
     batchComplete: true,
     preGate: [],
-    done: done.filter(id => id !== g.term),
+    done,
     produces: [],
     consumes: [],
     remaining: [],
