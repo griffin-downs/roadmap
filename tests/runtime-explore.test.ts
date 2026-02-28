@@ -4,6 +4,9 @@ import type { ExploreResult, ObservationResult, ValidationRule } from '../src/pr
 import { mapObservationsToChecks, runExploreScript, teardown } from '../src/lib/runtime-explore.ts';
 import { spawn } from 'node:child_process';
 
+// Clear recursion guard — tests need shell validators to actually run
+delete process.env.ROADMAP_VALIDATING;
+
 // ── mapObservationsToChecks ─────────────────────────────────────────────────
 
 describe('mapObservationsToChecks', () => {

@@ -4,6 +4,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { validateNode, define } from '../src/protocol.ts';
 
+// Clear recursion guard — tests need shell validators to actually run
+delete process.env.ROADMAP_VALIDATING;
+
 // --- helpers ---
 
 function tmpDir(): string {

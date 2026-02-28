@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { graph, define, validateNode } from '../src/protocol.ts';
 
+// Clear recursion guard — tests need shell validators to actually run
+delete process.env.ROADMAP_VALIDATING;
+
 describe('validateNode: shell validation rule', () => {
   it('passes shell rule when command exits with 0', async () => {
     const g = define(graph({
