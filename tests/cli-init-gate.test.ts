@@ -39,10 +39,13 @@ afterEach(() => {
   restoreDag();
 });
 
+// Read DAG ID dynamically from head.json
+const dagId = JSON.parse(readFileSync(headPath, 'utf-8')).id;
+
 describe('bin/roadmap CLI — init gate', () => {
   describe('roadmap init', () => {
     it('creates plan-clarity gate node in DAG', () => {
-      const result = json(`init roadmap-adversarial ${N}`);
+      const result = json(`init ${dagId} ${N}`);
       expect(result.added).toBe(true);
       expect(result.gateNodeId).toBe('plan-clarity');
       expect(result.statement).toContain('Plan');
@@ -50,7 +53,7 @@ describe('bin/roadmap CLI — init gate', () => {
     });
 
     it('validates DAG after adding gate and has correct structure', () => {
-      const result = json(`init roadmap-adversarial ${N}`);
+      const result = json(`init ${dagId} ${N}`);
       expect(result.added).toBe(true);
       // Read back the DAG to verify structure immediately (before afterEach)
       const dag = JSON.parse(readFileSync(headPath, 'utf-8'));
@@ -62,7 +65,7 @@ describe('bin/roadmap CLI — init gate', () => {
 
     it('accepts custom statement and threshold', () => {
       const customStmt = 'All requirements are clear and achievable';
-      const result = json(`init roadmap-adversarial --statement "${customStmt}" --threshold 0.85 ${N}`);
+      const result = json(`init ${dagId} --statement "${customStmt}" --threshold 0.85 ${N}`);
       expect(result.added).toBe(true);
       expect(result.statement).toBe(customStmt);
       expect(result.threshold).toBe(0.85);
@@ -74,7 +77,7 @@ describe('bin/roadmap CLI — init gate', () => {
 
     it('rejects invalid threshold', () => {
       try {
-        run(`init roadmap-adversarial --threshold 1.5 ${N}`);
+        run(`init ${dagId} --threshold 1.5 ${N}`);
         expect.unreachable('Should have thrown');
       } catch (e: any) {
         expect(e.stdout).toContain('Invalid --threshold');
@@ -83,7 +86,7 @@ describe('bin/roadmap CLI — init gate', () => {
 
     it('requires --note argument', () => {
       try {
-        run('init roadmap-adversarial');
+        run(`init ${dagId}`);
         expect.unreachable('Should have thrown');
       } catch (e: any) {
         expect(e.stdout).toContain('Missing --note');
@@ -100,7 +103,7 @@ describe('bin/roadmap CLI — init gate', () => {
     });
 
     it('inserts gate as dependency to init and has intent rule', () => {
-      const result = json(`init roadmap-adversarial ${N}`);
+      const result = json(`init ${dagId} ${N}`);
       expect(result.added).toBe(true);
       const dag = JSON.parse(readFileSync(headPath, 'utf-8'));
       const gateNode = dag.nodes['plan-clarity'];
@@ -114,7 +117,7 @@ describe('bin/roadmap CLI — init gate', () => {
     });
 
     it('reports bookend gate status in output', () => {
-      const result = json(`init roadmap-adversarial ${N}`);
+      const result = json(`init ${dagId} ${N}`);
       expect(result).toHaveProperty('bookendGatesPresent');
       // Note: May be false if terminal gate is not present, but should not error
       expect(typeof result.bookendGatesPresent).toBe('boolean');

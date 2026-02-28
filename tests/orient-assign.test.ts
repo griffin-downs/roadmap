@@ -384,12 +384,12 @@ describe('CLI: orient --assign', () => {
     const result = json('orient --assign --owners w1,w2,w3 --ttl 300 --note "cli test"');
     const assignments = result.assignments || {};
 
-    if (Object.keys(assignments).length > 0) {
+    if (Object.keys(assignments).length > 1) {
       const ownerCounts: Record<string, number> = {};
       for (const owner of Object.values(assignments)) {
         ownerCounts[owner as string] = (ownerCounts[owner as string] ?? 0) + 1;
       }
-      // Verify assignments were distributed (not all to one owner)
+      // Verify assignments were distributed (not all to one owner) when multiple nodes
       const uniqueOwners = Object.keys(ownerCounts).length;
       expect(uniqueOwners).toBeGreaterThan(1);
     }
