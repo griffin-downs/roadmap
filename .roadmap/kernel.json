@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "policies": [
+    {
+      "id": "no-gate-disable",
+      "desc": "Validation gates cannot be disabled without a signed override receipt",
+      "enforces": "--skip-validate requires override receipt in .roadmap/receipts/",
+      "overrideReceipt": {
+        "type": "gate-override",
+        "requiredFields": ["nodeId", "reason", "approvedBy", "timestamp", "signature"]
+      }
+    },
+    {
+      "id": "receipt-authoritative",
+      "desc": "Completion is receipt-only — no artifact-existence fallback",
+      "enforces": "CompletionStore.hasPassing() is the sole truth predicate"
+    },
+    {
+      "id": "env-bypass-audit",
+      "desc": "process.env bypass variables must be audited and approved",
+      "enforces": "roadmap env-audit must pass before release",
+      "allowedEnvVars": ["ROADMAP_VALIDATING", "AGENT_ID", "NODE_ENV", "PATH", "HOME", "TMPDIR", "TERM", "USER", "SKIP_BATCH_COMMIT"]
+    }
+  ],
+  "createdAt": "2026-02-28T19:38:00.000Z"
+}

@@ -104,7 +104,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 
 // Commands that don't require a note
 // Special case: orient/position with --check is note-exempt (silent polling)
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor', 'status', 'explain', 'receipts', 'artifacts']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor', 'status', 'explain', 'receipts', 'artifacts', 'env-audit']);
 const isOrientCheck = (cmd === 'orient' || cmd === 'position') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -287,6 +287,8 @@ async function main() {
       case 'receipts':  return cmdReceipts();
       case 'artifacts': return cmdArtifacts();
       case 'explore':   return await cmdExplore();
+      case 'contract':  return cmdContract(note!);
+      case 'env-audit': return cmdEnvAudit();
       case 'compile-prompts': return cmdCompilePrompts(note!);
       case 'compile-brief': return cmdCompileBrief(note!);
       case 'plan':
@@ -1781,6 +1783,124 @@ function cmdArtifacts() {
   } catch { /* ignore */ }
 
   json({ artifacts, count: artifacts.length });
+}
+
+function cmdContract(note: string) {
+  const sub = args[1];
+  if (sub !== 'test') {
+    json({ error: 'Unknown contract subcommand', fix: 'roadmap contract test --note "reason"' });
+    process.exit(1);
+  }
+
+  // Contract test: verify JSON envelope + error code + stderr discipline
+  const issues: string[] = [];
+
+  // 1. Check kernel.json exists
+  const kernelPath = join(repoRoot, '.roadmap', 'kernel.json');
+  if (!existsSync(kernelPath)) {
+    issues.push('Missing .roadmap/kernel.json — governance kernel not defined');
+  } else {
+    try {
+      const kernel = JSON.parse(readFileSync(kernelPath, 'utf-8'));
+      if (!kernel.schemaVersion || !Array.isArray(kernel.policies)) {
+        issues.push('kernel.json malformed — needs schemaVersion and policies array');
+      }
+    } catch {
+      issues.push('kernel.json parse error');
+    }
+  }
+
+  // 2. Check that CLI uses emit() for all output (envelope discipline)
+  const cliPath = join(repoRoot, 'bin', 'roadmap.ts');
+  if (existsSync(cliPath)) {
+    const cliSource = readFileSync(cliPath, 'utf-8');
+    const rawConsoleLines = cliSource.split('\n').filter(l =>
+      l.includes('console.log(') && !l.trim().startsWith('//') && !l.includes('cmdHelp')
+    );
+    // Informational — not a violation. Legacy human-format commands use console.log legitimately.
+    if (rawConsoleLines.length > 200) {
+      issues.push(`${rawConsoleLines.length} raw console.log calls — excessive, migrate to emit()`);
+    }
+  }
+
+  // 3. Check ErrorCode enum has standard codes
+  const requiredCodes = ['VALIDATION_FAILED', 'NODE_NOT_FOUND', 'INTERNAL_ERROR'];
+  for (const code of requiredCodes) {
+    if (!(code in ErrorCode)) {
+      issues.push(`Missing error code: ${code}`);
+    }
+  }
+
+  if (hasLocalDAG) {
+    const dag = loadDAG();
+    const pos = orientWithState(dag);
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'contract', note,
+      repo: basename(repoRoot),
+      position: pos.position, level: pos.level, dagId: dag.id,
+      detail: { sub: 'test', issues: issues.length },
+    });
+  }
+
+  json({
+    passed: issues.length === 0,
+    issues,
+    checked: ['kernel.json', 'envelope-discipline', 'error-codes'],
+  });
+
+  if (issues.length > 0) process.exit(1);
+}
+
+function cmdEnvAudit() {
+  // Load kernel for allowed env vars
+  const kernelPath = join(repoRoot, '.roadmap', 'kernel.json');
+  let allowedVars: string[] = [];
+  if (existsSync(kernelPath)) {
+    try {
+      const kernel = JSON.parse(readFileSync(kernelPath, 'utf-8'));
+      const policy = kernel.policies?.find((p: any) => p.id === 'env-bypass-audit');
+      allowedVars = policy?.allowedEnvVars ?? [];
+    } catch { /* ignore */ }
+  }
+
+  // Scan src/ and bin/ for process.env references
+  const scanDirs = ['src', 'bin'].map(d => join(repoRoot, d)).filter(d => existsSync(d));
+  const findings: { file: string; line: number; envVar: string; allowed: boolean }[] = [];
+
+  for (const dir of scanDirs) {
+    try {
+      const result = execSync(
+        `grep -rn "process\\.env\\[" "${dir}" --include="*.ts" 2>/dev/null || true`,
+        { encoding: 'utf-8', timeout: 5000 },
+      );
+
+      for (const line of result.split('\n')) {
+        if (!line.trim()) continue;
+        const match = line.match(/^(.+?):(\d+):.*process\.env\['([^']+)'\]/);
+        if (match) {
+          findings.push({
+            file: match[1].replace(repoRoot + '/', ''),
+            line: parseInt(match[2]),
+            envVar: match[3],
+            allowed: allowedVars.includes(match[3]),
+          });
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  const unauthorized = findings.filter(f => !f.allowed);
+
+  json({
+    totalReferences: findings.length,
+    authorized: findings.filter(f => f.allowed).length,
+    unauthorized: unauthorized.length,
+    findings: unauthorized,
+    allowedVars,
+    passed: unauthorized.length === 0,
+  });
+
+  if (unauthorized.length > 0) process.exit(1);
 }
 
 function cmdDiff() {
