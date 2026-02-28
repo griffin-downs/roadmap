@@ -1999,6 +1999,7 @@ function cmdEnvAudit() {
   const result = runEnvAudit(repoRoot);
   json(result);
   if (!result.pass) process.exit(1);
+}
 
 function cmdProfile(note: string) {
   const nodeId = args.includes("--node") ? args[args.indexOf("--node") + 1] : undefined;
@@ -2039,7 +2040,11 @@ function cmdAudit(note: string) {
     return;
   }
   if (sub === 'recommend') {
-    console.log('Not yet implemented');
+    const sessionIdx = args.indexOf('--session');
+    const sessionId = sessionIdx !== -1 ? args[sessionIdx + 1] : undefined;
+    const result = runAuditRecommend({ sessionId, repoRoot });
+    recordTrail({ ts: new Date().toISOString(), cmd: 'audit recommend', note, repo: basename(repoRoot), detail: { sessionId: result.sessionId, recommendations: result.recommendations.length, frictionScore: result.frictionScore } });
+    json(result);
     return;
   }
   json({ error: `Unknown audit subcommand: ${sub}`, fix: 'roadmap audit ingest <path> | audit recommend' });
