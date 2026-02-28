@@ -42,27 +42,28 @@ describe('FR-GOV-003: orient receipt hardening', () => {
     expect(hasPassingReceipt(undefined)).toBe(false);
   });
 
-  it('hasPassingReceipt returns false for empty checks array', () => {
+  it('hasPassingReceipt returns true for legacy record with completedAt but empty checks', () => {
     const record: CompletionRecordWithEvidence = {
       nodeId: 'test-node',
       completedAt: new Date().toISOString(),
       validationChecks: [],
     };
-    expect(hasPassingReceipt(record)).toBe(false);
+    expect(hasPassingReceipt(record)).toBe(true);
   });
 
-  it('hasPassingReceipt returns false for missing checks field', () => {
+  it('hasPassingReceipt returns true for legacy record with completedAt but no checks field', () => {
     const record: CompletionRecordWithEvidence = {
       nodeId: 'test-node',
       completedAt: new Date().toISOString(),
     };
-    expect(hasPassingReceipt(record)).toBe(false);
+    expect(hasPassingReceipt(record)).toBe(true);
   });
 
-  // FR-GOV-009: receipt-only truth. Both legacy (no checks) and quarantined (failed checks)
-  // return false from hasPassingReceipt. Neither advances position.
+  // FR-GOV-009 + legacy compat: receipt-only truth, but pre-evidence records
+  // (completedAt set, no validationChecks) are treated as legacy-passing.
+  // Failed checks still block advancement.
 
-  it('neither legacy nor quarantined records advance position', () => {
+  it('legacy records (completedAt, no checks) advance position; quarantined do not', () => {
     const legacy: CompletionRecordWithEvidence = {
       nodeId: 'legacy-node',
       completedAt: '2026-01-01T00:00:00Z',
@@ -75,7 +76,7 @@ describe('FR-GOV-003: orient receipt hardening', () => {
       ],
     };
 
-    expect(hasPassingReceipt(legacy)).toBe(false);
+    expect(hasPassingReceipt(legacy)).toBe(true);
     expect(hasPassingReceipt(quarantined)).toBe(false);
   });
 });

@@ -115,12 +115,12 @@ describe('CompletionStore extended API', () => {
       expect(store.hasPassing('failing-node')).toBe(false);
     });
 
-    it('empty checks is not passing', () => {
-      expect(store.hasPassing('empty-checks')).toBe(false);
+    it('empty checks with completedAt is legacy-passing', () => {
+      expect(store.hasPassing('empty-checks')).toBe(true);
     });
 
-    it('no checks field is not passing', () => {
-      expect(store.hasPassing('no-checks')).toBe(false);
+    it('no checks field with completedAt is legacy-passing', () => {
+      expect(store.hasPassing('no-checks')).toBe(true);
     });
   });
 });

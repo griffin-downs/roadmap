@@ -19,14 +19,14 @@ describe('completion-evidence', () => {
       expect(hasPassingReceipt(undefined)).toBe(false);
     });
 
-    it('returns false for record with no checks', () => {
+    it('returns true for legacy record with completedAt but no checks (pre-evidence format)', () => {
       const r: CompletionRecordWithEvidence = { nodeId: 'a', completedAt: '2026-01-01T00:00:00Z' };
-      expect(hasPassingReceipt(r)).toBe(false);
+      expect(hasPassingReceipt(r)).toBe(true);
     });
 
-    it('returns false for record with empty checks array', () => {
+    it('returns true for legacy record with completedAt but empty checks array', () => {
       const r: CompletionRecordWithEvidence = { nodeId: 'a', completedAt: '2026-01-01T00:00:00Z', validationChecks: [] };
-      expect(hasPassingReceipt(r)).toBe(false);
+      expect(hasPassingReceipt(r)).toBe(true);
     });
 
     it('returns false when any check failed', () => {
@@ -51,11 +51,11 @@ describe('completion-evidence', () => {
       expect(hasPassingReceipt(r)).toBe(true);
     });
 
-    it('returns false for legacy record without checks', () => {
+    it('returns true for legacy-flagged record with completedAt but no checks', () => {
       const r: CompletionRecordWithEvidence = {
         nodeId: 'a', completedAt: '2026-01-01T00:00:00Z', legacy: true,
       };
-      expect(hasPassingReceipt(r)).toBe(false);
+      expect(hasPassingReceipt(r)).toBe(true);
     });
   });
 

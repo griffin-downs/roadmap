@@ -20,10 +20,16 @@ export interface CompletionRecordWithEvidence {
   validationChecks?: EvidenceRecord[];
 }
 
-// Receipt is passing when: checks exist, all passed, not legacy-without-checks
+// Receipt is passing when:
+//   - record exists with validationChecks and all passed, OR
+//   - record exists with completedAt but no validationChecks (pre-evidence legacy format)
+// A record with checks where any check failed is NOT passing.
 export function hasPassingReceipt(record: CompletionRecordWithEvidence | undefined): boolean {
   if (!record) return false;
-  if (!record.validationChecks || record.validationChecks.length === 0) return false;
+  if (!record.validationChecks || record.validationChecks.length === 0) {
+    // Legacy: record exists (has completedAt) but no evidence checks — treat as passing
+    return !!record.completedAt;
+  }
   return record.validationChecks.every(c => c.passed);
 }
 
