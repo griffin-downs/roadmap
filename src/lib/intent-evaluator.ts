@@ -1,5 +1,5 @@
 // @module intent-evaluator
-// @exports recordEvaluation, readEvaluations, loadContextFiles
+// @exports recordEvaluation, readEvaluations, loadContextFiles, judgment-receipt
 // @types IntentEvaluationRecord
 // @entry roadmap
 
@@ -15,6 +15,8 @@
 import { readFileSync, existsSync, mkdirSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { IntentJudgment } from '../protocol.ts';
+export type { IntentJudgmentReceipt, DiagnosisBlock } from './judgment-receipt.ts';
+export { writeJudgmentReceipt, readJudgmentReceipts } from './judgment-receipt.ts';
 
 // Audit record appended on each successful --evaluate run.
 export interface IntentEvaluationRecord {
