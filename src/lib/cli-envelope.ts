@@ -1,5 +1,5 @@
 // @module cli-envelope
-// @exports emit, emitError, parseOutputOpts, CliEnvelope, CliError, OutputOpts, OutputFormat, ErrorCode, SCHEMA_VERSION
+// @exports emit, emitError, parseOutputOpts, CliEnvelope, CliError, OutputOpts, OutputFormat, ErrorCode, SCHEMA_VERSION, RenderV1, RenderSection
 // @entry roadmap/cli-envelope
 
 import { readFileSync } from 'node:fs';
@@ -9,6 +9,20 @@ import { join } from 'node:path';
 
 export const SCHEMA_VERSION = 1;
 
+export interface RenderSection {
+  id: string;
+  title: string;
+  body: string;
+}
+
+export interface RenderV1 {
+  format: 'ansi' | 'plain';
+  mime: 'text/x-roadmap-ui';
+  title: string;
+  body: string;
+  sections?: RenderSection[];
+}
+
 export interface CliEnvelope<T = unknown> {
   schema_version: number;
   ok: boolean;
@@ -16,6 +30,7 @@ export interface CliEnvelope<T = unknown> {
   repoRoot: string;
   headSha: string | null;
   data?: T;
+  render?: RenderV1;
   error?: CliError;
 }
 
@@ -46,6 +61,7 @@ export const ErrorCode = {
   INTERNAL_ERROR: 'INTERNAL_ERROR',
   CLAIM_CONFLICT: 'CLAIM_CONFLICT',
   COMPLETION_REJECTED: 'COMPLETION_REJECTED',
+  RENDER_MISSING: 'RENDER_MISSING',
 } as const;
 
 export type ErrorCodeValue = typeof ErrorCode[keyof typeof ErrorCode];
