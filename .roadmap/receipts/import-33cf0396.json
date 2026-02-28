@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "git_sha": "33cf039682ec12d065be77f4366806f3e1d58ffe",
+  "timestamp": "2026-03-01T00:07:35+01:00",
+  "spec_inputs": [
+    {
+      "path": ".specify/specs/rkg-harvest/tasks.md",
+      "sha256": "36304e3fb798a743d7da60d9c76c03ace550298c3718f1cc2dea0e6de371b52f"
+    }
+  ],
+  "spec_kit_version": null,
+  "dag_id": "rkg-harvest",
+  "dag_hash": "5b96c93f45ad2ddcc468ac2e9619be7eac164aba4cf05e5e86e173557be88cb3",
+  "nodes": 27,
+  "validation": {
+    "define_passed": true,
+    "verify_warnings": 0,
+    "check_orphans": 0
+  },
+  "warnings": [
+    "terminal-intent: Terminal node '_term' requires at least one intent rule with expandOnFail: true",
+    "init-intent: Init boundary node 'rkg7-completion-ux' requires an intent rule with expandOnFail: true and mention of plan/clarity/unambiguous"
+  ]
+}
