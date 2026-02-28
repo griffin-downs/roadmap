@@ -4,6 +4,7 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { execSync } from 'node:child_process';
 
 export interface EvidenceRecord {
   rule: string;
@@ -18,6 +19,7 @@ export interface CompletionRecordWithEvidence {
   checkpointId?: string;
   legacy?: boolean;
   validationChecks?: EvidenceRecord[];
+  gitSha?: string;
 }
 
 // Receipt is passing when:
@@ -59,6 +61,13 @@ export function saveCompletionWithEvidence(
   const dirPath = join(repoRoot, '.roadmap');
   if (!existsSync(dirPath)) mkdirSync(dirPath, { recursive: true });
 
+  let gitSha: string | undefined;
+  try {
+    gitSha = execSync('git rev-parse HEAD', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+  } catch {
+    // Not a git repo or git not available
+  }
+
   const completions = loadCompletionsWithEvidence(repoRoot);
   completions.set(nodeId, {
     nodeId,
@@ -66,6 +75,7 @@ export function saveCompletionWithEvidence(
     owner,
     checkpointId,
     validationChecks: checks,
+    ...(gitSha ? { gitSha } : {}),
   });
 
   const recordArray = Array.from(completions.values());
