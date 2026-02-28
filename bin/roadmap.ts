@@ -48,6 +48,7 @@ import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { listNodeReceipts, completionDoctor, completionCompact } from '../src/lib/receipts-ux.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { runEnvAudit } from '../src/lib/env-audit.ts';
+import { runAuditIngest } from '../src/lib/audit-ingest.ts';
 import { runProfile } from '../src/lib/profile-cmd.ts';
 import { runPatchStack } from '../src/lib/patch-stack-cmd.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
@@ -300,6 +301,7 @@ async function main() {
       case 'explore':   return await cmdExplore();
       case 'contract':  return cmdContract(note!);
       case 'env-audit': return cmdEnvAudit();
+      case 'profile':   return cmdProfile(note!);
       case 'audit':     return cmdAudit(note!);
       case 'patch':     return cmdPatch(note!);
       case 'compile-prompts': return cmdCompilePrompts(note!);
