@@ -1,26 +1,149 @@
 {
-  "id": "rkg-harvest",
+  "id": "ui-rich-render",
   "desc": "Imported from spec-kit",
   "init": "init",
-  "term": "_term",
+  "term": "term",
   "nodes": {
-    "_term": {
-      "id": "_term",
-      "desc": "Synthetic term \u2014 gates on all leaf tasks",
-      "produces": [],
-      "consumes": [
-        "src/lib/profile-cmd.ts",
-        "bin/roadmap.ts",
-        ".roadmap/completed.json"
+    "init": {
+      "id": "init",
+      "desc": "Existing codebase — cli-envelope.ts, cli-human.ts, bin/roadmap.ts, all command functions",
+      "produces": [
+        "src/lib/cli-envelope.ts",
+        "src/lib/cli-human.ts",
+        "bin/roadmap.ts"
       ],
-      "deps": [
-        "rkg8-profile",
-        "term"
-      ],
+      "consumes": [],
+      "deps": [],
       "validate": [
         {
           "type": "spec-conformance",
-          "spec": ".specify/specs/rkg-harvest/spec.md",
+          "spec": ".specify/specs/ui-rich-render/spec.md",
+          "scenario": "Plan clarity validated against feature spec",
+          "section": "Specification"
+        }
+      ],
+      "idempotent": true,
+      "ambient": [
+        ".specify/specs/ui-rich-render/tasks.md"
+      ]
+    },
+    "ui-envelope-v1_1": {
+      "id": "ui-envelope-v1_1",
+      "desc": "Add RenderV1 type and render field to CliEnvelope. RenderV1: { format: 'ansi' | 'plain'; mime: 'text/x-roadmap-ui'; title: string; body: string; sections?: Array<{id: string; title: string; body: string}> }. CliEnvelope gets optional render?: RenderV1. Add RENDER_MISSING = 'RENDER_MISSING' to ErrorCode. Add RenderV1 to exports. Do NOT change emit() signature yet — that happens in ui-command-integration.",
+      "produces": [
+        "src/lib/cli-envelope.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "ui-render-core": {
+      "id": "ui-render-core",
+      "desc": "Build src/lib/render/ library. Files: types.ts (RenderOpts, RenderModel union, Node AST), style.ts (STATUS_PALETTE, EMOJI map, ansiEnabled(opts)), layout.ts (wrapText, truncate, resolveWidth — min(ttyWidth,140) fallback 120), box.ts (boxTable, panel — box-drawing chars), bars.ts (progressBar with unicode blocks █░, sparkline), index.ts (public render(model, opts): {ansi?: string; plain: string} — dispatches on model.kind). No timestamps in any render output. plain is always escape-code-free.",
+      "produces": [
+        "src/lib/render/types.ts",
+        "src/lib/render/style.ts",
+        "src/lib/render/layout.ts",
+        "src/lib/render/box.ts",
+        "src/lib/render/bars.ts",
+        "src/lib/render/index.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "ui-dag-render": {
+      "id": "ui-dag-render",
+      "desc": "Add src/lib/render/dag.ts and src/lib/render/errors.ts. dag.ts: renderDagLayers(layers, opts) — layered batch view with status emoji (✅🟡⛔💤🧨) per node, progress bar header, HEAD sha header. renderCriticalPath(path, opts) — single highlighted chain. errors.ts: renderErrorPanel(error, opts) — boxed error with fix[] steps, code, message. Export from src/lib/render/index.ts. Extend RenderModel with kinds: 'orient', 'chart', 'error'.",
+      "produces": [
+        "src/lib/render/dag.ts",
+        "src/lib/render/errors.ts",
+        "src/lib/render/index.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "ui-render-core"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "ui-command-integration": {
+      "id": "ui-command-integration",
+      "desc": "Wire all commands through centralized render. Three changes to bin/roadmap.ts: (1) At CLI entrypoint, resolve RenderOpts once: { tty: process.stderr.isTTY ?? false, width: resolveWidth(), color: tty && !process.env.NO_COLOR, emoji: true }. (2) After every json() call, build RenderModel from result data, call render(model, renderOpts), embed render.plain in JSON envelope (stdout), print render.ansi or render.plain to stderr unless --quiet flag set. (3) If render field absent on non-quiet envelope: print to stderr \"RENDER_MISSING\" warning (do NOT exit 3 — that's too breaking; warn instead). Update existing cli-human.ts renderOrient / renderChart to return RenderModel-compatible output so they can feed into the new render pipeline. Commands that don't have a specific RenderModel kind use 'generic' with title + kv pairs from data.",
+      "produces": [
+        "bin/roadmap.ts",
+        "src/lib/cli-envelope.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "ui-envelope-v1_1",
+        "ui-dag-render"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "ui-snapshot-tests": {
+      "id": "ui-snapshot-tests",
+      "desc": "Write tests/ui-snapshot.test.ts. Test pattern: invoke bin/roadmap commands via execFileSync capturing both stdout and stderr. Assert: stdout parses as valid JSON with schema_version:1 and render.plain present. stderr contains 'text/x-roadmap-ui' marker string. ANSI-stripped render.plain is byte-identical to a golden string (inline snapshot). Stable: no timestamps, deterministic ordering. Cover: orient (with empty DAG), chart (with rkg-harvest-complete fixture or mock), env-audit, completion doctor. Minimum 12 test cases.",
+      "produces": [
+        "tests/ui-snapshot.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "ui-command-integration"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/ui-snapshot.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "term": {
+      "id": "term",
+      "desc": "FR-UI-001 complete — RenderV1 in envelope, render library (6 files), DAG + error renderers, all commands emit to stderr by default, 12+ snapshot tests passing. tsc clean.",
+      "produces": [
+        ".roadmap/completed.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "ui-snapshot-tests"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit && npx vitest run tests/ui-snapshot.test.ts"
+        },
+        {
+          "type": "spec-conformance",
+          "spec": ".specify/specs/ui-rich-render/spec.md",
           "scenario": "All acceptance scenarios pass (User Stories 1-6)",
           "section": "Feature Specification"
         },
@@ -31,523 +154,26 @@
         },
         {
           "type": "shell",
-          "command": "npx tsc --noEmit",
+          "command": "npm run build 2>&1 | grep -q \"built\"",
           "expectExitCode": 0
         }
       ],
-      "idempotent": false,
-      "ambient": []
-    },
-    "init": {
-      "id": "init",
-      "desc": "Existing roadmap codebase \u2014 src/protocol.ts, src/lib/kernel-config.ts, src/lib/completion-store.ts, src/lib/validator-runner.ts, src/lib/blend.ts, src/lib/emit-gallery.ts, src/lib/intent-expansion.ts, bin/roadmap.ts",
-      "produces": [
-        "src/protocol.ts",
-        "src/lib/kernel-config.ts",
-        "src/lib/completion-store.ts",
-        "src/lib/validator-runner.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [],
-      "validate": [
-        {
-          "type": "spec-conformance",
-          "spec": ".specify/specs/rkg-harvest/spec.md",
-          "scenario": "Plan clarity validated against feature spec",
-          "section": "Specification"
-        }
-      ],
       "idempotent": true,
-      "ambient": [
-        ".specify/specs/rkg-harvest/tasks.md"
-      ]
-    },
-    "rkg7-intake-schema": {
-      "id": "rkg7-intake-schema",
-      "desc": "IntakeRecord type \u2014 commits[], treeSha, parentSha, touchedPaths, author, msg, detectedClusters[], proposedNodes[]. Write src/lib/intake.ts with type + schema constants + dir spec (.roadmap/intake/). Write IntakeReceipt type for intake-absorb-<sha>.json bound to range + treeSha set.",
-      "produces": [
-        "src/lib/intake.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-overlay-schema": {
-      "id": "rkg7-overlay-schema",
-      "desc": "OverlayRecord type \u2014 intakeId, headSha, treeSha, candidateNodes[] (NodeSpec[], not yet in DAG). Write src/lib/overlay.ts. Must not reference head.json mutation \u2014 candidates only.",
-      "produces": [
-        "src/lib/overlay.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-patch-schema": {
-      "id": "rkg7-patch-schema",
-      "desc": "PatchRecord type \u2014 patchId, baseSha, commitShas[], nodeMapping (nodeId \u2192 commitSha[]), branchPattern (rm/stack/<id>/<n>-<node>). Write src/lib/patch-stack.ts. Reproducibility invariant: same nodes+base \u2192 same diff.",
-      "produces": [
-        "src/lib/patch-stack.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-merge-gate-schema": {
-      "id": "rkg7-merge-gate-schema",
-      "desc": "MergeGateResult type \u2014 pass: boolean, missingReceipts[], error.fix[], checked[] with receipt name + found flag. Write src/lib/merge-gate.ts. Required receipts list: plan-select, spec-origin (if configured), kernel-verify, no orphan receipts, intake receipt for external patches.",
-      "produces": [
-        "src/lib/merge-gate.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-completion-ux": {
-      "id": "rkg7-completion-ux",
-      "desc": "completed.json ergonomics \u2014 `roadmap receipts ls --node <id>` lists evidence records + treeSha + validator outputs. `roadmap completion doctor` diagnoses why chart shows 0% (legacy receipt schema, missing completed.json, version mismatch). `roadmap completion compact` prunes legacy receipts while preserving proofs (--dry-run required before destructive). Wire into bin/roadmap.ts.",
-      "produces": [
-        "src/lib/receipts-ux.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-transcript-schema": {
-      "id": "rkg8-transcript-schema",
-      "desc": "TranscriptSession type \u2014 sessionId, toolCalls[], retries (repeated cmd+args), failures by error.code, bypassFlagsUsed[], envVarUsage[], orphanedAttempts (cmds outside roadmap CLI), crossWorkerContaminationEvents[]. Write src/lib/transcript-schema.ts with type guards.",
-      "produces": [
-        "src/lib/transcript-schema.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-escape-detector-schema": {
-      "id": "rkg8-escape-detector-schema",
-      "desc": "EscapeEvent type \u2014 UNACCOUNTED_COMMIT | OUT_OF_BOUNDS_TOOL | DIRECT_GIT_COMMIT. GovernanceBreach type \u2014 sha, eventType, missingReceiptTypes[], timestamp. GovernanceBreachReceipt format: governance-breach-<sha>.json. Write src/lib/escape-detector.ts.",
-      "produces": [
-        "src/lib/escape-detector.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-profile-schema": {
-      "id": "rkg8-profile-schema",
-      "desc": "ProfileReport type \u2014 commandsPerNode: Record<nodeId, number>, validatorRunsPerNode, avgLatencyMs, batchParallelismUtilization (0\u20131), efficiencyWarnings[] (nodeId + reason when threshold exceeded). Write src/lib/profile-schema.ts. Deterministic across runs given same input data.",
-      "produces": [
-        "src/lib/profile-schema.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-intake-absorb-cmd": {
-      "id": "rkg7-intake-absorb-cmd",
-      "desc": "`roadmap intake absorb --from <sha> --to <sha> [--since <date>]` command \u2014 iterates git log range, extracts commits[], touchedPaths via git diff-tree, writes .roadmap/intake/<intakeId>.json. Deterministic: sha256(range) \u2192 stable intakeId. Validates: range exists, no dirty working tree. Emits intake-absorb-<sha>.json receipt with range + treeSha set. Wire into bin/roadmap.ts.",
-      "produces": [
-        "src/lib/intake-cmd.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-intake-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-intake-cluster": {
-      "id": "rkg7-intake-cluster",
-      "desc": "Cluster detection \u2014 group commits by touchedPaths overlap (jaccard similarity). Each cluster becomes a proposedNodeSpec (id: intake::<intakeId>::<n>, produces: touchedPaths, consumes: []). Stable across reruns: same commits \u2192 same clusters \u2192 same NodeSpecs. Write src/lib/intake-cluster.ts. Wire into intake-absorb-cmd output.",
-      "produces": [
-        "src/lib/intake-cluster.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-intake-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-overlay-from-intake": {
-      "id": "rkg7-overlay-from-intake",
-      "desc": "`roadmap plan overlay --from-intake <intakeId>` \u2014 reads .roadmap/intake/<id>.json, writes .roadmap/overlays/intake-<id>.json with candidateNodes[]. Does NOT mutate head.json (--apply flag required for that, implement as error for now). Emits receipt bound to headSha + intakeId + treeSha.",
-      "produces": [
-        "src/lib/overlay-cmd.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-overlay-schema",
-        "rkg7-intake-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-patch-stack": {
-      "id": "rkg7-patch-stack",
-      "desc": "`roadmap patch stack --nodes <id,...> --base <sha>` \u2014 creates branch rm/stack/<patchId>/<n>-<nodeId> with ordered commits per node. Writes .roadmap/patch/<patchId>.json. Reproducibility: same nodes+base \u2192 same diff (deterministic commit ordering). Wire into bin/roadmap.ts.",
-      "produces": [
-        "src/lib/patch-stack-cmd.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-patch-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-merge-gate": {
-      "id": "rkg7-merge-gate",
-      "desc": "`roadmap gate merge [--target <branch>]` \u2014 checks plan-select receipt exists, spec-origin receipt if .roadmap/spec-origin.json present, kernel verify passes (loadKernel() + validateKernel()), no orphan receipts (receipts not bound to any node), intake receipt for any commit in range not tracked by roadmap. On any failure: exits non-zero with MergeGateResult.error.fix[]. Wire into bin/roadmap.ts.",
-      "produces": [
-        "src/lib/merge-gate-cmd.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-merge-gate-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-env-audit-hardening": {
-      "id": "rkg7-env-audit-hardening",
-      "desc": "Replace SKIP_PLAN_GATE, SKIP_BATCH_COMMIT, ROADMAP_VALIDATING env vars with kernel.json toggles (policy.skipPlanGate, policy.skipBatchCommit, policy.validating). CLI --bypass-* flags emit a bypass receipt (bypass-<flag>-<sha>.json) when used. `roadmap env-audit` command \u2014 scans process.env at runtime, fails with non-zero exit if any deprecated bypass env var is set, outputs which vars + recommended kernel.json keys. Wire into bin/roadmap.ts.",
-      "produces": [
-        "src/lib/env-audit.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-merge-gate-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-audit-ingest": {
-      "id": "rkg8-audit-ingest",
-      "desc": "`roadmap audit ingest <transcriptPath> [--dag-id <id>]` \u2014 parses regent JSONL or equivalent transcript, writes .roadmap/audit/<sessionId>.json with TranscriptSession. Extracts: toolCalls[], retryRate (repeated cmd+args), failures by error.code, bypassFlagsUsed[], timeBetweenBatches[], crossWorkerContaminationEvents (files staged outside produces allowlist), envVarUsage[], orphanedAttempts (shell invocations outside roadmap CLI). Wire into bin/roadmap.ts.",
-      "produces": [
-        "src/lib/audit-ingest.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg8-transcript-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-friction-engine": {
-      "id": "rkg8-friction-engine",
-      "desc": "Friction heuristics \u2014 compute per-node metrics: toolEntropy (unique tool invocations / total), retryRate (retried cmds / total), crossIndexContamination (staged files outside produces / total staged), bypassUsage (bypass receipts emitted), headDrift (HEAD changes during execution window), expansionChurn (intent expansions > 1 depth). Output: frictionScore (0\u20131 weighted sum), frictionClassifications[]. Write src/lib/friction-engine.ts.",
-      "produces": [
-        "src/lib/friction-engine.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg8-transcript-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-profile": {
-      "id": "rkg8-profile",
-      "desc": "`roadmap profile [--node <id>] [--last-n <n>]` \u2014 reads .roadmap/audit/ session files, aggregates ProfileReport. Nodes exceeding commandsPerNode threshold (default: 20) emit efficiencyWarning. Outputs profile-report.json + console table. Deterministic: same audit inputs \u2192 same report. Wire into bin/roadmap.ts.",
-      "produces": [
-        "src/lib/profile-cmd.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg8-profile-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-kernel-enforcement-hook": {
-      "id": "rkg8-kernel-enforcement-hook",
-      "desc": "Kernel enforcement mode \u2014 when .roadmap/ exists, auto-enable merge gate enforcement (kernel.policy.mergeGateEnforced = true default) and escape detection. When .roadmap/kernel.json has federation.enabled, propagate kernel policy changes to sibling repos listed in federation.repos[] + emit federation receipt (federation-sync-<sha>.json). Write src/lib/kernel-enforcement.ts.",
-      "produces": [
-        "src/lib/kernel-enforcement.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg8-escape-detector-schema"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-intake-receipt": {
-      "id": "rkg7-intake-receipt",
-      "desc": "intake receipt binding \u2014 intake-absorb-<sha>.json written by intake-absorb-cmd with: intakeId, fromSha, toSha, treeShaSet[], clusterCount, proposedNodeCount, inputHash (deterministic). Verify: rerun same range \u2192 same inputHash. Add receipt verification predicate isIntakeReceiptValid(). Wire into merge-gate checks for external patch ranges.",
-      "produces": [
-        "src/lib/intake-receipt.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-intake-absorb-cmd",
-        "rkg7-intake-cluster"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-audit-recommend": {
-      "id": "rkg8-audit-recommend",
-      "desc": "`roadmap audit recommend [--session <id>]` \u2014 reads .roadmap/audit/<id>.json + frictionEngine output, emits candidate governance deltas: suggested kernel.json modifications (tolerance thresholds), new spec-kit node suggestions (high-friction patterns \u2192 structured DAG nodes), index-isolation warnings, env-var deprecation notices. Writes audit-recommendation-<sha>.json receipt. Wire into bin/roadmap.ts.",
-      "produces": [
-        "src/lib/audit-recommend.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg8-audit-ingest",
-        "rkg8-friction-engine"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-auto-intake": {
-      "id": "rkg8-auto-intake",
-      "desc": "Auto-intake trigger \u2014 detectUnaccountedCommits() compares HEAD commit range against roadmap receipts (plan-select, dispatch, intake). On UNACCOUNTED_COMMIT: auto-invokes intake-absorb-cmd for the gap range, writes .roadmap/pending-certify.json, blocks advanceBatch() until intake-certify is run. `roadmap intake certify` clears pending-certify.json. In kernel.policy.strictMode, also blocks gate merge. Write src/lib/auto-intake.ts.",
-      "produces": [
-        "src/lib/auto-intake.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg8-escape-detector-schema",
-        "rkg7-intake-absorb-cmd"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-governance-breach-receipt": {
-      "id": "rkg8-governance-breach-receipt",
-      "desc": "GovernanceBreach receipt emission \u2014 detectGovernanceBreach() checks: (1) commits without any roadmap receipt, (2) direct git commit detected in transcript outside patch-stack path, (3) OUT_OF_BOUNDS tool calls in session. On detection: writes governance-breach-<sha>.json to .roadmap/receipts/. Merge gate checks for breach receipts and fails with actionable error.fix[]. Write src/lib/governance-breach.ts.",
-      "produces": [
-        "src/lib/governance-breach.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg8-auto-intake",
-        "rkg8-kernel-enforcement-hook"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg7-fixtures": {
-      "id": "rkg7-fixtures",
-      "desc": "Test suite for RKG-7. AT-1: intake absorb on range with no .roadmap/ touches \u2192 artifact produced, hash stable across reruns. AT-2: overlay from intake \u2192 candidateNodes written, head.json NOT mutated. AT-3: patch stack generated \u2192 applies cleanly onto baseSha, reruns produce identical diffs. AT-4: gate merge fails with error.fix[] when plan-select receipt missing. AT-5: env-audit catches SKIP_PLAN_GATE=1 and exits non-zero. AT-6: all commands emit envelope v1; --human prints stable output. Minimum 20 test cases.",
-      "produces": [
-        "tests/rkg7-fixtures.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-intake-receipt",
-        "rkg7-overlay-from-intake",
-        "rkg7-patch-stack",
-        "rkg7-merge-gate",
-        "rkg7-env-audit-hardening",
-        "rkg7-completion-ux"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/rkg7-fixtures.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rkg8-fixtures": {
-      "id": "rkg8-fixtures",
-      "desc": "Test suite for RKG-8. AT-1: ingest transcript with crossIndexContamination \u2192 frictionScore > 0, recommendation emitted. AT-2: commit outside roadmap \u2192 escape detected, auto-intake triggered, certify required before advance. AT-3: direct git commit + no receipt \u2192 merge gate fails with actionable fix. AT-4: kernel strict mode blocks advanceBatch() until governance breach resolved. AT-5: profile report stable across deterministic reruns. Minimum 20 test cases.",
-      "produces": [
-        "tests/rkg8-fixtures.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg8-audit-recommend",
-        "rkg8-governance-breach-receipt"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/rkg8-fixtures.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "term": {
-      "id": "term",
-      "desc": "RKG-7/8 complete \u2014 federated intake, overlay, patch stack, merge gate, env-audit hardening, completion UX, audit ingest, friction engine, auto-intake, governance breach, profile, kernel enforcement all verified.",
-      "produces": [
-        ".roadmap/completed.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "rkg7-fixtures",
-        "rkg8-fixtures"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/rkg7-fixtures.test.ts && npx vitest run tests/rkg8-fixtures.test.ts"
-        }
-      ],
-      "idempotent": true
+      "ambient": []
     }
   },
   "version": "0.3.0",
   "protocolVersion": "0.3.0",
   "spec": {
-    "compiled_sha256": "36304e3fb798a743d7da60d9c76c03ace550298c3718f1cc2dea0e6de371b52f",
+    "compiled_sha256": "b80322cedb9d6b89671c3e01081cd7558f6532e8ac7d2b4f60ae1218c5badc06",
     "engine": {
       "name": "speckit",
       "version": "0.1.0"
     },
     "inputs": [
       {
-        "path": ".specify/specs/rkg-harvest/tasks.md",
-        "sha256": "36304e3fb798a743d7da60d9c76c03ace550298c3718f1cc2dea0e6de371b52f"
+        "path": ".specify/specs/ui-rich-render/tasks.md",
+        "sha256": "b80322cedb9d6b89671c3e01081cd7558f6532e8ac7d2b4f60ae1218c5badc06"
       }
     ]
   }

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "git_sha": "e5800fb34aa696c3471ced9b5cdc22545dd8c139",
+  "timestamp": "2026-03-01T00:14:00+01:00",
+  "spec_inputs": [
+    {
+      "path": ".specify/specs/ui-rich-render/tasks.md",
+      "sha256": "b80322cedb9d6b89671c3e01081cd7558f6532e8ac7d2b4f60ae1218c5badc06"
+    }
+  ],
+  "spec_kit_version": null,
+  "dag_id": "ui-rich-render",
+  "dag_hash": "32737087d3c3f5a6f2be13a8088eb6a4b086355a9f56a33d97838a686bad9f6f",
+  "nodes": 7,
+  "validation": {
+    "define_passed": true,
+    "verify_warnings": 0,
+    "check_orphans": 0
+  },
+  "warnings": [
+    "terminal-intent: Terminal node 'term' requires at least one intent rule with expandOnFail: true",
+    "init-intent: Init boundary node 'ui-envelope-v1_1' requires an intent rule with expandOnFail: true and mention of plan/clarity/unambiguous"
+  ]
+}
