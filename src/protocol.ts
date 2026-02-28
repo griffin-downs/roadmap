@@ -6,7 +6,7 @@
 // --- Types ---
 
 export type ValidationRule =
-  | { type: 'artifact-exists'; target: string; _propagatedFrom?: string }
+  | { type: 'artifact-exists'; target?: string; path?: string; _propagatedFrom?: string }
   | { type: 'artifact-schema'; target: string; schema: string }
   | { type: 'function'; target: string; fn: string }
   | { type: 'manual-approval'; target: string; reviewer?: string }
@@ -606,8 +606,9 @@ export function advanceBatch<T extends string>(
   g: Graph<T>,
   exists: (artifact: string) => boolean,
   retired?: ReadonlySet<string>,
+  completed?: ReadonlySet<string>,
 ): Orientation {
-  const current = orient(g, exists, retired);
+  const current = orient(g, exists, retired, completed);
 
   // Guard: current batch must be complete
   if (!current.batchComplete) {
@@ -625,7 +626,7 @@ export function advanceBatch<T extends string>(
 
   // Since all artifacts now exist, calling orient() again will skip past
   // the current batch and find the next incomplete batch
-  return orient(g, exists, retired);
+  return orient(g, exists, retired, completed);
 }
 
 // --- readyNodes: eager dispatch beyond current batch ---
@@ -1125,8 +1126,9 @@ export async function validateNode<T extends string>(
     let evidence = '';
 
     if (rule.type === 'artifact-exists') {
-      passed = exists(rule.target);
-      evidence = passed ? `artifact exists: ${rule.target}` : `artifact missing: ${rule.target}`;
+      const artifact = rule.target ?? rule.path;
+      if (!artifact) { evidence = 'artifact-exists rule missing both target and path'; }
+      else { passed = exists(artifact); evidence = passed ? `artifact exists: ${artifact}` : `artifact missing: ${artifact}`; }
     } else if (rule.type === 'artifact-schema') {
       // TODO: Implement schema validation
       passed = false;

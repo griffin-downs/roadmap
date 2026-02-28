@@ -32,7 +32,7 @@ function hasEquivalent(existing: readonly ValidationRule[], candidate: Validatio
     if (r.type !== candidate.type) continue;
     switch (r.type) {
       case 'artifact-exists':
-        if ((candidate as any).target === r.target) return true;
+        if ((r.target ?? r.path) === ((candidate as any).target ?? (candidate as any).path)) return true;
         break;
       case 'artifact-schema':
         if ((candidate as any).target === r.target && (candidate as any).schema === (r as any).schema) return true;

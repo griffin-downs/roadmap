@@ -179,7 +179,7 @@ function buildVerificationChecklist(validate: readonly ValidationRule[]): string
       case 'shell': return `- [ ] \`${rule.command}\``;
       case 'build-produces': return `- [ ] \`${rule.command}\` produces ${rule.outputs.join(', ')}`;
       case 'launch-check': return `- [ ] \`${rule.command}\` (launch check${rule.successSignal ? ` — signal: ${rule.successSignal}` : ''})`;
-      case 'artifact-exists': return `- [ ] Artifact exists: \`${rule.target}\``;
+      case 'artifact-exists': return `- [ ] Artifact exists: \`${rule.target ?? rule.path}\``;
       case 'artifact-schema': return `- [ ] Schema valid: \`${rule.target}\``;
       case 'spec-conformance': return `- [ ] Spec conformance: ${rule.spec}`;
       case 'expanded': return `- [ ] DAG expanded with child nodes`;
