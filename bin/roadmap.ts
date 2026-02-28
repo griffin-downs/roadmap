@@ -46,6 +46,7 @@ import { runOverlayFromIntake } from '../src/lib/overlay-cmd.ts';
 import { createDispatchPlan, applyDispatchPlan, loadDispatchPlan, dispatchStatus } from '../src/lib/dispatch.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { listNodeReceipts, completionDoctor, completionCompact } from '../src/lib/receipts-ux.ts';
+import { certifyAutoIntake } from '../src/lib/auto-intake.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { runEnvAudit } from '../src/lib/env-audit.ts';
 import { runAuditIngest } from '../src/lib/audit-ingest.ts';
