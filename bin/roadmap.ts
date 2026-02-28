@@ -82,6 +82,7 @@ function deriveEnvelopeCmd(): string {
     return 'plan';
   }
   if (cmd === 'position') return 'orient';
+  if (cmd === 'patch') { if (args[1] === 'stack') return 'patch.stack'; return 'patch'; }
   if (cmd === 'spec') {
     if (args[1] === 'init') return 'spec.init';
     if (args[1] === 'generate') return 'spec.generate';
@@ -298,6 +299,7 @@ async function main() {
       case 'explore':   return await cmdExplore();
       case 'contract':  return cmdContract(note!);
       case 'env-audit': return cmdEnvAudit();
+      case 'audit':     return cmdAudit(note!);
       case 'patch':     return cmdPatch(note!);
       case 'compile-prompts': return cmdCompilePrompts(note!);
       case 'compile-brief': return cmdCompileBrief(note!);
@@ -1963,10 +1965,56 @@ function cmdContract(note: string) {
   if (issues.length > 0) process.exit(1);
 }
 
+
+function cmdPatch(note: string) {
+  if (args[1] !== 'stack') {
+    json({ error: 'Unknown patch subcommand', fix: 'roadmap patch stack --nodes <id1,id2,...> --base <sha> --note "..."' });
+    process.exit(1);
+    return;
+  }
+  const nodesIdx = args.indexOf('--nodes');
+  const baseIdx = args.indexOf('--base');
+  if (nodesIdx === -1 || baseIdx === -1) {
+    json({ error: 'Missing required flags', fix: 'roadmap patch stack --nodes <id1,id2,...> --base <sha> --note "..."' });
+    process.exit(1);
+    return;
+  }
+  const nodeIds = (args[nodesIdx + 1] ?? '').split(',').filter(Boolean);
+  const baseSha = args[baseIdx + 1] ?? '';
+  if (!nodeIds.length || !baseSha) {
+    json({ error: 'Empty --nodes or --base', fix: 'Provide comma-separated node IDs and a valid base SHA' });
+    process.exit(1);
+    return;
+  }
+  const record = runPatchStack({ nodeIds, baseSha, repoRoot });
+  recordTrail({ ts: new Date().toISOString(), cmd: 'patch', note, position: '', level: 0 });
+  json(record);
+}
 function cmdEnvAudit() {
   const result = runEnvAudit(repoRoot);
   json(result);
   if (!result.pass) process.exit(1);
+
+function cmdProfile(note: string) {
+  const nodeId = args.includes("--node") ? args[args.indexOf("--node") + 1] : undefined;
+  const lastNArg = args.includes("--last-n") ? args[args.indexOf("--last-n") + 1] : undefined;
+  const lastN = lastNArg ? parseInt(lastNArg, 10) : undefined;
+
+  const report = runProfile({ repoRoot, nodeId, lastN });
+
+  // Human-readable table to stderr
+  console.error("session                          | cmds | validators | avg ms | bypasses | retries");
+  console.error("-".repeat(85));
+  for (const p of Object.values(report.nodeProfiles)) {
+    const id = p.nodeId.length > 32 ? p.nodeId.slice(0, 29) + "..." : p.nodeId.padEnd(32);
+    console.error(
+      `${id} | ${String(p.commandCount).padStart(4)} | ${String(p.validatorRuns).padStart(10)} | ${String(p.avgLatencyMs).padStart(6)} | ${String(p.bypassCount).padStart(8)} | ${String(p.retryCount).padStart(7)}`
+    );
+  }
+
+  recordTrail({ command: "profile", note, position: [], level: -1 });
+  json(report);
+}
 }
 
 function cmdDiff() {
@@ -4735,7 +4783,11 @@ Commands:
   compile-prompts --node <id> [--env path] Generate agent prompts from DAG nodes
   plan overlay --from-intake <id>  Write candidate nodes to .roadmap/overlays/ (no head.json mutation)
   gate merge [--target <branch>]  Local merge gate: verify required receipts before merge
+  env-audit           Fail if deprecated bypass env vars (SKIP_PLAN_GATE etc.) are set at runtime
+  profile [--node <id>] [--last-n <n>]  Aggregate audit sessions → profile-report.json
+  audit ingest <path>  Parse transcript → .roadmap/audit/<sessionId>.json
   dig [path]          Browse archived files in git history
+  patch stack --nodes <ids> --base <sha>  Create branch stack per node from baseSha
   dig <path> --restore  Recover archived file to working tree
   help                This message
 
