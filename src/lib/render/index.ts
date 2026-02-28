@@ -1,5 +1,5 @@
 // @module render
-// @exports render, renderNodes
+// @exports render, renderNodes, renderDagLayers, renderCriticalPath, renderErrorPanel
 // @types RenderModel, RenderOpts, RenderOutput, RenderNode, DagLayer
 // @entry roadmap
 
@@ -8,6 +8,8 @@ import { styled, emoji, STATUS_EMOJI, ANSI } from './style.ts';
 import { wrapText, truncate, resolveWidth } from './layout.ts';
 import { boxPanel, boxTable } from './box.ts';
 import { progressBar, progressLine } from './bars.ts';
+import { renderDagLayers, renderCriticalPath } from './dag.ts';
+import { renderErrorPanel } from './errors.ts';
 
 export { render, renderNodes };
 export type { RenderModel, RenderOpts, RenderOutput, RenderNode };
@@ -16,6 +18,8 @@ export { STATUS_EMOJI, ANSI, ansiEnabled, styled, emoji } from './style.ts';
 export { resolveWidth, wrapText, truncate, padEnd } from './layout.ts';
 export { boxPanel, boxTable } from './box.ts';
 export { progressBar, progressLine } from './bars.ts';
+export { renderDagLayers, renderCriticalPath } from './dag.ts';
+export { renderErrorPanel } from './errors.ts';
 
 function render(model: RenderModel, opts: RenderOpts): RenderOutput {
   const plain = renderNodes(model.nodes, { ...opts, color: false }).join('\n');
@@ -52,10 +56,11 @@ function renderNodes(nodes: RenderNode[], opts: RenderOpts): string[] {
         break;
       case 'dagLayers':
         for (const layer of n.layers) {
-          const nodeStrs = layer.nodes.map(dn => {
+          const nodeStrs = [...layer.nodes].sort((a, b) => a.id.localeCompare(b.id)).map(dn => {
             const icon = emoji(STATUS_EMOJI[dn.status] ?? '', opts);
+            const label = dn.status === 'current' ? styled(dn.id, ANSI.bold, opts) : dn.id;
             const desc = dn.desc ? styled(` ${truncate(dn.desc, 40)}`, ANSI.dim, opts) : '';
-            return `${icon}${icon ? ' ' : ''}${dn.id}${desc}`;
+            return `${icon}${icon ? ' ' : ''}${label}${desc}`;
           });
           lines.push(styled(`L${String(layer.level).padStart(2, '0')}`, ANSI.gray, opts) + '  ' + nodeStrs.join('  '));
         }
