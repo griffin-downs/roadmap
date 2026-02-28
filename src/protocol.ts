@@ -1,6 +1,6 @@
 // @module protocol
 // @exports define, graph, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, readyNodes, nextBatch, criticalPath, reconcile, merge, branch, analyze, modify, modifyAndCommit, validateNode, validateBatch, validateGraph, CompletionStore
-// @types NodeSpec, Graph, Orientation, ReadyNode, NextBatch, BatchConflict, Connection, Gap, ValidationRule, ValidationCheck, ValidationResult, ModifyAnalysis, ModificationRecord, ConsumeSpec, RuntimeExploreRule, ObservationSpec, ObservationResult, ExploreResult, IntentFailure, ConvergenceLimits, EscalationResult, IntentDiagnosis
+// @types NodeSpec, Graph, SpecMeta, Orientation, ReadyNode, NextBatch, BatchConflict, Connection, Gap, ValidationRule, ValidationCheck, ValidationResult, ModifyAnalysis, ModificationRecord, ConsumeSpec, RuntimeExploreRule, ObservationSpec, ObservationResult, ExploreResult, IntentFailure, ConvergenceLimits, EscalationResult, IntentDiagnosis
 // @entry roadmap/protocol
 
 import { CompletionStore } from './lib/completion-context.ts';
@@ -142,6 +142,8 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly convergenceCheck?: { readonly maxCoverageDelta?: number; readonly requireEmptyProposals?: boolean; readonly minWallClockDeltaMs?: number }; // loop termination criteria
   readonly ambient?: readonly string[]; // agent reads these for context; not a dep, not validated, never gates readiness
   readonly _intentDiagnosis?: IntentDiagnosis; // provenance: what failing intent triggered this fix node's creation
+  readonly track?: number; // governance track index (e.g., 0=default, 1=security, 2=perf)
+  readonly affects?: readonly string[]; // file paths or areas this node modifies beyond produces
 }
 
 export interface EmitGalleryNodeSpec {
@@ -158,7 +160,7 @@ export interface EmitGalleryNodeSpec {
 
 // Inference helper — extracts T from nodes, avoids mapped-type inference limits.
 export function graph<T extends string>(
-  g: { id: string; desc: string; init: string; term: string; nodes: { [N in T]: NodeSpec<T, N> } },
+  g: { id: string; desc: string; init: string; term: string; nodes: { [N in T]: NodeSpec<T, N> }; termGates?: readonly TermGate[]; spec?: SpecMeta },
 ): Graph<T> {
   return g;
 }
@@ -175,6 +177,13 @@ export interface TermGate {
   readonly expandOnFail?: boolean;  // if true, expand DAG when this gate fails
 }
 
+// Spec provenance metadata — compiled hash, engine version, and source inputs.
+export interface SpecMeta {
+  readonly compiled_sha256: string;
+  readonly engine: { readonly name: string; readonly version: string | null };
+  readonly inputs: ReadonlyArray<{ readonly path: string; readonly sha256: string; readonly role: string }>;
+}
+
 export interface Graph<T extends string> {
   readonly id: string;
   readonly desc: string;
@@ -182,6 +191,7 @@ export interface Graph<T extends string> {
   readonly term: string;
   readonly nodes: { readonly [N in T]: NodeSpec<T, N> };
   readonly termGates?: readonly TermGate[];  // stacked term gates (optional, for new DAGs)
+  readonly spec?: SpecMeta;  // FR-SPEC-003: compiled spec provenance
 }
 
 export type Connection = { forward: string; backward: string; artifact: string };
@@ -189,7 +199,7 @@ export type Gap = { between: [string, string]; missing: string[] };
 
 // --- Internal: flat iteration over mapped type ---
 
-type Flat = { id: string; produces: readonly string[]; consumes: readonly string[]; deps: readonly string[]; mode?: 'execute' | 'plan'; expandedFrom?: string; loopTarget?: string; convergenceCheck?: { maxCoverageDelta?: number; requireEmptyProposals?: boolean; minWallClockDeltaMs?: number }; ambient?: readonly string[] };
+type Flat = { id: string; produces: readonly string[]; consumes: readonly string[]; deps: readonly string[]; mode?: 'execute' | 'plan'; expandedFrom?: string; loopTarget?: string; convergenceCheck?: { maxCoverageDelta?: number; requireEmptyProposals?: boolean; minWallClockDeltaMs?: number }; ambient?: readonly string[]; track?: number; affects?: readonly string[] };
 
 function flat<T extends string>(g: Graph<T>): Flat[] {
   return Object.values(g.nodes) as Flat[];
@@ -261,6 +271,26 @@ export function define<T extends string>(g: Graph<T>): Graph<T> {
     if (!n.convergenceCheck) continue;
     const unknown = Object.keys(n.convergenceCheck).filter(k => !CONVERGENCE_CHECK_KEYS.has(k));
     if (unknown.length) throw new Error(`Node "${n.id}" convergenceCheck has unknown keys: ${unknown.join(', ')} — valid keys: ${[...CONVERGENCE_CHECK_KEYS].join(', ')}`);
+  }
+
+  // Validate track/affects
+  for (const n of nodes) {
+    const spec = n as unknown as { track?: unknown; affects?: unknown };
+    if (spec.track !== undefined) {
+      if (typeof spec.track !== 'number' || !Number.isInteger(spec.track) || spec.track < 0) {
+        throw new Error(`Node "${n.id}" track must be a non-negative integer, got: ${spec.track}`);
+      }
+    }
+    if (spec.affects !== undefined) {
+      if (!Array.isArray(spec.affects)) {
+        throw new Error(`Node "${n.id}" affects must be an array`);
+      }
+      for (const a of spec.affects) {
+        if (typeof a !== 'string' || a.length === 0) {
+          throw new Error(`Node "${n.id}" affects entries must be non-empty strings`);
+        }
+      }
+    }
   }
 
   return g;
