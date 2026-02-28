@@ -1,148 +1,93 @@
 {
-  "id": "us1-gitsha-gov012",
-  "desc": "US1 gitSha completion provenance + FR-GOV-012 env-var bypass elimination",
+  "id": "fr-cli-001",
+  "desc": "FR-CLI-001: JSON-native CLI with --human renderers — machine-first stdout, structured errors, schema governance",
   "init": "init",
   "term": "term",
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Existing codebase: completion-evidence.ts, protocol.ts validators, bin/roadmap.ts, CI workflow",
+      "desc": "Existing CLI: bin/roadmap.ts with json() helper, chart human output, ad-hoc console.log/error",
       "produces": [
-        "src/lib/completion-evidence.ts",
-        "src/protocol.ts",
-        "bin/roadmap.ts",
-        ".github/workflows/ci.yml"
+        "bin/roadmap.ts"
       ],
       "consumes": [],
       "deps": [],
       "validate": [
-        { "type": "artifact-exists", "target": "src/lib/completion-evidence.ts" },
         { "type": "artifact-exists", "target": "bin/roadmap.ts" }
       ],
       "idempotent": true
     },
-
-    "rm-gitsha-interface": {
-      "id": "rm-gitsha-interface",
-      "desc": "US1: Add gitSha?: string to CompletionRecordWithEvidence interface. Emit gitSha in saveCompletionWithEvidence() using execSync('git rev-parse HEAD').",
+    "rm-cli-json-envelope": {
+      "id": "rm-cli-json-envelope",
+      "desc": "Central emit() funnel with JSON envelope (schema_version, ok, cmd, repoRoot, headSha, data/error). Replace all json() calls in bin/roadmap.ts. Define canonical error codes. Write JSON_CONTRACT.md schema doc.",
       "produces": [
-        "src/lib/completion-evidence.ts"
+        "src/lib/cli-envelope.ts",
+        "docs/cli/JSON_CONTRACT.md"
       ],
       "consumes": [
-        "src/lib/completion-evidence.ts"
+        "bin/roadmap.ts"
       ],
       "deps": ["init"],
       "validate": [
-        { "type": "shell", "command": "npx tsc --noEmit" },
-        { "type": "shell", "command": "npx vitest run tests/completion-gitsha.test.ts --reporter=dot" }
+        { "type": "artifact-exists", "target": "src/lib/cli-envelope.ts" },
+        { "type": "artifact-exists", "target": "docs/cli/JSON_CONTRACT.md" },
+        { "type": "shell", "command": "grep -q 'schema_version' src/lib/cli-envelope.ts" },
+        { "type": "shell", "command": "grep -q 'export function emit' src/lib/cli-envelope.ts" },
+        { "type": "shell", "command": "npx tsc --noEmit" }
       ],
       "idempotent": true
     },
-
-    "rm-gitsha-cli-emit": {
-      "id": "rm-gitsha-cli-emit",
-      "desc": "US1: Wire gitSha into cmdComplete and cmdCertify — pass current git SHA to saveCompletionWithEvidence(). Verify completed.json entries include gitSha after node completion.",
+    "rm-cli-human-renderers": {
+      "id": "rm-cli-human-renderers",
+      "desc": "Human-readable formatters for each command: plan gallery (table), plan select (summary), position/chart (ASCII), doctor (report). Wire --human and --json flags with correct precedence (default=JSON, --human=text, --json overrides --human).",
       "produces": [
-        "bin/roadmap.ts",
-        "tests/completion-gitsha.test.ts"
+        "src/lib/cli-human.ts"
       ],
       "consumes": [
-        "bin/roadmap.ts",
-        "src/lib/completion-evidence.ts"
+        "src/lib/cli-envelope.ts",
+        "bin/roadmap.ts"
       ],
-      "deps": ["rm-gitsha-interface"],
+      "deps": ["rm-cli-json-envelope"],
       "validate": [
-        { "type": "shell", "command": "npx tsc --noEmit" },
-        { "type": "shell", "command": "npx vitest run tests/completion-gitsha.test.ts --reporter=dot" }
+        { "type": "artifact-exists", "target": "src/lib/cli-human.ts" },
+        { "type": "shell", "command": "grep -q '\\-\\-human' bin/roadmap.ts" },
+        { "type": "shell", "command": "npx tsc --noEmit" }
       ],
       "idempotent": true
     },
-
-    "rm-gitsha-ci-gate": {
-      "id": "rm-gitsha-ci-gate",
-      "desc": "US1: CI gate script scripts/ci/roadmap-gitsha-gate.ts — verify all completion records in completed.json have gitSha field. Wire into CI promote lane.",
+    "rm-cli-contract-tests": {
+      "id": "rm-cli-contract-tests",
+      "desc": "Contract test suite asserting: (1) default stdout parses as JSON with envelope fields, (2) --human produces non-JSON text, (3) stderr does not contain JSON payload, (4) exit codes match ok field. Cover orient, chart, plan select, plan status, validate, complete.",
       "produces": [
-        "scripts/ci/roadmap-gitsha-gate.ts",
-        ".github/workflows/ci.yml"
+        "tests/cli-contract.test.ts"
       ],
       "consumes": [
-        "src/lib/completion-evidence.ts",
-        ".github/workflows/ci.yml"
+        "src/lib/cli-envelope.ts",
+        "src/lib/cli-human.ts",
+        "bin/roadmap.ts"
       ],
-      "deps": ["rm-gitsha-cli-emit"],
+      "deps": ["rm-cli-human-renderers"],
       "validate": [
-        { "type": "shell", "command": "npx tsc --noEmit" },
-        { "type": "shell", "command": "grep -q 'roadmap-gitsha-gate' .github/workflows/ci.yml" }
+        { "type": "artifact-exists", "target": "tests/cli-contract.test.ts" },
+        { "type": "shell", "command": "npx vitest run tests/cli-contract.test.ts" }
       ],
       "idempotent": true
     },
-
-    "rm-env-audit-script": {
-      "id": "rm-env-audit-script",
-      "desc": "FR-GOV-012: tools/audit-env-bypasses.ts — scan src/, bin/, scripts/, tests/ for process.env usage. Classify as bypass/config/test-harness. Exit 1 if any bypass keys outside tests/.",
-      "produces": [
-        "tools/audit-env-bypasses.ts"
-      ],
-      "consumes": [
-        "bin/roadmap.ts",
-        "src/protocol.ts"
-      ],
-      "deps": ["init"],
-      "validate": [
-        { "type": "shell", "command": "npx tsc --noEmit" },
-        { "type": "shell", "command": "npx vitest run tests/env-audit.test.ts --reporter=dot" }
-      ],
-      "idempotent": true
-    },
-
-    "rm-remove-env-bypasses": {
-      "id": "rm-remove-env-bypasses",
-      "desc": "FR-GOV-012: Remove SKIP_PLAN_GATE env var from production paths (bin/roadmap.ts). Replace with --skip-plan-gate CLI flag that writes non-passing receipt. Replace ROADMAP_VALIDATING with internal ValidationContext parameter threaded through call stack.",
-      "produces": [
-        "bin/roadmap.ts",
-        "src/protocol.ts"
-      ],
-      "consumes": [
-        "bin/roadmap.ts",
-        "src/protocol.ts",
-        "tools/audit-env-bypasses.ts"
-      ],
-      "deps": ["rm-env-audit-script"],
-      "validate": [
-        { "type": "shell", "command": "npx tsc --noEmit" },
-        { "type": "shell", "command": "npx vitest run tests/env-bypass-removal.test.ts --reporter=dot" },
-        { "type": "shell", "command": "npx tsx tools/audit-env-bypasses.ts" }
-      ],
-      "idempotent": true
-    },
-
-    "rm-env-audit-ci": {
-      "id": "rm-env-audit-ci",
-      "desc": "FR-GOV-012: Wire tools/audit-env-bypasses.ts into CI as required check. Add SKIP_PLAN_GATE to the Reject SKIP_ bypass in CI step.",
-      "produces": [
-        ".github/workflows/ci.yml"
-      ],
-      "consumes": [
-        ".github/workflows/ci.yml",
-        "tools/audit-env-bypasses.ts"
-      ],
-      "deps": ["rm-remove-env-bypasses"],
-      "validate": [
-        { "type": "shell", "command": "grep -q 'audit-env-bypasses' .github/workflows/ci.yml" },
-        { "type": "shell", "command": "grep -q 'SKIP_PLAN_GATE' .github/workflows/ci.yml" }
-      ],
-      "idempotent": true
-    },
-
     "term": {
       "id": "term",
-      "desc": "US1 gitSha provenance on completion records + FR-GOV-012 env-var bypass elimination — no governance decisions depend on ambient env vars",
+      "desc": "FR-CLI-001 complete — all commands JSON-native, --human renderers, contract tests passing, schema governance doc",
       "produces": [],
-      "consumes": [],
-      "deps": ["rm-gitsha-ci-gate", "rm-env-audit-ci"],
+      "consumes": [
+        "src/lib/cli-envelope.ts",
+        "src/lib/cli-human.ts",
+        "tests/cli-contract.test.ts",
+        "docs/cli/JSON_CONTRACT.md"
+      ],
+      "deps": ["rm-cli-contract-tests"],
       "validate": [
         { "type": "shell", "command": "npx tsc --noEmit" },
-        { "type": "shell", "command": "npx vitest run --reporter=dot" }
+        { "type": "shell", "command": "npx vitest run tests/cli-contract.test.ts" },
+        { "type": "shell", "command": "bin/roadmap orient --note 'term gate' 2>/dev/null | node -e \"const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); process.exit(d.schema_version===1?0:1)\"" }
       ],
       "idempotent": true
     }
