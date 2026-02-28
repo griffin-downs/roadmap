@@ -86,18 +86,17 @@ export function parseTasksMd(content: string): ParsedTask[] {
       case 'mode':
         if (value.trim() === 'plan') current.mode = 'plan';
         break;
-      case 'validate':
-        for (const item of items) {
-          if (item.startsWith('shell:')) {
-            current.validate.push({ type: 'shell' as any, command: item.slice(6).trim() });
-          } else if (item.startsWith('exists:')) {
-            current.validate.push({ type: 'artifact-exists', target: item.slice(7).trim() });
-          } else {
-            // Default: treat as shell command
-            current.validate.push({ type: 'shell' as any, command: item.trim() });
-          }
+      case 'validate': {
+        const v = value.trim();
+        if (v.startsWith('shell:')) {
+          current.validate.push({ type: 'shell' as any, command: v.slice(6).trim() });
+        } else if (v.startsWith('exists:')) {
+          current.validate.push({ type: 'artifact-exists', target: v.slice(7).trim() });
+        } else {
+          current.validate.push({ type: 'shell' as any, command: v });
         }
         break;
+      }
     }
   }
 
