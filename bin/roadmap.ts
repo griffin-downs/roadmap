@@ -40,6 +40,7 @@ import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } fro
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/spec-origin.ts';
 import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake.ts';
 import { addPeer, removePeer, buildFederationView, federationStatus } from '../src/lib/federation.ts';
+import { buildPlanOverlay, writePlanOverlay, loadPlanOverlay, isOverlayValid } from '../src/lib/plan-overlay.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
@@ -286,7 +287,9 @@ async function main() {
         if (args.includes('--gallery')) return await cmdPlanGallery(note!);
         if (args[1] === 'select') return await cmdPlanSelect(note!);
         if (args[1] === 'status') return await cmdPlanStatus();
-        json({ error: 'Unknown plan subcommand', fix: 'roadmap plan --gallery | plan select <id> --note "..." | plan status' });
+        if (args[1] === 'overlay') return cmdPlanOverlay(note!);
+        if (args[1] === 'schedule') return cmdPlanScheduleFromOverlay(note!);
+        json({ error: 'Unknown plan subcommand', fix: 'roadmap plan --gallery | plan select <id> --note "..." | plan status | plan overlay --select <id> --note "..." | plan schedule --note "..."' });
         process.exit(1);
         return;
       case 'help':
@@ -4690,6 +4693,72 @@ async function cmdPlanStatus() {
     });
     process.exit(1);
   }
+}
+
+// --- plan overlay + schedule ---
+
+function cmdPlanOverlay(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const selectIdx = args.indexOf('--select');
+  const candidateId = selectIdx !== -1 ? args[selectIdx + 1] : undefined;
+  if (!candidateId) {
+    json({ error: 'Missing --select <candidateId>', fix: 'roadmap plan overlay --select <id> --note "..."' });
+    process.exit(1);
+  }
+
+  const dag = loadDAG();
+  const clusterResult = buildClusters(dag);
+  const scheduleResult = buildSchedule(dag, clusterResult);
+
+  const clusters = clusterResult.clusters.map(c => ({
+    id: c.id,
+    nodes: c.nodes,
+    produces: c.produces,
+    consumes: c.consumes,
+  }));
+
+  const overlay = buildPlanOverlay(repoRoot, candidateId, clusters, scheduleResult.waves);
+  const overlayPath = writePlanOverlay(repoRoot, overlay);
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'plan overlay', note,
+    repo: basename(repoRoot), position: [], level: 0,
+    detail: { candidateId, clusters: overlay.clusters.length, scheduleEntries: overlay.schedule.length, overlayHash: overlay.overlayHash.slice(0, 12) },
+  });
+
+  json({
+    overlay: true,
+    candidateId,
+    clusters: overlay.clusters.length,
+    schedule: overlay.schedule.length,
+    overlayHash: overlay.overlayHash.slice(0, 12),
+    path: overlayPath,
+  });
+}
+
+function cmdPlanScheduleFromOverlay(note: string) {
+  const overlay = loadPlanOverlay(repoRoot);
+  if (!overlay) {
+    json({ error: 'No plan overlay found', fix: 'roadmap plan overlay --select <id> --note "..." first' });
+    process.exit(1);
+  }
+
+  if (!isOverlayValid(repoRoot, overlay)) {
+    json({ error: 'Plan overlay is stale — DAG has changed since overlay was built', fix: 'Rebuild: roadmap plan overlay --select <id> --note "..."' });
+    process.exit(1);
+  }
+
+  json({
+    candidateId: overlay.candidateId,
+    valid: true,
+    schedule: overlay.schedule,
+    clusters: overlay.clusters.length,
+    overlayHash: overlay.overlayHash.slice(0, 12),
+  });
 }
 
 // --- plan --gallery: template gallery, candidate selection, judgment recording ---
