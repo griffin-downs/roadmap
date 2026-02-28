@@ -221,6 +221,7 @@ async function main() {
       case 'show':      return cmdShow();
       case 'commit':    return cmdCommit(note!);
       case 'complete':  return await cmdComplete(note!);
+      case 'certify':   return await cmdCertify(note!);
       case 'checkpoint': return cmdCheckpoint(note);
       case 'diff':      return cmdDiff();
       case 'iter-id':   return cmdIterId();
@@ -2155,6 +2156,68 @@ async function cmdComplete(note: string) {
     ...(posAfter.batchComplete && !advanced && !noAdvance ? { hint: 'roadmap advance --note "batch done"' } : {}),
     ...(intentJudgments ? { evaluated: intentJudgments.length } : {}),
     ...(exploreResults ? { explored: exploreResults.length, exploreResults: exploreResults.map(r => ({ script: r.script, success: r.success, observations: r.result?.observations?.length ?? 0, error: r.error })) } : {}),
+  });
+}
+
+// Re-run validators on a completed node and write a structured receipt if they pass.
+// Unlike complete: no claiming, no checkpoint, no batch restriction, no advancing.
+async function cmdCertify(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const nodeId = args[1];
+  if (!nodeId) {
+    json({ error: 'Missing node ID', fix: 'roadmap certify <node-id> --note "reason"' });
+    process.exit(1);
+  }
+
+  const dag = loadDAG();
+  const allNodes = Object.keys(dag.nodes);
+  if (!allNodes.includes(nodeId)) {
+    json({ error: `Node "${nodeId}" not found`, available: allNodes.slice(0, 10) });
+    process.exit(1);
+  }
+
+  const ownerIdx = args.indexOf('--owner');
+  const owner = ownerIdx !== -1 ? args[ownerIdx + 1]
+    : (process.env['AGENT_ID'] ?? process.env['USER'] ?? 'unknown');
+
+  const pos = orientWithState(dag);
+
+  const { validateNode } = await import('../src/protocol.ts');
+  const validationResult = await validateNode(dag, nodeId, fileExists(repoRoot));
+
+  const evidenceChecks: EvidenceRecord[] = validationResult.checks.map((c: any) => ({
+    rule: c.rule?.type ?? 'unknown',
+    passed: c.passed,
+    evidence: c.evidence ?? '',
+  }));
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'certify', note,
+    repo: basename(repoRoot), position: pos.position, level: pos.level, dagId: dag.id,
+    detail: { nodeId, certified: validationResult.passed },
+  });
+
+  if (!validationResult.passed) {
+    json({
+      certified: false,
+      node: nodeId,
+      checks: validationResult.checks,
+      failedCount: validationResult.checks.filter((c: any) => !c.passed).length,
+    });
+    process.exit(1);
+  }
+
+  saveCompletionWithEvidence(repoRoot, nodeId, evidenceChecks, owner);
+
+  json({
+    certified: true,
+    node: nodeId,
+    owner,
+    checks: evidenceChecks,
   });
 }
 
