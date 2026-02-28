@@ -21,7 +21,7 @@ import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, as
 import { parseTasksMd, tasksToDAG } from '../src/lib/speckit-import.ts';
 import { enrichIntentGate } from '../src/lib/intent-gate-enrichment.ts';
 import { loadCompletions, getCompletedNodeIds } from '../src/lib/completion-tracker.ts';
-import { saveCompletionWithEvidence } from '../src/lib/completion-evidence.ts';
+import { saveCompletionWithEvidence, loadCompletionsWithEvidence, hasPassingReceipt } from '../src/lib/completion-evidence.ts';
 import type { EvidenceRecord } from '../src/lib/completion-evidence.ts';
 import { buildSpawnPlan } from '../src/lib/spawn-plan.ts';
 import { buildScaffold } from '../src/lib/scaffold.ts';
@@ -110,9 +110,21 @@ function retiredSet(): Set<string> {
 // --- Completion state: single entry point for orient evidence ---
 // All orient() calls in this CLI MUST use orientWithState() or getCompletionState().
 // Direct orient() calls bypass receipt semantics.
+// FR-GOV-003: completedIds excludes quarantined completions (--skip-validate).
+// Legacy records (no validationChecks) are treated as passing — they predate receipt enforcement.
+// Only records with explicit failed checks are quarantined.
 function getCompletionState() {
-  const completions = loadCompletions(repoRoot);
-  const completedIds = getCompletedNodeIds(completions);
+  const evidenceCompletions = loadCompletionsWithEvidence(repoRoot);
+  const completedIds = new Set<string>();
+  for (const [id, record] of evidenceCompletions) {
+    if (hasPassingReceipt(record)) {
+      completedIds.add(id);
+    } else if (!record.validationChecks || record.validationChecks.length === 0) {
+      // Legacy completion — no evidence system at time of completion. Accept.
+      completedIds.add(id);
+    }
+    // else: has checks with at least one failed → quarantined, excluded
+  }
   const retired = retiredSet();
   return { completedIds, retired, exists: fileExists(repoRoot) };
 }
