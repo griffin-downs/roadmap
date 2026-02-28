@@ -2230,5 +2230,101 @@
         "evidence": "produce-less node, migrated as legacy"
       }
     ]
+  },
+  {
+    "nodeId": "git-state-impl",
+    "completedAt": "2026-02-28T13:29:47.280Z",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "all 2 artifact(s) exist on disk"
+      }
+    ]
+  },
+  {
+    "nodeId": "FR-GOV-002",
+    "completedAt": "2026-02-28T13:29:47.281Z",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "all 1 artifact(s) exist on disk"
+      }
+    ]
+  },
+  {
+    "nodeId": "FR-GOV-003",
+    "completedAt": "2026-02-28T13:29:47.281Z",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "all 2 artifact(s) exist on disk"
+      }
+    ]
+  },
+  {
+    "nodeId": "example-task-a",
+    "completedAt": "2026-02-28T13:29:47.281Z",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "all 1 artifact(s) exist on disk"
+      }
+    ]
+  },
+  {
+    "nodeId": "example-task-b",
+    "completedAt": "2026-02-28T13:29:47.281Z",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "all 1 artifact(s) exist on disk"
+      }
+    ]
+  },
+  {
+    "nodeId": "example-integration",
+    "completedAt": "2026-02-28T13:29:47.281Z",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "all 1 artifact(s) exist on disk"
+      }
+    ]
+  },
+  {
+    "nodeId": "legacy-completion-migration",
+    "completedAt": "2026-02-28T13:29:47.281Z",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "all 2 artifact(s) exist on disk"
+      }
+    ]
+  },
+  {
+    "nodeId": "intent-governance-bedrock",
+    "completedAt": "2026-02-28T13:29:47.281Z",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "all 1 artifact(s) exist on disk"
+      }
+    ]
   }
 ]
