@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "rates": [
+    { "model": "claude-opus-4-6", "inputPerMToken": 15.0, "outputPerMToken": 75.0 },
+    { "model": "claude-sonnet-4-6", "inputPerMToken": 3.0, "outputPerMToken": 15.0 },
+    { "model": "claude-haiku-4-5-20251001", "inputPerMToken": 0.8, "outputPerMToken": 4.0 }
+  ]
+}
