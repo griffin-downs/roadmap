@@ -1,0 +1,30 @@
+{
+  "hardenedAt": "2026-02-28T10:54:33.377Z",
+  "semantics": {
+    "artifact-existence": "necessary but not sufficient",
+    "completion-receipt": "required — both artifacts AND receipt for orient to mark done",
+    "skip-validate": "produces non-passing receipt — orient treats as incomplete",
+    "legacy-migration": "prior completions migrated with legacy:true flag"
+  },
+  "bypasses_eliminated": [
+    "Bypass #2: orient auto-completion from artifact existence alone",
+    "Bypass #3: --skip-validate producing indistinguishable completions",
+    "Bypass #4: produce-less nodes auto-completing without receipt"
+  ],
+  "stats": {
+    "totalCompletions": 189,
+    "withEvidence": 185,
+    "passingReceipts": 185,
+    "legacyMigrated": 184
+  },
+  "track0_nodes": [
+    "completion-record-evidence",
+    "orient-receipt-semantics",
+    "skip-validate-quarantine",
+    "legacy-completion-migration",
+    "intent-governance-bedrock",
+    "fix-artifact-field",
+    "fix-orient-completions",
+    "fix-post-commit-hook"
+  ]
+}
