@@ -1,7 +1,25 @@
 // @module gallery
-// @exports computeRisk, paretoFilter, generateCandidates
-// @types TemplateParams, GalleryCandidate
+// @exports computeRisk, paretoFilter, generateCandidates, computeParetoFront
+// @types TemplateParams, GalleryCandidate, CandidateMetrics, ParetoReport
 // @entry roadmap
+
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { createHash } from 'node:crypto';
+
+export interface CandidateMetrics {
+  candidateId: string;
+  coverage: number;   // 0.0–1.0
+  cost: number;       // USD
+  latency: number;    // ms
+}
+
+export interface ParetoReport {
+  paretoFront: CandidateMetrics[];
+  dominated: CandidateMetrics[];
+  generatedAt: string;
+  sha: string;
+}
 
 export interface TemplateParams {
   emitStrategy: 'single-pass' | 'two-stage' | 'per-cluster'
@@ -253,4 +271,51 @@ export function generateCandidates(specSource: string, _historyDir?: string): Ga
   }
 
   return paretoFilter(candidates);
+}
+
+// Quantize to 2 decimal places to prevent noise from affecting dominance.
+function q(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+// A dominates B if A is at least as good on all three metrics and strictly better on at least one.
+// Higher coverage = better. Lower cost + latency = better.
+function dominates(a: CandidateMetrics, b: CandidateMetrics): boolean {
+  const aq = { coverage: q(a.coverage), cost: q(a.cost), latency: q(a.latency) };
+  const bq = { coverage: q(b.coverage), cost: q(b.cost), latency: q(b.latency) };
+  const aLeAll = aq.coverage >= bq.coverage && aq.cost <= bq.cost && aq.latency <= bq.latency;
+  const aLtOne = aq.coverage > bq.coverage || aq.cost < bq.cost || aq.latency < bq.latency;
+  return aLeAll && aLtOne;
+}
+
+export function computeParetoFront(metrics: CandidateMetrics[], repoRoot?: string): ParetoReport {
+  const sha = createHash('sha256').update(JSON.stringify(metrics)).digest('hex');
+  const dominated = new Set<string>();
+
+  for (const a of metrics) {
+    for (const b of metrics) {
+      if (a.candidateId === b.candidateId) continue;
+      if (dominated.has(b.candidateId)) continue;
+      // a dominates b?
+      if (dominates(a, b)) dominated.add(b.candidateId);
+    }
+  }
+
+  const paretoFront = metrics.filter(m => !dominated.has(m.candidateId));
+  const dominatedList = metrics.filter(m => dominated.has(m.candidateId));
+
+  const report: ParetoReport = {
+    paretoFront,
+    dominated: dominatedList,
+    generatedAt: new Date().toISOString(),
+    sha,
+  };
+
+  if (repoRoot) {
+    const artifactsDir = join(repoRoot, '.roadmap', 'artifacts');
+    if (!existsSync(artifactsDir)) mkdirSync(artifactsDir, { recursive: true });
+    writeFileSync(join(artifactsDir, `pareto-${sha}.json`), JSON.stringify(report, null, 2) + '\n');
+  }
+
+  return report;
 }

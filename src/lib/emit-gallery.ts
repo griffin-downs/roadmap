@@ -1,11 +1,13 @@
 // @module emit-gallery
-// @exports CandidateResult, FileToIntents, ConvergenceConfig, GalleryFailure, GalleryRunResult, buildFileToIntents, runGallery
+// @exports CandidateResult, FileToIntents, ConvergenceConfig, GalleryFailure, GalleryRunResult, buildFileToIntents, runGallery, CandidateReceipt, GalleryFailureCode, GalleryResult
 // @entry roadmap
 
 // Gallery is diversity not retry.
 // If all candidates fail the same intent → GalleryFailure with structured evidence.
 // maxFixPasses is a per-gate budget after selection, not a generation retry count.
 
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { EmitGalleryNodeSpec, ValidationRule } from '../protocol.ts';
 import type { StrategySpec } from './strategies/index.ts';
 
@@ -42,13 +44,26 @@ export interface ConvergenceConfig {
   escalateTo: 'human' | 'opus-review';
 }
 
-export interface GalleryFailure {
-  unreachable: string;            // intent statement no candidate satisfied
-  bestConfidence: number;
-  threshold: number;
-  candidates: number;
-  diagnosis: string;              // e.g. "all candidates used @media prefers-color-scheme"
+export interface CandidateReceipt {
+  candidateId: string;
+  sourceNodeId: string;
+  producedAt: string;
+  pipelineSteps: string[];
 }
+
+export type GalleryFailureCode = 'insufficientCandidates' | 'guardRejection' | 'paretoEmpty';
+
+export interface GalleryFailure {
+  code: GalleryFailureCode;
+  evidence: {
+    guard?: string;        // for guardRejection
+    check?: string;        // for guardRejection
+    evaluated?: number;    // count of candidates evaluated
+    reason: string;        // human-readable
+  };
+}
+
+export type GalleryResult<T> = { ok: true; value: T } | { ok: false; failure: GalleryFailure };
 
 export interface GalleryRunResult {
   candidates: CandidateResult[];
@@ -96,12 +111,23 @@ function buildScorecard(candidates: CandidateResult[]): string {
   return [sep, fmt(header), sep, ...rows.map(fmt), sep].join('\n');
 }
 
+// Write CandidateReceipt to .roadmap/receipts/candidate-<candidateId>.json
+function writeCandidateReceipt(receipt: CandidateReceipt, repoRoot: string): void {
+  const receiptsDir = join(repoRoot, '.roadmap', 'receipts');
+  if (!existsSync(receiptsDir)) mkdirSync(receiptsDir, { recursive: true });
+  writeFileSync(
+    join(receiptsDir, `candidate-${receipt.candidateId}.json`),
+    JSON.stringify(receipt, null, 2) + '\n',
+  );
+}
+
 export async function runGallery(opts: {
   nodeSpec: EmitGalleryNodeSpec;
   strategies: StrategySpec[];
   workDir: string;
   convergence?: ConvergenceConfig;
   _candidates?: CandidateResult[];  // test injection — bypasses stub generation
+  repoRoot?: string;                // for writing candidate receipts
 }): Promise<GalleryRunResult> {
   const limit = opts.nodeSpec.candidates;
   const selected = opts.strategies.slice(0, limit);
@@ -125,6 +151,19 @@ export async function runGallery(opts: {
       estimatedCost: strategy.estimatedCostMultiplier,
     },
   }));
+
+  // Write CandidateReceipt for each candidate when repoRoot is provided
+  if (opts.repoRoot) {
+    for (const candidate of candidates) {
+      const receipt: CandidateReceipt = {
+        candidateId: candidate.id,
+        sourceNodeId: opts.nodeSpec.id,
+        producedAt: new Date().toISOString(),
+        pipelineSteps: ['strategy-select', 'emit', 'deterministic-gate', 'intent-gate'],
+      };
+      writeCandidateReceipt(receipt, opts.repoRoot);
+    }
+  }
 
   const survivors = candidates.filter(c => c.summary.deterministicPass);
   const intentSurvivors = survivors.filter(c => c.intent.every(i => i.pass));
@@ -157,16 +196,18 @@ export async function runGallery(opts: {
 
     const bestConfidence = Math.max(...entries.map(e => e.confidence));
     const threshold = statementThresholds.get(stmt) ?? 0.9;
-    const diagnosis = entries[0]?.reasoning
+    const reason = entries[0]?.reasoning
       ? `all ${candidates.length} candidates: ${entries[0].reasoning}`
       : `all ${candidates.length} candidates failed intent check`;
 
     failures.push({
-      unreachable: stmt,
-      bestConfidence,
-      threshold,
-      candidates: candidates.length,
-      diagnosis,
+      code: 'guardRejection',
+      evidence: {
+        guard: stmt,
+        check: `confidence ${bestConfidence.toFixed(2)} < threshold ${threshold}`,
+        evaluated: candidates.length,
+        reason,
+      },
     });
   }
 

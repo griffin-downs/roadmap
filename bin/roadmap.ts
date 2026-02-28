@@ -286,6 +286,8 @@ async function main() {
       case 'explain':   return cmdExplain();
       case 'receipts':  return cmdReceipts();
       case 'artifacts': return cmdArtifacts();
+      case 'gallery':   return cmdGallery();
+      case 'blend':     return cmdBlend();
       case 'explore':   return await cmdExplore();
       case 'contract':  return cmdContract(note!);
       case 'env-audit': return cmdEnvAudit();
@@ -1783,6 +1785,57 @@ function cmdArtifacts() {
   } catch { /* ignore */ }
 
   json({ artifacts, count: artifacts.length });
+}
+
+// gallery explain <candidateId> — reads .roadmap/receipts/candidate-<candidateId>.json
+function cmdGallery() {
+  const sub = args[1];
+  if (sub === 'explain') {
+    const candidateId = args[2];
+    if (!candidateId) {
+      json({ error: 'Missing candidateId', fix: 'roadmap gallery explain <candidateId>' });
+      process.exit(1);
+    }
+    const receiptPath = join(repoRoot, '.roadmap', 'receipts', `candidate-${candidateId}.json`);
+    if (!existsSync(receiptPath)) {
+      json({ error: `No receipt found for candidate '${candidateId}'`, path: receiptPath });
+      process.exit(1);
+    }
+    const receipt = JSON.parse(readFileSync(receiptPath, 'utf-8'));
+    json(receipt);
+    return;
+  }
+  json({ error: 'Unknown gallery subcommand', fix: 'roadmap gallery explain <candidateId>' });
+  process.exit(1);
+}
+
+// blend explain <blendId> — reads blend ledger and finds the entry matching blendId
+function cmdBlend() {
+  const sub = args[1];
+  if (sub === 'explain') {
+    const blendId = args[2];
+    if (!blendId) {
+      json({ error: 'Missing blendId', fix: 'roadmap blend explain <blendId>' });
+      process.exit(1);
+    }
+    const ledgerPath = join(repoRoot, '.roadmap', 'blend-ledger.jsonl');
+    if (!existsSync(ledgerPath)) {
+      json({ error: 'No blend ledger found', path: ledgerPath });
+      process.exit(1);
+    }
+    const entries = readFileSync(ledgerPath, 'utf-8')
+      .trim().split('\n').filter(Boolean)
+      .map((line: string) => JSON.parse(line));
+    const entry = entries.find((e: { blendId: string }) => e.blendId === blendId);
+    if (!entry) {
+      json({ error: `No blend receipt found for blendId '${blendId}'` });
+      process.exit(1);
+    }
+    json({ blendId: entry.blendId, guardResults: entry.guardResults, statementOwnership: entry.statementOwnership, checkSet: entry.checkSet });
+    return;
+  }
+  json({ error: 'Unknown blend subcommand', fix: 'roadmap blend explain <blendId>' });
+  process.exit(1);
 }
 
 function cmdContract(note: string) {

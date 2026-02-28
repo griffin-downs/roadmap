@@ -1,8 +1,10 @@
 // @module blend
 // @exports BlendSpec, BlendResult, blendCandidates
 
+import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { CandidateResult, FileToIntents } from './emit-gallery.ts';
-import type { BlendReceipt } from './blend-receipt.ts';
+import type { BlendReceipt, StatementOwnership, CheckSet, CheckEntry } from './blend-receipt.ts';
 
 export interface BlendSpec {
   primary: string;    // candidate id — base architecture source
@@ -16,6 +18,8 @@ export interface BlendResult {
   deterministicPass: boolean;
   intentScore: string;            // e.g. "5/6"
   receipt?: BlendReceipt;
+  statementOwnership: StatementOwnership[];
+  checkSet: CheckSet;
 }
 
 // A donor file is substitutable only when:
@@ -26,7 +30,11 @@ export function blendCandidates(
   candidates: CandidateResult[],
   spec: BlendSpec,
   fileToIntents: FileToIntents,
-  opts?: { deterministicCheck?: (files: Record<string, string>) => boolean },
+  opts?: {
+    deterministicCheck?: (files: Record<string, string>) => boolean;
+    blendId?: string;
+    repoRoot?: string;
+  },
 ): BlendResult {
   const primary = candidates.find(c => c.id === spec.primary);
   if (!primary) throw new Error(`blend: primary candidate '${spec.primary}' not found`);
@@ -34,6 +42,7 @@ export function blendCandidates(
   const workingFiles: Record<string, string> = { ...primary.files };
   const substitutions: Array<{ path: string; from: string; reason: string }> = [];
   const reverted: Array<{ path: string; reason: string }> = [];
+  const checks: CheckEntry[] = [];
 
   for (const donorId of spec.donors) {
     const donor = candidates.find(c => c.id === donorId);
@@ -64,9 +73,24 @@ export function blendCandidates(
       if (opts?.deterministicCheck && !opts.deterministicCheck(workingFiles)) {
         // Revert
         workingFiles[path] = oldContent;
-        reverted.push({
-          path,
-          reason: `substitution from ${donorId} broke deterministic gate`,
+        const rollbackEvidence = `substitution from ${donorId} broke deterministic gate`;
+        reverted.push({ path, reason: rollbackEvidence });
+
+        // Write rollback evidence to disk if blendId + repoRoot provided
+        if (opts.blendId && opts.repoRoot) {
+          const rollbackDir = join(opts.repoRoot, '.roadmap', 'blend-rollbacks', opts.blendId);
+          if (!existsSync(rollbackDir)) mkdirSync(rollbackDir, { recursive: true });
+          writeFileSync(
+            join(rollbackDir, `${path.replace(/\//g, '_')}.json`),
+            JSON.stringify({ path, donorId, reason: rollbackEvidence }, null, 2),
+          );
+        }
+
+        checks.push({
+          checkId: path,
+          description: `substitute ${path} from ${donorId}`,
+          status: 'fail',
+          rollbackEvidence,
         });
         continue;
       }
@@ -75,6 +99,12 @@ export function blendCandidates(
         path,
         from: donorId,
         reason: `donor cheaper (${donorLen} < ${primaryLen} chars) and passes all covering intents`,
+      });
+
+      checks.push({
+        checkId: path,
+        description: `substitute ${path} from ${donorId}`,
+        status: 'pass',
       });
     }
   }
@@ -116,11 +146,35 @@ export function blendCandidates(
   const total = checkedStatements.size;
   const intentScore = `${passed}/${total}`;
 
+  // Build statementOwnership: for each statement in fileToIntents, find the owning candidate.
+  const statementOwnership: StatementOwnership[] = [];
+  const seenStmts = new Set<string>();
+  for (const path of Object.keys(workingFiles)) {
+    for (const stmt of fileToIntents[path] ?? []) {
+      if (seenStmts.has(stmt)) continue;
+      seenStmts.add(stmt);
+      const owner = pathOwner[path];
+      if (!owner) throw new Error('blend: orphan statement — no ownerNodeId');
+      statementOwnership.push({
+        statement: stmt,
+        ownerNodeId: owner.id,
+        provenance: [owner.id, path, 'blend-output'],
+      });
+    }
+  }
+
+  const checkSet: CheckSet = {
+    checks,
+    allPassed: checks.every(c => c.status !== 'fail'),
+  };
+
   return {
     files: workingFiles,
     substitutions,
     reverted,
     deterministicPass: true,  // stub — production would re-run tsc/vitest
     intentScore,
+    statementOwnership,
+    checkSet,
   };
 }
