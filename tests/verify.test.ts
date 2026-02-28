@@ -72,12 +72,12 @@ describe('runVerify', () => {
     expect(result.warnings.find(w => w.code === 'ORPHAN_COMPLETIONS')!.nodeIds).toContain('ghost-node');
   });
 
-  it('no warnings when completions match DAG nodes', () => {
+  it('no orphan-completion warnings when completions match DAG nodes', () => {
     writeDAG(root, minimalDAG);
     const completions = [{ nodeId: 'init', completedAt: new Date().toISOString() }];
     writeFileSync(join(root, '.roadmap', 'completed.json'), JSON.stringify(completions));
     const result = runVerify(root);
-    expect(result.warnings).toHaveLength(0);
+    expect(result.warnings.some(w => w.code === 'ORPHAN_COMPLETIONS')).toBe(false);
   });
 
   it('exit code: violations produce non-empty fix array', () => {
@@ -90,5 +90,70 @@ describe('runVerify', () => {
     writeDAG(root, minimalDAG);
     const result = runVerify(root);
     expect(result.fix).toHaveLength(0);
+  });
+
+  it('detects malformed spec-origin.json', () => {
+    writeDAG(root, minimalDAG);
+    mkdirSync(join(root, '.roadmap'), { recursive: true });
+    writeFileSync(join(root, '.roadmap', 'spec-origin.json'), JSON.stringify({ bad: true }));
+    const result = runVerify(root);
+    expect(result.violations.some(v => v.code === 'SPEC_ORIGIN_MALFORMED')).toBe(true);
+  });
+
+  it('accepts valid spec-origin.json', () => {
+    writeDAG(root, minimalDAG);
+    mkdirSync(join(root, '.roadmap'), { recursive: true });
+    writeFileSync(join(root, '.roadmap', 'spec-origin.json'), JSON.stringify({
+      schemaVersion: 1, engine: 'spec-kit', version: '1.0.0',
+      compile_hash: 'abc', spec_sha: 'def', importedAt: new Date().toISOString(), dagId: 'test',
+    }));
+    const result = runVerify(root);
+    expect(result.violations.filter(v => v.code.startsWith('SPEC_ORIGIN'))).toHaveLength(0);
+  });
+
+  it('warns on plan selection missing (treated as warning)', () => {
+    writeDAG(root, minimalDAG);
+    const result = runVerify(root);
+    // Plan selection missing is a warning, not a violation
+    expect(result.warnings.some(w => w.code === 'PLAN_SELECTION_INVALID')).toBe(true);
+  });
+
+  it('detects artifact-only completions', () => {
+    const dagWithValidator = {
+      ...minimalDAG,
+      nodes: {
+        ...minimalDAG.nodes,
+        work: {
+          id: 'work', desc: 'do work', produces: ['out.ts'], consumes: [], deps: ['init'],
+          validate: [{ type: 'shell', command: 'echo ok' }],
+        },
+        term: { ...minimalDAG.nodes.term, deps: ['work'] },
+      },
+    };
+    writeDAG(root, dagWithValidator);
+    // Completion without checkpoint
+    const completions = [{ nodeId: 'work', completedAt: new Date().toISOString() }];
+    writeFileSync(join(root, '.roadmap', 'completed.json'), JSON.stringify(completions));
+    const result = runVerify(root);
+    expect(result.warnings.some(w => w.code === 'ARTIFACT_ONLY_COMPLETION')).toBe(true);
+  });
+
+  it('no artifact-only warning when checkpoint present', () => {
+    const dagWithValidator = {
+      ...minimalDAG,
+      nodes: {
+        ...minimalDAG.nodes,
+        work: {
+          id: 'work', desc: 'do work', produces: ['out.ts'], consumes: [], deps: ['init'],
+          validate: [{ type: 'shell', command: 'echo ok' }],
+        },
+        term: { ...minimalDAG.nodes.term, deps: ['work'] },
+      },
+    };
+    writeDAG(root, dagWithValidator);
+    const completions = [{ nodeId: 'work', completedAt: new Date().toISOString(), checkpointId: 'cp-123' }];
+    writeFileSync(join(root, '.roadmap', 'completed.json'), JSON.stringify(completions));
+    const result = runVerify(root);
+    expect(result.warnings.some(w => w.code === 'ARTIFACT_ONLY_COMPLETION')).toBe(false);
   });
 });
