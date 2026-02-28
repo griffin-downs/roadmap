@@ -16,7 +16,7 @@ describe('bootstrap generation', () => {
     expect(roadmapTs).toContain("id: 'test-project'");
     expect(roadmapTs).toContain('scaffold');
     expect(roadmapTs).toContain('done');
-    expect(roadmapTs).toContain('import { graph, define, orient, fileExists }');
+    expect(roadmapTs).toContain('import { graph, define, orient, CompletionStore }');
   });
 
   it('generates valid roadmap.ts for monorepo template', () => {

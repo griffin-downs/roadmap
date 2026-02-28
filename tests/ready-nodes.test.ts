@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { graph, define, orient, readyNodes } from '../src/protocol.ts';
-
-// Helper: existence predicate from a set of artifact paths
-const has = (artifacts: Set<string>) => (a: string) => artifacts.has(a);
+import { graph, define, readyNodes, CompletionStore } from '../src/protocol.ts';
 
 describe('readyNodes: eager dispatch beyond current batch', () => {
   // Diamond: init → [a, b] → c → term
@@ -22,21 +19,20 @@ describe('readyNodes: eager dispatch beyond current batch', () => {
   }));
 
   it('returns empty when nothing is done', () => {
-    const ready = readyNodes(diamond, has(new Set()));
+    const ready = readyNodes(diamond, CompletionStore.empty());
     expect(ready).toEqual([]);
   });
 
   it('returns empty when current batch is fully incomplete', () => {
-    // init has no produces → done. a and b are current batch, both incomplete.
-    // c depends on both a and b → not ready.
-    const ready = readyNodes(diamond, has(new Set()));
+    // init not done → stuck at L0. No future batches ready.
+    const ready = readyNodes(diamond, CompletionStore.empty());
     expect(ready).toEqual([]);
   });
 
   it('returns node whose deps are met from partially complete batch', () => {
-    // init → [a, b] at L1. a done, b not done.
+    // init done → L1 = [a, b]. a done, b not done.
     // L2 = [c] depends on a AND b → not ready (b incomplete).
-    const ready = readyNodes(diamond, has(new Set(['a.txt'])));
+    const ready = readyNodes(diamond, CompletionStore.from(['init', 'a']));
     expect(ready).toEqual([]);
   });
 
@@ -57,9 +53,9 @@ describe('readyNodes: eager dispatch beyond current batch', () => {
   }));
 
   it('surfaces node from future batch when its deps are met but batch is incomplete', () => {
-    // L1 = [a, b]. a done, b not done. Current batch = L1.
+    // L0 = [init] done. L1 = [a, b]. a done, b not done. Current batch = L1.
     // L2 = [c, d]. c deps on a only → ready. d deps on a+b → not ready.
-    const ready = readyNodes(uneven, has(new Set(['a.txt'])));
+    const ready = readyNodes(uneven, CompletionStore.from(['init', 'a']));
     expect(ready).toHaveLength(1);
     expect(ready[0].id).toBe('c');
     expect(ready[0].level).toBe(2);
@@ -68,7 +64,7 @@ describe('readyNodes: eager dispatch beyond current batch', () => {
   });
 
   it('returns rich ReadyNode shape', () => {
-    const ready = readyNodes(uneven, has(new Set(['a.txt'])));
+    const ready = readyNodes(uneven, CompletionStore.from(['init', 'a']));
     const c = ready[0];
     expect(c).toEqual({
       id: 'c',
@@ -98,49 +94,44 @@ describe('readyNodes: eager dispatch beyond current batch', () => {
       },
     }));
 
-    // a done, b not done. Current batch = [a, b].
+    // init done, a done, b not done. Current batch = [a, b].
     // c (deps: a) → ready at L2. d (deps: b) → not ready. e (deps: c, d) → not ready.
-    const ready = readyNodes(chain, has(new Set(['a.txt'])));
+    const ready = readyNodes(chain, CompletionStore.from(['init', 'a']));
     expect(ready).toHaveLength(1);
     expect(ready[0].id).toBe('c');
 
     // Now a AND c done, b still not done.
     // d (deps: b) → not ready. e (deps: c, d) → not ready.
-    const ready2 = readyNodes(chain, has(new Set(['a.txt', 'c.txt'])));
+    const ready2 = readyNodes(chain, CompletionStore.from(['init', 'a', 'c']));
     expect(ready2).toHaveLength(0);
     // c is now done so it doesn't appear. d still blocked on b.
   });
 
   it('returns empty when all batches complete', () => {
-    const ready = readyNodes(uneven, has(new Set(['a.txt', 'b.txt', 'c.txt', 'd.txt'])));
+    const ready = readyNodes(uneven, CompletionStore.from(['init', 'a', 'b', 'c', 'd', 'term']));
     expect(ready).toEqual([]);
   });
 
   it('does not include nodes from current batch', () => {
-    // In uneven, L1 = [a, b]. Even if both are incomplete, they're current batch, not ready.
-    const ready = readyNodes(uneven, has(new Set()));
+    // init done. In uneven, L1 = [a, b]. Even if both are incomplete, they're current batch, not ready.
+    const ready = readyNodes(uneven, CompletionStore.from(['init']));
     expect(ready.map(n => n.id)).not.toContain('a');
     expect(ready.map(n => n.id)).not.toContain('b');
   });
 
   it('respects retired nodes', () => {
     // Retire b in uneven. L1 = [a, b] where b is retired (treated as done).
-    // If a also done → batch complete, orient moves to L2. No ready nodes from L3+.
-    // If a not done → L1 current, c (deps: a) and d (deps: a, b) — b retired so done.
-    // c ready (a not done? no). Actually: a not done, so c deps on a → not ready.
-    // But d deps on a and b. b retired (done), a not done → d not ready.
+    // init done. a not done → L1 current, batchRemaining = [a].
+    // c deps on a → not ready. d deps on a + b(retired) → a not done → not ready.
     const retired = new Set(['b']);
-    const ready = readyNodes(uneven, has(new Set()), retired);
-    // a not done, b retired. Current batch = L1, batchRemaining = [a].
-    // c deps on a → not ready. d deps on a + b(retired=done) → a not done → not ready.
+    const ready = readyNodes(uneven, CompletionStore.from(['init']), retired);
     expect(ready).toEqual([]);
 
     // Now a done, b retired.
-    const ready2 = readyNodes(uneven, has(new Set(['a.txt'])), retired);
-    // L1 complete (a done, b retired). orient would move to L2.
-    // But readyNodes only shows future batches beyond current.
-    // Since L1 is fully done, current batch is L2 = [c, d].
-    // Ready from L3 (term) — but term has no produces, so it's already "done".
+    // L1 complete (a done, b retired). orient would move to L2 = [c, d].
+    // Ready from L3 (term) — term has no produces, needs receipt to be "done".
+    const ready2 = readyNodes(uneven, CompletionStore.from(['init', 'a']), retired);
+    // Current batch is L2 = [c, d]. No future batch nodes have all deps met.
     expect(ready2).toEqual([]);
   });
 
@@ -161,10 +152,10 @@ describe('readyNodes: eager dispatch beyond current batch', () => {
         },
       }));
 
-      // a done, b not done. Current batch = [a, b].
-      // p1 deps on a (done) → p1 is ready? But p1 is a plan node with no expansion children → not done.
-      // p1 appears in ready because its dep (a) is done. p2 deps on p1 (not done) → not ready.
-      const ready = readyNodes(g, has(new Set(['a.txt'])));
+      // init done, a done, b not done. Current batch = [a, b].
+      // p1 deps on a (done) → p1 is ready (plan node with no expansion children → not done).
+      // p2 deps on p1 (not done) → not ready.
+      const ready = readyNodes(g, CompletionStore.from(['init', 'a']));
       expect(ready.map(n => n.id)).toContain('p1');
       expect(ready.map(n => n.id)).not.toContain('p2');
       expect(ready.find(n => n.id === 'p1')!.mode).toBe('plan');
@@ -186,9 +177,9 @@ describe('readyNodes: eager dispatch beyond current batch', () => {
         },
       }));
 
-      // a done, b not done. p has expansion child → p is done.
-      // p-child deps on p (done) → p-child is ready (its artifact p-child.txt missing).
-      const ready = readyNodes(g, has(new Set(['a.txt'])));
+      // init done, a done, b not done. p has expansion child → p is done.
+      // p-child deps on p (done) → p-child is ready (its receipt missing).
+      const ready = readyNodes(g, CompletionStore.from(['init', 'a']));
       expect(ready.map(n => n.id)).not.toContain('p'); // done, not listed
       expect(ready.map(n => n.id)).toContain('p-child');
     });
@@ -210,7 +201,7 @@ describe('readyNodes: eager dispatch beyond current batch', () => {
         },
       }));
 
-      const ready = readyNodes(g, has(new Set(['a.txt'])));
+      const ready = readyNodes(g, CompletionStore.from(['init', 'a']));
       expect(ready).toHaveLength(1);
       expect(ready[0].consumes).toEqual(['a.txt']);
     });
@@ -234,7 +225,7 @@ describe('readyNodes: eager dispatch beyond current batch', () => {
         },
       }));
 
-      const ready = readyNodes(g, has(new Set(['a.txt'])));
+      const ready = readyNodes(g, CompletionStore.from(['init', 'a']));
       expect(ready.map(n => n.id)).toEqual(['b', 'c']); // alphabetical within level
     });
   });

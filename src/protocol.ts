@@ -1,7 +1,10 @@
 // @module protocol
-// @exports define, graph, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, readyNodes, nextBatch, criticalPath, reconcile, merge, branch, analyze, modify, modifyAndCommit, validateNode, validateBatch, validateGraph
+// @exports define, graph, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, readyNodes, nextBatch, criticalPath, reconcile, merge, branch, analyze, modify, modifyAndCommit, validateNode, validateBatch, validateGraph, CompletionStore
 // @types NodeSpec, Graph, Orientation, ReadyNode, NextBatch, BatchConflict, Connection, Gap, ValidationRule, ValidationCheck, ValidationResult, ModifyAnalysis, ModificationRecord, ConsumeSpec, RuntimeExploreRule, ObservationSpec, ObservationResult, ExploreResult, IntentFailure, ConvergenceLimits, EscalationResult, IntentDiagnosis
 // @entry roadmap/protocol
+
+import { CompletionStore } from './lib/completion-context.ts';
+export { CompletionStore } from './lib/completion-context.ts';
 
 // --- Types ---
 
@@ -489,9 +492,8 @@ export interface Orientation {
 
 export function orient<T extends string>(
   g: Graph<T>,
-  exists: (artifact: string) => boolean,
+  completion: CompletionStore,
   retired?: ReadonlySet<string>,
-  completed?: ReadonlySet<string>,
 ): Orientation {
   const batches = parallelOrder(g);
   const nodes = flat(g);
@@ -514,22 +516,12 @@ export function orient<T extends string>(
       const node = nm.get(id)!;
       // Plan node: receipt or expansion children
       if (node.mode === 'plan') {
-        if (completed?.has(id)) return false;
+        if (completion.hasPassing(id)) return false;
         const children = expansionChildren.get(id) ?? [];
         return children.length === 0;
       }
-      // Legacy mode (no completed set): artifact-only semantics
-      if (completed === undefined) {
-        if (!node.produces?.length) return false; // produce-less = done
-        return !node.produces.every(p => exists(p));
-      }
-      // Receipt mode: artifacts AND receipt both required
-      if (node.produces?.length) {
-        const artifactsExist = node.produces.every(p => exists(p));
-        return !(artifactsExist && completed.has(id));
-      }
-      // No produces — receipt required
-      return !completed.has(id);
+      // Receipt-only: node is done iff it has a passing receipt
+      return !completion.hasPassing(id);
     });
 
     if (batchIncomplete.length > 0) {
@@ -602,35 +594,23 @@ export function orient<T extends string>(
 }
 
 // --- advanceBatch: move from current batch to next ---
-// Validates that current batch is complete (all nodes' artifacts exist),
+// Validates that current batch is complete (all receipts present),
 // then returns orientation for the next batch.
-// This is the only way to advance in the batch-level position model.
 
 export function advanceBatch<T extends string>(
   g: Graph<T>,
-  exists: (artifact: string) => boolean,
+  completion: CompletionStore,
   retired?: ReadonlySet<string>,
-  completed?: ReadonlySet<string>,
 ): Orientation {
-  const current = orient(g, exists, retired, completed);
+  const current = orient(g, completion, retired);
 
-  // Guard: current batch must be complete
   if (!current.batchComplete) {
     throw new Error(
       `Cannot advance: batch not complete. Remaining nodes: ${current.batchRemaining.join(', ')}`
     );
   }
 
-  // Guard: all produced artifacts must exist (double-check)
-  for (const artifact of current.produces) {
-    if (!exists(artifact)) {
-      throw new Error(`Cannot advance: artifact not found: ${artifact}`);
-    }
-  }
-
-  // Since all artifacts now exist, calling orient() again will skip past
-  // the current batch and find the next incomplete batch
-  return orient(g, exists, retired, completed);
+  return orient(g, completion, retired);
 }
 
 // --- readyNodes: eager dispatch beyond current batch ---
@@ -648,9 +628,8 @@ export interface ReadyNode {
 
 export function readyNodes<T extends string>(
   g: Graph<T>,
-  exists: (artifact: string) => boolean,
+  completion: CompletionStore,
   retired?: ReadonlySet<string>,
-  completed?: ReadonlySet<string>,
 ): ReadyNode[] {
   const batches = parallelOrder(g);
   const nodes = flat(g);
@@ -666,20 +645,15 @@ export function readyNodes<T extends string>(
     }
   }
 
-  // Compute done set — same receipt+artifact logic as orient()
+  // Compute done set — receipt-only, same as orient()
   const done = new Set<string>();
   for (const n of nodes) {
     if (retired?.has(n.id)) { done.add(n.id); continue; }
     if (n.mode === 'plan') {
-      if (completed?.has(n.id)) { done.add(n.id); continue; }
+      if (completion.hasPassing(n.id)) { done.add(n.id); continue; }
       if ((expansionChildren.get(n.id) ?? []).length > 0) done.add(n.id);
-    } else if (completed === undefined) {
-      // Legacy mode: artifact-only
-      if (!n.produces.length || n.produces.every(exists)) done.add(n.id);
-    } else if (n.produces.length) {
-      if (n.produces.every(exists) && completed.has(n.id)) done.add(n.id);
-    } else {
-      if (completed.has(n.id)) done.add(n.id);
+    } else if (completion.hasPassing(n.id)) {
+      done.add(n.id);
     }
   }
 
@@ -734,12 +708,11 @@ export interface NextBatch {
 
 export function nextBatch<T extends string>(
   g: Graph<T>,
-  exists: (artifact: string) => boolean,
+  completion: CompletionStore,
   retired?: ReadonlySet<string>,
-  completed?: ReadonlySet<string>,
 ): NextBatch | null {
   const batches = parallelOrder(g);
-  const current = orient(g, exists, retired, completed);
+  const current = orient(g, completion, retired);
   const nextLevel = current.level + 1;
 
   if (nextLevel >= batches.length) return null;

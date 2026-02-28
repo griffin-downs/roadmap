@@ -1,14 +1,13 @@
 // Plan mode tests: mode field, orient with plan nodes, expanded validation, Brief.mode
 import { describe, it, expect } from 'vitest';
-import { define, graph, orient, validateNode, parallelOrder } from '../src/protocol.ts';
+import { define, graph, orient, validateNode, parallelOrder, CompletionStore } from '../src/protocol.ts';
 import type { Graph } from '../src/protocol.ts';
 
-// --- Helpers ---
-
-function makeExists(artifacts: string[]): (a: string) => boolean {
+// Artifact predicate for validateNode (which still checks filesystem, not receipts)
+const makeExists = (artifacts: string[]) => {
   const s = new Set(artifacts);
   return (a: string) => s.has(a);
-}
+};
 
 // --- Type: mode field on NodeSpec ---
 
@@ -65,7 +64,7 @@ describe('orient with plan nodes', () => {
         c: { id: 'c', desc: 'end', produces: [], consumes: [], deps: ['b'], validate: [], idempotent: false },
       },
     }));
-    const pos = orient(g, makeExists(['x']));
+    const pos = orient(g, CompletionStore.from(['a']));
     expect(pos.position).toContain('b');
     expect(pos.batchRemaining).toContain('b');
     expect(pos.batchComplete).toBe(false);
@@ -81,8 +80,8 @@ describe('orient with plan nodes', () => {
         d: { id: 'd', desc: 'end', produces: [], consumes: ['y'], deps: ['c'], validate: [], idempotent: false },
       },
     }));
-    const pos = orient(g, makeExists(['x', 'y']));
-    // b is done (has expansion child c), c is done (artifact y exists), position should be at term
+    const pos = orient(g, CompletionStore.from(['a', 'c']));
+    // b is done (has expansion child c), c is done (receipt), position should be at term
     expect(pos.done).toContain('b');
     expect(pos.done).toContain('c');
   });
@@ -99,8 +98,8 @@ describe('orient with plan nodes', () => {
       },
     }));
     // b expanded → c (plan), c expanded → d (execute)
-    // All done when z exists
-    const pos = orient(g, makeExists(['x', 'z']));
+    // All done when a and d have receipts (b and c auto-done via expansion children)
+    const pos = orient(g, CompletionStore.from(['a', 'd']));
     expect(pos.done).toContain('b');
     expect(pos.done).toContain('c');
     expect(pos.done).toContain('d');
@@ -115,11 +114,11 @@ describe('orient with plan nodes', () => {
         c: { id: 'c', desc: 'end', produces: [], consumes: ['y'], deps: ['b'], validate: [], idempotent: false },
       },
     }));
-    // b is execute mode (default), so it completes via artifact check, not expansion
-    const posIncomplete = orient(g, makeExists(['x']));
+    // b is execute mode (default), so it completes via receipt, not expansion
+    const posIncomplete = orient(g, CompletionStore.from(['a']));
     expect(posIncomplete.batchRemaining).toContain('b');
 
-    const posComplete = orient(g, makeExists(['x', 'y']));
+    const posComplete = orient(g, CompletionStore.from(['a', 'b']));
     expect(posComplete.done).toContain('b');
   });
 });
@@ -184,8 +183,8 @@ describe('preGate', () => {
         e: { id: 'e', desc: 'end', produces: [], consumes: ['z'], deps: ['d'], validate: [], idempotent: false },
       },
     }));
-    // Position at b (x exists, y doesn't). c is a plan node in a future batch.
-    const pos = orient(g, makeExists(['x']));
+    // Position at b (a done). c is a plan node in a future batch.
+    const pos = orient(g, CompletionStore.from(['a']));
     expect(pos.position).toContain('b');
     expect(pos.preGate).toContain('c');
   });
@@ -200,7 +199,7 @@ describe('preGate', () => {
         d: { id: 'd', desc: 'end', produces: [], consumes: ['z'], deps: ['c'], validate: [], idempotent: false },
       },
     }));
-    const pos = orient(g, makeExists(['x']));
+    const pos = orient(g, CompletionStore.from(['a']));
     expect(pos.preGate).toEqual([]);
   });
 
@@ -218,7 +217,7 @@ describe('preGate', () => {
     }));
     // Position at b. c is plan (workable — only execute dep b is pending).
     // d is plan but depends on c (plan) which is uncompleted → NOT in preGate.
-    const pos = orient(g, makeExists(['x']));
+    const pos = orient(g, CompletionStore.from(['a']));
     expect(pos.preGate).toContain('c');
     expect(pos.preGate).not.toContain('d');
   });
@@ -235,7 +234,7 @@ describe('preGate', () => {
       },
     }));
     // b and c are execute deps of d (plan). Both pending but execute → d IS in preGate.
-    const pos = orient(g, makeExists(['x']));
+    const pos = orient(g, CompletionStore.from(['a']));
     expect(pos.position).toEqual(expect.arrayContaining(['b', 'c']));
     expect(pos.preGate).toContain('d');
   });
@@ -248,7 +247,7 @@ describe('preGate', () => {
         b: { id: 'b', desc: 'end', produces: [], consumes: ['x'], deps: ['a'], validate: [], idempotent: false },
       },
     }));
-    const pos = orient(g, makeExists(['x']));
+    const pos = orient(g, CompletionStore.from(['a']));
     expect(pos.preGate).toEqual([]);
   });
 });

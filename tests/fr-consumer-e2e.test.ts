@@ -16,7 +16,7 @@ import { execSync } from 'node:child_process';
 import { crossOrient } from '../src/lib/cross-orient.ts';
 import { orderByDependencies } from '../src/lib/dependency-resolver.ts';
 import { siblingArtifactExists, fileExists, any } from '../src/predicates.ts';
-import { orient } from '../src/protocol.ts';
+import { orient, CompletionStore } from '../src/protocol.ts';
 
 const root = process.cwd();
 const cli = join(root, 'bin/roadmap.ts');
@@ -90,7 +90,7 @@ describe('FR-1: siblingArtifactExists predicate', () => {
 describe('FR-2: orient with blockedBy', () => {
   it('reports blocking when donjon has not produced consumed artifacts', async () => {
     const dag = JSON.parse(readFileSync(join(fusionRepo, '.roadmap/head.json'), 'utf-8'));
-    const result = await crossOrient(dag, fusionRepo);
+    const result = await crossOrient(dag, fusionRepo, CompletionStore.empty());
 
     expect(result.blockedBy.length).toBeGreaterThanOrEqual(1);
     const donjonBlock = result.blockedBy.find(b => b.repo === 'donjon');
@@ -105,7 +105,7 @@ describe('FR-2: orient with blockedBy', () => {
     writeFileSync(join(donjonRepo, 'Dockerfile.build'), 'FROM donjon-base:latest');
 
     const dag = JSON.parse(readFileSync(join(fusionRepo, '.roadmap/head.json'), 'utf-8'));
-    const result = await crossOrient(dag, fusionRepo);
+    const result = await crossOrient(dag, fusionRepo, CompletionStore.empty());
 
     expect(result.blockedBy).toHaveLength(0);
     expect(result.deps[0].satisfied).toBe(true);

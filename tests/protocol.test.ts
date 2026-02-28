@@ -1,10 +1,10 @@
 // Protocol function tests — define, verify, check, reconcile, order, orient
 //
 // All fixtures are plain object literals constructed per-test.
-// No shared mutable state. exists() callbacks are pure Set<string> closures.
+// No shared mutable state. CompletionStore used for orient() position.
 
 import { describe, it, expect } from 'vitest';
-import { graph, define, verify, check, reconcile, order, orient } from '../src/protocol.ts';
+import { graph, define, verify, check, reconcile, order, orient, CompletionStore } from '../src/protocol.ts';
 
 // --- Fixtures ---
 // Inline minimal graphs. graph() is an identity function that extracts T for inference.
@@ -357,7 +357,7 @@ describe('reconcile: forward/backward frontier matching', () => {
 describe('orient: filesystem-state position', () => {
   it('returns init when no artifacts exist', () => {
     const g = define(linear());
-    const o = orient(g, () => false);
+    const o = orient(g, CompletionStore.empty());
     expect(o.position).toEqual(['init']);
     expect(o.done).toEqual([]);
     expect(o.produces).toEqual(['init.txt']);
@@ -365,8 +365,7 @@ describe('orient: filesystem-state position', () => {
 
   it('advances past nodes whose produces all exist', () => {
     const g = define(linear());
-    const have = new Set(['init.txt']);
-    const o = orient(g, a => have.has(a));
+    const o = orient(g, CompletionStore.from(['init']));
     expect(o.position).toEqual(['a']);
     expect(o.done).toEqual(['init']);
     expect(o.produces).toEqual(['a.txt']);
@@ -375,8 +374,7 @@ describe('orient: filesystem-state position', () => {
 
   it('returns term position when all producing nodes are done', () => {
     const g = define(linear());
-    const have = new Set(['init.txt', 'a.txt', 'b.txt']);
-    const o = orient(g, a => have.has(a));
+    const o = orient(g, CompletionStore.from(['init', 'a', 'b']));
     expect(o.position).toEqual(['term']);
     expect(o.done).toContain('init');
     expect(o.done).toContain('a');
@@ -385,8 +383,7 @@ describe('orient: filesystem-state position', () => {
 
   it('remaining contains nodes after current position', () => {
     const g = define(linear());
-    const have = new Set(['init.txt']);
-    const o = orient(g, a => have.has(a));
+    const o = orient(g, CompletionStore.from(['init']));
     // position='a', so remaining = ['b', 'term']
     expect(o.remaining).toContain('b');
     expect(o.remaining).toContain('term');
@@ -394,17 +391,17 @@ describe('orient: filesystem-state position', () => {
     expect(o.remaining).not.toContain('a');
   });
 
-  it('exists callback is called with artifact strings, not node ids', () => {
+  it('CompletionStore uses node ids, not artifact strings', () => {
     const g = define(linear());
-    const queried: string[] = [];
-    orient(g, a => { queried.push(a); return false; });
-    // Only init.txt should be queried before position is determined (init is first)
-    expect(queried).toContain('init.txt');
+    // CompletionStore.from takes node IDs — orient resolves completion from those
+    const o = orient(g, CompletionStore.from(['init']));
+    expect(o.position).toEqual(['a']);
+    expect(o.done).toContain('init');
   });
 
-  it('node with empty produces is trivially done: orient advances past it', () => {
+  it('node with empty produces is done when it has a receipt', () => {
     // A non-terminal node with produces:[] has no filesystem artifacts to create.
-    // orient() marks it done and advances — position should be term when 'seed' exists.
+    // orient() marks it done when it has a receipt — position should be term.
     const g = define(graph({
       id: 'empty-mid', desc: '', init: 'init', term: 'term',
       nodes: {
@@ -413,16 +410,14 @@ describe('orient: filesystem-state position', () => {
         term: { id: 'term', desc: '', produces: [],       consumes: [],     deps: ['mid'] },
       },
     }));
-    const have = new Set(['seed']);
-    const o = orient(g, a => have.has(a));
+    const o = orient(g, CompletionStore.from(['init', 'mid']));
     expect(o.position).toEqual(['term']);
     expect(o.done).toContain('mid');
   });
 
   it('diamond: orient uses topological order, marks both branches done if possible', () => {
     const g = define(diamond());
-    const have = new Set(['root.txt', 'a.txt', 'b.txt']);
-    const o = orient(g, a => have.has(a));
+    const o = orient(g, CompletionStore.from(['init', 'a', 'b']));
     expect(o.position).toEqual(['c']);
     expect(o.done).toContain('a');
     expect(o.done).toContain('b');

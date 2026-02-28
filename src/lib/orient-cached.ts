@@ -4,64 +4,45 @@
 // @entry roadmap (re-exported)
 // NOTE: orient() in protocol.ts is the standard version. This adds git-state caching.
 
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { orient as liveOrient, type Graph, type Orientation } from '../protocol.ts';
+import { CompletionStore } from './completion-context.ts';
 import { readGitState, isFresh } from './git-state.schema.ts';
 
 /**
  * Orient with git-state cache.
- *
- * Strategy:
- * 1. Try to read .regent/git-state.json
- * 2. If fresh (<10s), use it to skip expensive git ops
- * 3. If stale or missing, call live orient() (backward compatible)
- *
- * The git-state cache contains:
- * - Which files are dirty (from git status)
- * - Current commit hash and subject
- * - Last known roadmap position
- *
- * This avoids repeated `git status`, `git log`, etc. for each agent spawn.
+ * Falls back to live orient() when cache is stale or missing.
  */
 export async function orientCached<T extends string>(
   g: Graph<T>,
   repoRoot: string,
-  exists: (artifact: string) => boolean,
+  completion: CompletionStore,
 ): Promise<Orientation> {
-  // Try to read git-state.json
   const gitState = await readGitState(repoRoot);
 
-  // If cache is fresh and has a position, verify batch is still complete
   if (gitState && isFresh(gitState) && gitState.roadmapPosition && gitState.roadmapPosition.length > 0) {
-    // Validate the batch: all nodes' artifacts must exist
     const batch = gitState.roadmapPosition as T[];
-    const batchProduces: string[] = [];
-    const batchConsumes: string[] = [];
     let batchComplete = true;
 
     for (const nodeId of batch) {
       const node = g.nodes[nodeId];
-      if (!node) {
-        batchComplete = false;
-        break;
-      }
-      if (node.produces.length > 0 && !node.produces.every(a => exists(a))) {
-        batchComplete = false;
-        break;
-      }
-      batchProduces.push(...node.produces);
-      batchConsumes.push(...node.consumes.map(c => typeof c === 'string' ? c : c.artifact));
+      if (!node) { batchComplete = false; break; }
+      if (!completion.hasPassing(nodeId)) { batchComplete = false; break; }
     }
 
     if (batchComplete) {
-      // Cached position is still valid
+      const batchProduces: string[] = [];
+      const batchConsumes: string[] = [];
+      for (const nodeId of batch) {
+        const node = g.nodes[nodeId];
+        batchProduces.push(...node.produces);
+        batchConsumes.push(...node.consumes.map(c => typeof c === 'string' ? c : c.artifact));
+      }
       return {
         position: batch,
-        level: 0, // We don't know the level from cache alone
+        level: 0,
         batchRemaining: [],
         batchComplete: true,
-        done: [], // Could cache this too, but risky
+        done: [],
         produces: batchProduces,
         consumes: batchConsumes,
         remaining: [],
@@ -70,8 +51,7 @@ export async function orientCached<T extends string>(
     }
   }
 
-  // Cache miss or stale: call live orient
-  return liveOrient(g, exists);
+  return liveOrient(g, completion);
 }
 
 /**
@@ -95,7 +75,6 @@ export async function updateRoadmapPosition(
     if (note) state.lastPositionNote = note;
     await writeFile(stateFile, JSON.stringify(state, null, 2));
   } catch {
-    // If file doesn't exist or can't be written, silently fail
     // (orient() will recompute next time)
   }
 }

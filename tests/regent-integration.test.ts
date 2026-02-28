@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { graph, define, verify, check, orient } from '../src/protocol';
+import { graph, define, verify, check, orient, CompletionStore } from '../src/protocol';
 import { AuditTrail } from '../src/audit';
 
 describe('regent integration', () => {
@@ -24,7 +24,7 @@ describe('regent integration', () => {
     expect(verify(g)).toEqual([]);
     expect(check(g).done).toBe(true);
 
-    const pos = orient(g, () => true);
+    const pos = orient(g, CompletionStore.from(['a', 'b']));
     expect(pos.position).toEqual(['c']);
   });
 
@@ -52,8 +52,8 @@ describe('regent integration', () => {
     const g1 = define(graph(spec));
     const g2 = define(graph(spec));
 
-    const pos1 = orient(g1, () => true);
-    const pos2 = orient(g2, () => true);
+    const pos1 = orient(g1, CompletionStore.from(['start']));
+    const pos2 = orient(g2, CompletionStore.from(['start']));
 
     expect(pos1.position).toEqual(pos2.position);
   });
@@ -72,7 +72,7 @@ describe('regent integration', () => {
       }),
     );
 
-    const pos = orient(g, (p) => p === 'x' || p === 'done');
+    const pos = orient(g, CompletionStore.from(['a', 'b']));
     expect(pos.position).toEqual(['done']);
   });
 
@@ -129,16 +129,16 @@ describe('regent integration', () => {
       }),
     );
 
-    // All artifacts exist: should be at term
-    const full = orient(g, () => true);
+    // All nodes have receipts: should be at term
+    const full = orient(g, CompletionStore.from(['a', 'b', 'c']));
     expect(full.position).toEqual(['d']);
 
-    // No artifacts: should be at init
-    const empty = orient(g, () => false);
+    // No receipts: should be at init
+    const empty = orient(g, CompletionStore.empty());
     expect(empty.position).toEqual(['a']);
 
     // Partial: at intermediate node
-    const partial = orient(g, (p) => p === 'x' || p === 'y');
-    expect(['b', 'c'].some(n => partial.position.includes(n))).toBe(true);
+    const partial = orient(g, CompletionStore.from(['a', 'b']));
+    expect(partial.position).toEqual(['c']);
   });
 });

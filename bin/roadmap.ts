@@ -17,6 +17,7 @@ import type { ConsumeSpec } from '../src/protocol.ts';
 import { fileExists } from '../src/predicates.ts';
 import { RoadmapError } from '../src/errors.ts';
 import { crossOrient } from '../src/lib/cross-orient.ts';
+import { CompletionStore } from '../src/lib/completion-context.ts';
 import { discoverDependencies, resolveSiblingPath } from '../src/lib/dependency-resolver.ts';
 import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, assignBatch } from '../src/lib/claims.ts';
 import { parseTasksMd, tasksToDAG } from '../src/lib/speckit-import.ts';
@@ -111,40 +112,19 @@ function retiredSet(): Set<string> {
 }
 
 // --- Completion state: single entry point for orient evidence ---
-// All orient() calls in this CLI MUST use orientWithState() or getCompletionState().
-// Direct orient() calls bypass receipt semantics.
-// FR-GOV-003: completedIds excludes quarantined completions (--skip-validate).
-// Legacy records (no validationChecks) are treated as passing — they predate receipt enforcement.
-// Only records with explicit failed checks are quarantined.
-function getCompletionState() {
-  const completedPath = join(repoRoot, '.roadmap', 'completed.json');
-  const retired = retiredSet();
-  if (!existsSync(completedPath)) {
-    // No completed.json → legacy mode (artifact-only, no receipt tracking)
-    return { completedIds: undefined as Set<string> | undefined, retired, exists: fileExists(repoRoot) };
-  }
-  const evidenceCompletions = loadCompletionsWithEvidence(repoRoot);
-  const completedIds = new Set<string>();
-  for (const [id, record] of evidenceCompletions) {
-    if (hasPassingReceipt(record)) {
-      completedIds.add(id);
-    } else if (!record.validationChecks || record.validationChecks.length === 0) {
-      // Legacy completion — no evidence system at time of completion. Accept.
-      completedIds.add(id);
-    }
-    // else: has checks with at least one failed → quarantined, excluded
-  }
-  return { completedIds, retired, exists: fileExists(repoRoot) };
+// All orient() calls in this CLI MUST use loadStore() + orient(dag, store).
+// Receipt-only truth: a node is done iff CompletionStore.hasPassing(id).
+
+function loadStore(): CompletionStore {
+  return CompletionStore.loadOrEmpty(repoRoot);
 }
 
 function orientWithState(dag: Graph<string>) {
-  const { exists, retired, completedIds } = getCompletionState();
-  return orient(dag, exists, retired, completedIds);
+  return orient(dag, loadStore(), retiredSet());
 }
 
 async function crossOrientWithState(dag: Graph<string>) {
-  const { exists, retired, completedIds } = getCompletionState();
-  return crossOrient(dag, repoRoot, exists, retired, completedIds);
+  return crossOrient(dag, repoRoot, loadStore(), retiredSet());
 }
 
 // --- iter-id: loop iteration counter ---
@@ -425,8 +405,7 @@ async function cmdOrient(note: string | undefined) {
 
   // --ready: eager dispatch — nodes beyond current batch whose deps are met
   if (args.includes('--ready')) {
-    const { exists: _re, retired: _rr, completedIds: _rc } = getCompletionState();
-    const ready = readyNodes(dag, _re, _rr, _rc);
+    const ready = readyNodes(dag, loadStore(), retiredSet());
     const active = activeClaims(claimStore);
     const callingOwner = process.env['AGENT_ID'] ?? process.env['USER'] ?? '';
     result.ready = ready.map(n => ({
@@ -443,8 +422,7 @@ async function cmdOrient(note: string | undefined) {
 
   // --next: lookahead for orchestrator pre-warming
   if (args.includes('--next')) {
-    const { exists: _e, retired: _r, completedIds: _c } = getCompletionState();
-    const next = nextBatch(dag, _e, _r, _c);
+    const next = nextBatch(dag, loadStore(), retiredSet());
     result.next = next;
   }
 
@@ -709,8 +687,7 @@ async function cmdAdvance(note: string) {
     }
 
     // FR-GOV-004: enforce batchConflicts on next batch before advancing
-    const { exists: _ae, retired: _ar, completedIds: _ac } = getCompletionState();
-    const next = await advanceBatch(dag, _ae, _ar, _ac);
+    const next = await advanceBatch(dag, loadStore(), retiredSet());
 
     const nextConflicts = batchConflicts(dag).filter(c => c.level === next.level);
     if (nextConflicts.length > 0 && !allowConflicts) {
@@ -915,7 +892,7 @@ async function cmdExpand(note: string) {
   execSync(`git commit -m "${msg}"`, { cwd: repoRoot, stdio: 'pipe' });
   const hash = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
 
-  const posAfter = orient(dagAfter, fileExists(repoRoot), retiredSet());
+  const posAfter = orient(dagAfter, loadStore(), retiredSet());
   recordTrail({ ts: new Date().toISOString(), cmd: 'expand', note, repo: basename(repoRoot), position: posAfter.position, level: posAfter.level, dagId: dagAfter.id, detail: { script: scriptPath, added, commit: hash, type: expansionType } });
 
   json({
@@ -981,7 +958,7 @@ function cmdBranch(note: string) {
   const hash = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
 
   const dagAfterBranch = loadDAG();
-  const posBranch = orient(dagAfterBranch, fileExists(repoRoot));
+  const posBranch = orient(dagAfterBranch, loadStore(), retiredSet());
   recordTrail({ ts: new Date().toISOString(), cmd: 'branch', note, repo: basename(repoRoot), position: posBranch.position, level: posBranch.level, dagId: dagAfterBranch.id, detail: { branch: branchName, dagFile: dagFile || null, commit: hash } });
 
   json({
@@ -1213,7 +1190,7 @@ async function cmdChart() {
       try {
         const sibDagContent = readFileSync(join(sib.path, '.roadmap/head.json'), 'utf-8');
         const sibDag = JSON.parse(sibDagContent) as Graph<string>;
-        const sibPos = orient(sibDag, fileExists(sib.path));
+        const sibPos = orient(sibDag, CompletionStore.loadOrEmpty(sib.path));
         const sibNodes = Object.keys(sibDag.nodes).length;
         const sibDone = sibPos.done.length;
         const sibPct = Math.round((sibDone / sibNodes) * 100);
@@ -1978,8 +1955,7 @@ async function cmdComplete(note: string) {
   if (posAfter.batchComplete && !noAdvance && !posAfter.complete) {
     try {
       const { advanceBatch } = await import('../src/protocol.ts');
-      const { exists: _ce, retired: _cr, completedIds: _cc } = getCompletionState();
-      const next = await advanceBatch(dag, _ce, _cr, _cc);
+      const next = await advanceBatch(dag, loadStore(), retiredSet());
       advanced = { previousBatch: posAfter.position, nextBatch: next.position, nextLevel: next.level };
     } catch {
       // advanceBatch failed (e.g. missing artifacts) — surface batchComplete without advancing
@@ -1991,8 +1967,7 @@ async function cmdComplete(note: string) {
     : posAfter;
 
   // 5. Surface newly unblocked nodes — downstream nodes whose deps are now all satisfied.
-  const { exists: _ne, retired: _nr, completedIds: _nc } = getCompletionState();
-  const nowReady = readyNodes(dag, _ne, _nr, _nc);
+  const nowReady = readyNodes(dag, loadStore(), retiredSet());
   const unblocked = nowReady.map(n => n.id);
 
   // Save completion with evidence to persistent tracking (receipt-authoritative)
@@ -3879,7 +3854,7 @@ function cmdPropagate(note: string) {
     execSync(`git commit -m "${msg}"`, { cwd: repoRoot, stdio: 'pipe' });
     const hash = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
 
-    const posAfter = orient(result.dag, fileExists(repoRoot), retiredSet());
+    const posAfter = orient(result.dag, loadStore(), retiredSet());
     recordTrail({
       ts: new Date().toISOString(), cmd: 'propagate', note, repo: basename(repoRoot),
       position: posAfter.position, level: posAfter.level, dagId: result.dag.id,

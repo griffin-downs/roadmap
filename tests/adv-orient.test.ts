@@ -1,28 +1,20 @@
-// ADV-ORIENT — adversarial spec: orient() empty-produces stall
+// ADV-ORIENT — adversarial spec: orient() receipt-only completion
 //
-// Bug (protocol.ts:228): `node.produces.length && node.produces.every(exists)`
-// Short-circuits to false when produces=[] — the node is never marked done.
-// orient() stalls permanently at any non-terminal node with produces:[].
+// Receipt-only model: a node is done iff CompletionStore.hasPassing(id).
+// No artifact-existence fallback. No implicit legacy mode.
 //
-// Contract: A node with produces:[] has no filesystem artifacts to create.
-// It is a gate/coordination node. When reached in topo order (deps satisfied),
-// it is trivially done. orient() must advance past it.
-//
-// Fix: `!node.produces.length || node.produces.every(exists)`
-//
-// Tests in "core contract" FAIL against current implementation, PASS after fix.
-// Tests in "boundary" PASS on both (regression guards).
+// Tests verify that orient() advances correctly through gate nodes
+// (produces:[]) when they have receipts, and stalls at work nodes
+// that lack receipts.
 
 import { describe, it, expect } from 'vitest';
-import { graph, define, orient } from '../src/protocol.ts';
+import { graph, define, orient, CompletionStore } from '../src/protocol.ts';
 
-// --- Core contract (fail on current, pass after fix) ---
+// --- Core contract: receipt-only completion ---
 
-describe('ADV-ORIENT: empty-produces node is trivially done', () => {
-  it('advances past non-terminal node with produces:[]', () => {
-    // init (produces:['seed']) → mid (produces:[]) → term (produces:[])
-    // 'seed' exists. init is done. mid has nothing to produce — it is done.
-    // orient() must skip mid and land at term.
+describe('ADV-ORIENT: receipt-only completion model', () => {
+  it('advances past non-terminal node with receipt', () => {
+    // init → mid → term. init and mid have receipts → position = term.
     const g = define(graph({
       id: 'gate',
       desc: 'init → gate → term',
@@ -35,15 +27,14 @@ describe('ADV-ORIENT: empty-produces node is trivially done', () => {
       },
     }));
 
-    const o = orient(g, a => a === 'seed');
+    const o = orient(g, CompletionStore.from(['init', 'mid']));
 
     expect(o.position).toEqual(['term']);
     expect(o.done).toContain('init');
     expect(o.done).toContain('mid');
   });
 
-  it('empty-produces node appears in done, not in remaining', () => {
-    // Corollary: once advanced past, the node is in done[], not remaining[].
+  it('receipt-holding node appears in done, not in remaining', () => {
     const g = define(graph({
       id: 'gate',
       desc: 'init → gate → term',
@@ -56,15 +47,13 @@ describe('ADV-ORIENT: empty-produces node is trivially done', () => {
       },
     }));
 
-    const o = orient(g, a => a === 'seed');
+    const o = orient(g, CompletionStore.from(['init', 'mid']));
 
     expect(o.done).toContain('mid');
     expect(o.remaining).not.toContain('mid');
   });
 
-  it('chain of empty-produces nodes: all traversed, lands at term', () => {
-    // init → gate-1 (produces:[]) → gate-2 (produces:[]) → term
-    // With 'seed' existing, all gates are trivially done.
+  it('chain of gate nodes: all done with receipts, lands at term', () => {
     const g = define(graph({
       id: 'gate-chain',
       desc: 'init → gate-1 → gate-2 → term',
@@ -78,17 +67,14 @@ describe('ADV-ORIENT: empty-produces node is trivially done', () => {
       },
     }));
 
-    const o = orient(g, a => a === 'seed');
+    const o = orient(g, CompletionStore.from(['init', 'gate-1', 'gate-2']));
 
     expect(o.position).toEqual(["term"]);
     expect(o.done).toContain('gate-1');
     expect(o.done).toContain('gate-2');
   });
 
-  it('empty-produces at init: advances immediately to next node', () => {
-    // init (produces:[]) → work (produces:['output']) → term
-    // Nothing on disk. init has no artifacts → trivially done.
-    // Position should be 'work', not 'init'.
+  it('produce-less init with receipt: advances immediately to next node', () => {
     const g = define(graph({
       id: 'empty-init',
       desc: 'init (no artifacts) → work → term',
@@ -101,16 +87,13 @@ describe('ADV-ORIENT: empty-produces node is trivially done', () => {
       },
     }));
 
-    const o = orient(g, () => false);
+    const o = orient(g, CompletionStore.from(['init']));
 
     expect(o.position).toEqual(["work"]);
     expect(o.done).toContain('init');
   });
 
-  it('stall occurs at work node (non-empty produces), not at downstream gate', () => {
-    // init → work (produces:['output']) → gate (produces:[]) → term
-    // 'init.txt' exists but 'output' does not.
-    // Position must be 'work' (the actual work), not 'gate'.
+  it('stall occurs at work node without receipt, not at downstream gate', () => {
     const g = define(graph({
       id: 'work-then-gate',
       desc: 'init → work → gate → term',
@@ -124,15 +107,12 @@ describe('ADV-ORIENT: empty-produces node is trivially done', () => {
       },
     }));
 
-    const have = new Set(['init.txt']);
-    const o = orient(g, a => have.has(a));
+    const o = orient(g, CompletionStore.from(['init']));
 
     expect(o.position).toEqual(["work"]);
   });
 
-  it('gate advances when upstream work completes', () => {
-    // Same graph as above, but 'output' now exists.
-    // work is done, gate is trivially done, position = term.
+  it('gate advances when upstream work has receipt', () => {
     const g = define(graph({
       id: 'work-then-gate',
       desc: 'init → work → gate → term',
@@ -146,18 +126,16 @@ describe('ADV-ORIENT: empty-produces node is trivially done', () => {
       },
     }));
 
-    const have = new Set(['init.txt', 'output']);
-    const o = orient(g, a => have.has(a));
+    const o = orient(g, CompletionStore.from(['init', 'work', 'gate']));
 
     expect(o.position).toEqual(["term"]);
     expect(o.done).toContain('work');
     expect(o.done).toContain('gate');
   });
 
-  // --- Boundary: non-empty produces behavior unchanged (regression guards) ---
+  // --- Boundary: regression guards ---
 
-  it('node with non-empty produces still stalls when files missing', () => {
-    // Regression: fix must not affect nodes that have produces to check.
+  it('node without receipt stalls even if it has produces', () => {
     const g = define(graph({
       id: 'normal',
       desc: 'init → work → term',
@@ -170,15 +148,14 @@ describe('ADV-ORIENT: empty-produces node is trivially done', () => {
       },
     }));
 
-    // 'seed' exists but 'output' does not
-    const o = orient(g, a => a === 'seed');
+    const o = orient(g, CompletionStore.from(['init']));
 
     expect(o.position).toEqual(["work"]);
     expect(o.done).toContain('init');
     expect(o.done).not.toContain('work');
   });
 
-  it('node with non-empty produces advances when all files exist', () => {
+  it('all nodes with receipts advances to term', () => {
     const g = define(graph({
       id: 'normal',
       desc: 'init → work → term',
@@ -191,7 +168,7 @@ describe('ADV-ORIENT: empty-produces node is trivially done', () => {
       },
     }));
 
-    const o = orient(g, () => true);
+    const o = orient(g, CompletionStore.from(['init', 'work']));
 
     expect(o.position).toEqual(["term"]);
     expect(o.done).toContain('init');

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { join, resolve } from 'node:path';
 import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import { crossOrient } from '../src/lib/cross-orient.ts';
-import { define, graph } from '../src/protocol.ts';
+import { define, graph, CompletionStore } from '../src/protocol.ts';
 import { discoverDependencies, resolveSiblingPath, orderByDependencies, buildDepGraph } from '../src/lib/dependency-resolver.ts';
 import type { DependencySpec } from '../src/lib/project-metadata.schema.ts';
 
@@ -99,7 +99,7 @@ describe('dependency-resolver', () => {
 describe('crossOrient', () => {
   it('returns standard orientation fields', async () => {
     const dag = JSON.parse(require('node:fs').readFileSync(join(localRepo, '.roadmap/head.json'), 'utf-8'));
-    const result = await crossOrient(dag, localRepo);
+    const result = await crossOrient(dag, localRepo, CompletionStore.empty());
     expect(result.position).toBeDefined();
     expect(result.done).toBeDefined();
     expect(result.produces).toBeDefined();
@@ -108,7 +108,7 @@ describe('crossOrient', () => {
 
   it('includes deps array with sibling status', async () => {
     const dag = JSON.parse(require('node:fs').readFileSync(join(localRepo, '.roadmap/head.json'), 'utf-8'));
-    const result = await crossOrient(dag, localRepo);
+    const result = await crossOrient(dag, localRepo, CompletionStore.empty());
     expect(result.deps).toHaveLength(1);
     expect(result.deps[0].repo).toBe('sibling');
     expect(result.deps[0].repoExists).toBe(true);
@@ -117,7 +117,7 @@ describe('crossOrient', () => {
 
   it('reports blocking when sibling has not produced consumed artifact', async () => {
     const dag = JSON.parse(require('node:fs').readFileSync(join(localRepo, '.roadmap/head.json'), 'utf-8'));
-    const result = await crossOrient(dag, localRepo);
+    const result = await crossOrient(dag, localRepo, CompletionStore.empty());
 
     // sibling hasn't produced shared/types.h yet, and dep is mustComplete
     expect(result.blockedBy.length).toBeGreaterThanOrEqual(1);
@@ -129,7 +129,7 @@ describe('crossOrient', () => {
     writeFileSync(join(siblingRepo, 'shared/types.h'), '#pragma once\ntypedef int fusion_t;');
 
     const dag = JSON.parse(require('node:fs').readFileSync(join(localRepo, '.roadmap/head.json'), 'utf-8'));
-    const result = await crossOrient(dag, localRepo);
+    const result = await crossOrient(dag, localRepo, CompletionStore.empty());
 
     expect(result.deps[0].satisfied).toBe(true);
     expect(result.blockedBy).toHaveLength(0);
@@ -146,7 +146,7 @@ describe('crossOrient', () => {
     }));
 
     const dag = JSON.parse(require('node:fs').readFileSync(join(localRepo, '.roadmap/head.json'), 'utf-8'));
-    const result = await crossOrient(dag, localRepo);
+    const result = await crossOrient(dag, localRepo, CompletionStore.empty());
     expect(result.deps[0].repoExists).toBe(false);
     expect(result.blockedBy[0].waiting).toContain('x.h');
 
@@ -159,7 +159,7 @@ describe('crossOrient', () => {
 
   it('returns no blockedBy when repo has no deps', async () => {
     const dag = JSON.parse(require('node:fs').readFileSync(join(siblingRepo, '.roadmap/head.json'), 'utf-8'));
-    const result = await crossOrient(dag, siblingRepo);
+    const result = await crossOrient(dag, siblingRepo, CompletionStore.empty());
     expect(result.blockedBy).toHaveLength(0);
     expect(result.deps).toHaveLength(0);
   });

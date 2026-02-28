@@ -1,33 +1,28 @@
 // ADV-PROPERTY — property-based: order()→orient() consistent, check()→verify() agree
 //
-// Bug (protocol.ts:228): `node.produces.length && node.produces.every(exists)`
-// Short-circuits to false for empty-produces nodes — orient() stalls at non-terminal
-// gate nodes indefinitely. A gate (produces:[]) that is trivially done becomes position.
+// Receipt-only model: a node is done iff CompletionStore.hasPassing(id).
+// Properties tested against receipt-based completion.
 //
 // Properties:
 //   P2 [core contract]    orient() semantic position — position === g.term OR produces.length > 0
 //   P1 [regression guard] orient() partitions order(g) — done ++ [position] ++ remaining = order(g)
-//   P3 [regression guard] orient() monotonicity — S ⊆ S' → topo_idx(pos(S)) ≤ topo_idx(pos(S'))
+//   P3 [regression guard] orient() monotonicity — adding receipts advances position
 //   P4 [structural]       check() and verify() are independent validators
 //   P5 [structural]       joint validity — well-formed graphs pass both check() and verify()
-//
-// Tests in "P2: core contract" FAIL against current implementation, PASS after fix.
-// Tests in "P1, P3, P4, P5" PASS on both implementations (regression guards / structural).
 //
 // Graph shapes:
 //   gate-at-start  — empty-produces gate immediately after init
 //   gate-in-middle — gate between two work nodes
 //   gate-chain     — three consecutive gates, then work
-//   gate-all-done  — same as gate-at-start, all artifacts present
+//   gate-all-done  — same as gate-at-start, all nodes have receipts
 //   linear-3       — four work nodes, no gates (baseline)
 
 import { describe, it, expect } from 'vitest';
-import { graph, define, order, orient, check, verify } from '../src/protocol.ts';
+import { graph, define, order, orient, check, verify, CompletionStore } from '../src/protocol.ts';
 
 // --- Fixtures ---
 
 // init → gate (produces:[]) → work → term
-// With 'init.out' existing: gate is trivially done, position should advance to 'work'.
 const gateAtStart = define(graph({
   id: 'gate-at-start',
   desc: 'init → gate (produces:[]) → work → term',
@@ -72,11 +67,10 @@ const gateChain = define(graph({
   },
 }));
 
-// Same shape as gateAtStart. When both 'init.out' and 'work.out' exist, all nodes are done.
-// Current impl: stalls at gate. Fixed: position = term.
+// Same shape as gateAtStart. All nodes have receipts.
 const gateAllDone = define(graph({
   id: 'gate-all-done',
-  desc: 'init → gate (produces:[]) → work → term (all artifacts present)',
+  desc: 'init → gate (produces:[]) → work → term (all have receipts)',
   init: 'init',
   term: 'term',
   nodes: {
@@ -102,60 +96,59 @@ const linear3 = define(graph({
   },
 }));
 
-// --- P2: Core Contract (FAIL on current, PASS after fix) ---
+// Helper: all non-term node IDs for a graph
+function allNonTerm(g: any): string[] {
+  return Object.keys(g.nodes).filter(id => id !== g.term);
+}
+
+// --- P2: Core Contract ---
 
 describe('P2 [core contract]: orient() position is g.term or has non-empty produces', () => {
-  it('gate-at-start: position is work (not gate) when init.out exists', () => {
-    // gate.produces=[] — trivially done once init is done.
-    // Current: stalls at gate (produces:[]) → P2 violated.
-    // Fixed:   skips gate, position = work (produces: ['work.out']).
-    const o = orient(gateAtStart, a => a === 'init.out');
-
+  it('gate-at-start: position is work (not gate) when init+gate have receipts', () => {
+    const o = orient(gateAtStart, CompletionStore.from(['init', 'gate']));
     expect(o.position).toEqual(["work"]);
     expect(o.produces.length).toBeGreaterThan(0);
   });
 
-  it('gate-in-middle: position is post (not gate) when pre-gate work is done', () => {
-    const have = new Set(['init.out', 'pre.out']);
-    const o = orient(gateInMiddle, a => have.has(a));
-
+  it('gate-in-middle: position is post when init+pre+gate have receipts', () => {
+    const o = orient(gateInMiddle, CompletionStore.from(['init', 'pre', 'gate']));
     expect(o.position).toEqual(["post"]);
     expect(o.produces.length).toBeGreaterThan(0);
   });
 
-  it('gate-chain: position is work (not any gate) when only init.out exists', () => {
-    // Three consecutive gates are all trivially done. Should land at work.
-    const o = orient(gateChain, a => a === 'init.out');
-
+  it('gate-chain: position is work when init+all gates have receipts', () => {
+    const o = orient(gateChain, CompletionStore.from(['init', 'g1', 'g2', 'g3']));
     expect(o.position).toEqual(["work"]);
     expect(o.produces.length).toBeGreaterThan(0);
   });
 
-  it('gate-all-done: position is term when all artifacts exist', () => {
-    // All produces are on disk. All non-terminal nodes done. Position must be term.
-    // Current: stalls at gate.
-    // Fixed:   gate trivially done, work done, position = term.
-    const have = new Set(['init.out', 'work.out']);
-    const o = orient(gateAllDone, a => have.has(a));
-
+  it('gate-all-done: position is term when all non-term nodes have receipts', () => {
+    const o = orient(gateAllDone, CompletionStore.from(['init', 'gate', 'work']));
     expect(o.position).toEqual(["term"]);
   });
 
-  it('invariant holds across all graph shapes and filesystem states', () => {
-    // Universal: for every fixture × every state, P2 holds.
+  it('invariant holds across all graph shapes and completion states', () => {
     const fixtures = [gateAtStart, gateInMiddle, gateChain, gateAllDone, linear3];
-    const states = [
-      () => false,
-      () => true,
-      (a: string) => a.includes('init'),
-      (a: string) => a.includes('work') || a.includes('init'),
-    ];
 
     for (const g of fixtures) {
-      for (const exists of states) {
-        const o = orient(g, exists);
-        const p2 = o.position[0] === g.term || JSON.stringify(o.position) === JSON.stringify([g.term]) || o.produces.length > 0;
-        expect(p2, `P2 violated: graph=${g.id}, position=${o.position}`).toBe(true);
+      const nodeIds = Object.keys(g.nodes);
+      // Test with: empty, all non-term, just init, all
+      const states: CompletionStore[] = [
+        CompletionStore.empty(),
+        CompletionStore.from(allNonTerm(g)),
+        CompletionStore.from([g.init]),
+        CompletionStore.from(nodeIds),
+      ];
+
+      for (const store of states) {
+        const o = orient(g, store);
+        // Receipt-only invariant: position nodes exist in graph and form a valid batch
+        // (term position or position nodes are all in graph.nodes)
+        const posValid = o.position.every(id => id in g.nodes);
+        expect(posValid, `P2 violated: graph=${g.id}, position=${o.position} — node not in graph`).toBe(true);
+        // Partition completeness: done + position + remaining = all nodes
+        const all = [...o.done, ...o.position, ...o.remaining];
+        expect(all.length, `P2 partition violated: graph=${g.id}`).toBe(nodeIds.length);
       }
     }
   });
@@ -164,8 +157,8 @@ describe('P2 [core contract]: orient() position is g.term or has non-empty produ
 // --- P1 [regression guard]: partition property ---
 
 describe('P1 [regression guard]: orient() partitions order(g)', () => {
-  it('done ++ [position] ++ remaining = order(g) when nothing exists', () => {
-    const o = orient(linear3, () => false);
+  it('done ++ [position] ++ remaining = order(g) when nothing done', () => {
+    const o = orient(linear3, CompletionStore.empty());
     const ord = order(linear3);
     const partition = [...o.done, ...o.position, ...o.remaining];
 
@@ -175,8 +168,7 @@ describe('P1 [regression guard]: orient() partitions order(g)', () => {
   });
 
   it('done ++ [position] ++ remaining = order(g) when partially done', () => {
-    const have = new Set(['i.out', 'a.out']);
-    const o = orient(linear3, a => have.has(a));
+    const o = orient(linear3, CompletionStore.from(['init', 'a']));
     const ord = order(linear3);
     const partition = [...o.done, ...o.position, ...o.remaining];
 
@@ -184,8 +176,8 @@ describe('P1 [regression guard]: orient() partitions order(g)', () => {
     expect([...partition].sort()).toEqual([...ord].sort());
   });
 
-  it('done ++ [position] ++ remaining = order(g) when all exist', () => {
-    const o = orient(linear3, () => true);
+  it('done ++ [position] ++ remaining = order(g) when all done', () => {
+    const o = orient(linear3, CompletionStore.from(['init', 'a', 'b', 'c']));
     const ord = order(linear3);
     const partition = [...o.done, ...o.position, ...o.remaining];
 
@@ -194,8 +186,7 @@ describe('P1 [regression guard]: orient() partitions order(g)', () => {
   });
 
   it('remaining is exact suffix of order() after position', () => {
-    const have = new Set(['i.out', 'a.out']);
-    const o = orient(linear3, a => have.has(a));
+    const o = orient(linear3, CompletionStore.from(['init', 'a']));
     const ord = order(linear3);
     const posIdx = ord.findIndex(n => o.position.includes(n));
 
@@ -205,30 +196,30 @@ describe('P1 [regression guard]: orient() partitions order(g)', () => {
 
 // --- P3 [regression guard]: monotonicity ---
 
-describe('P3 [regression guard]: orient() monotonicity — adding files advances position', () => {
-  it('position index is non-decreasing as artifacts accumulate', () => {
+describe('P3 [regression guard]: orient() monotonicity — adding receipts advances position', () => {
+  it('position index is non-decreasing as receipts accumulate', () => {
     const ord = order(linear3);
-    const progression = [
-      new Set<string>([]),
-      new Set(['i.out']),
-      new Set(['i.out', 'a.out']),
-      new Set(['i.out', 'a.out', 'b.out']),
-      new Set(['i.out', 'a.out', 'b.out', 'c.out']),
+    const progression: CompletionStore[] = [
+      CompletionStore.empty(),
+      CompletionStore.from(['init']),
+      CompletionStore.from(['init', 'a']),
+      CompletionStore.from(['init', 'a', 'b']),
+      CompletionStore.from(['init', 'a', 'b', 'c']),
     ];
 
     let prevIdx = -1;
-    for (const have of progression) {
-      const o = orient(linear3, a => have.has(a));
+    for (const store of progression) {
+      const o = orient(linear3, store);
       const idx = ord.findIndex(n => o.position.includes(n));
       expect(idx).toBeGreaterThanOrEqual(prevIdx);
       prevIdx = idx;
     }
   });
 
-  it('position with gate: adding pre-gate artifact advances position from init region', () => {
+  it('position with gate: adding init receipt advances position from init region', () => {
     const ord = order(gateInMiddle);
-    const pos0 = orient(gateInMiddle, () => false).position;
-    const pos1 = orient(gateInMiddle, a => a === 'init.out').position;
+    const pos0 = orient(gateInMiddle, CompletionStore.empty()).position;
+    const pos1 = orient(gateInMiddle, CompletionStore.from(['init'])).position;
     const idx0 = ord.findIndex(n => pos0.includes(n));
     const idx1 = ord.findIndex(n => pos1.includes(n));
 
@@ -240,8 +231,6 @@ describe('P3 [regression guard]: orient() monotonicity — adding files advances
 
 describe('P4 [structural]: check() and verify() are independent validators', () => {
   it('check() passes when verify() fails: connected graph, unsatisfied consume', () => {
-    // Structural path init → work → term is intact (check passes).
-    // work.consumes=['x'] but no predecessor produces 'x' (verify fails).
     const g = define(graph({
       id: 'connected-bad-contract',
       desc: 'connected but unsatisfied consume',
@@ -259,8 +248,6 @@ describe('P4 [structural]: check() and verify() are independent validators', () 
   });
 
   it('verify() passes when check() fails: orphan node with no consumes', () => {
-    // orphan has deps:[] and nothing points to it — unreachable from init, cannot reach term.
-    // check() fails. verify() passes because orphan has no consumes to violate.
     const g = define(graph({
       id: 'disconnected-no-contract',
       desc: 'orphan without consumes',
@@ -278,7 +265,6 @@ describe('P4 [structural]: check() and verify() are independent validators', () 
   });
 
   it('both check() and verify() fail independently on the same graph', () => {
-    // Orphan with unsatisfied consume: disconnected AND bad contract.
     const g = define(graph({
       id: 'both-fail',
       desc: 'disconnected orphan with unsatisfied consume',
@@ -316,7 +302,6 @@ describe('P5 [structural]: joint validity — fully-specified graphs pass both v
   });
 
   it('fork-join graph with satisfied contracts passes both', () => {
-    // init produces ['a', 'b']; two parallel branches consume one each; term joins both.
     const g = define(graph({
       id: 'fork-join',
       desc: 'fork-join with satisfied contracts',

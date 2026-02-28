@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { join } from 'node:path';
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
 /**
  * Consumer smoke test: minimal roadmap from a consumer project
  *
- * Scenario: external project installs @roadmap, writes roadmap.ts,
- * runs orient() from real filesystem, verifies protocol integration works.
+ * Receipt-only model: orient advances only when completed.json has passing receipts.
+ * Artifacts alone don't advance position.
  */
 
 const root = process.cwd();
@@ -26,6 +26,18 @@ function run(cmd: string, cwd: string): any {
   } catch {
     return out;
   }
+}
+
+function writeReceipts(nodeIds: string[]) {
+  const records = nodeIds.map(id => ({
+    nodeId: id,
+    completedAt: new Date().toISOString(),
+    validationChecks: [{ rule: 'test-fixture', passed: true, evidence: 'consumer integration test' }],
+  }));
+  writeFileSync(
+    join(consumerRoot, '.roadmap/completed.json'),
+    JSON.stringify(records, null, 2),
+  );
 }
 
 beforeAll(() => {
@@ -86,10 +98,11 @@ beforeAll(() => {
 
   writeFileSync(join(consumerRoot, '.roadmap/head.json'), JSON.stringify(dag, null, 2));
 
-  // Create initial artifacts to simulate bootstrap complete
+  // Create initial artifacts and mark bootstrap complete
   mkdirSync(join(consumerRoot, 'src'), { recursive: true });
   writeFileSync(join(consumerRoot, 'src/main.ts'), 'export const main = () => "hello";');
   writeFileSync(join(consumerRoot, 'tsconfig.json'), '{ "compilerOptions": {} }');
+  writeReceipts(['bootstrap']);
 
   // Commit initial state
   execSync('git add -A && git commit -m "init"', { cwd: consumerRoot, stdio: 'pipe' });
@@ -105,12 +118,8 @@ describe('Consumer integration', () => {
 
     expect(result).toBeDefined();
     expect(result.position).toBeDefined();
-    // With bootstrap artifacts present, next work is build or test (batch)
-    const isBuildTestBatch = (Array.isArray(result.position) &&
-      (JSON.stringify(result.position) === JSON.stringify(['build', 'test']) ||
-       JSON.stringify(result.position) === JSON.stringify(['build']) ||
-       JSON.stringify(result.position) === JSON.stringify(['test'])));
-    expect(isBuildTestBatch).toBe(true);
+    // Bootstrap has receipt → done. Next: build and test (parallel batch)
+    expect(result.position).toEqual(expect.arrayContaining(['build', 'test']));
     expect(result.done).toBeGreaterThan(0);
     expect(result.produces).toBeDefined();
     expect(Array.isArray(result.produces)).toBe(true);
@@ -121,25 +130,10 @@ describe('Consumer integration', () => {
   it('orient() reports correct produces/consumes for current node', () => {
     const result = run('orient --note "check consumes"', consumerRoot);
 
-    const currentBatch = result.position;
-    const isBuildOrTest = Array.isArray(currentBatch) &&
-      (currentBatch.includes('build') || currentBatch.includes('test'));
-    expect(isBuildOrTest).toBe(true);
-
-    // Batch could be ['build'], ['test'], or ['build', 'test']
-    if (currentBatch.includes('build') && currentBatch.length === 1) {
-      expect(result.produces).toContain('dist/index.js');
-      expect(result.consumes).toContain('src/main.ts');
-      expect(result.consumes).toContain('tsconfig.json');
-    } else if (currentBatch.includes('test') && currentBatch.length === 1) {
-      expect(result.produces).toContain('coverage/report.html');
-      expect(result.consumes).toContain('src/main.ts');
-    } else if (currentBatch.length === 2) {
-      // Both build and test in parallel
-      expect(result.produces).toContain('dist/index.js');
-      expect(result.produces).toContain('coverage/report.html');
-      expect(result.consumes).toContain('src/main.ts');
-    }
+    // Both build and test in parallel batch
+    expect(result.produces).toContain('dist/index.js');
+    expect(result.produces).toContain('coverage/report.html');
+    expect(result.consumes).toContain('src/main.ts');
   });
 
   it('orient() identifies remaining nodes', () => {
@@ -150,16 +144,16 @@ describe('Consumer integration', () => {
     expect(result.remaining).toBeGreaterThan(0);
   });
 
-  it('advancing by creating build artifact moves position forward', () => {
-    // Create build output
+  it('advancing by adding receipt moves position forward', () => {
+    // Create build artifact + receipt
     mkdirSync(join(consumerRoot, 'dist'), { recursive: true });
     writeFileSync(join(consumerRoot, 'dist/index.js'), 'console.log("hello");');
+    writeReceipts(['bootstrap', 'build']);
 
     const result = run('orient --note "after build"', consumerRoot);
 
-    // After build completes, position should be test (or build,test if both parallel)
+    // build done, test still pending → position includes test
     expect(Array.isArray(result.position) && result.position.includes('test')).toBe(true);
-    // done is a count; with bootstrap and build complete, done should be >= 2
     expect(result.done).toBeGreaterThanOrEqual(2);
   });
 
@@ -171,10 +165,11 @@ describe('Consumer integration', () => {
     expect(output).toContain('position');
   });
 
-  it('orient with all artifacts completes to term', () => {
+  it('orient with all receipts completes to term', () => {
     // Complete test node
     mkdirSync(join(consumerRoot, 'coverage'), { recursive: true });
     writeFileSync(join(consumerRoot, 'coverage/report.html'), '<html></html>');
+    writeReceipts(['bootstrap', 'build', 'test']);
 
     const result = run('orient --note "all complete"', consumerRoot);
 
@@ -186,8 +181,6 @@ describe('Consumer integration', () => {
   });
 
   it('consumer DAG structure validated by define()', () => {
-    // This test verifies that the DAG we created is valid
-    // (would fail if structure was invalid: cycles, missing init/term, etc.)
     const result = run('orient --note "validate structure"', consumerRoot);
     expect(result).toBeDefined();
     expect(result.position).toBeDefined();

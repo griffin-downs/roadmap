@@ -3,7 +3,7 @@
  * at a common workspace root.
  */
 
-import { graph, define, merge, orient, fileExists } from '../src/protocol';
+import { graph, define, merge, orient, CompletionStore } from '../src/protocol';
 
 // Shared library
 const shared = define(
@@ -132,7 +132,7 @@ const combined = merge(step1, backend, [
 ]);
 
 // Find position
-const pos = orient(combined, fileExists(process.cwd()));
+const pos = orient(combined, CompletionStore.loadOrEmpty(process.cwd()));
 
 console.log('=== Multi-Repo Workspace Status ===');
 console.log(`Position: ${pos.position}`);

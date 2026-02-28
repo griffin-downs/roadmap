@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { define, verify, orient } from '../src/protocol.ts';
+import { define, verify, orient, CompletionStore } from '../src/protocol.ts';
 import type { ConsumeSpec } from '../src/protocol.ts';
 
 function makeDAG(consumes: ConsumeSpec[]) {
@@ -53,7 +53,7 @@ describe('pending contracts (resolvedBy)', () => {
 
   it('orient still computes consumes as strings for batch', () => {
     const g = makeDAG([{ artifact: 'b.txt', resolvedBy: 'resolver' }]);
-    const pos = orient(g, () => false);
+    const pos = orient(g, CompletionStore.empty());
     // consumes in orient output should be plain strings
     expect(pos.consumes.every((c: any) => typeof c === 'string')).toBe(true);
   });

@@ -59,13 +59,10 @@ describe('FR-GOV-003: orient receipt hardening', () => {
     expect(hasPassingReceipt(record)).toBe(false);
   });
 
-  // FR-GOV-003 behavioral contract: quarantined completions must NOT advance orient position.
-  // This is enforced in getCompletionState() in bin/roadmap.ts:
-  //   - passing receipt → included in completedIds → advances position
-  //   - legacy (no checks) → included → backwards compatible
-  //   - quarantined (has failed checks) → EXCLUDED → does not advance
+  // FR-GOV-009: receipt-only truth. Both legacy (no checks) and quarantined (failed checks)
+  // return false from hasPassingReceipt. Neither advances position.
 
-  it('legacy records (no validationChecks) are distinct from quarantined', () => {
+  it('neither legacy nor quarantined records advance position', () => {
     const legacy: CompletionRecordWithEvidence = {
       nodeId: 'legacy-node',
       completedAt: '2026-01-01T00:00:00Z',
@@ -78,16 +75,7 @@ describe('FR-GOV-003: orient receipt hardening', () => {
       ],
     };
 
-    // Both return false from hasPassingReceipt
     expect(hasPassingReceipt(legacy)).toBe(false);
     expect(hasPassingReceipt(quarantined)).toBe(false);
-
-    // But getCompletionState treats them differently:
-    // legacy → accepted (no checks = pre-receipt era)
-    // quarantined → excluded (explicit failure)
-    // This distinction is tested via the CLI orient behavior.
-    expect(legacy.validationChecks).toBeUndefined();
-    expect(quarantined.validationChecks).toBeDefined();
-    expect(quarantined.validationChecks!.some(c => !c.passed)).toBe(true);
   });
 });

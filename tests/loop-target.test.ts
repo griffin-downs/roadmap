@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { graph, define, orient } from '../src/protocol.ts';
-
-const has = (artifacts: Set<string>) => (a: string) => artifacts.has(a);
+import { graph, define, orient, CompletionStore } from '../src/protocol.ts';
 
 describe('loopTarget: loop vs terminal distinction', () => {
   it('orient returns no loop field for normal terminal nodes', () => {
@@ -17,7 +15,7 @@ describe('loopTarget: loop vs terminal distinction', () => {
       },
     }));
 
-    const pos = orient(g, has(new Set(['a.txt'])));
+    const pos = orient(g, CompletionStore.from(['init', 'a']));
     expect(pos.loop).toBeUndefined();
   });
 
@@ -39,8 +37,8 @@ describe('loopTarget: loop vs terminal distinction', () => {
       },
     }));
 
-    // All done — term position
-    const pos = orient(g, has(new Set(['a.txt'])));
+    // All predecessors done — term position
+    const pos = orient(g, CompletionStore.from(['init', 'a']));
     expect(pos.loop).toBeDefined();
     expect(pos.loop!.target).toBe('a');
     expect(pos.loop!.convergenceCheck).toEqual({ maxCoverageDelta: 0.02 });
@@ -65,8 +63,8 @@ describe('loopTarget: loop vs terminal distinction', () => {
       },
     }));
 
-    // a done, check not done — check is in current batch
-    const pos = orient(g, has(new Set(['a.txt'])));
+    // init done, a done, check not done — check is in current batch
+    const pos = orient(g, CompletionStore.from(['init', 'a']));
     expect(pos.position).toContain('check');
     expect(pos.loop).toBeDefined();
     expect(pos.loop!.target).toBe('a');
@@ -87,8 +85,8 @@ describe('loopTarget: loop vs terminal distinction', () => {
       },
     }));
 
-    // a done, b is current batch — no loop
-    const pos = orient(g, has(new Set(['a.txt'])));
+    // init done, a done, b is current batch — no loop
+    const pos = orient(g, CompletionStore.from(['init', 'a']));
     expect(pos.loop).toBeUndefined();
   });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { graph, define, orient, advanceBatch } from '../src/protocol.ts';
+import { graph, define, orient, advanceBatch, CompletionStore } from '../src/protocol.ts';
 
 describe('batch-position: Batch model semantics', () => {
   describe('Position array structure', () => {
@@ -15,7 +15,7 @@ describe('batch-position: Batch model semantics', () => {
         },
       }));
 
-      const pos = orient(g, () => false);
+      const pos = orient(g, CompletionStore.empty());
       expect(Array.isArray(pos.position)).toBe(true);
     });
 
@@ -31,7 +31,7 @@ describe('batch-position: Batch model semantics', () => {
         },
       }));
 
-      const pos = orient(g, () => false);
+      const pos = orient(g, CompletionStore.empty());
       expect(typeof pos.level).toBe('number');
       expect(pos.level).toBeGreaterThanOrEqual(0);
     });
@@ -48,7 +48,7 @@ describe('batch-position: Batch model semantics', () => {
         },
       }));
 
-      const pos = orient(g, () => false);
+      const pos = orient(g, CompletionStore.empty());
       expect(typeof pos.batchComplete).toBe('boolean');
     });
 
@@ -64,7 +64,7 @@ describe('batch-position: Batch model semantics', () => {
         },
       }));
 
-      const pos = orient(g, () => false);
+      const pos = orient(g, CompletionStore.empty());
       expect(Array.isArray(pos.batchRemaining)).toBe(true);
     });
   });
@@ -82,7 +82,7 @@ describe('batch-position: Batch model semantics', () => {
         },
       }));
 
-      const pos = orient(g, () => true);
+      const pos = orient(g, CompletionStore.from(Object.keys(g.nodes)));
       expect(pos.batchComplete).toBe(true);
     });
 
@@ -98,7 +98,7 @@ describe('batch-position: Batch model semantics', () => {
         },
       }));
 
-      const pos = orient(g, () => false);
+      const pos = orient(g, CompletionStore.empty());
       expect(pos.batchComplete).toBe(false);
     });
   });
@@ -118,7 +118,7 @@ describe('batch-position: Batch model semantics', () => {
       }));
 
       // Both work and gate should be in same batch
-      const pos = orient(g, () => false);
+      const pos = orient(g, CompletionStore.empty());
       expect(pos.position.length).toBeGreaterThan(0);
     });
   });
@@ -137,7 +137,7 @@ describe('batch-position: Batch model semantics', () => {
       }));
 
       try {
-        await advanceBatch(g, () => false);
+        await advanceBatch(g, CompletionStore.empty());
         expect.fail('Should throw');
       } catch (e: any) {
         expect(e.message).toContain('Cannot advance');
@@ -158,8 +158,8 @@ describe('batch-position: Batch model semantics', () => {
         },
       }));
 
-      // All artifacts exist, so advancing should work
-      const next = await advanceBatch(g, () => true);
+      // All nodes complete, so advancing should work
+      const next = await advanceBatch(g, CompletionStore.from(Object.keys(g.nodes)));
       // Should not be at 'a' batch anymore
       expect(next.position).not.toContain('a');
       expect(next.level).toBeGreaterThan(0);

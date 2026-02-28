@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { orient, define } from '../src/protocol.ts';
+import { orient, define, CompletionStore } from '../src/protocol.ts';
 import type { Graph } from '../src/protocol.ts';
 
 function makeDAG(): Graph<'init' | 'a' | 'term'> {
@@ -16,64 +16,67 @@ function makeDAG(): Graph<'init' | 'a' | 'term'> {
   });
 }
 
-describe('orient receipt semantics', () => {
-  it('artifact exists + no receipt = NOT done (Bypass #2 eliminated)', () => {
+describe('orient receipt semantics (CompletionStore)', () => {
+  it('empty store → all nodes incomplete, stuck at init', () => {
     const g = makeDAG();
-    const exists = (p: string) => p === 'out.txt';
-    const completed = new Set(['init']); // init has receipt, 'a' does not
-    const pos = orient(g, exists, undefined, completed);
-    expect(pos.position).toContain('a');
+    const pos = orient(g, CompletionStore.empty());
+    expect(pos.position).toContain('init');
+    expect(pos.done).toEqual([]);
   });
 
-  it('artifact exists + receipt = done', () => {
+  it('init receipt → init done, position advances to a', () => {
     const g = makeDAG();
-    const exists = (p: string) => p === 'out.txt';
-    const completed = new Set(['init', 'a']);
-    const pos = orient(g, exists, undefined, completed);
-    expect(pos.position).not.toContain('a');
+    const pos = orient(g, CompletionStore.from(['init']));
+    expect(pos.done).toContain('init');
+    expect(pos.position).toContain('a');
+    expect(pos.position).not.toContain('init');
+  });
+
+  it('init + a receipts → both done, position at term', () => {
+    const g = makeDAG();
+    const pos = orient(g, CompletionStore.from(['init', 'a']));
+    expect(pos.done).toContain('init');
+    expect(pos.done).toContain('a');
     expect(pos.position).toContain('term');
   });
 
-  it('artifact missing + receipt = NOT done (artifacts still required)', () => {
+  it('all receipts → done flag true', () => {
     const g = makeDAG();
-    const exists = () => false;
-    const completed = new Set(['init', 'a']);
-    const pos = orient(g, exists, undefined, completed);
-    expect(pos.position).toContain('a');
+    const pos = orient(g, CompletionStore.from(['init', 'a', 'term']));
+    expect(pos.done).toContain('init');
+    expect(pos.done).toContain('a');
+    expect(pos.position).toContain('term');
+    expect(pos.batchComplete).toBe(true);
+    expect(pos.remaining).toEqual([]);
   });
 
-  it('produce-less node requires receipt', () => {
+  it('receipt for a without init receipt → stuck at init (deps not met)', () => {
     const g = makeDAG();
-    const exists = () => true;
-    const completed = new Set<string>(); // no receipts
-    const pos = orient(g, exists, undefined, completed);
-    // init has no produces, no receipt → incomplete
+    // a has receipt but init does not → init is first batch, still incomplete
+    const pos = orient(g, CompletionStore.from(['a']));
     expect(pos.position).toContain('init');
   });
 
-  it('produce-less node with receipt is done', () => {
+  it('produce-less node requires receipt to be done', () => {
     const g = makeDAG();
-    const exists = (p: string) => p === 'out.txt';
-    const completed = new Set(['init', 'a']);
-    const pos = orient(g, exists, undefined, completed);
-    expect(pos.position).toContain('term');
+    // init has no produces. Without receipt, it's not done.
+    const pos = orient(g, CompletionStore.empty());
+    expect(pos.position).toContain('init');
   });
 
-  it('no completed set = legacy mode (artifact-only)', () => {
+  it('retired nodes bypass receipt requirement', () => {
     const g = makeDAG();
-    const exists = (p: string) => p === 'out.txt';
-    const pos = orient(g, exists);
-    // Without completed set, legacy mode: produce-less init is done, 'a' artifacts exist → done
-    expect(pos.position).toContain('term');
-  });
-
-  it('retired nodes still bypass receipt requirement', () => {
-    const g = makeDAG();
-    const exists = () => false;
     const retired = new Set(['init', 'a']);
-    const completed = new Set<string>();
-    const pos = orient(g, exists, retired, completed);
+    const pos = orient(g, CompletionStore.empty(), retired);
     // Both init and a are retired → position at term
     expect(pos.position).toContain('term');
+  });
+
+  it('retired single node advances past it', () => {
+    const g = makeDAG();
+    const retired = new Set(['init']);
+    const pos = orient(g, CompletionStore.empty(), retired);
+    // init retired → done. a has no receipt → position at a.
+    expect(pos.position).toContain('a');
   });
 });

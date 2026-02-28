@@ -4,7 +4,7 @@
  * Demonstrates orient(), merge(), branch() workflows
  */
 
-import { orient, fileExists, verify, check, merge, branch, order, parallelOrder } from '../src/protocol.ts';
+import { orient, verify, check, merge, branch, order, parallelOrder, CompletionStore } from '../src/protocol.ts';
 import { simpleProjectRoadmap } from './simple-project-roadmap.ts';
 
 const g = simpleProjectRoadmap;
@@ -32,8 +32,8 @@ batches.forEach((batch, i) => console.log(`  Batch ${i}: ${batch.join(', ')}`));
 // --- Example 3: Orientation (Starting Point) ---
 
 console.log('\n=== Orientation: Initial State ===');
-// Simulate: no artifacts exist yet
-const initial = orient(g, () => false);
+// No nodes completed yet
+const initial = orient(g, CompletionStore.empty());
 console.log(`Position: ${initial.position}`);
 console.log(`Done: [${initial.done.join(', ')}]`);
 console.log(`Produces: ${initial.produces.join(', ')}`);
@@ -47,14 +47,8 @@ console.log(`Remaining: ${initial.remaining.length} nodes`);
 // --- Example 4: Orientation (After Scaffold) ---
 
 console.log('\n=== Orientation: After Scaffold ===');
-// Simulate: scaffold artifacts exist
-const scaffoldFiles = new Set([
-  'src/main.ts',
-  'src/utils.ts',
-  'tsconfig.json',
-  'package.json',
-]);
-const afterScaffold = orient(g, path => scaffoldFiles.has(path));
+// Scaffold complete (has receipt)
+const afterScaffold = orient(g, CompletionStore.from(['scaffold']));
 console.log(`Position: ${afterScaffold.position}`);
 console.log(`Done: [${afterScaffold.done.join(', ')}]`);
 console.log(`Next nodes: ${afterScaffold.remaining.slice(0, 2).join(', ')} (parallel)`);
@@ -66,27 +60,17 @@ console.log(`Next nodes: ${afterScaffold.remaining.slice(0, 2).join(', ')} (para
 // --- Example 5: Orientation (Partial Progress) ---
 
 console.log('\n=== Orientation: Partial Progress ===');
-// Simulate: scaffold done, build in progress
-const partialFiles = new Set([
-  ...scaffoldFiles,
-  'dist/main.js', // only one of build's outputs
-]);
-const partial = orient(g, path => partialFiles.has(path));
+// Scaffold complete but build not yet receipted
+const partial = orient(g, CompletionStore.from(['scaffold']));
 console.log(`Position: ${partial.position}`);
 console.log(`Produces: ${partial.produces.join(', ')}`);
-// Position is still 'build' because not all produces exist yet
+// Position is still 'build' because no receipt yet
 
 // --- Example 6: Full Completion ---
 
 console.log('\n=== Orientation: Complete ===');
-const allFiles = new Set([
-  ...scaffoldFiles,
-  'dist/main.js',
-  'dist/utils.js',
-  'coverage/report.html',
-  'coverage/coverage.json',
-]);
-const complete = orient(g, path => allFiles.has(path));
+// All nodes have receipts
+const complete = orient(g, CompletionStore.from(Object.keys(g.nodes)));
 console.log(`Position: ${complete.position}`);
 console.log(`Done count: ${complete.done.length} / ${Object.keys(g.nodes).length}`);
 console.log(`Complete: ${complete.complete}`);

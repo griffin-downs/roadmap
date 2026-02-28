@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { graph, define, nextBatch } from '../src/protocol.ts';
-
-const has = (artifacts: Set<string>) => (a: string) => artifacts.has(a);
+import { graph, define, nextBatch, CompletionStore } from '../src/protocol.ts';
 
 describe('nextBatch: lookahead for orchestrator pre-warming', () => {
+  // linear: a → b → term (a is init node, has no deps)
   const linear = define(graph({
     id: 'linear',
     desc: 'a → b → term',
@@ -17,8 +16,8 @@ describe('nextBatch: lookahead for orchestrator pre-warming', () => {
   }));
 
   it('returns next batch when current is incomplete', () => {
-    // Current batch: [a] at L0. Next: [b] at L1.
-    const next = nextBatch(linear, has(new Set()));
+    // Current batch: [a] at L0 (a has no receipt). Next: [b] at L1.
+    const next = nextBatch(linear, CompletionStore.empty());
     expect(next).not.toBeNull();
     expect(next!.nodes).toEqual(['b']);
     expect(next!.level).toBe(1);
@@ -27,7 +26,7 @@ describe('nextBatch: lookahead for orchestrator pre-warming', () => {
 
   it('returns null when at final batch', () => {
     // a and b done. Current = [term] which is last.
-    const next = nextBatch(linear, has(new Set(['a.txt', 'b.txt'])));
+    const next = nextBatch(linear, CompletionStore.from(['a', 'b']));
     expect(next).toBeNull();
   });
 
@@ -45,7 +44,7 @@ describe('nextBatch: lookahead for orchestrator pre-warming', () => {
       },
     }));
 
-    const next = nextBatch(wide, has(new Set()));
+    const next = nextBatch(wide, CompletionStore.empty());
     expect(next!.nodes).toEqual(['b', 'c']);
     expect(next!.produces).toContain('b.txt');
     expect(next!.produces).toContain('c.txt');
@@ -66,19 +65,19 @@ describe('nextBatch: lookahead for orchestrator pre-warming', () => {
       },
     }));
 
-    const next = nextBatch(conflict, has(new Set()));
+    const next = nextBatch(conflict, CompletionStore.empty());
     expect(next!.conflicts).toContain('shared.txt');
   });
 
   it('returns empty conflicts when no overlaps', () => {
-    const next = nextBatch(linear, has(new Set()));
+    const next = nextBatch(linear, CompletionStore.empty());
     expect(next!.conflicts).toEqual([]);
   });
 
   it('works with retired nodes', () => {
     const retired = new Set(['a']);
     // a retired → done. Current batch = [b]. Next = [term].
-    const next = nextBatch(linear, has(new Set()), retired);
+    const next = nextBatch(linear, CompletionStore.empty(), retired);
     expect(next!.nodes).toEqual(['term']);
   });
 });

@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { orient, define, graph } from '../src/protocol.ts';
+import { orient, define, graph, CompletionStore } from '../src/protocol.ts';
 import { loadDAG } from '../src/lib/versioning.ts';
 import { CheckpointManager } from '../src/lib/checkpoint.ts';
 import { AuditTrail } from '../src/lib/audit.ts';
@@ -63,14 +63,8 @@ test('consumer: adopt roadmap + load + orient + checkpoint', async () => {
   expect(dag.id).toBe('cockpit');
   expect(dag.protocolVersion).toBe('0.3.0');
 
-  // Orient: find first incomplete node
-  const fsCheck = (path: string) => {
-    // Simulate: only scaffold artifacts exist (exact match, not includes)
-    const scaffoldArts = ['src/main.tsx', 'package.json', 'vite.config.ts'];
-    return scaffoldArts.includes(path);
-  };
-
-  const position = orient(dag, fsCheck);
+  // Orient: scaffold is complete (has receipt)
+  const position = orient(dag, CompletionStore.from(['scaffold']));
   // First incomplete: either build or test (parallel deps from scaffold)
   const isExpectedBatch = JSON.stringify(position.position) === JSON.stringify(['build', 'test']) ||
                           JSON.stringify(position.position) === JSON.stringify(['build']) ||

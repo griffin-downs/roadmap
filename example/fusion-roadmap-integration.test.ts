@@ -8,9 +8,8 @@
  */
 
 import { test, expect } from 'vitest';
-import { define, verify, orient, check } from '../src/protocol.ts';
+import { define, verify, orient, check, CompletionStore } from '../src/protocol.ts';
 import type { Graph } from '../src/protocol.ts';
-import { fileExists } from '../src/predicates.ts';
 
 // Example Fusion project roadmap
 // Fusion is a TypeScript monorepo with build, test, and deploy phases
@@ -122,22 +121,12 @@ test('fusion: artifacts satisfy all dependencies', () => {
 test('fusion: can orient from real project state', async () => {
   const g = define(fusionRoadmap);
 
-  // Simulate project state: bootstrap and compile done
-  const predicate = (path: string) => {
-    const exists: Record<string, boolean> = {
-      'package.json': true,
-      '.roadmap.json': true,
-      'dist/index.js': true,
-      'dist/types/index.d.ts': true,
-    };
-    return exists[path] || false;
-  };
-
-  const pos = orient(g, predicate);
+  // bootstrap and compile done (have receipts)
+  const pos = orient(g, CompletionStore.from(['bootstrap', 'compile']));
 
   // Should be positioned after compile, before unit_test
-  expect(pos.position).not.toBe(g.init);
-  expect(pos.done).toBeGreaterThan(1);
+  expect(pos.position).not.toEqual([g.init]);
+  expect(pos.done.length).toBeGreaterThan(1);
 });
 
 test('fusion: dependencies are ordered correctly', () => {

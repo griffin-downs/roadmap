@@ -33,7 +33,7 @@ export function generateBootstrap(options: BootstrapOptions): {
 }
 
 function generateRoadmapTs(name: string, template: BootstrapTemplate): string {
-  const imports = `import { graph, define, orient, fileExists } from 'roadmap/protocol';`;
+  const imports = `import { graph, define, orient, CompletionStore } from 'roadmap/protocol';`;
 
   let nodesDef = '';
   switch (template) {
@@ -126,7 +126,7 @@ const g = define(
   }),
 );
 
-const pos = orient(g, fileExists(process.cwd()));
+const pos = orient(g, CompletionStore.loadOrEmpty(process.cwd()));
 console.log(\`Position: \${pos.position}\`);
 console.log(\`Done: \${pos.done.length}, Remaining: \${pos.remaining.length}\`);
 

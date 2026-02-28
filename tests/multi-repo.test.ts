@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { graph, define, merge, check, verify, order, orient } from '../src/protocol';
+import { graph, define, merge, check, verify, order, orient, CompletionStore } from '../src/protocol';
 
 describe('multi-repo patterns', () => {
   // Shared library: produces lib.js
@@ -107,15 +107,12 @@ describe('multi-repo patterns', () => {
     const step1 = merge(shared, frontend, [{ g1Node: 'published', g2Node: 'fe-setup', artifact: 'lib.js' }]);
     const combined = merge(step1, backend, [{ g1Node: 'published', g2Node: 'be-setup', artifact: 'lib.js' }]);
 
-    // Simulate: all shared nodes done, frontend.fe-setup in progress
-    const exists = (path: string) => {
-      return ['lib.ts', 'lib.js'].includes(path);
-    };
+    // Simulate: shared phase + setup done, now at build batch
+    const pos = orient(combined, CompletionStore.from(['init', 'compile', 'published', 'fe-setup', 'be-setup']));
 
-    const pos = orient(combined, exists);
-
-    // Should be at first incomplete node after shared phase
+    // Should be at fe-build/be-build batch with actual produces
     expect(pos.batchComplete).toBe(false);
+    expect(pos.position).toEqual(expect.arrayContaining(['fe-build', 'be-build']));
     expect(pos.produces.length).toBeGreaterThan(0);
   });
 

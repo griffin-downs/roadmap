@@ -53,8 +53,8 @@ describe('roadmap show', () => {
   it('includes level and status', () => {
     const result = run('show init', tmp);
     expect(result.level).toBe(0);
-    // init has no produces → done
-    expect(result.status).toBe('done');
+    // init has no receipt → in-progress (receipt-only model)
+    expect(result.status).toBe('in-progress');
   });
 
   it('errors on unknown node', () => {
