@@ -60,7 +60,7 @@ const cmd = args[0] || 'help';
 
 // Commands that don't require a note
 // Special case: orient/position with --check is note-exempt (silent polling)
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor']);
 const isOrientCheck = (cmd === 'orient' || cmd === 'position') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -226,6 +226,8 @@ async function main() {
       case 'iter-id':   return cmdIterId();
       case 'dig':       return cmdDig();
       case 'propagate': return cmdPropagate(note!);
+      case 'remaining': return cmdRemaining();
+      case 'doctor':    return cmdDoctor();
       case 'explore':   return await cmdExplore();
       case 'compile-prompts': return cmdCompilePrompts(note!);
       case 'compile-brief': return cmdCompileBrief(note!);
@@ -1294,6 +1296,64 @@ async function cmdChart() {
     console.log(`  ⚡ Critical path (${cp.length} nodes): ${cp.join(' → ')}`);
   }
 
+  console.log('');
+}
+
+function cmdRemaining() {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const includeNonExec = args.includes('--include-nonexec');
+  const dag = loadDAG();
+  const completion = loadStore();
+  const retired = retiredSet();
+  const pos = orientWithState(dag);
+  const allNodes = Object.keys(dag.nodes) as string[];
+  const doneSet = new Set(pos.done);
+
+  // Remaining = not done, not retired, topo ordered (from orient.remaining + batchRemaining)
+  const remaining = [...pos.batchRemaining, ...pos.remaining];
+
+  const results: { id: string; mode: string; blockedBy: string; state: string }[] = [];
+
+  for (const id of remaining) {
+    if (retired.has(id)) continue;
+    const node = (dag.nodes as Record<string, any>)[id];
+    if (!node) continue;
+
+    const mode = node.mode ?? 'execute';
+    if (!includeNonExec && mode === 'plan') continue;
+
+    // Determine blocking deps
+    const deps: string[] = node.deps ?? [];
+    const blockers = deps.filter((d: string) => !doneSet.has(d) && !retired.has(d));
+    const blockedBy = blockers.length > 0
+      ? blockers.join(', ')
+      : 'unblocked';
+
+    const state = completion.hasFailing(id) ? 'failed' : 'pending';
+
+    results.push({ id, mode, blockedBy, state });
+  }
+
+  if (args.includes('--json')) {
+    json({ remaining: results, count: results.length });
+    return;
+  }
+
+  if (results.length === 0) {
+    console.log('No remaining nodes.');
+    return;
+  }
+
+  console.log(`\n  ${results.length} remaining node(s):\n`);
+  for (const r of results) {
+    const stateTag = r.state === 'failed' ? '❌' : '⏳';
+    const modeTag = r.mode === 'plan' ? ' [plan]' : '';
+    console.log(`  ${stateTag} ${r.id}${modeTag}  ← ${r.blockedBy}`);
+  }
   console.log('');
 }
 
