@@ -74,10 +74,12 @@ const repoRoot = join(import.meta.dirname, '..');
 const bin = join(repoRoot, 'bin', 'roadmap.ts');
 
 function runCli(cmd: string, cwd: string, env?: Record<string, string>) {
+  const cleanEnv = { ...process.env };
+  delete cleanEnv['SKIP_PLAN_GATE'];
   const r = spawnSync('npx', ['tsx', bin, ...cmd.split(' ')], {
     cwd,
     encoding: 'utf-8',
-    env: { ...process.env, ...env },
+    env: { ...cleanEnv, ...env },
   });
   let result: any = null;
   try { result = JSON.parse(r.stdout); } catch { /* not JSON */ }
