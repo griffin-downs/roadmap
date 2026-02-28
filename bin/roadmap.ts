@@ -1299,6 +1299,105 @@ async function cmdChart() {
   console.log('');
 }
 
+function cmdDoctor() {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap in this repo.' });
+    process.exit(1);
+  }
+
+  const subcommand = args[1];
+  if (subcommand !== 'completion') {
+    json({ error: 'Unknown doctor subcommand', fix: 'roadmap doctor completion' });
+    process.exit(1);
+  }
+
+  const dag = loadDAG();
+  const completion = loadStore();
+  const retired = retiredSet();
+  const dagNodeIds = new Set(Object.keys(dag.nodes));
+  const storeIds = completion.allIds();
+  const passingIds = completion.passingIds();
+  const failingIds = completion.failingIds();
+
+  // Stale completions: in store but not in DAG
+  const stale = [...storeIds].filter(id => !dagNodeIds.has(id));
+
+  // Missing: in DAG but no receipt (not retired)
+  const pending: string[] = [];
+  const planNodes: string[] = [];
+  const skippedNodes = [...retired].filter(id => dagNodeIds.has(id));
+
+  for (const id of dagNodeIds) {
+    const node = (dag.nodes as Record<string, any>)[id];
+    if (retired.has(id)) continue;
+    if (node?.mode === 'plan') {
+      planNodes.push(id);
+      if (!completion.hasRecord(id)) pending.push(id);
+      continue;
+    }
+    if (!completion.hasRecord(id)) pending.push(id);
+  }
+
+  const report = {
+    nodeCount: dagNodeIds.size,
+    completedCount: passingIds.size,
+    failedCount: failingIds.size,
+    pendingCount: pending.length,
+    staleCount: stale.length,
+    planCount: planNodes.length,
+    skippedCount: skippedNodes.length,
+    stale,
+    pending,
+    failed: [...failingIds],
+    plan: planNodes,
+    skipped: skippedNodes,
+  };
+
+  // Determine exit code
+  let exitCode = 0;
+  const issues: string[] = [];
+
+  // Stale retired: retired IDs not in current DAG
+  const staleRetired = [...retired].filter(id => !dagNodeIds.has(id));
+
+  if (stale.length > 0) {
+    issues.push(`${stale.length} stale completion(s) — node IDs not in head.json: ${stale.join(', ')}`);
+    exitCode = 1;
+  }
+  if (staleRetired.length > 0) {
+    issues.push(`${staleRetired.length} stale retired entry/entries — not in head.json: ${staleRetired.join(', ')}`);
+  }
+  if (failingIds.size > 0) {
+    issues.push(`${failingIds.size} node(s) with failing receipts: ${[...failingIds].join(', ')}`);
+    exitCode = 1;
+  }
+
+  if (args.includes('--json')) {
+    json({ ...report, issues, ok: exitCode === 0 });
+    if (exitCode) process.exit(exitCode);
+    return;
+  }
+
+  console.log(`\n  Completion diagnostics for ${dag.id}:\n`);
+  console.log(`  Nodes:     ${dagNodeIds.size}`);
+  console.log(`  Completed: ${passingIds.size}`);
+  console.log(`  Failed:    ${failingIds.size}`);
+  console.log(`  Pending:   ${pending.length}`);
+  console.log(`  Plan:      ${planNodes.length}`);
+  console.log(`  Skipped:   ${skippedNodes.length}`);
+  console.log(`  Stale:     ${stale.length}`);
+
+  if (issues.length > 0) {
+    console.log('\n  Issues:');
+    for (const issue of issues) console.log(`    ⚠️  ${issue}`);
+  } else {
+    console.log('\n  ✅ No issues found.');
+  }
+  console.log('');
+
+  if (exitCode) process.exit(exitCode);
+}
+
 function cmdRemaining() {
   if (!hasLocalDAG) {
     json({ error: 'No roadmap in this repo.' });
