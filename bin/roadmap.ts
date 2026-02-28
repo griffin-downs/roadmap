@@ -37,6 +37,7 @@ import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
 import type { Graph } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
+import type { OrientV1, OrientDag, OrientDagNode, OrientDagEdge, OrientBlockedNode } from '../src/lib/orient-schema.ts';
 
 const rawArgs = process.argv.slice(2);
 const repoRoot = process.cwd();
@@ -254,7 +255,6 @@ async function main() {
 async function cmdOrient(note: string | undefined) {
   const isCheck = args.includes('--check');
   if (!hasLocalDAG) {
-    const result = { position: 'untracked', repo: basename(repoRoot), tracked: false };
     if (!isCheck) {
       recordTrail({
         ts: new Date().toISOString(),
@@ -264,7 +264,32 @@ async function cmdOrient(note: string | undefined) {
         position: 'untracked',
       });
     }
-    json(result);
+    if (args.includes('--json')) {
+      json({
+        schema_version: 1,
+        tool: { name: 'roadmap', version: readPackageVersion() },
+        workspace: {
+          root: repoRoot,
+          package_manager: detectPackageManager(),
+          node: process.version,
+          platform: process.platform,
+        },
+        inputs: { dag: false },
+        position: [],
+        level: -1,
+        produces: [],
+        consumes: [],
+        batchRemaining: [],
+        batchComplete: false,
+        done: 0,
+        remaining: 0,
+        complete: false,
+        errors: [{ kind: 'no_dag', message: 'No roadmap tracked in this repo' }],
+        exit: { code: 0 },
+      } satisfies OrientV1);
+    } else {
+      json({ position: 'untracked', repo: basename(repoRoot), tracked: false });
+    }
     return;
   }
 
@@ -495,7 +520,129 @@ async function cmdOrient(note: string | undefined) {
       detail: trailDetail,
     });
   }
-  json(result);
+  // --json: emit v1 machine envelope
+  if (args.includes('--json')) {
+    const v1 = buildOrientV1(dag, result, pos);
+    json(v1);
+  } else {
+    json(result);
+  }
+}
+
+function detectPackageManager(): string | undefined {
+  if (existsSync(join(repoRoot, 'pnpm-lock.yaml'))) return 'pnpm';
+  if (existsSync(join(repoRoot, 'yarn.lock'))) return 'yarn';
+  if (existsSync(join(repoRoot, 'bun.lockb')) || existsSync(join(repoRoot, 'bun.lock'))) return 'bun';
+  if (existsSync(join(repoRoot, 'package-lock.json'))) return 'npm';
+  return undefined;
+}
+
+function buildOrientV1(dag: Graph<string>, result: Record<string, unknown>, pos: any): OrientV1 {
+  const v1: OrientV1 = {
+    schema_version: 1,
+    tool: { name: 'roadmap', version: readPackageVersion() },
+    workspace: {
+      root: repoRoot,
+      dag_id: dag.id,
+      package_manager: detectPackageManager(),
+      node: process.version,
+      platform: process.platform,
+    },
+    inputs: {
+      dag: args.includes('--dag'),
+    },
+
+    position: result.position as string[],
+    level: result.level as number,
+    produces: pos.produces,
+    consumes: pos.consumes,
+    batchRemaining: pos.batchRemaining,
+    batchComplete: (result.batchComplete as boolean) ?? false,
+    done: pos.done.length,
+    remaining: pos.remaining.length,
+    complete: pos.remaining.length === 0,
+
+    exit: { code: 0 },
+  };
+
+  if (result.preGate) v1.preGate = result.preGate as string[];
+  if (result.planNodes) v1.planNodes = result.planNodes as Record<string, string>;
+  if (result.claims) v1.claims = result.claims as Record<string, unknown>;
+  if (result.iteration !== undefined) v1.iteration = result.iteration as number;
+
+  // --dag: full DAG structure with nodes, edges, toposort, blocked, executable
+  if (args.includes('--dag')) {
+    v1.dag = buildOrientDag(dag, pos);
+  }
+
+  return v1;
+}
+
+function buildOrientDag(dag: Graph<string>, pos: any): OrientDag {
+  const nodes = dag.nodes as Record<string, any>;
+  const doneSet = new Set(pos.done as string[]);
+  const remainingSet = new Set((pos.remaining as string[]) ?? []);
+  const batchSet = new Set(pos.position as string[]);
+
+  const dagNodes: OrientDagNode[] = [];
+  const dagEdges: OrientDagEdge[] = [];
+
+  for (const [id, node] of Object.entries(nodes)) {
+    const n = node as any;
+
+    let status: 'satisfied' | 'pending' | 'blocked' = 'pending';
+    if (doneSet.has(id)) status = 'satisfied';
+    else if (!batchSet.has(id) && !doneSet.has(id)) {
+      // Check if all deps are satisfied
+      const allDepsMet = (n.deps ?? []).every((d: string) => doneSet.has(d));
+      status = allDepsMet ? 'pending' : 'blocked';
+    }
+
+    dagNodes.push({
+      id,
+      desc: n.desc ?? '',
+      mode: n.mode ?? 'execute',
+      produces: n.produces ?? [],
+      consumes: n.consumes ?? [],
+      deps: n.deps ?? [],
+      status,
+      validate: n.validate ?? [],
+    });
+
+    for (const dep of n.deps ?? []) {
+      dagEdges.push({ from: dep, to: id, kind: 'dep' });
+    }
+  }
+
+  // Toposort from parallelOrder
+  const batches = parallelOrder(dag);
+  const toposort = batches.flat();
+
+  // Blocked: nodes with unsatisfied deps
+  const blocked: OrientBlockedNode[] = dagNodes
+    .filter(n => n.status === 'blocked')
+    .map(n => ({
+      id: n.id,
+      missing: n.deps.filter(d => !doneSet.has(d)),
+      reason: `waiting on: ${n.deps.filter(d => !doneSet.has(d)).join(', ')}`,
+    }));
+
+  // Executable: pending nodes whose deps are all satisfied (current batch + ready)
+  const executable = dagNodes
+    .filter(n => n.status === 'pending' || batchSet.has(n.id))
+    .filter(n => n.status !== 'blocked')
+    .map(n => n.id);
+
+  return {
+    id: dag.id,
+    desc: dag.desc,
+    node_count: dagNodes.length,
+    nodes: dagNodes,
+    edges: dagEdges,
+    toposort,
+    blocked,
+    executable,
+  };
 }
 
 async function cmdAdvance(note: string) {
@@ -2973,6 +3120,8 @@ Commands:
   orient --ready      Eager dispatch: nodes beyond current batch whose deps are met
   orient --next       Next batch lookahead with pre-checked conflicts
   orient --staged     Per-node isomorphism check: do staged files match a node's produces?
+  orient --json       Machine-canonical v1 envelope (schema_version, workspace, exit code)
+  orient --json --dag Full DAG structure: nodes, edges, toposort, blocked, executable
   orient --assign     Round-robin assign batchRemaining to --owners (JSON)
   advance             Advance to next batch — runs validate[] on all nodes (JSON)
   advance --structural-only  Skip quality gates, advance on artifact existence only
