@@ -14,7 +14,11 @@ function run(cmd: string, cwd: string): any {
     cwd, encoding: 'utf-8', env: { ...process.env, NODE_NO_WARNINGS: '1' },
   });
   // Extract JSON from output (chart outputs non-JSON, orient outputs JSON)
-  try { return JSON.parse(out); } catch { return out; }
+  try {
+    const raw = JSON.parse(out);
+    if (raw && typeof raw === 'object' && 'schema_version' in raw && 'data' in raw) return raw.data;
+    return raw;
+  } catch { return out; }
 }
 
 function makeDAG(id: string, nodes: Record<string, any>) {

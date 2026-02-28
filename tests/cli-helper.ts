@@ -14,5 +14,16 @@ export function roadmapCli(cmd: string, opts: { cwd?: string } = {}): string {
 }
 
 export function roadmapCliJson(cmd: string, opts: { cwd?: string } = {}): any {
+  const raw = JSON.parse(roadmapCli(cmd, opts));
+  // Unwrap JSON envelope: { schema_version, ok, cmd, data } → data
+  if (raw && typeof raw === 'object' && 'schema_version' in raw) {
+    if ('data' in raw) return raw.data;
+    if ('error' in raw) return raw; // preserve error envelope for error-testing
+  }
+  return raw;
+}
+
+/** Returns the full JSON envelope without unwrapping. */
+export function roadmapCliRaw(cmd: string, opts: { cwd?: string } = {}): any {
   return JSON.parse(roadmapCli(cmd, opts));
 }

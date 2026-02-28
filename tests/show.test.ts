@@ -7,7 +7,10 @@ import { tmpdir } from 'node:os';
 const bin = join(__dirname, '..', 'bin', 'roadmap.ts');
 const run = (args: string, cwd: string) => {
   const out = execSync(`npx tsx ${bin} ${args}`, { cwd, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
-  return JSON.parse(out);
+  const raw = JSON.parse(out);
+  // Unwrap JSON envelope
+  if (raw && typeof raw === 'object' && 'schema_version' in raw && 'data' in raw) return raw.data;
+  return raw;
 };
 
 describe('roadmap show', () => {

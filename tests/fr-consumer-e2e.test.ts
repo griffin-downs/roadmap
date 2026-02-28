@@ -136,7 +136,8 @@ describe('FR-4: chart --deps', () => {
 describe('FR-5: merge --from diagnostic', () => {
   it('shows artifact connections between repos', () => {
     const output = cliRun('merge --from ../donjon --note "check connections"', fusionRepo);
-    const result = JSON.parse(output);
+    const _raw = JSON.parse(output);
+    const result = (_raw && 'schema_version' in _raw && 'data' in _raw) ? _raw.data : _raw;
     expect(result.connections.siblingToLocal.length).toBeGreaterThanOrEqual(1);
     const conn = result.connections.siblingToLocal;
     const artifacts = conn.map((c: any) => c.artifact);

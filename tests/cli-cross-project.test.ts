@@ -26,12 +26,17 @@ function createMinimalDAG(id: string, nodes: Record<string, any> = {}) {
   return { id, desc: `Test roadmap ${id}`, init: 'init', term: 'term', nodes: { ...defaultNodes, ...nodes }, version: '0.3.0', protocolVersion: '0.3.0' };
 }
 
+function unwrapEnvelope(raw: any): any {
+  if (raw && typeof raw === 'object' && 'schema_version' in raw && 'data' in raw) return raw.data;
+  return raw;
+}
+
 function executeCmd(cmd: string, cwd: string = repoRoot): any {
   try {
-    return JSON.parse(roadmapCli(cmd, { cwd }));
+    return unwrapEnvelope(JSON.parse(roadmapCli(cmd, { cwd })));
   } catch (e) {
     if (e instanceof Error && 'stdout' in e) {
-      try { return JSON.parse((e as any).stdout); } catch { throw e; }
+      try { return unwrapEnvelope(JSON.parse((e as any).stdout)); } catch { throw e; }
     }
     throw e;
   }

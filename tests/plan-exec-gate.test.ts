@@ -82,7 +82,16 @@ function runCli(cmd: string, cwd: string, env?: Record<string, string>) {
     env: { ...cleanEnv, ...env },
   });
   let result: any = null;
-  try { result = JSON.parse(r.stdout); } catch { /* not JSON */ }
+  try {
+    const raw = JSON.parse(r.stdout);
+    if (raw && typeof raw === 'object' && 'schema_version' in raw) {
+      if ('data' in raw) result = raw.data;
+      else if ('error' in raw) result = { error: raw.error.message ?? raw.error, fix: raw.error.fix?.[0], ...raw.error };
+      else result = raw;
+    } else {
+      result = raw;
+    }
+  } catch { /* not JSON */ }
   return { status: r.status ?? -1, result, stdout: r.stdout ?? '', stderr: r.stderr ?? '' };
 }
 

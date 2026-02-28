@@ -6,6 +6,12 @@ import { tmpdir } from 'node:os';
 
 const bin = join(__dirname, '..', 'bin', 'roadmap.ts');
 
+function unwrap(stdout: string): any {
+  const raw = JSON.parse(stdout);
+  if (raw && typeof raw === 'object' && 'schema_version' in raw && 'data' in raw) return raw.data;
+  return raw;
+}
+
 describe('roadmap checkpoint', () => {
   const tmp = join(tmpdir(), `.roadmap-checkpoint-test-${Date.now()}`);
   const run = (args: string) =>
@@ -42,7 +48,7 @@ describe('roadmap checkpoint', () => {
   });
 
   it('creates checkpoint with --label', () => {
-    const output = JSON.parse(run('checkpoint --label iter-1 --note "first checkpoint"'));
+    const output = unwrap(run('checkpoint --label iter-1 --note "first checkpoint"'));
     expect(output.created).toBe(true);
     expect(output.label).toBe('iter-1');
     expect(output.checkpointId).toMatch(/^cp-/);
@@ -55,7 +61,7 @@ describe('roadmap checkpoint', () => {
   });
 
   it('--list shows existing checkpoints', () => {
-    const output = JSON.parse(run('checkpoint --list'));
+    const output = unwrap(run('checkpoint --list'));
     expect(output.checkpoints).toBeInstanceOf(Array);
     expect(output.checkpoints.length).toBe(1);
     expect(output.checkpoints[0].phase).toBe('iter-1');

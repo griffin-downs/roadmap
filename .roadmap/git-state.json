@@ -1,5 +1,5 @@
 {
-  "lastCommit": "a5295c9abfa26f436a1e4f1fa45a2d58eab5685c",
-  "timestamp": "2026-02-28T14:35:47Z",
-  "message": "FR-GOV-009: delete legacy completion semantics — receipt-only truth regime"
+  "lastCommit": "248fdf5880233d665a4e39050ab07282ebf233f7",
+  "timestamp": "2026-02-28T12:19:43Z",
+  "message": "FR-GOV-002: pre-commit DAG integrity gate — define() on staged head.json"
 }

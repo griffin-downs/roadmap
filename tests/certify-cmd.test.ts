@@ -7,6 +7,13 @@ import { tmpdir } from 'node:os';
 const repoRoot = join(__dirname, '..');
 const bin = join(repoRoot, 'bin', 'roadmap.ts');
 
+function unwrap(stdout: string): any {
+  const raw = JSON.parse(stdout);
+  if (raw && typeof raw === 'object' && 'schema_version' in raw && 'data' in raw) return raw.data;
+  if (raw && typeof raw === 'object' && 'schema_version' in raw && 'error' in raw) return { error: raw.error.message, ...raw.error };
+  return raw;
+}
+
 const dag = {
   id: 'test-dag',
   desc: 'test',
@@ -63,7 +70,7 @@ describe('roadmap certify', () => {
   it('node with passing validators exits 0 and certified: true', () => {
     const result = certify('b', tmpPass);
     expect(result.status).toBe(0);
-    const output = JSON.parse(result.stdout);
+    const output = unwrap(result.stdout);
     expect(output.certified).toBe(true);
     expect(output.node).toBe('b');
     expect(output.owner).toBe('test-agent');
@@ -86,7 +93,7 @@ describe('roadmap certify', () => {
     // output.txt is absent in tmpFail
     const result = certify('b', tmpFail);
     expect(result.status).toBe(1);
-    const output = JSON.parse(result.stdout);
+    const output = unwrap(result.stdout);
     expect(output.certified).toBe(false);
     expect(output.node).toBe('b');
     expect(typeof output.failedCount).toBe('number');
@@ -96,7 +103,7 @@ describe('roadmap certify', () => {
   it('node not in DAG exits 1 with error', () => {
     const result = certify('nonexistent', tmpFail);
     expect(result.status).toBe(1);
-    const output = JSON.parse(result.stdout);
+    const output = unwrap(result.stdout);
     expect(output.error).toBeTruthy();
     expect(output.error).toMatch(/not found/i);
   });
@@ -105,7 +112,7 @@ describe('roadmap certify', () => {
     // Node "a" has validate: [] — always passes
     const result = certify('a', tmpNoValidator);
     expect(result.status).toBe(0);
-    const output = JSON.parse(result.stdout);
+    const output = unwrap(result.stdout);
     expect(output.certified).toBe(true);
     expect(output.node).toBe('a');
   });

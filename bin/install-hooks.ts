@@ -6,28 +6,37 @@
  * Usage: npx roadmap install-hooks
  * Or: npm run postinstall (automatic)
  *
- * Installs:
- * - .git/hooks/pre-commit  — enforce orientation before commits
- * - .git/hooks/post-commit — record git state for recovery
+ * Installs hooks from hooks/ → .git/hooks/
+ * Resets core.hooksPath to .git/hooks to prevent worktree corruption.
  */
 
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename_ = fileURLToPath(import.meta.url);
+const __dirname_ = path.dirname(__filename_);
 
 const hooksDir = '.git/hooks';
-const sourceDir = path.join(__dirname, '..', 'hooks');
-
-function fail(msg: string) {
-  console.error(`❌ ${msg}`);
-  process.exit(1);
-}
+const sourceDir = path.join(__dirname_, '..', 'hooks');
 
 function main() {
-  // Check if .git exists
+  // Check if .git exists (could be a file in worktrees)
   if (!fs.existsSync('.git')) {
-    console.log('ℹ️  No .git directory found. Skipping hook installation.');
+    console.log('No .git found. Skipping hook installation.');
     return;
+  }
+
+  // Reset core.hooksPath — prevents corruption from stale/injected paths
+  try {
+    const current = execSync('git config --local core.hooksPath', { encoding: 'utf-8' }).trim();
+    if (current && current !== '.git/hooks') {
+      console.log(`Resetting core.hooksPath from "${current}" to .git/hooks`);
+      execSync('git config --local --unset core.hooksPath');
+    }
+  } catch {
+    // Not set — good
   }
 
   // Ensure hooks directory exists
@@ -38,30 +47,25 @@ function main() {
   const hooks = ['pre-commit', 'post-commit', 'prepare-commit-msg', 'commit-msg'];
 
   for (const hook of hooks) {
-    // Try .ts first, then bare (shell scripts)
-    const tsPath = path.join(sourceDir, `${hook}.ts`);
+    // Prefer bare (bash) over .ts — bash hooks are self-contained and portable
     const barePath = path.join(sourceDir, hook);
-    const sourcePath = fs.existsSync(tsPath) ? tsPath : fs.existsSync(barePath) ? barePath : null;
+    const tsPath = path.join(sourceDir, `${hook}.ts`);
+    const sourcePath = fs.existsSync(barePath) ? barePath : fs.existsSync(tsPath) ? tsPath : null;
     const targetPath = path.join(hooksDir, hook);
 
     if (!sourcePath) {
-      console.log(`⏭️  Source hook not found: ${hook}`);
+      console.log(`  skip: ${hook} (no source)`);
       continue;
     }
 
-    // Read source
     const content = fs.readFileSync(sourcePath, 'utf-8');
-
-    // Write to git hooks
     fs.writeFileSync(targetPath, content);
     fs.chmodSync(targetPath, 0o755);
 
-    console.log(`✓ Installed: ${hook}`);
+    console.log(`  installed: ${hook}`);
   }
 
-  console.log('\n✅ Git hooks installed');
-  console.log('   Pre-commit enforces: roadmap orientation before commits');
-  console.log('   Post-commit records: git state for recovery');
+  console.log('Git hooks installed');
 }
 
 main();

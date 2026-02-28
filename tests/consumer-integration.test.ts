@@ -22,7 +22,9 @@ function run(cmd: string, cwd: string): any {
     env: { ...process.env, NODE_NO_WARNINGS: '1' },
   });
   try {
-    return JSON.parse(out);
+    const raw = JSON.parse(out);
+    if (raw && typeof raw === 'object' && 'schema_version' in raw && 'data' in raw) return raw.data;
+    return raw;
   } catch {
     return out;
   }

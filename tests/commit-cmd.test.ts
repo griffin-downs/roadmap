@@ -64,7 +64,8 @@ describe('roadmap commit --node', () => {
     // Create the artifact
     writeFileSync(join(tmp, 'a.txt'), 'content');
 
-    const output = JSON.parse(run('commit --node a --message "add a" --note "test commit"'));
+    const _raw = JSON.parse(run('commit --node a --message "add a" --note "test commit"'));
+    const output = (_raw && 'schema_version' in _raw && 'data' in _raw) ? _raw.data : _raw;
     expect(output.committed).toBe(true);
     expect(output.node).toBe('a');
     expect(output.produces).toEqual(['a.txt']);

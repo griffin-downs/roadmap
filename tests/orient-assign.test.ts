@@ -275,7 +275,11 @@ describe('CLI: orient --assign', () => {
     }
   };
 
-  const json = (cmd: string) => JSON.parse(run(cmd));
+  const json = (cmd: string) => {
+    const raw = JSON.parse(run(cmd));
+    if (raw && typeof raw === 'object' && 'schema_version' in raw && 'data' in raw) return raw.data;
+    return raw;
+  };
 
   it('returns JSON with assignments field for batchRemaining', () => {
     const result = json('orient --assign --owners w1,w2 --note "cli test"');
