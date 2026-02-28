@@ -1162,6 +1162,7 @@ async function cmdChart() {
   const showDeps = args.includes('--deps');
   const showCritical = args.includes('--critical-path');
   const dag = loadDAG();
+  const completion = loadStore();
   const pos = await crossOrientWithState(dag);
   const batches = parallelOrder(dag);
   const claimStore = loadClaims(repoRoot);
@@ -1169,6 +1170,7 @@ async function cmdChart() {
   const nodeIds = Object.keys(dag.nodes);
   const doneSet = new Set(pos.done);
   const preGateSet = new Set(pos.preGate);
+  const retired = retiredSet();
   const cpSet = showCritical ? new Set(criticalPath(dag)) : new Set<string>();
   const totalNodes = nodeIds.length;
   const doneCount = pos.done.length;
@@ -1233,6 +1235,7 @@ async function cmdChart() {
   if (pos.deps.length && !showDeps) {
     console.log(`  📦 ${pos.deps.length} dep(s) — use --deps for cross-repo view`);
   }
+  console.log(`  [✅ done]  [⏭️ skip]  [🟦 plan]  [❌ fail]  [⏳ pending]  [👉 current]  [🔍 pre-gate]`);
   console.log('');
 
   // Per-batch progress
@@ -1246,8 +1249,10 @@ async function cmdChart() {
     const levelEmoji = batchPct === 100 ? '✅' : batchDone > 0 ? '🔶' : '⬜';
     const nodeList = batch.map(n => {
       const node = dag.nodes[n as keyof typeof dag.nodes] as any;
-      const planTag = node?.mode === 'plan' ? '📋' : '';
       const cpTag = cpSet.has(n) ? '⚡' : '';
+      // Retired/done are terminal states — check before position
+      if (retired.has(n)) return `⏭️ ${n}`;
+      if (doneSet.has(n)) return `✅ ${cpTag}${n}`;
       if (pos.position.includes(n)) {
         const claim = claimStore[n];
         let claimTag = '';
@@ -1262,12 +1267,12 @@ async function cmdChart() {
             claimTag = ` [${claim.owner} ⌛expired]`;
           }
         }
-        return `👉 ${cpTag}${planTag}${n}${claimTag}`;
+        return `👉 ${cpTag}${n}${claimTag}`;
       }
-      if (retiredSet().has(n)) return `⏭️ ${n}`;
-      if (doneSet.has(n)) return `✅ ${cpTag}${planTag}${n}`;
-      if (preGateSet.has(n)) return `🔍 ${cpTag}${planTag}${n}`;
-      return `⬜ ${cpTag}${planTag}${n}`;
+      if (completion.hasFailing(n)) return `❌ ${cpTag}${n}`;
+      if (preGateSet.has(n)) return `🔍 ${cpTag}${n}`;
+      if (node?.mode === 'plan') return `🟦 ${cpTag}${n}`;
+      return `⏳ ${cpTag}${n}`;
     }).join('  ');
 
     console.log(`  ${levelEmoji} L${String(i).padStart(2, '0')} ${bBar} ${String(batchPct).padStart(3)}%  ${nodeList}`);
