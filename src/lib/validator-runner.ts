@@ -34,12 +34,12 @@ function sha256(input: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
 
-function normalizedEnv(): Record<string, string> {
+function normalizedEnv(extraVars: string[] = []): Record<string, string> {
   const env: Record<string, string> = { ROADMAP_VALIDATING: '1' };
-  for (const key of ENV_ALLOWLIST) {
-    if (process.env[key] !== undefined) {
-      env[key] = process.env[key]!;
-    }
+  // ENV_ALLOWLIST is the builtin set; extraVars come from kernel.json envPolicy.allowedVars (FR-STACK-001)
+  const allAllowed = [...ENV_ALLOWLIST, ...extraVars];
+  for (const key of allAllowed) {
+    if (process.env[key] !== undefined) env[key] = process.env[key]!;
   }
   return env;
 }
@@ -51,15 +51,16 @@ function runId(): string {
 /**
  * Run a validator command in a normalized environment, capture output,
  * and optionally persist artifacts.
+ * opts.extraEnvVars: additional env vars allowed through the filter (from kernel.json envPolicy).
  */
 export async function runValidator(
   nodeId: string,
   validatorId: string,
   command: string | string[],
   repoRoot: string,
-  opts?: { captureArtifacts?: boolean },
+  opts?: { captureArtifacts?: boolean; extraEnvVars?: string[] },
 ): Promise<ValidatorResult> {
-  const env = normalizedEnv();
+  const env = normalizedEnv(opts?.extraEnvVars ?? []);
   const start = performance.now();
 
   const proc = Array.isArray(command)

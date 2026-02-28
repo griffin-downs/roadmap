@@ -824,6 +824,99 @@ export function criticalPath<T extends string>(g: Graph<T>): string[] {
   return path;
 }
 
+// --- Merge/branch witness types (FR-MERGE-001, FR-BRANCH-001) ---
+
+/** Collision detected when two graphs share a node ID during merge. */
+export interface MergeConflict {
+  type: 'node-id-collision';
+  nodeId: string;
+  left: unknown;   // NodeSpec from g1
+  right: unknown;  // NodeSpec from g2
+}
+
+/** Records which nodes were included in a branch and why (reachable from fromNode). */
+export interface BranchWitness {
+  fromNode: string;
+  includedNodes: string[];
+  reachabilityReason: Record<string, string[]>; // nodeId → BFS path from fromNode
+}
+
+/**
+ * Detect node ID collisions before merging two graphs.
+ * Returns conflicts array — non-empty means merge would fail.
+ * Use this for pre-flight collision detection without throwing.
+ */
+export function mergeCheck<T1 extends string, T2 extends string>(
+  g1: Graph<T1>,
+  g2: Graph<T2>,
+): MergeConflict[] {
+  const ids1 = new Set(Object.keys(g1.nodes));
+  const conflicts: MergeConflict[] = [];
+  for (const [id, node] of Object.entries(g2.nodes)) {
+    if (ids1.has(id)) {
+      conflicts.push({
+        type: 'node-id-collision',
+        nodeId: id,
+        left: (g1.nodes as Record<string, unknown>)[id],
+        right: node,
+      });
+    }
+  }
+  return conflicts;
+}
+
+/**
+ * Branch a subgraph from fromNode to g.term, returning graph + reachability witness.
+ * Backward-compatible companion to branch() — use when witness evidence is needed.
+ */
+export function branchWithWitness<T extends string>(
+  g: Graph<T>,
+  fromNode: T,
+): { graph: Graph<T>; witness: BranchWitness } {
+  if (!g || !fromNode) throw new Error('Graph and fromNode required for branchWithWitness');
+  if (!(fromNode in g.nodes)) throw new Error(`fromNode "${fromNode}" not in graph`);
+
+  const nodes = flat(g);
+  // BFS from fromNode, recording path to each node
+  const reachabilityReason: Record<string, string[]> = {};
+  const q: Array<{ id: string; path: string[] }> = [{ id: fromNode, path: [fromNode] }];
+  const visited = new Set<string>();
+  while (q.length) {
+    const { id, path } = q.shift()!;
+    if (visited.has(id)) continue;
+    visited.add(id);
+    reachabilityReason[id] = path;
+    const successors = nodes.filter(nd => nd.deps.includes(id)).map(nd => nd.id);
+    for (const s of successors) {
+      if (!visited.has(s)) q.push({ id: s, path: [...path, s] });
+    }
+  }
+
+  const includedNodes = [...visited].sort((a, b) => a.localeCompare(b));
+
+  const branchedNodes: Record<string, Flat> = {};
+  for (const node of nodes) {
+    if (visited.has(node.id)) branchedNodes[node.id] = node;
+  }
+
+  const branched: Graph<T> = {
+    id: `${g.id}:${fromNode}`,
+    desc: `Branch of ${g.desc} from ${fromNode}`,
+    init: fromNode,
+    term: g.term,
+    nodes: branchedNodes as any,
+  };
+
+  const validated = define(branched);
+  const errors = verify(validated);
+  if (errors.length) throw new Error(`Branch validation failed: ${errors.join(', ')}`);
+
+  return {
+    graph: validated,
+    witness: { fromNode, includedNodes, reachabilityReason },
+  };
+}
+
 // --- merge: combine two DAGs at reconcile() join points ---
 // Merges g1 and g2 by adding edges from g1→g2 at specified connection points.
 // Returns merged graph, validated by define() and verify().
