@@ -1,15 +1,15 @@
 {
-  "id": "rkg-all",
-  "desc": "RKG-1+2: Governance Kernel Hardening + Federated Attestation — plan-select gate, verify kernel, intake compiler, overlay, attestation, federation, cross-repo deps",
+  "id": "rkg-governess",
+  "desc": "RKG-3/4/5/6 — governance hardening: engine semantics, parallelism, gallery/blend, intent guards",
   "init": "init",
   "term": "term",
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Existing roadmap codebase — bin/roadmap.ts, src/lib/, src/protocol.ts, CompletionStore, ValidationRule",
+      "desc": "Existing roadmap codebase — src/protocol.ts, src/lib/, bin/roadmap.ts, validator-runner, completion-store, intent-expansion, blend, emit-gallery, intent-evaluator",
       "produces": [
-        "bin/roadmap.ts",
         "src/protocol.ts",
+        "src/lib/validator-runner.ts",
         "src/lib/completion-store.ts"
       ],
       "consumes": [],
@@ -17,22 +17,22 @@
       "validate": [
         {
           "type": "spec-conformance",
-          "spec": ".specify/specs/rkg-all/spec.md",
+          "spec": ".specify/specs/rkg-governess/spec.md",
           "scenario": "Plan clarity validated against feature spec",
           "section": "Specification"
         }
       ],
       "idempotent": true,
       "ambient": [
-        ".specify/specs/rkg-all/spec.md",
-        ".specify/specs/rkg-all/tasks.md"
+        ".specify/specs/rkg-governess/tasks.md"
       ]
     },
-    "plan-selection-types": {
-      "id": "plan-selection-types",
-      "desc": "Define plan-select receipt schema, PLAN_SELECTED pointer type, and selector types in src/lib/plan-selection.ts. Receipt fields: headSha, candidateId, timestamp, note. Write type guards and schema constants.",
+    "rkg3-validator-argv": {
+      "id": "rkg3-validator-argv",
+      "desc": "FR-IR-001 — shell validators as argv arrays instead of string commands. Replace string-based shell validator with argv array type in ValidationRule. Update NodeSpec shell validators, validator-runner to accept string[]. Prevents shell injection. Adds shebang-free argv contract.",
       "produces": [
-        "src/lib/plan-selection.ts"
+        "src/lib/validator-argv.ts",
+        "src/protocol.ts"
       ],
       "consumes": [],
       "deps": [
@@ -46,11 +46,12 @@
       ],
       "idempotent": true
     },
-    "completion-store-ext": {
-      "id": "completion-store-ext",
-      "desc": "Extend CompletionStore receipt record with validatorResults[], runner, commitSha, treeSha. Extend CompletionRecord type in src/lib/completion-store.ts without breaking existing reads.",
+    "rkg4-kernel-config": {
+      "id": "rkg4-kernel-config",
+      "desc": "kernel.json schema + loader — centralized kernel configuration for algorithm policy, batch conflict policy, orient plan receipts, merge/branch witness, env clamping policy. Write KernelConfig type and loadKernel() loader that reads .roadmap/kernel.json with defaults fallback.",
       "produces": [
-        "src/lib/completion-store.ts"
+        "src/lib/kernel-config.ts",
+        ".roadmap/kernel.json"
       ],
       "consumes": [],
       "deps": [
@@ -64,11 +65,12 @@
       ],
       "idempotent": true
     },
-    "spec-origin-schema": {
-      "id": "spec-origin-schema",
-      "desc": "Define spec-origin.json schema (engine, version, compile_hash, spec_sha) and spec-import receipt type in src/lib/spec-origin.ts. Add spec-origin check predicate.",
+    "rkg5-blend-receipt": {
+      "id": "rkg5-blend-receipt",
+      "desc": "FR-GB-001 — BlendReceipt schema + ledger. Every blend() call writes a structured BlendReceipt (blendId, timestamp, inputs[], outputId, guardResults[], statementOwnership[], checkSet). Add ledger writer that appends to .roadmap/blend-ledger.jsonl.",
       "produces": [
-        "src/lib/spec-origin.ts"
+        "src/lib/blend.ts",
+        "src/lib/blend-receipt.ts"
       ],
       "consumes": [],
       "deps": [
@@ -82,16 +84,16 @@
       ],
       "idempotent": true
     },
-    "plan-select-cmd": {
-      "id": "plan-select-cmd",
-      "desc": "Add CLI commands: `roadmap plan select <candidateId> --note`, `roadmap plan status`. Writes plan-select receipt to .roadmap/receipts/plan-select-<sha>.json and .roadmap/PLAN_SELECTED.json pointer.",
+    "rkg6-judgment-receipt": {
+      "id": "rkg6-judgment-receipt",
+      "desc": "FR-IG-001 — IntentJudgmentReceipt schema + writer. Every intent evaluation writes a structured receipt (evaluationId, timestamp, nodeId, judgment, confidence, evidence[], diagnosisBlocks[]). Writer appends to .roadmap/intent-judgments.jsonl.",
       "produces": [
-        "bin/roadmap.ts",
-        "src/lib/plan-selection.ts"
+        "src/lib/intent-evaluator.ts",
+        "src/lib/judgment-receipt.ts"
       ],
       "consumes": [],
       "deps": [
-        "plan-selection-types"
+        "init"
       ],
       "validate": [
         {
@@ -101,16 +103,15 @@
       ],
       "idempotent": true
     },
-    "spec-origin-gate": {
-      "id": "spec-origin-gate",
-      "desc": "Add `roadmap import --spec-compiled` path to write spec-origin.json and spec-import receipt. Block direct head.json edits when spec-origin.json exists via verify rule predicate.",
+    "rkg3-git-index": {
+      "id": "rkg3-git-index",
+      "desc": "FR-PAR-001 — per-worker git index isolation. Add GIT_INDEX_FILE env binding in swarm dispatch so each worker gets an isolated index file (.roadmap/idx/<workerId>.idx). Prevents index races when workers git add concurrently. Expose indexPath in dispatch receipt.",
       "produces": [
-        "src/lib/spec-origin.ts",
-        "bin/roadmap.ts"
+        "src/lib/git-index.ts"
       ],
       "consumes": [],
       "deps": [
-        "spec-origin-schema"
+        "rkg3-validator-argv"
       ],
       "validate": [
         {
@@ -120,15 +121,195 @@
       ],
       "idempotent": true
     },
-    "validator-runner": {
-      "id": "validator-runner",
-      "desc": "Implement src/lib/validator-runner.ts — normalized env allowlist, cwd normalization, stdout/stderr capture to .roadmap/artifacts/<nodeId>/<sha>/, sha256 computation, structured ValidatorResult type. Replace ad-hoc spawnSync calls.",
+    "rkg3-hook-scoping": {
+      "id": "rkg3-hook-scoping",
+      "desc": "FR-PAR-002 — hook scoping staged-only. Pre-commit hook must validate only staged files (git diff --cached), not working tree. Update hook runner to pass --staged flag and document contract. Prevents false positives on in-progress worker files.",
+      "produces": [
+        "src/lib/hook-scope.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-validator-argv"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-strategy-ab": {
+      "id": "rkg3-strategy-ab",
+      "desc": "FR-HAL-001 — strategy A/B overlays. Add StrategyOverlay type and applyOverlay() function. Overlays define hypothesis variants (model params, prompt templates, validator thresholds) that can be layered on a base plan. Write overlay to .roadmap/strategy-overlay.json.",
+      "produces": [
+        "src/lib/strategy-overlay.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-validator-argv"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-perf-cache": {
+      "id": "rkg3-perf-cache",
+      "desc": "FR-PERF-001 — verify cache keyed by treeSha. Add VerifyCache that stores validation results keyed by (nodeId, treeSha). Cache hit skips re-running shell validators. Write cache to .roadmap/verify-cache.json. Invalidate on treeSha change.",
+      "produces": [
+        "src/lib/verify-cache.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-validator-argv"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-dispatch-enforcement": {
+      "id": "rkg3-dispatch-enforcement",
+      "desc": "FR-DISP-002 — dispatch plan as enforcement object. DispatchReceipt records: batchId, agentAssignments[], timestamp, orientSha. Complete rejects if dispatch receipt missing or stale (orientSha mismatch). Write receipt to .roadmap/receipts/dispatch-<batchId>.json.",
+      "produces": [
+        "src/lib/dispatch-receipt.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-strategy-ab"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-stable-order": {
+      "id": "rkg4-stable-order",
+      "desc": "FR-DET-001 — deterministic comparator policy in parallelOrder/order. Add ComparatorPolicy type. Default: lexicographic by node id. Custom: user-supplied compare(a,b) in kernel.json. parallelOrder() and order() read policy from kernel config. Output is stable across runs.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-reachability": {
+      "id": "rkg4-reachability",
+      "desc": "FR-REACH-001 — single-pass BFS reachability. Replace multi-pass DFS with single BFS from init in check(). BFS enumerates all reachable nodes in one pass. Unreachable nodes emitted as violations. Add reachability witness (path from init to each node) in output.",
+      "produces": [
+        "src/lib/verify.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-contract-closure": {
+      "id": "rkg4-contract-closure",
+      "desc": "FR-CONTRACT-001 — DP ancestor closure + witness. verify() uses bottom-up DP to compute ancestor closure for each node. Missing consumes emit violation with witness path showing which ancestor was supposed to produce it. Replaces ad-hoc predecessor walk.",
+      "produces": [
+        "src/lib/verify.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-batch-gate": {
+      "id": "rkg4-batch-gate",
+      "desc": "FR-BATCH-001 — conflict detection as hard gate. validateBatch() detects when two nodes in the same batch both write the same produces path. Gate rejects batch before execution. Conflict report names both nodes and the contested path.",
+      "produces": [
+        "src/lib/batch-conflicts.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-orient-plan-receipt": {
+      "id": "rkg4-orient-plan-receipt",
+      "desc": "FR-ORIENT-001 — plan expansion receipt in orient output. When orient() encounters a plan node in current batch, emit planReceipt field: {nodeId, mode:'plan', preGateActive, expandedChildren[]}. Allows orchestrators to distinguish plan vs execute positions.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-merge-branch-witness": {
+      "id": "rkg4-merge-branch-witness",
+      "desc": "FR-MERGE-001 + FR-BRANCH-001 — namespace collision detection + witness in merge/branch. merge() detects node id collisions (same id in both graphs) and emits MergeConflict with both node specs. branch() emits BranchWitness recording which nodes were included and why (reachable from fromNode).",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-env-bypass": {
+      "id": "rkg4-env-bypass",
+      "desc": "FR-STACK-001 — env clamping in validator runner. Validator-runner allowlist (ALLOWED_ENV) controlled by kernel.json envPolicy section. Unknown env vars stripped before child process spawn. ROADMAP_VALIDATING always injected. Bypass vars (SKIP_BATCH_COMMIT etc.) require explicit kernel allowlist entry.",
       "produces": [
         "src/lib/validator-runner.ts"
       ],
       "consumes": [],
       "deps": [
-        "completion-store-ext"
+        "rkg4-kernel-config"
       ],
       "validate": [
         {
@@ -138,17 +319,16 @@
       ],
       "idempotent": true
     },
-    "verify-skeleton": {
-      "id": "verify-skeleton",
-      "desc": "Scaffold `roadmap verify` command with JSON envelope output (violations[], warnings[], fix[]) and exit code protocol (0/1/2). Wire in: DAG structural validity, CompletionStore consistency checks.",
+    "rkg4-algo-report": {
+      "id": "rkg4-algo-report",
+      "desc": "FR-DOC-ALG-001 — `roadmap report algorithms` command. Emits structured JSON listing all algorithms used (BFS/DFS/DP/topo), their complexity, input/output contracts, and which source file implements them. Reads @algorithm JSDoc annotations from src/ files.",
       "produces": [
-        "src/lib/verify.ts",
-        "bin/roadmap.ts"
+        "src/lib/algo-report.ts"
       ],
       "consumes": [],
       "deps": [
-        "plan-selection-types",
-        "spec-origin-schema"
+        "rkg4-stable-order",
+        "rkg4-reachability"
       ],
       "validate": [
         {
@@ -158,19 +338,15 @@
       ],
       "idempotent": true
     },
-    "verify-kernel": {
-      "id": "verify-kernel",
-      "desc": "Wire all invariant checks into verify-skeleton: plan-selection receipt valid, spec-origin integrity, orphan receipt detection, env-var bypass scan (grep process.env in src/), CompletionStore consistency, no artifact-only completion. Each violation carries code + message + paths? + fix[].",
+    "rkg5-guard-policy": {
+      "id": "rkg5-guard-policy",
+      "desc": "FR-GB-002 — guard registry + blendPolicy config. GuardRegistry maps guard names to GuardFn<T>. blendPolicy in kernel.json lists active guards and their parameters. blend() reads policy and runs registered guards in order. Missing guard name = hard error.",
       "produces": [
-        "src/lib/verify.ts",
-        "bin/roadmap.ts"
+        "src/lib/blend-policy.ts"
       ],
       "consumes": [],
       "deps": [
-        "plan-select-cmd",
-        "spec-origin-gate",
-        "verify-skeleton",
-        "validator-runner"
+        "rkg5-blend-receipt"
       ],
       "validate": [
         {
@@ -180,16 +356,15 @@
       ],
       "idempotent": true
     },
-    "intake-compiler": {
-      "id": "intake-compiler",
-      "desc": "Implement `roadmap intake scan`, `roadmap intake import`, `roadmap intake certify`. Scan diffs git log against last attested commit; group changed paths into candidate NodeSpecs; import with intakeFrom provenance; certify via CompletionStore.",
+    "rkg5-statement-ownership": {
+      "id": "rkg5-statement-ownership",
+      "desc": "FR-GB-003 — StatementOwnership model. Every statement produced by blend() carries an ownerNodeId and provenance chain (source → transform → output). blend() writes ownership records into BlendReceipt. Orphan statements (no ownerNodeId) are rejected.",
       "produces": [
-        "src/lib/intake.ts",
-        "bin/roadmap.ts"
+        "src/lib/blend.ts"
       ],
       "consumes": [],
       "deps": [
-        "verify-kernel"
+        "rkg5-blend-receipt"
       ],
       "validate": [
         {
@@ -199,17 +374,15 @@
       ],
       "idempotent": true
     },
-    "plan-overlay": {
-      "id": "plan-overlay",
-      "desc": "Implement `roadmap plan overlay --select <id>`, `roadmap plan schedule`. Write .roadmap/plan-overlay.json with headSha, candidateId, clusters[], schedule[]. Overlay invalidates on DAG mutation. Schedule is deterministic from overlay clusters + DAG topology.",
+    "rkg5-checkset": {
+      "id": "rkg5-checkset",
+      "desc": "FR-GB-004 — CheckSet type + rollback evidence. CheckSet is an ordered list of validation checks with pass/fail/skip states and rollback evidence per check. blend() attaches a CheckSet to each BlendReceipt. Failed check triggers rollback with evidence written to .roadmap/blend-rollbacks/.",
       "produces": [
-        "src/lib/plan-overlay.ts",
-        "bin/roadmap.ts"
+        "src/lib/blend.ts"
       ],
       "consumes": [],
       "deps": [
-        "verify-kernel",
-        "plan-select-cmd"
+        "rkg5-blend-receipt"
       ],
       "validate": [
         {
@@ -219,15 +392,15 @@
       ],
       "idempotent": true
     },
-    "state-introspection": {
-      "id": "state-introspection",
-      "desc": "Add `roadmap status --json`, `roadmap remaining --json`, `roadmap doctor`. Derive counts (total, done, pending, failed, skipped, planned) from CompletionStore only. Doctor surfaces inconsistencies with fix suggestions.",
+    "rkg5-candidate-receipts": {
+      "id": "rkg5-candidate-receipts",
+      "desc": "FR-GB-005 — CandidateResult provenance. Every candidate emitted by emit-gallery carries a CandidateReceipt (candidateId, sourceNodeId, producedAt, pipelineSteps[]). emit-gallery writes receipts to .roadmap/receipts/candidate-<id>.json.",
       "produces": [
-        "bin/roadmap.ts"
+        "src/lib/emit-gallery.ts"
       ],
       "consumes": [],
       "deps": [
-        "verify-kernel"
+        "rkg5-blend-receipt"
       ],
       "validate": [
         {
@@ -237,19 +410,15 @@
       ],
       "idempotent": true
     },
-    "receipt-evidence": {
-      "id": "receipt-evidence",
-      "desc": "Wire validator-runner into complete flow. After complete, write validator artifact files under .roadmap/artifacts/<nodeId>/<sha>/. Receipt references artifacts by sha. treeSha bound on record.",
+    "rkg5-pareto-governance": {
+      "id": "rkg5-pareto-governance",
+      "desc": "FR-GB-006 — quantization + pareto report. gallery() computes pareto front across candidate metrics (coverage, cost, latency). Quantization bins metrics to prevent noise-driven rank changes. Emit pareto report to .roadmap/artifacts/pareto-<sha>.json.",
       "produces": [
-        "src/lib/completion-store.ts",
-        "src/lib/validator-runner.ts",
-        "bin/roadmap.ts"
+        "src/lib/gallery.ts"
       ],
       "consumes": [],
       "deps": [
-        "validator-runner",
-        "completion-store-ext",
-        "verify-kernel"
+        "rkg5-blend-receipt"
       ],
       "validate": [
         {
@@ -259,17 +428,15 @@
       ],
       "idempotent": true
     },
-    "attestation-emit": {
-      "id": "attestation-emit",
-      "desc": "Add `roadmap check --id roadmap.verify` — synonym for verify with explicit checkId. Output: checkId, commitSha, treeSha, violations[], artifacts[]. Bind to treeSha not commitSha when possible.",
+    "rkg5-failure-routing": {
+      "id": "rkg5-failure-routing",
+      "desc": "FR-GB-007 — GalleryFailure routing contract. emit-gallery returns typed GalleryFailure on rejection (insufficientCandidates, guardRejection, paretoEmpty). Caller must handle each case explicitly. No silent empty returns. Failure carries evidence (which guard, which check, which candidates evaluated).",
       "produces": [
-        "src/lib/verify.ts",
-        "bin/roadmap.ts"
+        "src/lib/emit-gallery.ts"
       ],
       "consumes": [],
       "deps": [
-        "verify-kernel",
-        "receipt-evidence"
+        "rkg5-candidate-receipts"
       ],
       "validate": [
         {
@@ -279,16 +446,15 @@
       ],
       "idempotent": true
     },
-    "multi-repo-merge": {
-      "id": "multi-repo-merge",
-      "desc": "Implement `roadmap federation add --path <repo>`, `roadmap federation build`, `roadmap federation status`. Write .roadmap/federation/peers.json (peer list). Build computes .roadmap/federation/view.json with namespaced node IDs <peerId>::<nodeId>. View is read-only + deterministic.",
+    "rkg6-structured-diagnosis": {
+      "id": "rkg6-structured-diagnosis",
+      "desc": "FR-IG-002 — structured diagnosis schema. IntentDiagnosis replaces free-text failure messages. Schema: {code, affectedNode, evidenceIds[], remediationSteps[]}. intent-expansion.ts writes structured diagnosis instead of string messages. No keyword matching in diagnosis — pure structural.",
       "produces": [
-        "src/lib/federation.ts",
-        "bin/roadmap.ts"
+        "src/lib/intent-expansion.ts"
       ],
       "consumes": [],
       "deps": [
-        "verify-kernel"
+        "rkg6-judgment-receipt"
       ],
       "validate": [
         {
@@ -298,37 +464,16 @@
       ],
       "idempotent": true
     },
-    "dispatch-plan": {
-      "id": "dispatch-plan",
-      "desc": "Implement `roadmap dispatch plan [--overlay] [--workers N]`, `roadmap dispatch apply`, `roadmap dispatch status`. Plan writes .roadmap/dispatch/plan-<sha>.json (headSha, overlayId, clusters, worktrees, ownership). Apply writes receipt. Does not spawn agents.",
-      "produces": [
-        "src/lib/dispatch.ts",
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "plan-overlay"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "cross-repo-deps": {
-      "id": "cross-repo-deps",
-      "desc": "Extend NodeSpec.depends[] to accept `peer::<repoId>::<nodeId>` strings. verify-kernel checks cross-repo deps by reading peer CompletionStore receipts from peers.json paths. Violations: UNKNOWN_PEER, PEER_DEP_UNSATISFIED.",
+    "rkg6-intent-status-policy": {
+      "id": "rkg6-intent-status-policy",
+      "desc": "FR-IG-003 — intentPolicy gating in kernel.json. kernel.json intentPolicy section: {minConfidence, escalateOnStall, maxRecursionDepth}. orient() reads policy and gates advancement when intent judgment below minConfidence. Expose intentPolicyActive in Orientation output.",
       "produces": [
         "src/protocol.ts",
-        "src/lib/federation.ts",
-        "src/lib/verify.ts"
+        "src/lib/kernel-config.ts"
       ],
       "consumes": [],
       "deps": [
-        "multi-repo-merge",
-        "verify-kernel"
+        "rkg6-judgment-receipt"
       ],
       "validate": [
         {
@@ -338,16 +483,154 @@
       ],
       "idempotent": true
     },
-    "ux-explain": {
-      "id": "ux-explain",
-      "desc": "Add `roadmap explain --node <id>`, `roadmap receipts ls [--node <id>]`, `roadmap artifacts ls [--node <id>]`. explain returns: produces existence per file, receipt presence, failing validator, last run, fix suggestions. JSON default, --human optional.",
+    "rkg6-evidence-algebra": {
+      "id": "rkg6-evidence-algebra",
+      "desc": "FR-IG-004 — evidence mode field + confirmation semantics. EvidenceItem gains mode field: 'observation' | 'assertion' | 'counter'. Confirmation requires ≥1 observation + ≥1 assertion, zero counter-evidence. expand() validates evidence algebra before committing expansion.",
+      "produces": [
+        "src/lib/intent-expansion.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-expansion-receipt": {
+      "id": "rkg6-expansion-receipt",
+      "desc": "FR-IG-005 — ExpansionReceipt + sibling invariants. Every expand() call writes ExpansionReceipt (expansionId, parentNodeId, childNodeIds[], siblingInvariants[], timestamp). Sibling invariant: no two siblings produce the same path. Violation rejects expansion.",
+      "produces": [
+        "src/lib/intent-expansion.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-convergence-metrics": {
+      "id": "rkg6-convergence-metrics",
+      "desc": "FR-IG-006 — convergence history receipt + window stall detection. ConvergenceHistory tracks (recursionLevel, coverageDelta, expandedCount) per iteration. Stall = coverageDelta < threshold for N consecutive iterations. Stall triggers escalation. Write history to .roadmap/convergence-history.jsonl.",
+      "produces": [
+        "src/lib/intent-expansion.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-rate-card": {
+      "id": "rkg6-rate-card",
+      "desc": "FR-IG-007 — rates.json schema + rateCardHash. rates.json defines cost-per-token rates for each model. RateCard loader reads rates.json, computes rateCardHash (sha256 of content). Cost estimates in convergence metrics reference rateCardHash for auditability.",
+      "produces": [
+        "src/lib/rate-card.ts",
+        ".roadmap/rates.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-fixtures": {
+      "id": "rkg3-fixtures",
+      "desc": "Fixture suite for RKG-3. Tests: argv validator roundtrip (no shell injection), git index isolation (two workers, no index collision), hook scoping (staged-only validation), strategy overlay application, dispatch receipt gating (reject on stale orientSha), verify cache hit/miss by treeSha.",
+      "produces": [
+        "src/tests/rkg3.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-git-index",
+        "rkg3-hook-scoping",
+        "rkg3-strategy-ab",
+        "rkg3-dispatch-enforcement",
+        "rkg3-perf-cache"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run src/tests/rkg3.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-fixtures": {
+      "id": "rkg4-fixtures",
+      "desc": "Fixture DAGs + expected outputs for RKG-4. Tests: parallelOrder stability across runs (same DAG → same order), BFS reachability witness (path from init to each node), contract closure violations with ancestor witness, batch conflict detection (two nodes same produces path), plan receipt in orient output.",
+      "produces": [
+        "src/tests/rkg4.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-stable-order",
+        "rkg4-reachability",
+        "rkg4-contract-closure",
+        "rkg4-batch-gate",
+        "rkg4-orient-plan-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run src/tests/rkg4.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-fixtures": {
+      "id": "rkg5-fixtures",
+      "desc": "Adversarial fixture suite for RKG-5. Tests: guard registry (unknown guard = hard error), orphan statement rejection, CheckSet rollback evidence written on failure, candidate receipt written per candidate, pareto front stable under noise quantization, GalleryFailure routing (each failure type carries evidence).",
+      "produces": [
+        "src/tests/rkg5.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-guard-policy",
+        "rkg5-statement-ownership",
+        "rkg5-checkset",
+        "rkg5-pareto-governance",
+        "rkg5-failure-routing"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run src/tests/rkg5.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-cli-explain": {
+      "id": "rkg5-cli-explain",
+      "desc": "FR-GB-009 — `roadmap gallery explain` + `roadmap blend explain` commands. gallery explain <candidateId>: reads candidate receipt, outputs provenance chain. blend explain <blendId>: reads blend ledger entry, outputs guard results + statement ownership + check set. Add both commands to bin/roadmap.ts.",
       "produces": [
         "bin/roadmap.ts"
       ],
       "consumes": [],
       "deps": [
-        "receipt-evidence",
-        "state-introspection"
+        "rkg5-blend-receipt"
       ],
       "validate": [
         {
@@ -357,274 +640,62 @@
       ],
       "idempotent": true
     },
-    "test-plan-selection": {
-      "id": "test-plan-selection",
-      "desc": "Tests for plan-select CLI, receipt format, plan status, verify PLAN_NOT_SELECTED, verify PLAN_INVALIDATED after mutation. Min 8 test cases.",
+    "rkg6-fixtures": {
+      "id": "rkg6-fixtures",
+      "desc": "Intent guard fixture suite for RKG-6. Tests: structured diagnosis (no string keyword matching), intentPolicy minConfidence gate (reject orient advancement below threshold), evidence algebra validation (counter-evidence blocks confirmation), sibling invariant enforcement (same produces path → rejection), convergence stall escalation.",
       "produces": [
-        "tests/plan-selection.test.ts"
+        "src/tests/rkg6.test.ts"
       ],
       "consumes": [],
       "deps": [
-        "plan-select-cmd",
-        "verify-kernel"
+        "rkg6-structured-diagnosis",
+        "rkg6-intent-status-policy",
+        "rkg6-evidence-algebra",
+        "rkg6-expansion-receipt",
+        "rkg6-convergence-metrics"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "npx vitest run tests/plan-selection.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-spec-origin": {
-      "id": "test-spec-origin",
-      "desc": "Tests for spec-origin gate — import writes receipt, direct edit triggers SPEC_ORIGIN_VIOLATED, compile_hash match passes. Min 5 test cases.",
-      "produces": [
-        "tests/spec-origin.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "spec-origin-gate",
-        "verify-kernel"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/spec-origin.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-verify-kernel": {
-      "id": "test-verify-kernel",
-      "desc": "Tests for verify command — all violation codes, exit codes, clean state returns violations:[], orphan receipt detection, env-bypass scan, CompletionStore consistency. Min 12 test cases.",
-      "produces": [
-        "tests/verify-kernel.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "verify-kernel"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/verify-kernel.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-intake": {
-      "id": "test-intake",
-      "desc": "Tests for intake scan, import, certify — path grouping, NodeSpec shape, intakeFrom provenance, CompletionStore write. Min 6 test cases.",
-      "produces": [
-        "tests/intake.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "intake-compiler"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/intake.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-plan-overlay": {
-      "id": "test-plan-overlay",
-      "desc": "Tests for plan overlay — write schedule, stale detection, determinism. Min 5 test cases.",
-      "produces": [
-        "tests/plan-overlay.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "plan-overlay"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/plan-overlay.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-validator-runner": {
-      "id": "test-validator-runner",
-      "desc": "Tests for validator-runner — env normalization, stdout/stderr capture, sha256, structured result. Min 7 test cases.",
-      "produces": [
-        "tests/validator-runner.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "validator-runner"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/validator-runner.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-federation": {
-      "id": "test-federation",
-      "desc": "Tests for federation add/build/status, namespaced IDs, cross-repo dep enforcement. Min 8 test cases.",
-      "produces": [
-        "tests/federation.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "cross-repo-deps"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/federation.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-dispatch": {
-      "id": "test-dispatch",
-      "desc": "Tests for dispatch plan/apply/status, stale overlay detection, receipt format. Min 6 test cases.",
-      "produces": [
-        "tests/dispatch.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "dispatch-plan"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/dispatch.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-state-introspection": {
-      "id": "test-state-introspection",
-      "desc": "Tests for status --json counts, remaining list, doctor output. Min 6 test cases.",
-      "produces": [
-        "tests/state-introspection.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "state-introspection"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/state-introspection.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-attestation": {
-      "id": "test-attestation",
-      "desc": "Tests for check --id roadmap.verify — checkId, treeSha binding, violation passthrough. Min 5 test cases.",
-      "produces": [
-        "tests/attestation.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "attestation-emit"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/attestation.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-explain": {
-      "id": "test-explain",
-      "desc": "Tests for explain --node, receipts ls, artifacts ls. Min 6 test cases.",
-      "produces": [
-        "tests/ux-explain.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "ux-explain"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/ux-explain.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "governance-self": {
-      "id": "governance-self",
-      "desc": "Write .roadmap/kernel.json prohibiting gate-disable without signed override receipt. Add `roadmap contract test` (JSON envelope + error code + stderr discipline) and `roadmap env-audit` (scan for process.env bypasses) commands.",
-      "produces": [
-        ".roadmap/kernel.json",
-        "bin/roadmap.ts",
-        "src/lib/verify.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "verify-kernel",
-        "attestation-emit"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "full-test-suite": {
-      "id": "full-test-suite",
-      "desc": "All tests pass. tsc clean. No regressions.",
-      "produces": [
-        "tests/rkg-integration.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "test-plan-selection",
-        "test-spec-origin",
-        "test-verify-kernel",
-        "test-intake",
-        "test-plan-overlay",
-        "test-validator-runner",
-        "test-federation",
-        "test-dispatch",
-        "test-state-introspection",
-        "test-attestation",
-        "test-explain",
-        "governance-self"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
+          "command": "npx vitest run src/tests/rkg6.test.ts"
         }
       ],
       "idempotent": true
     },
     "term": {
       "id": "term",
-      "desc": "RKG complete — governance kernel hardened, federated attestation, all tests green",
+      "desc": "All RKG-3/4/5/6 governance hardening complete. All fixture suites pass. TypeScript clean. Full test suite green.",
       "produces": [
-        ".roadmap/rkg-complete.json"
+        "src/tests/rkg3.test.ts",
+        "src/tests/rkg4.test.ts",
+        "src/tests/rkg5.test.ts",
+        "src/tests/rkg6.test.ts"
       ],
       "consumes": [],
       "deps": [
-        "full-test-suite"
+        "rkg3-fixtures",
+        "rkg4-fixtures",
+        "rkg5-fixtures",
+        "rkg5-cli-explain",
+        "rkg6-fixtures",
+        "rkg4-merge-branch-witness",
+        "rkg4-env-bypass",
+        "rkg4-algo-report",
+        "rkg3-dispatch-enforcement",
+        "rkg6-rate-card"
       ],
       "validate": [
         {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run"
+        },
+        {
           "type": "spec-conformance",
-          "spec": ".specify/specs/rkg-all/spec.md",
+          "spec": ".specify/specs/rkg-governess/spec.md",
           "scenario": "All acceptance scenarios pass (User Stories 1-6)",
           "section": "Feature Specification"
         },
@@ -640,24 +711,7 @@
         }
       ],
       "idempotent": true,
-      "ambient": [
-        ".specify/specs/rkg-all/spec.md"
-      ]
+      "ambient": []
     }
-  },
-  "version": "0.3.0",
-  "protocolVersion": "0.3.0",
-  "spec": {
-    "compiled_sha256": "3d4e40be59a161230a420e2977e5e8cafa4513af93501ef9148a66859125da21",
-    "engine": {
-      "name": "speckit",
-      "version": "0.1.0"
-    },
-    "inputs": [
-      {
-        "path": ".specify/specs/rkg-all/tasks.md",
-        "sha256": "3d4e40be59a161230a420e2977e5e8cafa4513af93501ef9148a66859125da21"
-      }
-    ]
   }
 }
