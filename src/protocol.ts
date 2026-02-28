@@ -511,21 +511,21 @@ export function orient<T extends string>(
   for (const batch of batches) {
     const batchIncomplete = batch.filter(id => {
       if (retired?.has(id)) return false;
-      if (completed?.has(id)) return false; // node explicitly marked complete
       const node = nm.get(id)!;
-      // Plan node completion: done when expansion children exist in graph
+      // Plan node: receipt or expansion children
       if (node.mode === 'plan') {
+        if (completed?.has(id)) return false;
         const children = expansionChildren.get(id) ?? [];
-        return children.length === 0; // incomplete if no expansion children
+        return children.length === 0;
       }
-      // Execute node completion: artifacts exist AND explicit completion
-      // Both artifact-based (exists) and completion-based (completed) count as done
+      // Execute node: artifacts AND receipt both required
       if (node.produces?.length) {
-        // Has artifacts requirement — all must exist
-        return node.produces.some(p => !exists(p));
+        const artifactsExist = node.produces.every(p => exists(p));
+        const hasReceipt = completed?.has(id) ?? false;
+        return !(artifactsExist && hasReceipt);
       }
-      // No artifacts to produce — node is done if it's in completed or has no produces
-      return false;
+      // No produces — receipt required
+      return !(completed?.has(id) ?? false);
     });
 
     if (batchIncomplete.length > 0) {
