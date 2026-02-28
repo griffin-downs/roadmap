@@ -59,12 +59,12 @@ describe('orient receipt semantics', () => {
     expect(pos.position).toContain('term');
   });
 
-  it('no completed set = strict default (all nodes incomplete)', () => {
+  it('no completed set = legacy mode (artifact-only)', () => {
     const g = makeDAG();
     const exists = (p: string) => p === 'out.txt';
     const pos = orient(g, exists);
-    // Without completed set, produce-less init is incomplete → stuck at init
-    expect(pos.position).toContain('init');
+    // Without completed set, legacy mode: produce-less init is done, 'a' artifacts exist → done
+    expect(pos.position).toContain('term');
   });
 
   it('retired nodes still bypass receipt requirement', () => {

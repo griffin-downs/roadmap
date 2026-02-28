@@ -518,14 +518,18 @@ export function orient<T extends string>(
         const children = expansionChildren.get(id) ?? [];
         return children.length === 0;
       }
-      // Execute node: artifacts AND receipt both required
+      // Legacy mode (no completed set): artifact-only semantics
+      if (completed === undefined) {
+        if (!node.produces?.length) return false; // produce-less = done
+        return !node.produces.every(p => exists(p));
+      }
+      // Receipt mode: artifacts AND receipt both required
       if (node.produces?.length) {
         const artifactsExist = node.produces.every(p => exists(p));
-        const hasReceipt = completed?.has(id) ?? false;
-        return !(artifactsExist && hasReceipt);
+        return !(artifactsExist && completed.has(id));
       }
       // No produces — receipt required
-      return !(completed?.has(id) ?? false);
+      return !completed.has(id);
     });
 
     if (batchIncomplete.length > 0) {
@@ -669,10 +673,13 @@ export function readyNodes<T extends string>(
     if (n.mode === 'plan') {
       if (completed?.has(n.id)) { done.add(n.id); continue; }
       if ((expansionChildren.get(n.id) ?? []).length > 0) done.add(n.id);
+    } else if (completed === undefined) {
+      // Legacy mode: artifact-only
+      if (!n.produces.length || n.produces.every(exists)) done.add(n.id);
     } else if (n.produces.length) {
-      if (n.produces.every(exists) && (completed?.has(n.id) ?? false)) done.add(n.id);
+      if (n.produces.every(exists) && completed.has(n.id)) done.add(n.id);
     } else {
-      if (completed?.has(n.id) ?? false) done.add(n.id);
+      if (completed.has(n.id)) done.add(n.id);
     }
   }
 

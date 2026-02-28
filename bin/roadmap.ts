@@ -117,6 +117,12 @@ function retiredSet(): Set<string> {
 // Legacy records (no validationChecks) are treated as passing — they predate receipt enforcement.
 // Only records with explicit failed checks are quarantined.
 function getCompletionState() {
+  const completedPath = join(repoRoot, '.roadmap', 'completed.json');
+  const retired = retiredSet();
+  if (!existsSync(completedPath)) {
+    // No completed.json → legacy mode (artifact-only, no receipt tracking)
+    return { completedIds: undefined as Set<string> | undefined, retired, exists: fileExists(repoRoot) };
+  }
   const evidenceCompletions = loadCompletionsWithEvidence(repoRoot);
   const completedIds = new Set<string>();
   for (const [id, record] of evidenceCompletions) {
@@ -128,7 +134,6 @@ function getCompletionState() {
     }
     // else: has checks with at least one failed → quarantined, excluded
   }
-  const retired = retiredSet();
   return { completedIds, retired, exists: fileExists(repoRoot) };
 }
 

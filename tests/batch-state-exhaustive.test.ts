@@ -34,25 +34,26 @@ describe('Batch State Synchronization - Exhaustive', () => {
       expect(pos.position[0]).toBe('init');
     });
 
-    it('init is done when artifact exists', () => {
+    it('init is done when artifact exists and has receipt', () => {
       artifacts.add('init.txt');
-      const pos = orient(testDAG, exists, undefined, completed);
-      expect(pos.done).toContain('init');
-      expect(pos.position).not.toContain('init');
-    });
-
-    it('init is done when explicitly completed (no artifact)', () => {
       completed.add('init');
       const pos = orient(testDAG, exists, undefined, completed);
       expect(pos.done).toContain('init');
       expect(pos.position).not.toContain('init');
     });
 
-    it('explicit completion takes precedence over missing artifact', () => {
-      completed.add('init');
+    it('artifact alone is not sufficient in receipt mode', () => {
+      artifacts.add('init.txt');
+      // No receipt → still incomplete (Bypass #2 eliminated)
       const pos = orient(testDAG, exists, undefined, completed);
-      expect(pos.done).toContain('init');
-      expect(pos.remaining).not.toContain('init');
+      expect(pos.position).toContain('init');
+    });
+
+    it('receipt alone is not sufficient — artifacts still required', () => {
+      completed.add('init');
+      // No artifact → still incomplete
+      const pos = orient(testDAG, exists, undefined, completed);
+      expect(pos.position).toContain('init');
     });
   });
 
@@ -62,16 +63,11 @@ describe('Batch State Synchronization - Exhaustive', () => {
       expect(pos.position).not.toContain('term');
     });
 
-    it('term appears in position when c is complete', () => {
+    it('term appears in position when all predecessors have artifacts and receipts', () => {
       artifacts.add('init.txt');
       artifacts.add('a.txt');
       artifacts.add('b.txt');
       artifacts.add('c.txt');
-      const pos = orient(testDAG, exists, undefined, completed);
-      expect(pos.position).toContain('term');
-    });
-
-    it('term is viewable when explicitly completed', () => {
       completed.add('init');
       completed.add('a');
       completed.add('b');
@@ -80,42 +76,47 @@ describe('Batch State Synchronization - Exhaustive', () => {
       expect(pos.position).toContain('term');
     });
 
+    it('term not reachable via receipts alone — artifacts required', () => {
+      completed.add('init');
+      completed.add('a');
+      completed.add('b');
+      completed.add('c');
+      const pos = orient(testDAG, exists, undefined, completed);
+      // No artifacts → predecessors not done → term not reachable
+      expect(pos.position).not.toContain('term');
+    });
+
     it('term in position indicates roadmap completion readiness', () => {
       artifacts.add('init.txt');
       artifacts.add('a.txt');
       artifacts.add('b.txt');
       artifacts.add('c.txt');
+      completed.add('init');
+      completed.add('a');
+      completed.add('b');
+      completed.add('c');
       const pos = orient(testDAG, exists, undefined, completed);
       expect(pos.position).toContain('term');
-      expect(pos.remaining).toEqual([]); // No batches after term
+      expect(pos.remaining).toEqual([]);
     });
   });
 
   describe('Orient Idempotency', () => {
     it('multiple orient calls with same state return same position', () => {
       completed.add('init');
+      artifacts.add('init.txt');
       completed.add('a');
+      artifacts.add('a.txt');
       const pos1 = orient(testDAG, exists, undefined, completed);
       const pos2 = orient(testDAG, exists, undefined, completed);
       expect(pos1.position).toEqual(pos2.position);
       expect(pos1.batchComplete).toBe(pos2.batchComplete);
     });
 
-    it('orient with artifacts matches orient with explicit completion', () => {
-      artifacts.add('init.txt');
-      artifacts.add('a.txt');
-      const posA = orient(testDAG, exists, undefined, new Set());
-
-      artifacts.clear();
-      completed.add('init');
-      completed.add('a');
-      const posB = orient(testDAG, exists, undefined, completed);
-
-      expect(posA.position).toEqual(posB.position);
-    });
-
     it('orient tracks both artifact and completion state', () => {
       artifacts.add('init.txt');
+      completed.add('init');
+      artifacts.add('a.txt');
       completed.add('a');
       const pos = orient(testDAG, exists, undefined, completed);
       expect(pos.done).toContain('init');
@@ -126,60 +127,61 @@ describe('Batch State Synchronization - Exhaustive', () => {
   describe('Batch Completion Tracking', () => {
     it('batchComplete is false when batch has remaining nodes', () => {
       artifacts.add('init.txt');
+      completed.add('init');
       const pos = orient(testDAG, exists, undefined, completed);
       expect(pos.position).toContain('a');
       expect(pos.position).toContain('b');
       expect(pos.batchComplete).toBe(false);
     });
 
-    it('batchComplete is true when all nodes in batch are done', () => {
+    it('batchComplete true when all artifacts and receipts exist for batch', () => {
       artifacts.add('init.txt');
-      artifacts.add('a.txt');
-      artifacts.add('b.txt');
-      const pos = orient(testDAG, exists, undefined, completed);
-      // When batch [a,b] is complete via artifacts, position advances to next batch [c]
-      expect(pos.position).toContain('c');
-      expect(pos.batchComplete).toBe(false); // [c] is incomplete (c.txt missing)
-    });
-
-    it('batchComplete respects explicit completion', () => {
       completed.add('init');
+      artifacts.add('a.txt');
       completed.add('a');
+      artifacts.add('b.txt');
       completed.add('b');
       const pos = orient(testDAG, exists, undefined, completed);
-      // When batch [a,b] is complete via explicit completion, position advances to [c]
+      // When batch [a,b] is complete, position advances to next batch [c]
       expect(pos.position).toContain('c');
       expect(pos.batchComplete).toBe(false); // [c] is incomplete (c.txt missing)
     });
 
     it('batchRemaining shows which nodes in batch are not done', () => {
       completed.add('init');
+      artifacts.add('init.txt');
       completed.add('a');
+      artifacts.add('a.txt');
       const pos = orient(testDAG, exists, undefined, completed);
       expect(pos.batchRemaining).toEqual(['b']);
     });
   });
 
   describe('Edge Cases - Concurrent Executor Safety', () => {
-    it('skip-validate path (no artifacts, completion only)', () => {
+    it('both artifact and receipt required to advance', () => {
       completed.add('init');
+      artifacts.add('init.txt');
       const pos1 = orient(testDAG, exists, undefined, completed);
       expect(pos1.position).not.toContain('init');
       expect(pos1.position).toContain('a');
 
       completed.add('a');
+      artifacts.add('a.txt');
       completed.add('b');
+      artifacts.add('b.txt');
       const pos2 = orient(testDAG, exists, undefined, completed);
       expect(pos2.position).toContain('c');
     });
 
     it('partial artifact + completion state', () => {
       artifacts.add('init.txt');
+      completed.add('init');
       artifacts.add('a.txt');
+      completed.add('a');
+      artifacts.add('b.txt');
       completed.add('b');
       const pos = orient(testDAG, exists, undefined, completed);
-      // Both a (via artifact) and b (via completion) done, so batch [a,b] complete
-      // Position advances to [c]
+      // Both a and b done, position advances to [c]
       expect(pos.position).toContain('c');
       expect(pos.batchComplete).toBe(false); // [c] is incomplete
     });
@@ -198,9 +200,9 @@ describe('Batch State Synchronization - Exhaustive', () => {
 
     it('completions for non-existent nodes are ignored safely', () => {
       completed.add('init');
+      artifacts.add('init.txt');
       completed.add('nonexistent');
       const pos = orient(testDAG, exists, undefined, completed);
-      // Should not crash, position should be correct
       expect(pos.position).toContain('a');
     });
   });
@@ -210,7 +212,7 @@ describe('Batch State Synchronization - Exhaustive', () => {
       const nodes = Object.keys(testDAG.nodes);
       expect(nodes).toContain('init');
       expect(nodes).toContain('term');
-      expect(nodes[0]).not.toBe('term'); // init should come first in definition
+      expect(nodes[0]).not.toBe('term');
     });
 
     it('parallelOrder shows init in first batch', () => {
@@ -225,19 +227,24 @@ describe('Batch State Synchronization - Exhaustive', () => {
     });
 
     it('term is always last batch', () => {
-      for (const id of Object.keys(testDAG.nodes).filter(n => n !== 'term')) {
+      for (const id of Object.keys(testDAG.nodes)) {
         completed.add(id);
+        // Add artifacts for nodes with produces
+        const node = testDAG.nodes[id as keyof typeof testDAG.nodes];
+        for (const p of node.produces) artifacts.add(p);
       }
       const pos = orient(testDAG, exists, undefined, completed);
       expect(pos.position).toContain('term');
-      expect(pos.remaining).toEqual([]); // No batches after term
+      expect(pos.remaining).toEqual([]);
     });
   });
 
   describe('Executor Position Consistency', () => {
     it('executors see consistent position across multiple calls', () => {
       completed.add('init');
+      artifacts.add('init.txt');
       completed.add('a');
+      artifacts.add('a.txt');
       const p1 = orient(testDAG, exists, undefined, completed);
       const p2 = orient(testDAG, exists, undefined, completed);
       const p3 = orient(testDAG, exists, undefined, completed);
@@ -247,8 +254,8 @@ describe('Batch State Synchronization - Exhaustive', () => {
     });
 
     it('position order is stable across executor calls', () => {
-      // Batch [a, b] should always be in same order
       completed.add('init');
+      artifacts.add('init.txt');
       const pos = orient(testDAG, exists, undefined, completed);
       expect(pos.position.sort()).toEqual(['a', 'b'].sort());
     });
@@ -257,19 +264,24 @@ describe('Batch State Synchronization - Exhaustive', () => {
   describe('Completion Atomicity', () => {
     it('completing one node updates position correctly', () => {
       completed.add('init');
+      artifacts.add('init.txt');
       const pos1 = orient(testDAG, exists, undefined, completed);
       expect(pos1.position).toContain('a');
       expect(pos1.position).toContain('b');
 
       completed.add('a');
+      artifacts.add('a.txt');
       const pos2 = orient(testDAG, exists, undefined, completed);
       expect(pos2.batchRemaining).toEqual(['b']);
     });
 
     it('batch transitions when all nodes complete', () => {
       completed.add('init');
+      artifacts.add('init.txt');
       completed.add('a');
+      artifacts.add('a.txt');
       completed.add('b');
+      artifacts.add('b.txt');
       const pos = orient(testDAG, exists, undefined, completed);
       expect(pos.position).toEqual(['c']);
       expect(pos.batchComplete).toBe(false);
@@ -280,15 +292,19 @@ describe('Batch State Synchronization - Exhaustive', () => {
       expect(pos0.position).toEqual(['init']);
 
       completed.add('init');
+      artifacts.add('init.txt');
       const pos1 = orient(testDAG, exists, undefined, completed);
       expect(pos1.position).not.toContain('term');
 
       completed.add('a');
+      artifacts.add('a.txt');
       completed.add('b');
+      artifacts.add('b.txt');
       const pos2 = orient(testDAG, exists, undefined, completed);
       expect(pos2.position).not.toContain('term');
 
       completed.add('c');
+      artifacts.add('c.txt');
       const pos3 = orient(testDAG, exists, undefined, completed);
       expect(pos3.position).toEqual(['term']);
     });
