@@ -74,6 +74,14 @@ jobs:
         if: needs.setup.outputs.mode == 'promote'
         run: npx tsx bin/roadmap.ts plan status
 
+      - name: GitSha completion gate
+        if: needs.setup.outputs.mode == 'promote'
+        run: npx tsx scripts/ci/roadmap-gitsha-gate.ts
+
+      - name: Env-bypass audit
+        if: needs.setup.outputs.mode == 'promote' || needs.setup.outputs.mode == 'main'
+        run: npx tsx tools/audit-env-bypasses.ts
+
       - name: DAG integrity (hard)
         if: needs.setup.outputs.mode == 'promote' || needs.setup.outputs.mode == 'main'
         run: npm run check:dag:define
@@ -100,7 +108,7 @@ jobs:
       # --- always ---
       - name: Reject SKIP_ bypass in CI
         run: |
-          for var in SKIP_DAG_CHECK SKIP_BATCH_COMMIT; do
+          for var in SKIP_DAG_CHECK SKIP_BATCH_COMMIT SKIP_PLAN_GATE; do
             if [ -n "${!var}" ]; then
               echo "::error::$var is set — governance bypass not allowed in CI"
               exit 1
