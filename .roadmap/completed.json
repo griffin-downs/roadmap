@@ -1,27 +1,68 @@
 [
   {
     "nodeId": "term",
-    "completedAt": "2026-02-27T09:07:08.308Z",
+    "completedAt": "2026-02-28T13:47:24.637Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260227090708"
+    "checkpointId": "cp-20260228134724",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest run --reporter=dot"
+      },
+      {
+        "rule": "intent",
+        "passed": true,
+        "evidence": "unevaluated"
+      }
+    ]
   },
   {
     "nodeId": "fix-artifact-field",
     "completedAt": "2026-02-28T10:22:55.259Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260228102255"
+    "checkpointId": "cp-20260228102255",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "patched: pre-receipt-enforcement record"
+      }
+    ]
   },
   {
     "nodeId": "fix-post-commit-hook",
     "completedAt": "2026-02-28T10:22:55.435Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260228102255"
+    "checkpointId": "cp-20260228102255",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "patched: pre-receipt-enforcement record"
+      }
+    ]
   },
   {
     "nodeId": "fix-orient-completions",
     "completedAt": "2026-02-28T10:23:02.410Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260228102302"
+    "checkpointId": "cp-20260228102302",
+    "legacy": true,
+    "validationChecks": [
+      {
+        "rule": "legacy-migration",
+        "passed": true,
+        "evidence": "patched: pre-receipt-enforcement record"
+      }
+    ]
   },
   {
     "nodeId": "fr-predicates",

@@ -1,5 +1,5 @@
 {
-  "lastCommit": "4fab56661a9ab11d21ddff6627d3ff95bca34b90",
-  "timestamp": "2026-02-27T09:33:00.670Z",
-  "message": "roadmap: Implement DAG-based strategy cost estimation — compute critical path instead of heuristic formulas"
+  "lastCommit": "a5295c9abfa26f436a1e4f1fa45a2d58eab5685c",
+  "timestamp": "2026-02-28T14:35:47Z",
+  "message": "FR-GOV-009: delete legacy completion semantics — receipt-only truth regime"
 }
