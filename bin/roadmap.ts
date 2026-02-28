@@ -38,6 +38,7 @@ import { recordEvaluation, judgmentToRecord } from '../src/lib/intent-evaluator.
 import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } from '../src/lib/validate-dag.ts';
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/spec-origin.ts';
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/spec-origin.ts';
+import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
@@ -257,6 +258,7 @@ async function main() {
       case 'retire':    return cmdRetire(note!);
       case 'claim':     return cmdClaim();
       case 'import':    return cmdImport(note!);
+      case 'intake':    return cmdIntake(note!);
       case 'spec':      return cmdSpec(note!);
       case 'init':      return cmdInit(note!);
       case 'report':    return await cmdReport(note!);
@@ -3020,6 +3022,62 @@ function cmdClaim() {
   saveClaims(repoRoot, store);
 
   json({ claimed: nodeId, owner, claimedAt, claimExpiry, ttlSeconds });
+}
+
+// --- intake: scan, import, certify from git diffs ---
+function cmdIntake(note: string) {
+  const sub = args[1];
+  switch (sub) {
+    case 'scan': {
+      const baseIdx = args.indexOf('--base');
+      const baseSha = baseIdx !== -1 ? args[baseIdx + 1] : undefined;
+      const result = scanIntake(repoRoot, baseSha ? { baseSha } : undefined);
+      recordTrail({
+        ts: new Date().toISOString(), cmd: 'intake scan', note,
+        repo: basename(repoRoot), position: [], level: 0,
+        detail: { baseSha: result.baseSha, headSha: result.headSha, candidates: result.candidates.length, changed: result.changedFiles.length, skipped: result.skipped.length },
+      });
+      json(result);
+      return;
+    }
+    case 'import': {
+      const baseIdx = args.indexOf('--base');
+      const baseSha = baseIdx !== -1 ? args[baseIdx + 1] : undefined;
+      const idIdx = args.indexOf('--id');
+      const dagId = idIdx !== -1 ? args[idIdx + 1] : undefined;
+      const scanResult = scanIntake(repoRoot, baseSha ? { baseSha } : undefined);
+      if (scanResult.candidates.length === 0) {
+        json({ imported: false, reason: 'No intake candidates found', baseSha: scanResult.baseSha, headSha: scanResult.headSha });
+        return;
+      }
+      const result = importIntake(repoRoot, scanResult.candidates, dagId ? { dagId } : undefined);
+      recordTrail({
+        ts: new Date().toISOString(), cmd: 'intake import', note,
+        repo: basename(repoRoot), position: [], level: 0,
+        detail: { imported: result.imported.length, dagPath: result.dagPath, receipt: result.receipt },
+      });
+      json({ imported: true, count: result.imported.length, nodes: result.imported.map(c => c.id), dagPath: result.dagPath, receipt: result.receipt });
+      return;
+    }
+    case 'certify': {
+      const nodeIds = args.slice(2).filter(a => !a.startsWith('--'));
+      if (nodeIds.length === 0) {
+        json({ error: 'No node IDs provided', fix: 'roadmap intake certify <node-id> [<node-id>...] --note "..."' });
+        process.exit(1);
+      }
+      const result = certifyIntake(repoRoot, nodeIds);
+      recordTrail({
+        ts: new Date().toISOString(), cmd: 'intake certify', note,
+        repo: basename(repoRoot), position: [], level: 0,
+        detail: { certified: result.certified.length, skipped: result.skipped.length },
+      });
+      json(result);
+      return;
+    }
+    default:
+      json({ error: `Unknown intake subcommand: ${sub}`, fix: 'roadmap intake scan|import|certify --note "..."' });
+      process.exit(1);
+  }
 }
 
 // --- import: parse spec-kit tasks.md into candidate roadmap DAG ---
