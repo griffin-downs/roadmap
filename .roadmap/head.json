@@ -335,7 +335,8 @@
         "docs/decisions/reconcile-gap.md"
       ],
       "deps": [
-        "phase-1-term"
+        "phase-1-term",
+        "intent-governance-bedrock"
       ],
       "validate": [
         {
@@ -355,7 +356,8 @@
         "src/protocol.ts"
       ],
       "deps": [
-        "phase-1-term"
+        "phase-1-term",
+        "intent-governance-bedrock"
       ],
       "validate": [
         {
@@ -3997,7 +3999,8 @@
       ],
       "consumes": [],
       "deps": [
-        "phase-26-init"
+        "phase-26-init",
+        "intent-governance-bedrock"
       ],
       "validate": [
         {
@@ -4016,7 +4019,8 @@
       ],
       "consumes": [],
       "deps": [
-        "phase-26-init"
+        "phase-26-init",
+        "intent-governance-bedrock"
       ],
       "validate": [
         {
@@ -4048,6 +4052,100 @@
         }
       ],
       "idempotent": true,
+      "mode": "execute"
+    },
+    "fix-completion-record": {
+      "id": "fix-completion-record",
+      "desc": "CompletionRecord must store validator results — checks array with rule/passed/evidence per validator",
+      "produces": ["src/lib/completion-tracker.ts"],
+      "consumes": ["src/lib/completion-tracker.ts", "bin/roadmap.ts"],
+      "deps": ["phase-1-term"],
+      "validate": [
+        { "type": "shell", "command": "npx tsc --noEmit" },
+        { "type": "shell", "command": "npx vitest run tests/completion-tracker.test.ts" }
+      ],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "fix-orient-autopilot": {
+      "id": "fix-orient-autopilot",
+      "desc": "Produce-less nodes must not auto-complete in orient — require explicit completion via completed set",
+      "produces": ["src/protocol.ts"],
+      "consumes": ["src/protocol.ts"],
+      "deps": ["phase-1-term"],
+      "validate": [
+        { "type": "shell", "command": "npx tsc --noEmit" },
+        { "type": "shell", "command": "npx vitest run tests/protocol.test.ts" }
+      ],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "fix-skip-validate-removal": {
+      "id": "fix-skip-validate-removal",
+      "desc": "Remove --skip-validate flag from complete command — validation is unconditional",
+      "produces": ["bin/roadmap.ts"],
+      "consumes": ["bin/roadmap.ts"],
+      "deps": ["phase-1-term"],
+      "validate": [
+        { "type": "shell", "command": "npx tsc --noEmit" },
+        { "type": "shell", "command": "test $(grep -c skip-validate bin/roadmap.ts) -eq 0" }
+      ],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "fix-validator-coverage": {
+      "id": "fix-validator-coverage",
+      "desc": "Add validators to all 43 nodes currently missing them — zero unvalidated nodes",
+      "produces": [".roadmap/head.json"],
+      "consumes": [".roadmap/head.json"],
+      "deps": ["phase-1-term"],
+      "validate": [
+        { "type": "shell", "command": "node --input-type=module -e \"import{readFileSync}from'fs';const d=JSON.parse(readFileSync('.roadmap/head.json','utf-8'));const bad=Object.values(d.nodes).filter(n=>(!n.validate||!n.validate.length)&&n.id!=='init');if(bad.length){console.error('unvalidated:',bad.map(n=>n.id));process.exit(1)}\"" }
+      ],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "fix-stale-reconcile": {
+      "id": "fix-stale-reconcile",
+      "desc": "Reconcile DAG with git — retire or bulk-complete 135 nodes whose artifacts predate this DAG",
+      "produces": [".roadmap/completed.json"],
+      "consumes": [".roadmap/head.json", ".roadmap/completed.json"],
+      "deps": ["fix-completion-record", "fix-orient-autopilot"],
+      "validate": [
+        { "type": "shell", "command": "node --input-type=module -e \"import{readFileSync}from'fs';const d=JSON.parse(readFileSync('.roadmap/head.json','utf-8'));const c=JSON.parse(readFileSync('.roadmap/completed.json','utf-8'));const remaining=Object.keys(d.nodes).length-c.length;if(remaining>30){console.error('remaining:',remaining);process.exit(1)}\"" }
+      ],
+      "idempotent": true,
+      "mode": "execute"
+    },
+    "intent-governance-bedrock": {
+      "id": "intent-governance-bedrock",
+      "desc": "Governance enforcement verified: validators execute unconditionally, completion records carry proof, no bypass paths, DAG isomorphic with git",
+      "produces": [".roadmap/governance-hardened.json"],
+      "consumes": [
+        "src/lib/completion-tracker.ts",
+        "src/protocol.ts",
+        "bin/roadmap.ts",
+        ".roadmap/head.json",
+        ".roadmap/completed.json"
+      ],
+      "deps": [
+        "fix-completion-record",
+        "fix-orient-autopilot",
+        "fix-skip-validate-removal",
+        "fix-validator-coverage",
+        "fix-stale-reconcile",
+        "fix-artifact-field",
+        "fix-orient-completions",
+        "fix-post-commit-hook"
+      ],
+      "validate": [
+        { "type": "shell", "command": "npx tsc --noEmit" },
+        { "type": "shell", "command": "npx vitest run tests/completion-tracker.test.ts tests/protocol.test.ts" },
+        { "type": "shell", "command": "test $(grep -c skip-validate bin/roadmap.ts) -eq 0" },
+        { "type": "shell", "command": "node --input-type=module -e \"import{readFileSync}from'fs';const d=JSON.parse(readFileSync('.roadmap/head.json','utf-8'));const bad=Object.values(d.nodes).filter(n=>(!n.validate||!n.validate.length)&&n.id!=='init');if(bad.length){console.error(bad.map(n=>n.id));process.exit(1)}\"" },
+        { "type": "artifact-exists", "target": ".roadmap/governance-hardened.json" }
+      ],
+      "idempotent": false,
       "mode": "execute"
     },
     "fix-artifact-field": {
@@ -4091,6 +4189,7 @@
       ],
       "deps": [
         "example-integration",
+        "intent-governance-bedrock",
         "fix-artifact-field",
         "fix-orient-completions",
         "fix-post-commit-hook"
