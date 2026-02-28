@@ -2021,7 +2021,6 @@ function cmdProfile(note: string) {
   recordTrail({ command: "profile", note, position: [], level: -1 });
   json(report);
 }
-}
 
 
 function cmdAudit(note: string) {
