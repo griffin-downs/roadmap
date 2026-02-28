@@ -1,2 +1,4 @@
 node_modules/
 .boot/
+.vitest-results.json
+governance/promotion/

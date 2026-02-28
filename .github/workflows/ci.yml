@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [master, 'wip/**']
+  pull_request:
+
+env:
+  CI: true
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.mode.outputs.mode }}
+    steps:
+      - id: mode
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/heads/wip/* ]]; then
+            echo "mode=wip" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "master" ]]; then
+            echo "mode=promote" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=main" >> "$GITHUB_OUTPUT"
+          fi
+
+  ci:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run check
+
+      # --- wip lane: fast feedback, no tests, advisory DAG ---
+      - name: DAG verify (advisory)
+        if: needs.setup.outputs.mode == 'wip'
+        run: npm run check:dag:verify
+
+      # --- promote lane: full gates ---
+      - name: Test
+        if: needs.setup.outputs.mode == 'promote' || needs.setup.outputs.mode == 'main'
+        run: npm run test:ci
+        continue-on-error: true
+
+      - name: Test ledger gate
+        if: needs.setup.outputs.mode == 'promote' || needs.setup.outputs.mode == 'main'
+        run: npm run gate:tests
+
+      - name: WIP intent check
+        if: needs.setup.outputs.mode == 'promote'
+        run: npm run check:intent
+
+      - name: DAG integrity (hard)
+        if: needs.setup.outputs.mode == 'promote' || needs.setup.outputs.mode == 'main'
+        run: npm run check:dag:define
+
+      # --- always ---
+      - name: Surface guard
+        run: npm run check:surface
+
+      # --- promotion evidence ---
+      - name: Generate promotion ledger
+        if: needs.setup.outputs.mode == 'promote' || needs.setup.outputs.mode == 'main'
+        run: |
+          mkdir -p governance/promotion
+          npm run promotion:ledger -- --out governance/promotion/${{ github.sha }}.json --ci-mode ${{ needs.setup.outputs.mode }}
+
+      - name: Upload promotion ledger
+        if: needs.setup.outputs.mode == 'promote' || needs.setup.outputs.mode == 'main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: promotion-ledger-${{ github.sha }}
+          path: governance/promotion/${{ github.sha }}.json
+          retention-days: 90
+
+      # --- always ---
+      - name: Reject SKIP_ bypass in CI
+        run: |
+          for var in SKIP_DAG_CHECK SKIP_BATCH_COMMIT; do
+            if [ -n "${!var}" ]; then
+              echo "::error::$var is set — governance bypass not allowed in CI"
+              exit 1
+            fi
+          done
