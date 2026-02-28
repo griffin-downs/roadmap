@@ -4381,23 +4381,39 @@ async function cmdPlanStatus() {
     process.exit(1);
   }
 
-  const { validatePlanSelection } = await import('../src/lib/receipts/plan-select.ts');
-  const result = validatePlanSelection(repoRoot);
+  const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
+  const { readPointer } = await import('../src/lib/receipts/plan-selected-pointer.ts');
+  const { loadPlanSelectReceipt, computeHeadSha } = await import('../src/lib/receipts/plan-select.ts');
+  const gate = requirePlanGate(repoRoot);
+  const pointer = readPointer(repoRoot);
 
-  if (result.valid) {
+  if (gate.ok) {
+    const full = loadPlanSelectReceipt(repoRoot);
     json({
       status: 'valid',
-      candidateId: result.receipt!.candidateId,
-      headSha: result.receipt!.headSha,
-      selectedAt: result.receipt!.selectedAt,
-      selector: result.receipt!.selector,
-      note: result.receipt!.note,
+      candidateId: gate.pointer.candidateId,
+      headSha: gate.pointer.headSha,
+      headShaMatch: true,
+      receipt: gate.pointer.receipt,
+      selectedAt: full?.selectedAt,
+      selector: full?.selector,
     });
   } else {
+    let headShaMatch: boolean | undefined;
+    if (pointer) {
+      try {
+        headShaMatch = pointer.headSha === computeHeadSha(repoRoot);
+      } catch {
+        headShaMatch = false;
+      }
+    }
+
     json({
       status: 'invalid',
-      reason: result.reason,
-      ...(result.receipt ? { staleReceipt: { candidateId: result.receipt.candidateId, headSha: result.receipt.headSha } } : {}),
+      reason: gate.reason,
+      ...(headShaMatch !== undefined ? { headShaMatch } : {}),
+      ...(pointer ? { staleReceipt: { candidateId: pointer.candidateId, headSha: pointer.headSha, receipt: pointer.receipt } } : {}),
+      fix: gate.fix,
     });
     process.exit(1);
   }
