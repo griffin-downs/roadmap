@@ -6138,5 +6138,20 @@
     ],
     "gitSha": "3498975b3807d090462c860fa11f905698f78e2e",
     "treeSha": "1404c597e8accfb37f52895ed024f0a8c19e520c"
+  },
+  {
+    "nodeId": "surf-audit-cli",
+    "completedAt": "2026-03-01T10:57:22.549Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301105722",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/commands/audit.ts"
+      }
+    ],
+    "gitSha": "2bacfdc35f3b6fb4716ea241ef6b33112f95519a",
+    "treeSha": "5fece00621924a45bb9afc1e8c921d632d67680f"
   }
 ]
