@@ -5256,5 +5256,33 @@
     ],
     "gitSha": "c664e32a35ad75d79b482ef005233129e6fe9582",
     "treeSha": "b1e2c0cd2a7380b55fb047318a76b3dc99b671c7"
+  },
+  {
+    "nodeId": "tu-index-gc",
+    "completedAt": "2026-03-01T09:11:50.253Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301091149",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/token-index.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "b12af9b1860a3dcf171dff71d3be6dc663613b11",
+    "treeSha": "bc148ab7c5817a23377b7c4f5c328e50fa040965"
   }
 ]
