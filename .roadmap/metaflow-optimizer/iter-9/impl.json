@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-03-01T22:11:00Z",
+  "iterN": 9,
+  "proposalImplemented": "P9-001",
+  "title": "Auto-release claims on node completion",
+  "description": "Added claim release on the successful completion path in cmdComplete. Previously claims were only deleted on failure/escalation paths (validation failed, depth exceeded, stalled). Now the claim is deleted immediately after checkpoint, before saveCompletionWithEvidence, ensuring no claimed-completed warnings from the corruption detector.",
+  "filesModified": [
+    "bin/roadmap.ts"
+  ],
+  "changesSummary": {
+    "location": "bin/roadmap.ts:cmdComplete(), line ~2972",
+    "change": "Added `delete claimStore[nodeId]; saveClaims(repoRoot, claimStore);` on successful completion path, matching the pattern already used on failure paths at lines 2772, 2786, 2855, 2884"
+  },
+  "testResults": {
+    "cliTests": 161,
+    "passed": 161,
+    "failed": 0,
+    "skipped": 2
+  },
+  "expectedOutcome": "Corruption detector will report zero claimed-completed warnings after node completion. Stale claim accumulation eliminated."
+}

@@ -2968,6 +2968,10 @@ async function cmdComplete(note: string) {
     }
   }
 
+  // Release claim on successful completion — prevents claimed-completed warnings
+  delete claimStore[nodeId];
+  saveClaims(repoRoot, claimStore);
+
   // Save completion with evidence to persistent tracking (receipt-authoritative)
   saveCompletionWithEvidence(repoRoot, nodeId, evidenceChecks, owner, checkpoint.id, validatorResults);
 
