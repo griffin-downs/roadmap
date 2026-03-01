@@ -1,0 +1,7 @@
+{
+  "agentId": "custodian-lib",
+  "findings": [
+    {"kind": "remove-deprecated", "title": "audit-schema.ts (replaced by schema.ts)", "evidence": [{"path": "src/lib/audit/audit-schema.ts", "lines": [1]}], "impact": {"risk": "low", "effortHours": 0.5, "benefit": ["cleanup"]}},
+    {"kind": "remove-deprecated", "title": "perf-schema.ts (replaced by schema.ts)", "evidence": [{"path": "src/lib/perf/perf-schema.ts", "lines": [1]}], "impact": {"risk": "low", "effortHours": 0.5, "benefit": ["cleanup"]}}
+  ]
+}

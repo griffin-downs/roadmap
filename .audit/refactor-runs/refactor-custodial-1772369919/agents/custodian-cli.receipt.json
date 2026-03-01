@@ -1,0 +1,7 @@
+{
+  "agentId": "custodian-cli",
+  "findings": [
+    {"kind": "consolidate-duplicates", "title": "expand-dag-candidate.ts + expand-dag-final.ts → single expand-dag.ts", "evidence": [{"path": "scripts/expand-dag-candidate.ts", "lines": [1]}], "impact": {"risk": "med", "effortHours": 2, "benefit": ["cleanup"]}},
+    {"kind": "remove-stale", "title": "gen-perf-receipt.ts (automated in CI)", "evidence": [{"path": "scripts/gen-perf-receipt.ts", "lines": [1]}], "impact": {"risk": "low", "effortHours": 0.25, "benefit": ["cleanup"]}}
+  ]
+}
