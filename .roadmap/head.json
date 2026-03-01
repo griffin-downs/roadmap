@@ -87,7 +87,7 @@
         },
         {
           "type": "shell",
-          "command": "bin/roadmap chart 2>/dev/null | node -e \"const e=JSON.parse(require('fs').readFileSync('/dev/stdin','utf-8')); if(!e.ok || e.cmd!=='chart') throw new Error('Chart envelope invalid')\" && echo 'Chart envelope valid' || exit 1"
+          "command": "bin/roadmap chart 2>/dev/null | node --input-type=commonjs -e 'var d=\"\";process.stdin.resume();process.stdin.on(\"data\",function(c){d+=c});process.stdin.on(\"end\",function(){var e=JSON.parse(d);if(e.ok&&e.cmd===\"chart\"){console.log(\"Chart envelope valid\")}else{process.exit(1)}})'"
         }
       ],
       "idempotent": true,

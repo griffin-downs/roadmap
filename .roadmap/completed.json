@@ -1509,5 +1509,59 @@
     ],
     "gitSha": "31af5271b2286fd60a35ac336de065c1789d83ce",
     "treeSha": "077080ea7a3bbf6b2b59922b1db278c8d2f03d0d"
+  },
+  {
+    "nodeId": "json-default-flip",
+    "completedAt": "2026-03-01T23:21:08.143Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301232107",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/cli-quality/json-default-flip.marker"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): bin/roadmap orient --note 'test' 2>/dev/null | node -e \"JSON.parse(require('fs').readFileSync('/dev/stdin','utf-8'))\" && echo 'JSON valid' || exit 1"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:bin/roadmap orient --note 'test' 2>/dev/null | node -e \"JSON.parse(require('fs').readFileSync('/dev/stdin','utf-8'))\" && echo 'JSON valid' || exit 1",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "fb46515c3dde2db10630d63b0465b769b0b329f0bb6f85bb1237f60db51b4742",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/json-default-flip/mm8diwpu-nufy3b/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "4fac00916eceb16269969dd282d5682cf836f221",
+    "treeSha": "eba2db24bd1167077a44a627ab750e5184c17399"
+  },
+  {
+    "nodeId": "p9-002-latency-guard",
+    "completedAt": "2026-03-01T23:21:13.170Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301232112",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'P50\\|latency' tests/cli/integration.test.ts && npm test -- integration.test.ts 2>&1 | grep -q 'pass\\|✓' && exit 0 || exit 1"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:grep -q 'P50\\|latency' tests/cli/integration.test.ts && npm test -- integration.test.ts 2>&1 | grep -q 'pass\\|✓' && exit 0 || exit 1",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "4fac00916eceb16269969dd282d5682cf836f221",
+    "treeSha": "eba2db24bd1167077a44a627ab750e5184c17399"
   }
 ]
