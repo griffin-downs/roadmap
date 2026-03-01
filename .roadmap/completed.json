@@ -550,5 +550,14 @@
     "validationChecks": [],
     "gitSha": "f19831cb12b8fe0739ebea4c5c7e866060f645bd",
     "treeSha": "e9511a5948749641aa65b861efba9db883f796a9"
+  },
+  {
+    "nodeId": "cli-detect-disconnects",
+    "completedAt": "2026-03-01T16:23:41.242Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301162341",
+    "validationChecks": [],
+    "gitSha": "eb716a43d68b5fd395207322ec252e1fa4d25fa8",
+    "treeSha": "ffa987c81a4565c5a203a858a60e6c9b25c397d4"
   }
 ]
