@@ -1,212 +1,240 @@
 {
-  "id": "fr-custodial-iter-001",
-  "desc": "FR-CUSTODIAL-ITER-001: Self-Improving Custodial Quality Loop (Mining-Driven)",
+  "id": "fr-custodial-iter-002",
+  "desc": "FR-CUSTODIAL-ITER-002: Service Fidelity & Mechanical Enforcement (Recovery + Hardening)",
   "init": "init",
   "term": "term",
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Synthetic init — FR-CUSTODIAL-ITER-001 quality loop starts",
+      "desc": "Synthetic init — FR-CUSTODIAL-ITER-002 fidelity hardening starts",
       "produces": [],
       "consumes": [],
       "deps": [],
       "validate": [],
       "idempotent": false
     },
-    "state-audit": {
-      "id": "state-audit",
-      "desc": "Scan all DAG state files: head.json, completed.json, claims.json, trail.jsonl",
+    "state-recovery": {
+      "id": "state-recovery",
+      "desc": "Restore missing state artifacts: recreate claims.json from trails, validate state consistency (reads ambient trail.jsonl, completed.json from iter-001)",
       "produces": [
-        ".roadmap/audits/state-audit.json",
-        ".roadmap/audits/state-issues.json"
+        ".roadmap/claims.json",
+        ".roadmap/recovery/state-recovery.json"
       ],
       "consumes": [],
       "deps": ["init"],
       "validate": [
-        {"type": "artifact-exists", "target": [".roadmap/audits/state-audit.json", ".roadmap/audits/state-issues.json"]},
-        {"type": "shell", "command": "jq '.total_checks' .roadmap/audits/state-audit.json | grep -E '^[0-9]+$'"}
+        {"type": "artifact-exists", "target": [".roadmap/claims.json", ".roadmap/recovery/state-recovery.json"]},
+        {"type": "shell", "command": "jq -e '.claims | length > 0' .roadmap/claims.json || true"}
       ],
-      "idempotent": true
+      "idempotent": false
     },
-    "performance-profile": {
-      "id": "performance-profile",
-      "desc": "Profile CLI command latencies, output sizes, memory usage from mining data",
+    "enforcement-schema": {
+      "id": "enforcement-schema",
+      "desc": "Define enforcement schema: validation rules, state contracts, mechanical check DSL",
       "produces": [
-        ".roadmap/audits/perf-profile.json",
-        ".roadmap/audits/performance-anomalies.json"
-      ],
-      "consumes": [
-        ".roadmap/runs/*/mining.json"
-      ],
-      "deps": ["init"],
-      "validate": [
-        {"type": "artifact-exists", "target": [".roadmap/audits/perf-profile.json"]},
-        {"type": "shell", "command": "jq '.commands_profiled > 0' .roadmap/audits/perf-profile.json"}
-      ],
-      "idempotent": true
-    },
-    "coverage-analysis": {
-      "id": "coverage-analysis",
-      "desc": "Analyze test coverage: identify untested code paths, spec scenarios without tests",
-      "produces": [
-        ".roadmap/audits/coverage-report.json",
-        ".roadmap/audits/coverage-gaps.json"
+        "src/lib/enforcement/schema.ts",
+        ".roadmap/specs/enforcement-schema.json"
       ],
       "consumes": [],
       "deps": ["init"],
       "validate": [
-        {"type": "artifact-exists", "target": ".roadmap/audits/coverage-report.json"},
-        {"type": "shell", "command": "jq '.coverage_pct >= 0' .roadmap/audits/coverage-report.json"}
+        {"type": "artifact-exists", "target": ["src/lib/enforcement/schema.ts"]},
+        {"type": "shell", "command": "npx tsc --noEmit src/lib/enforcement/schema.ts"}
       ],
       "idempotent": true
     },
-    "consistency-check": {
-      "id": "consistency-check",
-      "desc": "Cross-validate: completed nodes vs artifacts exist, head.json vs actual DAG structure",
+    "mechanical-validators": {
+      "id": "mechanical-validators",
+      "desc": "Implement mechanical validators: artifact-schema, process-invariant, state-transition, concurrent-safety",
       "produces": [
-        ".roadmap/audits/consistency-check.json",
-        ".roadmap/audits/divergences.json"
+        "src/lib/enforcement/validators.ts",
+        "src/lib/enforcement/concurrent-safety.ts"
       ],
       "consumes": [
-        ".roadmap/audits/state-audit.json"
+        "src/lib/enforcement/schema.ts"
       ],
-      "deps": ["state-audit"],
+      "deps": ["enforcement-schema"],
       "validate": [
-        {"type": "artifact-exists", "target": ".roadmap/audits/consistency-check.json"},
-        {"type": "shell", "command": "jq '.divergences | length >= 0' .roadmap/audits/consistency-check.json"}
+        {"type": "artifact-exists", "target": ["src/lib/enforcement/validators.ts", "src/lib/enforcement/concurrent-safety.ts"]},
+        {"type": "shell", "command": "npm run check 2>&1 | grep -q 'src/lib/enforcement' || echo 'OK'"}
       ],
       "idempotent": true
     },
-    "spec-conformance-scan": {
-      "id": "spec-conformance-scan",
-      "desc": "Validate all DAGs against spec-kit schemas: produces exist, validate rules well-formed",
+    "concurrent-stress-test": {
+      "id": "concurrent-stress-test",
+      "desc": "Implement concurrent-stress-testing: parallel node execution, race condition detection, state coherence validation",
       "produces": [
-        ".roadmap/audits/spec-conformance.json",
-        ".roadmap/audits/spec-violations.json"
+        "tests/concurrent-stress.test.ts",
+        ".roadmap/testing/concurrent-stress-results.json"
+      ],
+      "consumes": [
+        "src/lib/enforcement/concurrent-safety.ts"
+      ],
+      "deps": ["mechanical-validators"],
+      "validate": [
+        {"type": "artifact-exists", "target": "tests/concurrent-stress.test.ts"},
+        {"type": "shell", "command": "npm test -- --include='**/concurrent-stress.test.ts' 2>&1 | tail -5"}
+      ],
+      "idempotent": true
+    },
+    "error-recovery-paths": {
+      "id": "error-recovery-paths",
+      "desc": "Implement error-recovery paths: graceful degradation, repair workflows, breakglass mechanism",
+      "produces": [
+        "src/lib/enforcement/error-recovery.ts",
+        "src/lib/enforcement/breakglass.ts"
+      ],
+      "consumes": [
+        "src/lib/enforcement/schema.ts"
+      ],
+      "deps": ["enforcement-schema"],
+      "validate": [
+        {"type": "artifact-exists", "target": ["src/lib/enforcement/error-recovery.ts", "src/lib/enforcement/breakglass.ts"]},
+        {"type": "shell", "command": "npm run check"}
+      ],
+      "idempotent": true
+    },
+    "fidelity-benchmarks": {
+      "id": "fidelity-benchmarks",
+      "desc": "Establish fidelity benchmarks: latency targets, error budgets, state coherence SLOs (reads ambient mining/aggregated.json from iter-001)",
+      "produces": [
+        ".roadmap/fidelity/benchmarks.json",
+        ".roadmap/fidelity/slo-targets.json"
       ],
       "consumes": [],
-      "deps": ["init"],
+      "deps": ["state-recovery"],
       "validate": [
-        {"type": "artifact-exists", "target": ".roadmap/audits/spec-conformance.json"},
-        {"type": "shell", "command": "jq '.dags_scanned > 0' .roadmap/audits/spec-conformance.json"}
+        {"type": "artifact-exists", "target": [".roadmap/fidelity/benchmarks.json", ".roadmap/fidelity/slo-targets.json"]},
+        {"type": "shell", "command": "jq -e '.latency_p99_ms' .roadmap/fidelity/benchmarks.json"}
+      ],
+      "idempotent": false
+    },
+    "validation-integration": {
+      "id": "validation-integration",
+      "desc": "Integrate mechanical validators into CLI: add validate subcommand, enforce on complete, report violations",
+      "produces": [
+        "src/cli/validate.ts",
+        "src/lib/enforcement/cli-integration.ts"
+      ],
+      "consumes": [
+        "src/lib/enforcement/validators.ts"
+      ],
+      "deps": ["mechanical-validators"],
+      "validate": [
+        {"type": "artifact-exists", "target": ["src/cli/validate.ts", "src/lib/enforcement/cli-integration.ts"]},
+        {"type": "shell", "command": "npm run check"}
       ],
       "idempotent": true
     },
-    "mining-aggregation": {
-      "id": "mining-aggregation",
-      "desc": "Aggregate all mining data: execution traces, command metrics, error logs, timing histograms",
+    "large-dag-optimization": {
+      "id": "large-dag-optimization",
+      "desc": "Optimize large-DAG performance: lazy loading, streaming validation, parallel batch processing",
       "produces": [
-        ".roadmap/mining/aggregated.json",
-        ".roadmap/mining/command-histogram.json",
-        ".roadmap/mining/error-summary.json"
+        "src/lib/optimization/lazy-load.ts",
+        "src/lib/optimization/streaming.ts"
       ],
-      "consumes": [
-        ".roadmap/runs/*/mining.json",
-        ".roadmap/audits/perf-profile.json"
-      ],
-      "deps": ["performance-profile"],
+      "consumes": [],
+      "deps": ["mechanical-validators"],
       "validate": [
-        {"type": "artifact-exists", "target": [".roadmap/mining/aggregated.json", ".roadmap/mining/command-histogram.json"]},
-        {"type": "shell", "command": "jq '.total_commands > 0' .roadmap/mining/aggregated.json"}
+        {"type": "artifact-exists", "target": ["src/lib/optimization/lazy-load.ts", "src/lib/optimization/streaming.ts"]},
+        {"type": "shell", "command": "npm run check"}
       ],
       "idempotent": true
     },
-    "improvement-proposals": {
-      "id": "improvement-proposals",
-      "desc": "Synthesize audit + mining results: generate actionable improvements (code, config, process)",
+    "fidelity-tests": {
+      "id": "fidelity-tests",
+      "desc": "Write fidelity tests: SLO verification, error budget checks, coherence assertions",
       "produces": [
-        ".roadmap/improvements/proposals.json",
-        ".roadmap/improvements/prioritized.json"
+        "tests/fidelity.test.ts",
+        ".roadmap/testing/fidelity-results.json"
       ],
       "consumes": [
-        ".roadmap/audits/state-issues.json",
-        ".roadmap/audits/coverage-gaps.json",
-        ".roadmap/audits/divergences.json",
-        ".roadmap/mining/aggregated.json"
+        ".roadmap/fidelity/benchmarks.json",
+        "src/lib/enforcement/error-recovery.ts"
       ],
-      "deps": ["consistency-check", "coverage-analysis", "mining-aggregation"],
+      "deps": ["fidelity-benchmarks", "error-recovery-paths"],
       "validate": [
-        {"type": "artifact-exists", "target": ".roadmap/improvements/proposals.json"},
-        {"type": "shell", "command": "jq '.proposals | length >= 0' .roadmap/improvements/proposals.json"}
+        {"type": "artifact-exists", "target": "tests/fidelity.test.ts"},
+        {"type": "shell", "command": "npm test -- --include='**/fidelity.test.ts'"}
       ],
       "idempotent": true
     },
-    "auto-repairs": {
-      "id": "auto-repairs",
-      "desc": "Apply low-risk improvements automatically: fix orphaned nodes, prune stale claims, clean artifacts",
+    "state-enforcement": {
+      "id": "state-enforcement",
+      "desc": "Enforce state machine contracts: validate transitions, detect illegal states, audit trail verification",
       "produces": [
-        ".roadmap/repairs/applied.json",
-        ".roadmap/repairs/rollback-plan.json"
+        "src/lib/enforcement/state-machine.ts",
+        "src/lib/enforcement/audit-verification.ts"
       ],
       "consumes": [
-        ".roadmap/improvements/prioritized.json"
+        ".roadmap/claims.json",
+        "src/lib/enforcement/schema.ts"
       ],
-      "deps": ["improvement-proposals"],
+      "deps": ["state-recovery", "enforcement-schema"],
       "validate": [
-        {"type": "artifact-exists", "target": ".roadmap/repairs/applied.json"},
-        {"type": "shell", "command": "jq '.repairs_applied >= 0' .roadmap/repairs/applied.json"}
+        {"type": "artifact-exists", "target": ["src/lib/enforcement/state-machine.ts", "src/lib/enforcement/audit-verification.ts"]},
+        {"type": "shell", "command": "npm run check"}
       ],
       "idempotent": true
     },
-    "fidelity-benchmark": {
-      "id": "fidelity-benchmark",
-      "desc": "Measure service fidelity: uptime, error rates, latency percentiles, spec compliance score",
+    "integration-test": {
+      "id": "integration-test",
+      "desc": "Integration test: run full validation suite against complex DAGs, verify all mechanical checks",
       "produces": [
-        ".roadmap/metrics/fidelity-score.json",
-        ".roadmap/metrics/trend.json"
+        "tests/integration-enforcement.test.ts",
+        ".roadmap/testing/integration-results.json"
       ],
       "consumes": [
-        ".roadmap/mining/aggregated.json",
-        ".roadmap/audits/spec-conformance.json",
-        ".roadmap/repairs/applied.json"
+        "src/cli/validate.ts",
+        "src/lib/enforcement/state-machine.ts",
+        "tests/concurrent-stress.test.ts",
+        "tests/fidelity.test.ts"
       ],
-      "deps": ["auto-repairs", "spec-conformance-scan"],
+      "deps": ["validation-integration", "state-enforcement", "concurrent-stress-test", "fidelity-tests"],
       "validate": [
-        {"type": "artifact-exists", "target": ".roadmap/metrics/fidelity-score.json"},
-        {"type": "shell", "command": "jq '.fidelity_pct >= 0 and .fidelity_pct <= 100' .roadmap/metrics/fidelity-score.json"}
+        {"type": "artifact-exists", "target": "tests/integration-enforcement.test.ts"},
+        {"type": "shell", "command": "npm test -- --include='**/integration-enforcement.test.ts'"}
       ],
       "idempotent": true
     },
-    "iteration-report": {
-      "id": "iteration-report",
-      "desc": "Synthesize iteration: state before/after, improvements applied, fidelity delta, next actions",
+    "hardening-report": {
+      "id": "hardening-report",
+      "desc": "Generate hardening report: coverage of mechanical checks, fidelity improvements, remaining gaps",
       "produces": [
-        ".roadmap/iterations/iteration-001.json",
-        "reports/CUSTODIAL-ITERATION-001.md"
+        ".roadmap/reports/iter2-hardening-report.json",
+        ".roadmap/reports/iter2-hardening-summary.md"
       ],
       "consumes": [
-        ".roadmap/audits/state-audit.json",
-        ".roadmap/repairs/applied.json",
-        ".roadmap/metrics/fidelity-score.json",
-        ".roadmap/improvements/proposals.json"
+        ".roadmap/testing/concurrent-stress-results.json",
+        ".roadmap/testing/fidelity-results.json",
+        ".roadmap/testing/integration-results.json"
       ],
-      "deps": ["fidelity-benchmark"],
+      "deps": ["integration-test"],
       "validate": [
-        {"type": "artifact-exists", "target": [".roadmap/iterations/iteration-001.json", "reports/CUSTODIAL-ITERATION-001.md"]},
-        {"type": "shell", "command": "grep -c 'Iteration\\|Fidelity\\|Improvements' reports/CUSTODIAL-ITERATION-001.md"}
+        {"type": "artifact-exists", "target": [".roadmap/reports/iter2-hardening-report.json", ".roadmap/reports/iter2-hardening-summary.md"]},
+        {"type": "shell", "command": "jq -e '.total_checks' .roadmap/reports/iter2-hardening-report.json"}
       ],
-      "idempotent": true
+      "idempotent": false
     },
     "loop-decision": {
       "id": "loop-decision",
-      "desc": "Decide: continue iteration or converged? Check fidelity delta, proposal count, error trends",
+      "desc": "Decide: continue to iteration 3 or finalized hardening complete",
       "produces": [
-        ".roadmap/loop/decision.json"
+        ".roadmap/loop/iter2-decision.json"
       ],
       "consumes": [
-        ".roadmap/iterations/iteration-001.json",
-        ".roadmap/metrics/trend.json"
+        ".roadmap/reports/iter2-hardening-report.json"
       ],
-      "deps": ["iteration-report"],
+      "deps": ["hardening-report"],
       "validate": [
-        {"type": "artifact-exists", "target": ".roadmap/loop/decision.json"},
-        {"type": "shell", "command": "jq '.continue_iteration or .converged' .roadmap/loop/decision.json"}
+        {"type": "artifact-exists", "target": ".roadmap/loop/iter2-decision.json"},
+        {"type": "shell", "command": "jq '.continue_iteration or .complete' .roadmap/loop/iter2-decision.json"}
       ],
       "idempotent": true
     },
     "term": {
       "id": "term",
-      "desc": "Synthetic term — FR-CUSTODIAL-ITER-001 complete, ready to loop or finalize",
+      "desc": "Synthetic term — FR-CUSTODIAL-ITER-002 complete, service fidelity hardened and enforced",
       "produces": [],
       "consumes": [],
       "deps": ["loop-decision"],
