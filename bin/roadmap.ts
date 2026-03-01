@@ -62,12 +62,13 @@ import { render, renderDagLayers, type RenderOpts, type RenderModel, type Render
 import { resolveWidth } from '../src/lib/render/layout.ts';
 import { renderOrient, renderChart, renderPlanGallery, renderPlanSelect, renderPlanStatus, renderDoctor, renderValidate, renderTrail, renderRemaining } from '../src/lib/cli-human.ts';
 import type { OrientData, ChartData, GalleryData, PlanSelectData, PlanStatusData, DoctorData, ValidateData, TrailData, RemainingData } from '../src/lib/cli-human.ts';
-import { ensureRunDir, readMeta, writeMeta, type RunId, type RunMeta, generateRunId } from '../src/lib/metaflow/index.ts';
+import { ensureRunDir, readMeta, writeMeta, runDir, type RunId, type RunMeta, generateRunId } from '../src/lib/metaflow/index.ts';
 import { isReceiptRequired } from '../src/lib/metaflow/command-registry.ts';
 import { SessionStore } from '../src/lib/metaflow/session-store.ts';
 import { buildQuestionBlock, recordAnswer, getAnswers } from '../src/lib/metaflow/ask.ts';
 import { InteractionReceiptWriter } from '../src/lib/metaflow/receipt-writer.ts';
 import { wrapSubcommand } from '../src/lib/metaflow/wrap.ts';
+import { mineRun, miningExists } from '../src/lib/metaflow/mine-run.ts';
 
 const rawArgs = process.argv.slice(2);
 const repoRoot = process.cwd();
@@ -106,6 +107,8 @@ function deriveEnvelopeCmd(): string {
     if (args[1] === 'dispatch') return 'mf.dispatch';
     if (args[1] === 'retire-team') return 'mf.retire-team';
     if (args[1] === 'wrap') return 'mf.wrap';
+    if (args[1] === 'mine') return 'mf.mine';
+    if (args[1] === 'complete') return 'mf.complete';
     return 'mf';
   }
   return cmd;
@@ -5015,6 +5018,62 @@ function cmdMf(note: string) {
         }
         throw e;
       }
+      break;
+    }
+    case 'mine': {
+      const mRunIdx = args.indexOf('--run');
+      if (mRunIdx === -1 || !args[mRunIdx + 1]) {
+        json({ error: 'Missing --run <runId>', fix: 'roadmap mf mine --run <runId> --note "..."' });
+        process.exit(1);
+      }
+      const mRunId = args[mRunIdx + 1] as RunId;
+      const mResult = mineRun(mRunId, repoRoot);
+
+      // Build RenderModel
+      const mNodes: import('../src/lib/render/types.ts').RenderNode[] = [];
+      mNodes.push({ t: 'h2', s: `mf mine — ${mRunId}` });
+      mNodes.push({ t: 'table', headers: ['Metric', 'Value'], rows: [
+        ['p50 latency', `${mResult.latencyP50Ms}ms`],
+        ['p95 latency', `${mResult.latencyP95Ms}ms`],
+        ['Total tool calls', String(mResult.toolCallTotal)],
+      ]});
+      if (mResult.hotspots.length > 0) {
+        mNodes.push({ t: 'h2', s: 'Hotspots' });
+        mNodes.push({ t: 'table', headers: ['Tool', 'Count', 'Agents'], rows:
+          mResult.hotspots.slice(0, 5).map(h => [h.tool, String(h.count), h.agentIds.join(', ')])
+        });
+      }
+      if (mResult.friction.length > 0) {
+        mNodes.push({ t: 'h2', s: 'Friction' });
+        mNodes.push({ t: 'list', items: mResult.friction.map(f => `[${f.category}] ${f.detail}`) });
+      }
+      if (mResult.teamReuseMissed) {
+        mNodes.push({ t: 'text', s: 'WARNING: Team reuse opportunity was missed' });
+      }
+
+      json({ cmd: 'mf.mine', runId: mRunId, mining: mResult }, {
+        kind: 'generic', title: `mf mine — ${mRunId}`, nodes: mNodes,
+      });
+      recordTrail({ ts: new Date().toISOString(), cmd: 'mf.mine', note, repo: basename(repoRoot), position: ['mf-mine-run'], level: 4 });
+      break;
+    }
+    case 'complete': {
+      const cRunIdx = args.indexOf('--run');
+      if (cRunIdx === -1 || !args[cRunIdx + 1]) {
+        json({ error: 'Missing --run <runId>', fix: 'roadmap mf complete --run <runId> --note "..."' });
+        process.exit(1);
+      }
+      const cRunId = args[cRunIdx + 1] as RunId;
+      if (!miningExists(cRunId, repoRoot)) {
+        process.stderr.write(JSON.stringify({
+          schema_version: 1, ok: false, cmd: 'mf.complete',
+          error: { code: 'MINING_REQUIRED', message: 'Run must be mined before completion: roadmap mf mine --run <runId>' }
+        }) + '\n');
+        process.exit(3);
+      }
+      const miningPath = join(runDir(cRunId, repoRoot), 'mining.json');
+      json({ cmd: 'mf.complete', runId: cRunId, status: 'complete', miningPath });
+      recordTrail({ ts: new Date().toISOString(), cmd: 'mf.complete', note, repo: basename(repoRoot), position: ['mf-mine-run'], level: 4 });
       break;
     }
     default:
