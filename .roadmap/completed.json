@@ -4687,5 +4687,28 @@
     ],
     "gitSha": "faff78827d479a43ece9af34faf08e00e812b7d0",
     "treeSha": "dee605014cb358d8982aa478e36dfebc35f33f05"
+  },
+  {
+    "nodeId": "rkg4-batch-gate",
+    "completedAt": "2026-03-01T09:04:38.691Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090436",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "453a7731b61d8b88482aeece424882b43f94daf9",
+    "treeSha": "ec119adf829cc2b94917d0615e82f8bec7bc81db"
   }
 ]
