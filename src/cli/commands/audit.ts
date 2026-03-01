@@ -2,7 +2,7 @@
 // Wraps audit-engine operations behind canonical CLI interface
 
 import type { Command } from 'commander';
-import { auditSurface } from '../../lib/audit/audit-engine.js';
+import { auditSurface } from '../../lib/audit/audit-engine.ts';
 
 export function registerAuditCommand(program: Command) {
   program

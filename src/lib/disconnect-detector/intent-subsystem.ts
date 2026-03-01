@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { DAGMismatch } from './types.js';
+import { DAGMismatch } from './types.ts';
 
 export interface IntentSubsystemInput {
   roadmapRoot: string;

@@ -2,7 +2,7 @@
 // @exports detectChainBreak, ChainDetectorResult
 // @entry roadmap
 
-import { checkIntentBinding } from '../intent-binding.js';
+import { checkIntentBinding } from '../intent-binding.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

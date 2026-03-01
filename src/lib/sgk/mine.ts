@@ -2,7 +2,7 @@
 // @exports mineRun, MineRunOpts
 // @entry roadmap
 
-import { writeMineReceipt } from './receipts/mine.js';
+import { writeMineReceipt } from './receipts/mine.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { loadKernel } from './kernel-config.js';
+import { loadKernel } from './kernel-config.ts';
 
 export interface KernelEnforcementState {
   roadmapPresent: boolean;

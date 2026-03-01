@@ -3,7 +3,7 @@
 // @types IntentEvidenceBinding
 // @entry roadmap/intent
 
-import type { EvidenceBundle } from '../evidence/schema.js';
+import type { EvidenceBundle } from '../evidence/schema.ts';
 
 /**
  * IntentEvidenceBinding: terminal intent gate requirement

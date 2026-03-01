@@ -2,7 +2,7 @@
 // @exports detectStrategyIgnorance, StrategyDetectorResult
 // @entry roadmap
 
-import { readStrategyReceipt } from '../receipts/strategy.js';
+import { readStrategyReceipt } from '../receipts/strategy.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

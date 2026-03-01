@@ -5,7 +5,7 @@
 
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
-import type { EvidenceBundle, GitDiffItem, FileReadProof, CheckResult } from './schema.js';
+import type { EvidenceBundle, GitDiffItem, FileReadProof, CheckResult } from './schema.ts';
 
 /**
  * collectEvidence: gather proof of work done

@@ -3,7 +3,7 @@
 // @types -
 // @entry roadmap
 
-import type { StrategyConfig } from './schema.js';
+import type { StrategyConfig } from './schema.ts';
 
 export const STRATEGIES: readonly StrategyConfig[] = [
   {

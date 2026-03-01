@@ -2,8 +2,8 @@
 // Consolidates all command registrations in one place
 
 import { program } from 'commander';
-import { registerAuditCommand } from './commands/audit.js';
-import { registerExpandCommand } from './commands/expand.js';
+import { registerAuditCommand } from './commands/audit.ts';
+import { registerExpandCommand } from './commands/expand.ts';
 
 export function initializeCliRegistry() {
   program

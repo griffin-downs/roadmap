@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { DAGMismatch, DAGSubsystemReport } from './types.js';
+import { DAGMismatch, DAGSubsystemReport } from './types.ts';
 
 export interface DAGSubsystemInput {
   roadmapRoot: string;

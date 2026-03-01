@@ -4,7 +4,7 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { readIntentReceipt, writeIntentReceipt } from '../receipts/intent.js';
+import { readIntentReceipt, writeIntentReceipt } from '../receipts/intent.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

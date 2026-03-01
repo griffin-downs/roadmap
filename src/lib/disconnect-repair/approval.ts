@@ -1,6 +1,6 @@
 // Approval gates for destructive repairs
 
-import { RepairOperation } from '../disconnect-detector/types.js';
+import { RepairOperation } from '../disconnect-detector/types.ts';
 
 export interface ApprovalContext {
   operation: RepairOperation;

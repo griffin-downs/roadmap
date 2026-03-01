@@ -4,9 +4,9 @@
 // @entry roadmap
 
 import { createHash } from 'node:crypto';
-import { loadKernel } from '../config/kernel-config.js';
-import { getStrategy, listStrategies } from '../strategy/registry.js';
-import { writeStrategyReceipt } from './receipts/strategy.js';
+import { loadKernel } from '../config/kernel-config.ts';
+import { getStrategy, listStrategies } from '../strategy/registry.ts';
+import { writeStrategyReceipt } from './receipts/strategy.ts';
 
 export interface AutoSelectResult {
   ok: boolean;

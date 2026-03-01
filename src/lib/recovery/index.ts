@@ -1,1 +1,1 @@
-export { CheckpointManager, AuditTrail } from './audit.js';
+export { CheckpointManager, AuditTrail } from './audit.ts';

@@ -3,8 +3,8 @@
 // @types StrategySurface, StrategyEntry
 // @entry roadmap
 
-import { listStrategies } from '../strategy/registry.js';
-import { readStrategyReceipt } from './receipts/strategy.js';
+import { listStrategies } from '../strategy/registry.ts';
+import { readStrategyReceipt } from './receipts/strategy.ts';
 
 export interface StrategyEntry {
   id: string;

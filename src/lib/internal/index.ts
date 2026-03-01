@@ -1,3 +1,3 @@
 // Internal utilities (not exposed in public API)
-export { CheckpointManager } from './recovery.js';
-export * from './validation-helpers.js';
+export { CheckpointManager } from './recovery.ts';
+export * from './validation-helpers.ts';

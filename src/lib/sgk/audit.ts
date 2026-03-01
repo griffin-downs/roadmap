@@ -2,10 +2,10 @@
 // @exports auditRun, AuditRunOpts
 // @entry roadmap
 
-import { writeAuditReceipt } from './receipts/audit.js';
-import type { AuditVerdict } from './receipts/audit.js';
-import { detectStrategyIgnorance } from './detectors/strategy.js';
-import { detectChainBreak } from './detectors/chain.js';
+import { writeAuditReceipt } from './receipts/audit.ts';
+import type { AuditVerdict } from './receipts/audit.ts';
+import { detectStrategyIgnorance } from './detectors/strategy.ts';
+import { detectChainBreak } from './detectors/chain.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

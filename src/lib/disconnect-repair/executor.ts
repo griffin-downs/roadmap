@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { RepairOperation, RepairResult } from '../disconnect-detector/types.js';
+import { RepairOperation, RepairResult } from '../disconnect-detector/types.ts';
 
 export interface ExecutionState {
   operationId: string;

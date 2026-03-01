@@ -3,7 +3,7 @@
 // @types BreakglassStatus
 // @entry roadmap
 
-import { activeBreakglass } from './breakglass.js';
+import { activeBreakglass } from './breakglass.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

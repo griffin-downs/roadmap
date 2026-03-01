@@ -3,7 +3,7 @@
 // @types DetectionResult
 // @entry roadmap/claims
 
-import type { EvidenceBundle } from '../evidence/schema.js';
+import type { EvidenceBundle } from '../evidence/schema.ts';
 
 /**
  * DetectionResult: finding from a detection rule

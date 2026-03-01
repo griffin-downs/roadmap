@@ -5,9 +5,9 @@
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import type { CmdReceipt } from './cmd-receipt.js';
-import { loadScenarios, findScenario } from './scenario-registry.js';
-import { activeBreakglass } from './breakglass.js';
+import type { CmdReceipt } from './cmd-receipt.ts';
+import { loadScenarios, findScenario } from './scenario-registry.ts';
+import { activeBreakglass } from './breakglass.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

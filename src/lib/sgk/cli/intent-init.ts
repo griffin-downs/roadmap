@@ -3,10 +3,10 @@
 // @entry roadmap
 
 import { execSync } from 'node:child_process';
-import { readStrategyReceipt } from '../receipts/strategy.js';
-import { readPlanReceipt } from '../receipts/plan.js';
-import { writeIntentReceipt } from '../receipts/intent.js';
-import type { IntentGateStatement } from '../receipts/intent.js';
+import { readStrategyReceipt } from '../receipts/strategy.ts';
+import { readPlanReceipt } from '../receipts/plan.ts';
+import { writeIntentReceipt } from '../receipts/intent.ts';
+import type { IntentGateStatement } from '../receipts/intent.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

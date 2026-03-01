@@ -3,7 +3,7 @@
 // @types -
 // @entry roadmap
 
-import type { StrategyConfig, StrategyReceipt, ActiveStrategy } from '../strategy/schema.js';
+import type { StrategyConfig, StrategyReceipt, ActiveStrategy } from '../strategy/schema.ts';
 
 export function renderCandidates(candidates: readonly StrategyConfig[]): string {
   const header = 'ID                                | Name                                | Rounds | Gate      | Risk';

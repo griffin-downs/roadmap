@@ -2,7 +2,7 @@
 // @exports writeDisplay, DisplayOpts
 // @entry roadmap
 
-import { writeDisplayReceipt } from './receipts/display.js';
+import { writeDisplayReceipt } from './receipts/display.ts';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 

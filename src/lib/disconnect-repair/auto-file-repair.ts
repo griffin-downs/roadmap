@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { RepairOperation } from '../disconnect-detector/types.js';
+import { RepairOperation } from '../disconnect-detector/types.ts';
 
 export interface FilePlacementIssue {
   file: string;

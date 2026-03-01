@@ -3,9 +3,9 @@
 // @types IterationEvidenceRecord
 // @entry roadmap/metaloop
 
-import { collectEvidence } from '../evidence/collect.js';
-import { ClaimRenderer } from '../claims/render.js';
-import type { EvidenceBundle } from '../evidence/schema.js';
+import { collectEvidence } from '../evidence/collect.ts';
+import { ClaimRenderer } from '../claims/render.ts';
+import type { EvidenceBundle } from '../evidence/schema.ts';
 
 /**
  * IterationEvidenceRecord: evidence collected during a single metaloop iteration

@@ -3,5 +3,5 @@
 // @types ToolCall, RetryEvent, BypassFlag, EnvVarUsage, ContaminationEvent, OrphanedAttempt, TranscriptSession, IterationEvidenceRecord
 // @entry roadmap/metaloop
 
-export * from './transcript-schema.js';
-export * from './evidence-integration.js';
+export * from './transcript-schema.ts';
+export * from './evidence-integration.ts';

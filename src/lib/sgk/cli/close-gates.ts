@@ -2,9 +2,9 @@
 // @exports CloseGateResult, checkCloseGates
 // @entry roadmap
 
-import { readIntentReceipt } from '../receipts/intent.js';
-import { readMineReceipt } from '../receipts/mine.js';
-import { readAuditReceipt } from '../receipts/audit.js';
+import { readIntentReceipt } from '../receipts/intent.ts';
+import { readMineReceipt } from '../receipts/mine.ts';
+import { readAuditReceipt } from '../receipts/audit.ts';
 
 export interface CloseGateResult {
   ok: boolean;

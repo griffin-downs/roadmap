@@ -5,7 +5,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
-import { readStrategyReceipt } from '../receipts/strategy.js';
+import { readStrategyReceipt } from '../receipts/strategy.ts';
 
 export interface NodeBinding {
   runId: string;

@@ -2,9 +2,9 @@
 // @exports DispatchGateResult, checkDispatchGates
 // @entry roadmap
 
-import { readStrategyReceipt } from '../receipts/strategy.js';
-import { readPlanReceipt } from '../receipts/plan.js';
-import { readIntentReceipt } from '../receipts/intent.js';
+import { readStrategyReceipt } from '../receipts/strategy.ts';
+import { readPlanReceipt } from '../receipts/plan.ts';
+import { readIntentReceipt } from '../receipts/intent.ts';
 
 export interface DispatchGateResult {
   ok: boolean;

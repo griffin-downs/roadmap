@@ -3,14 +3,14 @@
 // @types RenderResult
 // @entry roadmap/claims
 
-import type { EvidenceBundle, EvidenceEntry } from '../evidence/schema.js';
-import { hasAnyChanges, hasAnyReads, hasAnyChecks, allChecksPass } from '../evidence/schema.js';
+import type { EvidenceBundle, EvidenceEntry } from '../evidence/schema.ts';
+import { hasAnyChanges, hasAnyReads, hasAnyChecks, allChecksPass } from '../evidence/schema.ts';
 import {
   detectStubOnlyChangeset,
   detectInsufficientReadProofs,
   detectNoFakePerf,
   type DetectionResult,
-} from './detectors.js';
+} from './detectors.ts';
 
 /**
  * RenderResult: outcome of claim rendering with evidence backing
