@@ -4482,5 +4482,35 @@
     ],
     "gitSha": "62224d6ff7035ede3e8a1faf7df103458c212b8c",
     "treeSha": "85b70b78aafcf36480d16e532d5fcef479a71b89"
+  },
+  {
+    "nodeId": "cli-output-plan",
+    "completedAt": "2026-03-01T08:55:08.834Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301085508",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .specify/pre-spec/cli-output.md"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .specify/specs/cli-output/spec.md"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .specify/specs/cli-output/tasks.md"
+      },
+      {
+        "rule": "expanded",
+        "passed": true,
+        "evidence": "expanded into 4 node(s): co-audit-console-log, co-render-models, co-stdout-tests, co-integration-jq"
+      }
+    ],
+    "gitSha": "0213e609918e7cec401c31b8c3ca7ecfce8ee44a",
+    "treeSha": "868d34c323e13925885253126431b0dc87e7509e"
   }
 ]
