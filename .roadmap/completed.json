@@ -4452,5 +4452,35 @@
     ],
     "gitSha": "7f14f0804605150e1b4b709b113f9a5cfcd62db2",
     "treeSha": "af48b1181249c5e56febeb9d7a85ba65b7bd44c5"
+  },
+  {
+    "nodeId": "dag-candidate-flow",
+    "completedAt": "2026-03-01T08:54:44.213Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301085444",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .specify/pre-spec/dag-candidate.md"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .specify/specs/dag-candidate/spec.md"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .specify/specs/dag-candidate/tasks.md"
+      },
+      {
+        "rule": "expanded",
+        "passed": true,
+        "evidence": "expanded into 7 node(s): dc-candidate-writer, dc-import-candidate, dc-expand-candidate, dc-diff, dc-accept, dc-reject, dc-tests"
+      }
+    ],
+    "gitSha": "62224d6ff7035ede3e8a1faf7df103458c212b8c",
+    "treeSha": "85b70b78aafcf36480d16e532d5fcef479a71b89"
   }
 ]

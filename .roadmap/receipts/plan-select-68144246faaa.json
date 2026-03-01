@@ -1,0 +1,8 @@
+{
+  "type": "plan-select",
+  "headSha": "12d48e92d27a2429e187d3d3457391910277cfad2f96939ed4853beb919eb6a0",
+  "candidateId": "rkg-governess",
+  "selectedAt": "2026-03-01T08:53:35.931Z",
+  "selector": "griffin",
+  "note": "re-select after sgk import changed head"
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "git_sha": "62224d6ff7035ede3e8a1faf7df103458c212b8c",
+  "timestamp": "2026-03-01T09:53:21+01:00",
+  "spec_inputs": [
+    {
+      "path": ".specify/specs/receipt-first/tasks.md",
+      "sha256": "e1386b049c473e635171ec8fb7d4f8cfbe304c7cef923e7237f815c42f062c3c"
+    }
+  ],
+  "spec_kit_version": null,
+  "dag_id": "receipt-first",
+  "dag_hash": "12d48e92d27a2429e187d3d3457391910277cfad2f96939ed4853beb919eb6a0",
+  "nodes": 7,
+  "validation": {
+    "define_passed": true,
+    "verify_warnings": 1,
+    "check_orphans": 0
+  },
+  "warnings": [
+    "verify: 1 contract warning(s): \"rf-cmd-receipt\" consumes \"src/lib/cli-envelope.ts\" — no predecessor produces it",
+    "terminal-intent: Terminal node 'rf-tests' requires at least one intent rule with expandOnFail: true",
+    "init-intent: Init boundary node 'rf-breakglass' requires an intent rule with expandOnFail: true and mention of plan/clarity/unambiguous",
+    "audit-tail: AUDIT_TERMINAL_MISSING (skipped)"
+  ]
+}
