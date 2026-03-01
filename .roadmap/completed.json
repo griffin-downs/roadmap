@@ -685,9 +685,9 @@
   },
   {
     "nodeId": "sk-directory-schema",
-    "completedAt": "2026-03-01T17:19:20.877Z",
+    "completedAt": "2026-03-01T17:20:18.125Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301171920",
+    "checkpointId": "cp-20260301172018",
     "validationChecks": [
       {
         "rule": "artifact-exists",
@@ -708,7 +708,22 @@
         "artifactPaths": []
       }
     ],
-    "gitSha": "c937a4abefcef943b9864111fab688ddaa3fe112",
-    "treeSha": "208e22de83df25264b585b47cc43f52bbbdbffbd"
+    "gitSha": "75b5e77f77095f481d50125a4774b08816ce35d5",
+    "treeSha": "8401c18336e2774953173498f6b61ca60cf00777"
+  },
+  {
+    "nodeId": "sk-validation-rules",
+    "completedAt": "2026-03-01T17:22:42.944Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301172242",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "75b5e77f77095f481d50125a4774b08816ce35d5",
+    "treeSha": "8401c18336e2774953173498f6b61ca60cf00777"
   }
 ]
