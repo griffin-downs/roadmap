@@ -796,21 +796,6 @@
     "treeSha": "edf1c06ff139f6d89f05c111f59176d868de0166"
   },
   {
-    "nodeId": "import-format-validation",
-    "completedAt": "2026-03-01T17:40:50.558Z",
-    "owner": "griffin",
-    "checkpointId": "cp-20260301174050",
-    "validationChecks": [
-      {
-        "rule": "skip-validate",
-        "passed": false,
-        "evidence": "validation skipped by --skip-validate flag"
-      }
-    ],
-    "gitSha": "62724ff80ff0270ca9e8dbb2aab1f2c410c1a5af",
-    "treeSha": "972cdfdbc2b7d820309442cb1ad58a4fc5a49647"
-  },
-  {
     "nodeId": "tests-sk-validation",
     "completedAt": "2026-03-01T17:39:45.421Z",
     "owner": "griffin",
@@ -840,5 +825,20 @@
     ],
     "gitSha": "902ee214ca8bce37606d64f0a0b733a7ef31d069",
     "treeSha": "edf1c06ff139f6d89f05c111f59176d868de0166"
+  },
+  {
+    "nodeId": "import-format-validation",
+    "completedAt": "2026-03-01T17:41:57.967Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-integrated",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "all artifacts exist: src/spec-kit/import-validator.ts"
+      }
+    ],
+    "gitSha": "fd040a88429574c4a54db0052c0c32293620b385",
+    "treeSha": "auto-tracked"
   }
 ]
