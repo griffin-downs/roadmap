@@ -2546,6 +2546,14 @@ async function cmdComplete(note: string) {
     process.exit(1);
   }
 
+  // Strategy gate: block complete when latched without active strategy
+  const { checkStrategyGate } = await import('../src/lib/strategy/exec-gate.ts');
+  const stratGate = checkStrategyGate(repoRoot);
+  if (stratGate.blocked) {
+    process.stderr.write(JSON.stringify({ error: 'Strategy required', code: stratGate.code, fix: stratGate.fix }) + '\n');
+    process.exit(4);
+  }
+
   if (!args.includes('--skip-plan-gate')) {
     const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
     const gate = requirePlanGate(repoRoot);
@@ -3689,6 +3697,13 @@ function cmdClaim() {
 
 // --- dispatch: plan, apply, status for cluster-based work distribution ---
 function cmdDispatch(note: string) {
+  // Strategy gate: block dispatch when latched without active strategy
+  const { checkStrategyGate } = require('../src/lib/strategy/exec-gate.ts');
+  const gate = checkStrategyGate(repoRoot);
+  if (gate.blocked) {
+    process.stderr.write(JSON.stringify({ error: 'Strategy required', code: gate.code, fix: gate.fix }) + '\n');
+    process.exit(4);
+  }
   const sub = args[1];
   switch (sub) {
     case 'plan': {
@@ -5235,6 +5250,31 @@ function cmdMf(note: string) {
       }
 
       recordTrail({ ts: new Date().toISOString(), cmd: 'mf.opt', note, repo: basename(repoRoot), position: ['mf-opt-dag-generator'], level: 5 });
+      break;
+    }
+    case 'audit': {
+      const aRunIdx = args.indexOf('--run');
+      const aRunId = aRunIdx !== -1 ? args[aRunIdx + 1] ?? 'audit-run' : 'audit-run';
+      const aRequired = args.includes('--required');
+      const { cmdMfAudit } = require('../src/lib/metaflow/audit/cli.ts');
+      const auditResult = cmdMfAudit(aRunId, { required: aRequired, base: repoRoot });
+      process.stderr.write(auditResult.render + '\n');
+      json(auditResult.data);
+      recordTrail({ ts: new Date().toISOString(), cmd: 'mf.audit', note, repo: basename(repoRoot), position: ['mf-audit'], level: 5 });
+      break;
+    }
+    case 'audit-tail': {
+      const atSub = args[2];
+      if (atSub !== 'emit') {
+        json({ error: 'Usage: roadmap mf audit-tail emit --note "..."' });
+        process.exit(1);
+      }
+      const dagId = loadDAG?.()?.id ?? 'unknown';
+      const { cmdAuditTailEmit } = require('../src/lib/metaflow/audit/cli.ts');
+      const tailResult = cmdAuditTailEmit(dagId, repoRoot);
+      process.stderr.write(tailResult.render + '\n');
+      json(tailResult.data);
+      recordTrail({ ts: new Date().toISOString(), cmd: 'mf.audit-tail', note, repo: basename(repoRoot), position: ['mf-audit-tail'], level: 5 });
       break;
     }
     default:
