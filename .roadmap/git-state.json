@@ -1,5 +1,5 @@
 {
-  "lastCommit": "8d241280ce7b585556aedf485cd47ed0cb08adb6",
-  "timestamp": "2026-03-01T17:19:45Z",
-  "message": "roadmap: batch-fix artifact-exists rules — paths → target schema alignment (13 nodes)"
+  "lastCommit": "8c0d9ddbdd22f8ca0fb4fc6d0d1439ff798d7d72",
+  "timestamp": "2026-03-01T17:20:00Z",
+  "message": "roadmap: stage any pending changes before batch advance"
 }
