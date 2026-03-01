@@ -4664,5 +4664,28 @@
     ],
     "gitSha": "1d7433b305349be8f735cd1af17e042e65cda546",
     "treeSha": "0d2c9fac16c81d414b1753a1f7e0dc27c8ff2ddf"
+  },
+  {
+    "nodeId": "rkg6-rate-card",
+    "completedAt": "2026-03-01T09:04:32.631Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090431",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "faff78827d479a43ece9af34faf08e00e812b7d0",
+    "treeSha": "dee605014cb358d8982aa478e36dfebc35f33f05"
   }
 ]
