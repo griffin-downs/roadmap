@@ -532,5 +532,14 @@
     "validationChecks": [],
     "gitSha": "6f25707ded027a881a12c28b016c645073612dc7",
     "treeSha": "f1e02d16ec9b64b48e877a0eb7869b5b2ef16222"
+  },
+  {
+    "nodeId": "detector-metric-constraints",
+    "completedAt": "2026-03-01T16:23:33.094Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301162333",
+    "validationChecks": [],
+    "gitSha": "37a96446ea0601b7b189ae1ca174b977b7630c38",
+    "treeSha": "7b0b6f8437a80398aa5fce92dd517be12481ae8f"
   }
 ]
