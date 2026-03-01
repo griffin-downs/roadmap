@@ -1,0 +1,496 @@
+{
+  "current": {
+    "wallClock": 25456,
+    "testCount": 2189,
+    "passCount": 2180,
+    "failCount": 0,
+    "slowest": [
+      {
+        "file": "tests/cli-cross-project.test.ts",
+        "name": "CLI Cross-Repo Commands Trail Recording records commands in trail",
+        "duration": 6746.796532
+      },
+      {
+        "file": "tests/rkg-integration.test.ts",
+        "name": "rkg-all integration tsc --noEmit is clean",
+        "duration": 3235.3539250000013
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill commit supports session squash",
+        "duration": 2973.465128
+      },
+      {
+        "file": "tests/ui-snapshot.test.ts",
+        "name": "ui-snapshot: determinism orient render.body is deterministic across two runs",
+        "duration": 2927.7973250000014
+      },
+      {
+        "file": "tests/cli-cross-project.test.ts",
+        "name": "CLI Cross-Repo Commands Error Handling handles missing DAG and missing skill gracefully",
+        "duration": 2862.2408020000003
+      },
+      {
+        "file": "tests/cli-cross-project.test.ts",
+        "name": "CLI Cross-Repo Commands sync [--format] returns JSON with roadmaps, count, timestamp",
+        "duration": 2486.4921199999994
+      },
+      {
+        "file": "tests/cli-cross-project.test.ts",
+        "name": "CLI Cross-Repo Commands locate --all returns roadmaps array with timestamp",
+        "duration": 2421.2838899999997
+      },
+      {
+        "file": "tests/cli-cross-project.test.ts",
+        "name": "CLI Cross-Repo Commands sync [--format] accepts --format tree",
+        "duration": 2351.5781749999996
+      },
+      {
+        "file": "tests/cli-cross-project.test.ts",
+        "name": "CLI Cross-Repo Commands parallel --cross-repo includes siblings",
+        "duration": 2261.1264109999993
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill list lists files in repo",
+        "duration": 2240.9081509999996
+      },
+      {
+        "file": "tests/cli-cross-project.test.ts",
+        "name": "CLI Cross-Repo Commands parallel --cross-repo --graph combines both",
+        "duration": 2203.380384
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill read reads file from specific ref",
+        "duration": 2200.817243
+      },
+      {
+        "file": "tests/cli-cross-project.test.ts",
+        "name": "CLI Cross-Repo Commands sync [--format] accepts --format json explicitly",
+        "duration": 2184.1387999999997
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill log gets commit history for file",
+        "duration": 2027.544507999999
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill commit commits files atomically",
+        "duration": 2020.7261360000011
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill exists returns true for existing file",
+        "duration": 1941.804725
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill write supports from-file input",
+        "duration": 1878.3635720000002
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill read reads file from repo HEAD",
+        "duration": 1871.2920020000001
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill exists returns false for missing file",
+        "duration": 1856.5510410000006
+      },
+      {
+        "file": "tests/git-ops.test.ts",
+        "name": "git-ops skill write writes file to working tree",
+        "duration": 1854.4091749999998
+      }
+    ],
+    "hotspots": [
+      {
+        "module": "tests/cli-cross-project.test.ts",
+        "totalDuration": 25073.960879,
+        "testCount": 12
+      },
+      {
+        "module": "tests/git-ops.test.ts",
+        "totalDuration": 23105.461984,
+        "testCount": 12
+      },
+      {
+        "module": "tests/show.test.ts",
+        "totalDuration": 10571.259393999999,
+        "testCount": 7
+      },
+      {
+        "module": "tests/roadmap-locate.test.ts",
+        "totalDuration": 10362.212659,
+        "testCount": 9
+      },
+      {
+        "module": "tests/plan-gate.test.ts",
+        "totalDuration": 7833.093078,
+        "testCount": 6
+      },
+      {
+        "module": "tests/spec-origin-gate.test.ts",
+        "totalDuration": 7564.892955999997,
+        "testCount": 6
+      },
+      {
+        "module": "tests/ui-snapshot.test.ts",
+        "totalDuration": 7122.734266000002,
+        "testCount": 14
+      },
+      {
+        "module": "tests/plan-exec-gate.test.ts",
+        "totalDuration": 6785.996862999997,
+        "testCount": 7
+      },
+      {
+        "module": "tests/certify-cmd.test.ts",
+        "totalDuration": 5870.646797,
+        "testCount": 5
+      },
+      {
+        "module": "tests/commit-cmd.test.ts",
+        "totalDuration": 5870.537495,
+        "testCount": 4
+      },
+      {
+        "module": "tests/plan-status.test.ts",
+        "totalDuration": 5645.664947999999,
+        "testCount": 4
+      },
+      {
+        "module": "tests/dag-diff.test.ts",
+        "totalDuration": 5354.133484,
+        "testCount": 4
+      },
+      {
+        "module": "tests/cli-contract.test.ts",
+        "totalDuration": 4819.575159000002,
+        "testCount": 16
+      },
+      {
+        "module": "tests/checkpoint-cmd.test.ts",
+        "totalDuration": 4627.402261999998,
+        "testCount": 3
+      },
+      {
+        "module": "tests/completion-gitsha.test.ts",
+        "totalDuration": 3637.645854999999,
+        "testCount": 6
+      },
+      {
+        "module": "tests/state-introspection.test.ts",
+        "totalDuration": 3334.6296270000003,
+        "testCount": 10
+      },
+      {
+        "module": "tests/rkg-integration.test.ts",
+        "totalDuration": 3235.783869000001,
+        "testCount": 4
+      },
+      {
+        "module": "tests/consumer-integration.test.ts",
+        "totalDuration": 2521.2925479999976,
+        "testCount": 7
+      },
+      {
+        "module": "tests/test-enforcement.test.ts",
+        "totalDuration": 2117.6220969999977,
+        "testCount": 13
+      },
+      {
+        "module": "tests/orient-json.test.ts",
+        "totalDuration": 1812.133926000004,
+        "testCount": 15
+      }
+    ],
+    "env": {
+      "node": "25.2.1",
+      "os": "linux-x64",
+      "ci": false,
+      "cpuModel": "Intel(R) Core(TM) Ultra 7 258V",
+      "timestamp": "2026-03-01T11:01:57.283Z"
+    }
+  },
+  "baseline": {
+    "receipt": {
+      "wallClock": 15000,
+      "testCount": 2189,
+      "passCount": 2180,
+      "failCount": 0,
+      "slowest": [
+        {
+          "file": "tests/cli-cross-project.test.ts",
+          "name": "CLI Cross-Repo Commands Trail Recording records commands in trail",
+          "duration": 6746.796532
+        },
+        {
+          "file": "tests/rkg-integration.test.ts",
+          "name": "rkg-all integration tsc --noEmit is clean",
+          "duration": 3235.3539250000013
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill commit supports session squash",
+          "duration": 2973.465128
+        },
+        {
+          "file": "tests/ui-snapshot.test.ts",
+          "name": "ui-snapshot: determinism orient render.body is deterministic across two runs",
+          "duration": 2927.7973250000014
+        },
+        {
+          "file": "tests/cli-cross-project.test.ts",
+          "name": "CLI Cross-Repo Commands Error Handling handles missing DAG and missing skill gracefully",
+          "duration": 2862.2408020000003
+        },
+        {
+          "file": "tests/cli-cross-project.test.ts",
+          "name": "CLI Cross-Repo Commands sync [--format] returns JSON with roadmaps, count, timestamp",
+          "duration": 2486.4921199999994
+        },
+        {
+          "file": "tests/cli-cross-project.test.ts",
+          "name": "CLI Cross-Repo Commands locate --all returns roadmaps array with timestamp",
+          "duration": 2421.2838899999997
+        },
+        {
+          "file": "tests/cli-cross-project.test.ts",
+          "name": "CLI Cross-Repo Commands sync [--format] accepts --format tree",
+          "duration": 2351.5781749999996
+        },
+        {
+          "file": "tests/cli-cross-project.test.ts",
+          "name": "CLI Cross-Repo Commands parallel --cross-repo includes siblings",
+          "duration": 2261.1264109999993
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill list lists files in repo",
+          "duration": 2240.9081509999996
+        },
+        {
+          "file": "tests/cli-cross-project.test.ts",
+          "name": "CLI Cross-Repo Commands parallel --cross-repo --graph combines both",
+          "duration": 2203.380384
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill read reads file from specific ref",
+          "duration": 2200.817243
+        },
+        {
+          "file": "tests/cli-cross-project.test.ts",
+          "name": "CLI Cross-Repo Commands sync [--format] accepts --format json explicitly",
+          "duration": 2184.1387999999997
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill log gets commit history for file",
+          "duration": 2027.544507999999
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill commit commits files atomically",
+          "duration": 2020.7261360000011
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill exists returns true for existing file",
+          "duration": 1941.804725
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill write supports from-file input",
+          "duration": 1878.3635720000002
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill read reads file from repo HEAD",
+          "duration": 1871.2920020000001
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill exists returns false for missing file",
+          "duration": 1856.5510410000006
+        },
+        {
+          "file": "tests/git-ops.test.ts",
+          "name": "git-ops skill write writes file to working tree",
+          "duration": 1854.4091749999998
+        }
+      ],
+      "hotspots": [
+        {
+          "module": "tests/cli-cross-project.test.ts",
+          "totalDuration": 25073.960879,
+          "testCount": 12
+        },
+        {
+          "module": "tests/git-ops.test.ts",
+          "totalDuration": 23105.461984,
+          "testCount": 12
+        },
+        {
+          "module": "tests/show.test.ts",
+          "totalDuration": 10571.259393999999,
+          "testCount": 7
+        },
+        {
+          "module": "tests/roadmap-locate.test.ts",
+          "totalDuration": 10362.212659,
+          "testCount": 9
+        },
+        {
+          "module": "tests/plan-gate.test.ts",
+          "totalDuration": 7833.093078,
+          "testCount": 6
+        },
+        {
+          "module": "tests/spec-origin-gate.test.ts",
+          "totalDuration": 7564.892955999997,
+          "testCount": 6
+        },
+        {
+          "module": "tests/ui-snapshot.test.ts",
+          "totalDuration": 7122.734266000002,
+          "testCount": 14
+        },
+        {
+          "module": "tests/plan-exec-gate.test.ts",
+          "totalDuration": 6785.996862999997,
+          "testCount": 7
+        },
+        {
+          "module": "tests/certify-cmd.test.ts",
+          "totalDuration": 5870.646797,
+          "testCount": 5
+        },
+        {
+          "module": "tests/commit-cmd.test.ts",
+          "totalDuration": 5870.537495,
+          "testCount": 4
+        },
+        {
+          "module": "tests/plan-status.test.ts",
+          "totalDuration": 5645.664947999999,
+          "testCount": 4
+        },
+        {
+          "module": "tests/dag-diff.test.ts",
+          "totalDuration": 5354.133484,
+          "testCount": 4
+        },
+        {
+          "module": "tests/cli-contract.test.ts",
+          "totalDuration": 4819.575159000002,
+          "testCount": 16
+        },
+        {
+          "module": "tests/checkpoint-cmd.test.ts",
+          "totalDuration": 4627.402261999998,
+          "testCount": 3
+        },
+        {
+          "module": "tests/completion-gitsha.test.ts",
+          "totalDuration": 3637.645854999999,
+          "testCount": 6
+        },
+        {
+          "module": "tests/state-introspection.test.ts",
+          "totalDuration": 3334.6296270000003,
+          "testCount": 10
+        },
+        {
+          "module": "tests/rkg-integration.test.ts",
+          "totalDuration": 3235.783869000001,
+          "testCount": 4
+        },
+        {
+          "module": "tests/consumer-integration.test.ts",
+          "totalDuration": 2521.2925479999976,
+          "testCount": 7
+        },
+        {
+          "module": "tests/test-enforcement.test.ts",
+          "totalDuration": 2117.6220969999977,
+          "testCount": 13
+        },
+        {
+          "module": "tests/orient-json.test.ts",
+          "totalDuration": 1812.133926000004,
+          "testCount": 15
+        }
+      ],
+      "env": {
+        "node": "25.2.1",
+        "os": "linux-x64",
+        "ci": false,
+        "cpuModel": "Intel(R) Core(TM) Ultra 7 258V",
+        "timestamp": "2026-03-01T11:01:57.283Z"
+      }
+    },
+    "label": "budget-target",
+    "commitSha": "budget-baseline"
+  },
+  "deltaWallClock": 10456,
+  "deltaPercent": 69.71,
+  "threshold": 15000,
+  "exceeded": true,
+  "slowestFiles": [
+    {
+      "file": "tests/cli-cross-project.test.ts",
+      "name": "CLI Cross-Repo Commands Trail Recording records commands in trail",
+      "duration": 6746.796532
+    },
+    {
+      "file": "tests/rkg-integration.test.ts",
+      "name": "rkg-all integration tsc --noEmit is clean",
+      "duration": 3235.3539250000013
+    },
+    {
+      "file": "tests/git-ops.test.ts",
+      "name": "git-ops skill commit supports session squash",
+      "duration": 2973.465128
+    },
+    {
+      "file": "tests/ui-snapshot.test.ts",
+      "name": "ui-snapshot: determinism orient render.body is deterministic across two runs",
+      "duration": 2927.7973250000014
+    },
+    {
+      "file": "tests/cli-cross-project.test.ts",
+      "name": "CLI Cross-Repo Commands Error Handling handles missing DAG and missing skill gracefully",
+      "duration": 2862.2408020000003
+    },
+    {
+      "file": "tests/cli-cross-project.test.ts",
+      "name": "CLI Cross-Repo Commands sync [--format] returns JSON with roadmaps, count, timestamp",
+      "duration": 2486.4921199999994
+    },
+    {
+      "file": "tests/cli-cross-project.test.ts",
+      "name": "CLI Cross-Repo Commands locate --all returns roadmaps array with timestamp",
+      "duration": 2421.2838899999997
+    },
+    {
+      "file": "tests/cli-cross-project.test.ts",
+      "name": "CLI Cross-Repo Commands sync [--format] accepts --format tree",
+      "duration": 2351.5781749999996
+    },
+    {
+      "file": "tests/cli-cross-project.test.ts",
+      "name": "CLI Cross-Repo Commands parallel --cross-repo includes siblings",
+      "duration": 2261.1264109999993
+    },
+    {
+      "file": "tests/git-ops.test.ts",
+      "name": "git-ops skill list lists files in repo",
+      "duration": 2240.9081509999996
+    }
+  ]
+}

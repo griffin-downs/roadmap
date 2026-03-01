@@ -1,46 +1,13 @@
 {
-  "type": "perf-budget-gate",
-  "timestamp": "2026-03-01T11:02:13.525Z",
-  "budget": {
-    "metric": "p50-per-test",
-    "threshold_ms": 15000,
-    "wallClock_ms": 25456,
-    "testCount": 2189,
-    "p50_estimate_ms": 11.63,
-    "passed": true
-  },
-  "summary": {
-    "totalTests": 2189,
-    "passedTests": 2180,
-    "failedTests": 0,
-    "wallClock_ms": 25456
-  },
-  "hotspots": [
-    {
-      "file": "tests/cli-cross-project.test.ts",
-      "name": "CLI Cross-Repo Commands Trail Recording records commands in trail",
-      "duration_ms": 6747
-    },
-    {
-      "file": "tests/rkg-integration.test.ts",
-      "name": "rkg-all integration tsc --noEmit is clean",
-      "duration_ms": 3235
-    },
-    {
-      "file": "tests/git-ops.test.ts",
-      "name": "git-ops skill commit supports session squash",
-      "duration_ms": 2973
-    },
-    {
-      "file": "tests/ui-snapshot.test.ts",
-      "name": "ui-snapshot: determinism orient render.body is deterministic across two runs",
-      "duration_ms": 2928
-    },
-    {
-      "file": "tests/cli-cross-project.test.ts",
-      "name": "CLI Cross-Repo Commands Error Handling handles missing DAG and missing skill gracefully",
-      "duration_ms": 2862
-    }
-  ],
-  "regression": null
+  "version": 1,
+  "timestamp": "2026-03-01T11:02:22.883Z",
+  "check": "perf-budget-gate",
+  "budget_ms": 15000,
+  "actual_ms": 25456,
+  "exceeded": true,
+  "testCount": 2189,
+  "passCount": 2180,
+  "failCount": 0,
+  "ok": false,
+  "summary": "Budget exceeded: 25456ms > 15000ms"
 }
