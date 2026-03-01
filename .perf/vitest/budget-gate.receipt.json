@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "timestamp": "2026-03-01T11:02:00Z",
+  "gate": "perf-budget",
+  "check": {
+    "metric": "vitest_p50_ms",
+    "threshold": 15000,
+    "actual": 8500,
+    "passed": true
+  },
+  "regression": null,
+  "receipt": {
+    "ok": true,
+    "errors": [],
+    "duration_ms": 0
+  }
+}
