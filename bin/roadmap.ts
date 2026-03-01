@@ -105,6 +105,7 @@ function deriveEnvelopeCmd(): string {
     if (args[1] === 'init') return 'mf.init';
     if (args[1] === 'dispatch') return 'mf.dispatch';
     if (args[1] === 'retire-team') return 'mf.retire-team';
+    if (args[1] === 'wrap') return 'mf.wrap';
     return 'mf';
   }
   return cmd;
@@ -4975,6 +4976,45 @@ function cmdMf(note: string) {
       const answer = recordAnswer(nRunId, nQid, nValue, repoRoot);
       json({ cmd: 'mf.answer', runId: nRunId, questionId: nQid, value: nValue, answer });
       recordTrail({ ts: new Date().toISOString(), cmd: 'mf.answer', note, repo: basename(repoRoot), position: ['mf-guided-ask-answer'], level: 3 });
+      break;
+    }
+    case 'wrap': {
+      const wRunIdx = args.indexOf('--run');
+      if (wRunIdx === -1 || !args[wRunIdx + 1]) {
+        json({ error: 'Missing --run <runId>', fix: 'roadmap mf wrap --run <runId> --cmd "..." --step <stepId> --note "..."' });
+        process.exit(1);
+      }
+      const wRunId = args[wRunIdx + 1] as RunId;
+      const wCmdIdx = args.indexOf('--cmd');
+      if (wCmdIdx === -1 || !args[wCmdIdx + 1]) {
+        json({ error: 'Missing --cmd "..."', fix: 'roadmap mf wrap --run <runId> --cmd "..." --note "..."' });
+        process.exit(1);
+      }
+      const wCmd = args[wCmdIdx + 1];
+      const wStepIdx = args.indexOf('--step');
+      const wStepId = (wStepIdx !== -1 ? args[wStepIdx + 1] : `wrap-${Date.now()}`) as import('../src/lib/metaflow/types.ts').StepId;
+
+      let wHeadSha = '';
+      try {
+        wHeadSha = execSync('git rev-parse HEAD', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+      } catch {
+        wHeadSha = '000000000000';
+      }
+
+      try {
+        const wResult = wrapSubcommand({ runId: wRunId, stepId: wStepId, cmd: wCmd, base: repoRoot, headSha: wHeadSha });
+        if (wResult.stdout) process.stdout.write(wResult.stdout);
+        if (wResult.stderr) process.stderr.write(wResult.stderr);
+        json({ cmd: 'mf.wrap', runId: wRunId, stepId: wStepId, exitCode: wResult.exitCode, receiptCommitted: wResult.receiptCommitted });
+        recordTrail({ ts: new Date().toISOString(), cmd: 'mf.wrap', note, repo: basename(repoRoot), position: ['mf-wrap-subcommand'], level: 3 });
+        if (wResult.exitCode !== 0) process.exit(wResult.exitCode);
+      } catch (e: any) {
+        if (e.code === 'SESSION_BINDING_MISSING' || e.code === 'INTERACTION_RECEIPT_MISSING') {
+          process.stderr.write(JSON.stringify({ schema_version: 1, ok: false, error: { code: e.code, message: e.message } }) + '\n');
+          process.exit(3);
+        }
+        throw e;
+      }
       break;
     }
     default:
