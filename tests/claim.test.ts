@@ -4,8 +4,8 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims,
-} from '../src/lib/claims.ts';
-import type { NodeClaim, ClaimStore } from '../src/lib/claims.ts';
+} from '../src/lib/claims/claims.ts';
+import type { NodeClaim, ClaimStore } from '../src/lib/claims/claims.ts';
 
 // Shared test root — isolated tmp dir per test
 let testRoot: string;

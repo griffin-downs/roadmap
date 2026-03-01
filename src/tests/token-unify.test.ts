@@ -5,14 +5,14 @@ import { tmpdir } from 'node:os';
 import {
   writeToken, readToken, listTokens, isTokenExpired, tokenId, TOKEN_DIR,
   type BoundToken,
-} from '../lib/token-store.ts';
+} from '../lib/utils/tokens/token-store.ts';
 import {
   loadClaims, saveClaims, isExpired, activeClaims,
   type ClaimStore, type NodeClaim,
-} from '../lib/claims.ts';
+} from '../lib/claims/claims.ts';
 import { selectStrategy } from '../lib/strategy/select.ts';
 import { getActiveStrategy } from '../lib/strategy/active.ts';
-import { readIndex, gcTokens, appendToIndex } from '../lib/token-index.ts';
+import { readIndex, gcTokens, appendToIndex } from '../lib/utils/tokens/token-index.ts';
 
 /**
  * writeToken's index entry omits expiresAt. For gc tests, write token file

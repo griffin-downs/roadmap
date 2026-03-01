@@ -10,7 +10,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { loadClaims } from './claims.ts';
+import { loadClaims } from './claims/claims.ts';
 
 export interface NodeMetrics {
   nodeId: string;

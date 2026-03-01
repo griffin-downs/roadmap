@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import { roadmapCli } from './cli-helper.ts';
 import {
   loadClaims, saveClaims, isExpired, assignBatch,
-} from '../src/lib/claims.ts';
-import type { NodeClaim, ClaimStore, ConflictPair } from '../src/lib/claims.ts';
+} from '../src/lib/claims/claims.ts';
+import type { NodeClaim, ClaimStore, ConflictPair } from '../src/lib/claims/claims.ts';
 
 let testRoot: string;
 

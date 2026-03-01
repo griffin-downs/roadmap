@@ -9,7 +9,7 @@ import { execSync } from 'node:child_process';
 import {
   type BoundToken, type TokenType,
   writeToken, listTokens, isTokenExpired, tokenId, TOKEN_DIR,
-} from './token-store.ts';
+} from '../utils/tokens/token-store.ts';
 
 export interface NodeClaim {
   owner: string;
