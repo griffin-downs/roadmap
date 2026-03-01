@@ -465,18 +465,36 @@
   },
   {
     "nodeId": "intent-metaflow-audit-complete",
-    "completedAt": "2026-03-01T21:12:49.276Z",
+    "completedAt": "2026-03-01T23:55:10.187Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301211249",
+    "checkpointId": "cp-20260301235508",
     "validationChecks": [
       {
-        "rule": "skip-validate",
-        "passed": false,
-        "evidence": "validation skipped by --skip-validate flag"
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/intent-metaflow-audit-complete.json"
+      },
+      {
+        "rule": "spec-conformance",
+        "passed": true,
+        "evidence": "spec conformance: stories [] found in .specify/specs/metaflows-p1/spec.md"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): test -f package.json && npm run test 2>&1 | grep -q 'test'"
       }
     ],
-    "gitSha": "a08ada082aea2c4105626e9b3a58b306f680effd",
-    "treeSha": "bad7867e66406a38b7fef8f5d43992e42566f34a"
+    "validatorResults": [
+      {
+        "id": "shell:test -f package.json && npm run test 2>&1 | grep -q 'test'",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "e29be83006d7a5f58a49d56ea3caf3e2140e8530",
+    "treeSha": "c1627f9cb6f90379acc87ed7e5257c513d4d2a7f"
   },
   {
     "nodeId": "bootstrap",
