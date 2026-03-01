@@ -1,0 +1,25 @@
+{
+  "receipt": "intent-evidence-kernel-active",
+  "timestamp": "2026-03-01T14:35:00Z",
+  "status": "active",
+  "kernel": "evidence-required",
+  "enforcement": "any-claim-without-evidence-blocked",
+  "components": [
+    "src/lib/evidence/schema.ts (EvidenceBundle contract)",
+    "src/lib/evidence/collect.ts (collectEvidence function)",
+    "src/lib/claims/render.ts (ClaimRenderer + detectors)",
+    "src/lib/intent/evidence-context.ts (IntentEvidenceBinding)",
+    "src/lib/metaloop/evidence-integration.ts (metaloop wiring)",
+    "src/lib/validation/invariants/metaloop-evidence.ts (kernel invariant)"
+  ],
+  "certifications": [
+    "Evidence schema validated and tested",
+    "Evidence collection mechanism implemented",
+    "Claim rendering with detection rules enforced",
+    "Terminal intent binding to evidence implemented",
+    "Metaloop evidence integration wired",
+    "Kernel invariant enforcer deployed",
+    "All tests passing (42 tests across evidence, claims, intent, validation)"
+  ],
+  "purpose": "Prevents hallucination-style transcripts by making evidence mechanically mandatory. Every claim must be backed by observable repo state (diffs, reads, checks). Terminal intent gates refuse to proceed without evidence."
+}
