@@ -673,7 +673,8 @@
       ],
       "consumes": [],
       "deps": [
-        "integration-terminal"
+        "integration-terminal",
+        "cli-output-plan"
       ],
       "validate": [
         {
@@ -796,11 +797,12 @@
         "rkg4-algo-report",
         "rkg3-dispatch-enforcement",
         "rkg6-rate-card",
-        "cli-output-plan",
         "dag-candidate-flow",
         "receipt-first-plan",
         "sgk-plan",
-        "dc-tests"
+        "dc-tests",
+        "co-stdout-tests",
+        "co-integration-jq"
       ],
       "validate": [
         {
@@ -1088,6 +1090,114 @@
       ],
       "idempotent": true,
       "expandedFrom": "dag-candidate-flow"
+    },
+    "co-audit-console-log": {
+      "id": "co-audit-console-log",
+      "desc": "Replace all console.log in bin/roadmap.ts command functions with json() — human text to stderr, JSON envelope to stdout",
+      "mode": "execute",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "ambient": [
+        "src/lib/cli-envelope.ts",
+        "src/lib/cli-human.ts",
+        "src/lib/render/index.ts"
+      ],
+      "deps": [
+        "cli-output-plan"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -c 'console\\.log' bin/roadmap.ts | awk '{exit ($1 > 5 ? 1 : 0)}'",
+          "expectExitCode": 0
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx bin/roadmap.ts chart --note \"validate\" 2>/dev/null | jq -e \".ok\" >/dev/null",
+          "expectExitCode": 0
+        }
+      ],
+      "idempotent": true,
+      "expandedFrom": "cli-output-plan"
+    },
+    "co-render-models": {
+      "id": "co-render-models",
+      "desc": "Build RenderModel for every stateful command missing one — advance, complete, validate, doctor, remaining, status, plan-gallery, plan-select, plan-status, certify",
+      "mode": "execute",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "ambient": [
+        "src/lib/cli-human.ts",
+        "src/lib/render/index.ts"
+      ],
+      "deps": [
+        "co-audit-console-log"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsx bin/roadmap.ts doctor completion 2>/dev/null | jq -e \".render.body\" >/dev/null",
+          "expectExitCode": 0
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx bin/roadmap.ts remaining 2>/dev/null | jq -e \".render.body\" >/dev/null",
+          "expectExitCode": 0
+        }
+      ],
+      "idempotent": true,
+      "expandedFrom": "cli-output-plan"
+    },
+    "co-stdout-tests": {
+      "id": "co-stdout-tests",
+      "desc": "Tests verifying stdout is clean JSON for chart, doctor, remaining and render.body populated for stateful commands",
+      "mode": "execute",
+      "produces": [
+        "tests/cli-output.test.ts"
+      ],
+      "consumes": [],
+      "ambient": [
+        "bin/roadmap.ts",
+        "src/lib/cli-envelope.ts"
+      ],
+      "deps": [
+        "co-render-models"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "tests/cli-output.test.ts"
+        }
+      ],
+      "idempotent": true,
+      "expandedFrom": "cli-output-plan"
+    },
+    "co-integration-jq": {
+      "id": "co-integration-jq",
+      "desc": "Integration test — pipe orient, chart, doctor, remaining through jq, verify exit 0 and render.body non-empty",
+      "mode": "execute",
+      "produces": [
+        "tests/cli-output-integration.test.ts"
+      ],
+      "consumes": [],
+      "ambient": [
+        "bin/roadmap.ts"
+      ],
+      "deps": [
+        "co-render-models"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "tests/cli-output-integration.test.ts"
+        }
+      ],
+      "idempotent": true,
+      "expandedFrom": "cli-output-plan"
     }
   }
 }
