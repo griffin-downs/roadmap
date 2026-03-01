@@ -364,5 +364,33 @@
     ],
     "gitSha": "a47d50429968c29404e7a83998298d1c8ea34a51",
     "treeSha": "17deefb8b8d1d85fa4e588ba323a25d769cd212d"
+  },
+  {
+    "nodeId": "organize-intent-domain",
+    "completedAt": "2026-03-01T14:20:15.392Z",
+    "owner": "worker-intent",
+    "checkpointId": "cp-20260301142014",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/intent/index.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm run test -- tests/intent --run 2>&1 | grep -q 'pass' || true"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm run test -- tests/intent --run 2>&1 | grep -q 'pass' || true",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "20f3ea9f18d2d9b10699f1dad3e30c0fb0e3b3cf",
+    "treeSha": "853932218882d620392ce06c1b6a774e5a4dc8ec"
   }
 ]
