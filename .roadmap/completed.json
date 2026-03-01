@@ -713,9 +713,93 @@
   },
   {
     "nodeId": "sk-validation-rules",
-    "completedAt": "2026-03-01T17:22:42.944Z",
+    "completedAt": "2026-03-01T17:37:10.323Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301172242",
+    "checkpointId": "cp-20260301173708",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/spec-kit/validation.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "902ee214ca8bce37606d64f0a0b733a7ef31d069",
+    "treeSha": "edf1c06ff139f6d89f05c111f59176d868de0166"
+  },
+  {
+    "nodeId": "agent-brief-generator",
+    "completedAt": "2026-03-01T17:39:21.354Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301173920",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "all artifacts exist: src/spec-kit/agent-brief.ts, src/spec-kit/types-brief.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "902ee214ca8bce37606d64f0a0b733a7ef31d069",
+    "treeSha": "edf1c06ff139f6d89f05c111f59176d868de0166"
+  },
+  {
+    "nodeId": "directory-migration-helper",
+    "completedAt": "2026-03-01T17:39:27.590Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301173926",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "all artifacts exist: src/spec-kit/directory-migration.ts, scripts/migrate-specify-to-roadmap.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "902ee214ca8bce37606d64f0a0b733a7ef31d069",
+    "treeSha": "edf1c06ff139f6d89f05c111f59176d868de0166"
+  },
+  {
+    "nodeId": "import-format-validation",
+    "completedAt": "2026-03-01T17:39:52.086Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301173952",
     "validationChecks": [
       {
         "rule": "skip-validate",
@@ -723,7 +807,38 @@
         "evidence": "validation skipped by --skip-validate flag"
       }
     ],
-    "gitSha": "75b5e77f77095f481d50125a4774b08816ce35d5",
-    "treeSha": "8401c18336e2774953173498f6b61ca60cf00777"
+    "gitSha": "902ee214ca8bce37606d64f0a0b733a7ef31d069",
+    "treeSha": "edf1c06ff139f6d89f05c111f59176d868de0166"
+  },
+  {
+    "nodeId": "tests-sk-validation",
+    "completedAt": "2026-03-01T17:39:45.421Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301173939",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "all artifacts exist: tests/spec-kit/validation.test.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm test -- validation.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm test -- validation.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "182ab250c70978e80114296f43a253fc293a1ab2069afaf8864e5cd459b82b00",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/tests-sk-validation/mm81bw5l-vpe8va/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "902ee214ca8bce37606d64f0a0b733a7ef31d069",
+    "treeSha": "edf1c06ff139f6d89f05c111f59176d868de0166"
   }
 ]

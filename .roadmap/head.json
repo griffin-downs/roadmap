@@ -198,7 +198,6 @@
       "id": "import-format-validation",
       "desc": "Add validation to roadmap import for spec-kit tasks format",
       "produces": [
-        "src/commands/import.ts (modified)",
         "src/spec-kit/import-validator.ts"
       ],
       "consumes": [
