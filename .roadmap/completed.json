@@ -682,5 +682,33 @@
     ],
     "gitSha": "670e1ecc190a9015714af042012a9e906e5780ab",
     "treeSha": "ad22dd335f1c6edc4a494316fccfdbb645cbccc0"
+  },
+  {
+    "nodeId": "sk-directory-schema",
+    "completedAt": "2026-03-01T17:19:20.877Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301171920",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: docs/SPEC-KIT-DIRECTORY.md"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): test -d .roadmap/spec"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:test -d .roadmap/spec",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "c937a4abefcef943b9864111fab688ddaa3fe112",
+    "treeSha": "208e22de83df25264b585b47cc43f52bbbdbffbd"
   }
 ]

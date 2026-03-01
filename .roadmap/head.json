@@ -18,9 +18,7 @@
       "validate": [
         {
           "type": "artifact-exists",
-          "paths": [
-            "docs/SPEC-KIT-DIRECTORY.md"
-          ]
+          "target": "docs/SPEC-KIT-DIRECTORY.md"
         },
         {
           "type": "shell",
