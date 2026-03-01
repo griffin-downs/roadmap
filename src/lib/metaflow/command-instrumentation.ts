@@ -18,6 +18,10 @@ export interface CommandExecution {
   mfRunId?: string;
   errors?: string[];
   timestamp: string;
+  nodeId?: string;
+  dagId?: string;
+  noteText?: string;
+  stderrLines?: string[];
 }
 
 export interface InstrumentationSummary {
@@ -79,7 +83,12 @@ export class CommandInstrument {
   }
 
   /** Start a timed execution. Returns a stop function. */
-  startExecution(cmd: string, args: string[]): { stop: (exitCode: number, output: string) => CommandExecution } {
+  startExecution(cmd: string, args: string[], context?: {
+    nodeId?: string;
+    dagId?: string;
+    noteText?: string;
+    stderr?: string[];
+  }): { stop: (exitCode: number, output: string) => CommandExecution } {
     const { mfRunId, cleanArgs } = extractMfRun(args);
     const startTime = Date.now();
 
@@ -102,6 +111,10 @@ export class CommandInstrument {
 
         if (envelopeOk !== undefined) execution.envelopeOk = envelopeOk;
         if (mfRunId) execution.mfRunId = mfRunId;
+        if (context?.nodeId) execution.nodeId = context.nodeId;
+        if (context?.dagId) execution.dagId = context.dagId;
+        if (context?.noteText) execution.noteText = context.noteText;
+        if (context?.stderr) execution.stderrLines = context.stderr;
         if (exitCode !== 0) {
           const errLines = output.split('\n').filter(l => /error|fail/i.test(l)).slice(0, 5);
           if (errLines.length > 0) execution.errors = errLines;
@@ -114,7 +127,12 @@ export class CommandInstrument {
   }
 
   /** Record a completed execution (when start/stop timing is external). */
-  recordExecution(cmd: string, args: string[], exitCode: number, output: string, durationMs?: number): CommandExecution {
+  recordExecution(cmd: string, args: string[], exitCode: number, output: string, durationMs?: number, context?: {
+    nodeId?: string;
+    dagId?: string;
+    noteText?: string;
+    stderr?: string[];
+  }): CommandExecution {
     const { mfRunId, cleanArgs } = extractMfRun(args);
     const now = Date.now();
     const { structure, envelopeOk } = classifyOutput(output);
@@ -133,6 +151,10 @@ export class CommandInstrument {
 
     if (envelopeOk !== undefined) execution.envelopeOk = envelopeOk;
     if (mfRunId) execution.mfRunId = mfRunId;
+    if (context?.nodeId) execution.nodeId = context.nodeId;
+    if (context?.dagId) execution.dagId = context.dagId;
+    if (context?.noteText) execution.noteText = context.noteText;
+    if (context?.stderr) execution.stderrLines = context.stderr;
     if (exitCode !== 0) {
       const errLines = output.split('\n').filter(l => /error|fail/i.test(l)).slice(0, 5);
       if (errLines.length > 0) execution.errors = errLines;
