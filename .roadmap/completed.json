@@ -108,5 +108,20 @@
     ],
     "gitSha": "55a983e30c08871a0c957a317f85fb97726354a4",
     "treeSha": "9a63a75b83d7e2872bacd94844ff65927586c661"
+  },
+  {
+    "nodeId": "metaloop-evidence-wiring",
+    "completedAt": "2026-03-01T13:34:33.661Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301133433",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/metaloop/evidence-integration.ts"
+      }
+    ],
+    "gitSha": "ae3d52bff255b46d9a72948773ebef0263bec550",
+    "treeSha": "692188b56a7ec9b822ba27e740f91c98bb142532"
   }
 ]
