@@ -1,0 +1,249 @@
+[
+  {
+    "id": "orient",
+    "tokens": [
+      "orient"
+    ],
+    "description": "Batch position + produces/consumes + preGate",
+    "flags": [
+      "--note",
+      "--check",
+      "--assign",
+      "--ready",
+      "--next"
+    ],
+    "mustHaveDisplayReceipt": true,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap orient --note \"session start\""
+    ]
+  },
+  {
+    "id": "advance",
+    "tokens": [
+      "advance"
+    ],
+    "description": "Advance to next batch",
+    "flags": [
+      "--note"
+    ],
+    "mustHaveDisplayReceipt": true,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap advance --note \"batch done\""
+    ]
+  },
+  {
+    "id": "chart",
+    "tokens": [
+      "chart"
+    ],
+    "description": "Pretty-print progress chart",
+    "flags": [
+      "--deps"
+    ],
+    "mustHaveDisplayReceipt": true,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap chart"
+    ]
+  },
+  {
+    "id": "complete",
+    "tokens": [
+      "complete"
+    ],
+    "description": "Submit work for a node",
+    "flags": [
+      "--note",
+      "--owner",
+      "--skip-validate",
+      "--evaluate",
+      "--explore",
+      "--no-advance",
+      "--no-commit"
+    ],
+    "mustHaveDisplayReceipt": true,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap complete node-a --note \"done\""
+    ]
+  },
+  {
+    "id": "validate",
+    "tokens": [
+      "validate"
+    ],
+    "description": "Run validation rules",
+    "flags": [
+      "--note"
+    ],
+    "mustHaveDisplayReceipt": false,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap validate --note \"check\""
+    ]
+  },
+  {
+    "id": "trail",
+    "tokens": [
+      "trail"
+    ],
+    "description": "Read invocation trail",
+    "flags": [
+      "--global",
+      "--repo",
+      "--last",
+      "--archive"
+    ],
+    "mustHaveDisplayReceipt": false,
+    "exempt": {
+      "exemptClass": "plumbing",
+      "exemptReason": "diagnostic output only"
+    },
+    "requiredSignals": [],
+    "examples": [
+      "roadmap trail --last 5"
+    ]
+  },
+  {
+    "id": "help",
+    "tokens": [
+      "help"
+    ],
+    "description": "Usage",
+    "flags": [],
+    "mustHaveDisplayReceipt": false,
+    "exempt": {
+      "exemptClass": "plumbing",
+      "exemptReason": "help text only"
+    },
+    "requiredSignals": [],
+    "examples": [
+      "roadmap help"
+    ]
+  },
+  {
+    "id": "claim",
+    "tokens": [
+      "claim"
+    ],
+    "description": "Claim a node for execution",
+    "flags": [
+      "--owner",
+      "--ttl"
+    ],
+    "mustHaveDisplayReceipt": false,
+    "exempt": {
+      "exemptClass": "plumbing",
+      "exemptReason": "coordination only"
+    },
+    "requiredSignals": [],
+    "examples": [
+      "roadmap claim node-a --owner w1"
+    ]
+  },
+  {
+    "id": "import",
+    "tokens": [
+      "import"
+    ],
+    "description": "Import spec into roadmap",
+    "flags": [
+      "--note",
+      "--from",
+      "--id",
+      "--skip-audit-tail"
+    ],
+    "mustHaveDisplayReceipt": true,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap import --from speckit tasks.md --id my-dag --note \"import\""
+    ]
+  },
+  {
+    "id": "show",
+    "tokens": [
+      "show"
+    ],
+    "description": "Show node spec",
+    "flags": [
+      "--note"
+    ],
+    "mustHaveDisplayReceipt": false,
+    "exempt": {
+      "exemptClass": "plumbing",
+      "exemptReason": "read-only node display"
+    },
+    "requiredSignals": [],
+    "examples": [
+      "roadmap show node-a --note \"reading\""
+    ]
+  },
+  {
+    "id": "expand",
+    "tokens": [
+      "expand"
+    ],
+    "description": "Run expansion script",
+    "flags": [
+      "--note"
+    ],
+    "mustHaveDisplayReceipt": false,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap expand scripts/expand-node.ts --note \"expanding\""
+    ]
+  },
+  {
+    "id": "mf-init",
+    "tokens": [
+      "mf",
+      "init"
+    ],
+    "description": "Initialize MetaFlow run",
+    "flags": [
+      "--run",
+      "--note"
+    ],
+    "mustHaveDisplayReceipt": false,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap mf init --note \"start run\""
+    ]
+  },
+  {
+    "id": "mf-audit",
+    "tokens": [
+      "mf",
+      "audit"
+    ],
+    "description": "Run audit detectors",
+    "flags": [
+      "--required",
+      "--run",
+      "--note"
+    ],
+    "mustHaveDisplayReceipt": true,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap mf audit --run run-1 --note \"audit\""
+    ]
+  },
+  {
+    "id": "mf-audit-tail",
+    "tokens": [
+      "mf",
+      "audit-tail"
+    ],
+    "description": "Emit audit tail IR fragment",
+    "flags": [
+      "--note"
+    ],
+    "mustHaveDisplayReceipt": false,
+    "requiredSignals": [],
+    "examples": [
+      "roadmap mf audit-tail emit --note \"emit\""
+    ]
+  }
+]
