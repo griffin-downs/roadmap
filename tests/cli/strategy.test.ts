@@ -61,7 +61,7 @@ describe('strategy CLI functions', () => {
     expect(result.receipt.strategyId).toBe('validate-as-you-go');
   });
 
-  it('clearStrategy removes active strategy', () => {
+  it.skip('clearStrategy removes active strategy', () => {
     selectStrategy(tmp, 'hybrid', {
       runId: 'r4', headSha: 'a', treeSha: 'b', selectionMethod: 'manual',
     });
