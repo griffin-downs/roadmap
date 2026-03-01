@@ -1,0 +1,443 @@
+{
+  "id": "fr-sk-integrate-001",
+  "desc": "FR-SK-INTEGRATE-001: Spec-Kit Agent Integration Protocol",
+  "init": "init",
+  "term": "term",
+  "nodes": {
+    "sk-directory-schema": {
+      "id": "sk-directory-schema",
+      "desc": "Define .roadmap/spec/ directory structure + naming conventions",
+      "produces": [
+        "docs/SPEC-KIT-DIRECTORY.md",
+        ".roadmap/spec/"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "docs/SPEC-KIT-DIRECTORY.md"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "test -d .roadmap/spec"
+        }
+      ],
+      "idempotent": true
+    },
+    "sk-validation-rules": {
+      "id": "sk-validation-rules",
+      "desc": "Implement validators for spec-kit plan.md and tasks.md outputs",
+      "produces": [
+        "src/spec-kit/validation.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/spec-kit/validation.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "agent-brief-generator": {
+      "id": "agent-brief-generator",
+      "desc": "Implement context builder. Generate briefs with roadmap position + spec-kit workflow",
+      "produces": [
+        "src/spec-kit/agent-brief.ts",
+        "src/spec-kit/types-brief.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/validation.ts"
+      ],
+      "deps": [
+        "sk-validation-rules"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/spec-kit/agent-brief.ts",
+            "src/spec-kit/types-brief.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "agent-brief-template": {
+      "id": "agent-brief-template",
+      "desc": "Create example brief markdown templates agents receive",
+      "produces": [
+        "docs/AGENT-SPEC-KIT-BRIEF.md",
+        "templates/agent-brief-spec-driven.md"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts"
+      ],
+      "deps": [
+        "sk-directory-schema",
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "docs/AGENT-SPEC-KIT-BRIEF.md",
+            "templates/agent-brief-spec-driven.md"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "grep -c 'example\\\\|Example' docs/AGENT-SPEC-KIT-BRIEF.md | grep -E '^[2-9]|^[1-9][0-9]'"
+        }
+      ],
+      "idempotent": true
+    },
+    "workflow-guide-spec-kit": {
+      "id": "workflow-guide-spec-kit",
+      "desc": "Document spec-kit command sequence, output formats, error recovery",
+      "produces": [
+        "docs/SPEC-KIT-WORKFLOW.md"
+      ],
+      "consumes": [
+        "src/spec-kit/validation.ts",
+        "src/spec-kit/agent-brief.ts"
+      ],
+      "deps": [
+        "sk-directory-schema",
+        "sk-validation-rules",
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "docs/SPEC-KIT-WORKFLOW.md"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "grep -c 'example\\\\|/speckit' docs/SPEC-KIT-WORKFLOW.md | grep -E '^[3-9]|^[1-9][0-9]'"
+        }
+      ],
+      "idempotent": true
+    },
+    "workflow-guide-integration": {
+      "id": "workflow-guide-integration",
+      "desc": "Document how roadmap + spec-kit compose. Full spec-driven feature intake walkthrough",
+      "produces": [
+        "docs/SPEC-KIT-ROADMAP-WORKFLOW.md"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts",
+        "docs/SPEC-KIT-WORKFLOW.md"
+      ],
+      "deps": [
+        "agent-brief-generator",
+        "workflow-guide-spec-kit"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "docs/SPEC-KIT-ROADMAP-WORKFLOW.md"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "grep -c 'roadmap\\\\|/speckit' docs/SPEC-KIT-ROADMAP-WORKFLOW.md | grep -E '^[5-9]|^[1-9][0-9]'"
+        }
+      ],
+      "idempotent": true
+    },
+    "roadmap-compile-brief-wiring": {
+      "id": "roadmap-compile-brief-wiring",
+      "desc": "Wire agent-brief-generator into roadmap compile-brief command",
+      "produces": [
+        "bin/roadmap.ts (modified)",
+        "src/commands/compile-brief.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts"
+      ],
+      "deps": [
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/commands/compile-brief.ts"
+          ]
+        },
+        {
+          "type": "build-produces",
+          "target": "bin/roadmap"
+        },
+        {
+          "type": "shell",
+          "command": "bin/roadmap compile-brief --help | grep -i spec"
+        }
+      ],
+      "idempotent": true
+    },
+    "import-format-validation": {
+      "id": "import-format-validation",
+      "desc": "Add validation to roadmap import for spec-kit tasks format",
+      "produces": [
+        "src/commands/import.ts (modified)",
+        "src/spec-kit/import-validator.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/validation.ts"
+      ],
+      "deps": [
+        "sk-validation-rules"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/spec-kit/import-validator.ts"
+          ]
+        },
+        {
+          "type": "build-produces",
+          "target": "bin/roadmap"
+        },
+        {
+          "type": "shell",
+          "command": "tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "directory-migration-helper": {
+      "id": "directory-migration-helper",
+      "desc": "Create migration tool: .specify/ → .roadmap/spec/. Backward-compat redirects.",
+      "produces": [
+        "src/spec-kit/directory-migration.ts",
+        "scripts/migrate-specify-to-roadmap.ts"
+      ],
+      "consumes": [
+        "docs/SPEC-KIT-DIRECTORY.md"
+      ],
+      "deps": [
+        "sk-directory-schema"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/spec-kit/directory-migration.ts",
+            "scripts/migrate-specify-to-roadmap.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "cli-spec-init": {
+      "id": "cli-spec-init",
+      "desc": "New command: roadmap spec-kit init <dag-id> --intent '...'",
+      "produces": [
+        "bin/roadmap.ts (modified, spec-init handler)",
+        "src/commands/spec-init.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts",
+        "docs/SPEC-KIT-DIRECTORY.md"
+      ],
+      "deps": [
+        "sk-directory-schema",
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/commands/spec-init.ts"
+          ]
+        },
+        {
+          "type": "build-produces",
+          "target": "bin/roadmap"
+        },
+        {
+          "type": "shell",
+          "command": "bin/roadmap spec-kit init --help | grep -i intent"
+        }
+      ],
+      "idempotent": true
+    },
+    "tests-sk-validation": {
+      "id": "tests-sk-validation",
+      "desc": "Unit tests for plan/task validators",
+      "produces": [
+        "tests/spec-kit/validation.test.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/validation.ts"
+      ],
+      "deps": [
+        "sk-validation-rules"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "tests/spec-kit/validation.test.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "npm test -- validation.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "tests-sk-brief-generator": {
+      "id": "tests-sk-brief-generator",
+      "desc": "Tests for agent brief generation",
+      "produces": [
+        "tests/spec-kit/agent-brief.test.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts"
+      ],
+      "deps": [
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "tests/spec-kit/agent-brief.test.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "npm test -- agent-brief.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "tests-sk-workflow-e2e": {
+      "id": "tests-sk-workflow-e2e",
+      "desc": "E2E test: agent reads brief → tasks → roadmap import succeeds",
+      "produces": [
+        "tests/spec-kit/e2e.test.ts"
+      ],
+      "consumes": [
+        "src/commands/compile-brief.ts",
+        "src/commands/spec-init.ts",
+        "src/spec-kit/import-validator.ts"
+      ],
+      "deps": [
+        "roadmap-compile-brief-wiring",
+        "import-format-validation",
+        "cli-spec-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "tests/spec-kit/e2e.test.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "npm test -- spec-kit/e2e.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "sk-integration-validation": {
+      "id": "sk-integration-validation",
+      "desc": "Validation gate: all tests pass, docs complete, integration ready",
+      "produces": [],
+      "consumes": [
+        "tests/spec-kit/",
+        "docs/SPEC-KIT-ROADMAP-WORKFLOW.md"
+      ],
+      "deps": [
+        "tests-sk-validation",
+        "tests-sk-brief-generator",
+        "tests-sk-workflow-e2e"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test -- spec-kit && test -f docs/SPEC-KIT-ROADMAP-WORKFLOW.md && test -f docs/AGENT-SPEC-KIT-BRIEF.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "init": {
+      "id": "init",
+      "desc": "Synthetic init — start of FR-SK-INTEGRATE-001",
+      "produces": [],
+      "consumes": [],
+      "deps": [],
+      "validate": [],
+      "idempotent": false
+    },
+    "intent-metaflow-audit-fr-sk-integrate": {
+      "id": "intent-metaflow-audit-fr-sk-integrate",
+      "desc": "Governance audit gate — spec-kit agent integration verified against metaflow audit compliance. Terminal intent gate.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "sk-integration-validation"
+      ],
+      "validate": [],
+      "idempotent": true
+    },
+    "term": {
+      "id": "term",
+      "desc": "Synthetic term — gates on all leaf tasks",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "sk-directory-schema",
+        "sk-validation-rules",
+        "agent-brief-generator",
+        "agent-brief-template",
+        "workflow-guide-spec-kit",
+        "workflow-guide-integration",
+        "roadmap-compile-brief-wiring",
+        "import-format-validation",
+        "directory-migration-helper",
+        "cli-spec-init",
+        "tests-sk-validation",
+        "tests-sk-brief-generator",
+        "tests-sk-workflow-e2e",
+        "sk-integration-validation",
+        "init",
+        "intent-metaflow-audit-fr-sk-integrate"
+      ],
+      "validate": [],
+      "idempotent": false
+    }
+  }
+}

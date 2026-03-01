@@ -311,3 +311,8 @@
 {"tokenId":"tok-cc5fd03e8dc87280","type":"claim","subject":"disconnect-repair-fully-integrated","issuedAt":"2026-03-01T16:24:47.614Z","ok":true}
 {"tokenId":"tok-058cf99a627624d7","type":"claim","subject":"intent-metaflow-audit-disconnected-systems-repair","issuedAt":"2026-03-01T16:24:48.037Z","ok":true}
 {"tokenId":"tok-8850431a41509e41","type":"claim","subject":"term","issuedAt":"2026-03-01T16:24:48.453Z","ok":true}
+{"tokenId":"tok-7a4139c2da7501ec","type":"claim","subject":"sk-directory-schema","issuedAt":"2026-03-01T17:18:36.853Z","ok":true}
+{"tokenId":"tok-7a4139c2da7501ec","type":"claim","subject":"sk-directory-schema","issuedAt":"2026-03-01T17:18:36.853Z","ok":false}
+{"tokenId":"tok-9bdca6ff553cbf2d","type":"claim","subject":"sk-directory-schema","issuedAt":"2026-03-01T17:19:20.737Z","ok":true}
+{"tokenId":"tok-003ba2b76466c973","type":"claim","subject":"sk-validation-rules","issuedAt":"2026-03-01T17:19:21.996Z","ok":true}
+{"tokenId":"tok-003ba2b76466c973","type":"claim","subject":"sk-validation-rules","issuedAt":"2026-03-01T17:19:21.996Z","ok":false}
