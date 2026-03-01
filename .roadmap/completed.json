@@ -4044,5 +4044,33 @@
     ],
     "gitSha": "46f439ba5372e71142858431fc95053ed405bd04",
     "treeSha": "da02ff3c544d98d51e0dca57b3fb052f30631552"
+  },
+  {
+    "nodeId": "intent-metaflow-audit-required",
+    "completedAt": "2026-03-01T01:34:04.285Z",
+    "owner": "w1",
+    "checkpointId": "cp-20260301013401",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/audit/ && npx vitest run tests/completion/ && npx vitest run tests/import/"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/audit/ && npx vitest run tests/completion/ && npx vitest run tests/import/",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "a35545a24de1b7c52b025cabcac88d1fd68a70aacf32005b0be126ac2f389f8b",
+        "stderrSha": "79ff9997eb1ed3eb2adc36b29e2c59b2c1645eeaeb0753d30d62f040cac8fcc3",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/intent-metaflow-audit-required/mm72u0h6-7e9aqf/stdout.txt",
+          "/home/griffin/src/roadmap/.roadmap/artifacts/intent-metaflow-audit-required/mm72u0h6-7e9aqf/stderr.txt"
+        ]
+      }
+    ],
+    "gitSha": "7afe4d1e65e65cc839c0b758e074cc5aca2c55c4",
+    "treeSha": "f5e796b465137f9f766571bbf4dad97cb7fdf586"
   }
 ]
