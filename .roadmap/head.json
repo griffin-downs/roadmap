@@ -169,7 +169,7 @@
       "validate": [
         {
           "type": "shell",
-          "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/mining-run.json','utf-8')); if(d.commands && d.commands.length >= 20) { console.log('Mining complete: ' + d.commands.length + ' commands'); process.exit(0); } else { process.exit(1); }\""
+          "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/mining-run.json','utf-8')); if(d.totalCommands && d.totalCommands >= 20) { console.log('Mining complete: ' + d.totalCommands + ' total commands'); process.exit(0); } else { process.exit(1); }\""
         }
       ],
       "idempotent": true

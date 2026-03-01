@@ -1656,5 +1656,31 @@
     ],
     "gitSha": "68f95b04045ba482fd7d3443275f5a84a984484e",
     "treeSha": "edb34d3b8580e1a73bd3d31e5f2463550da8f6ce"
+  },
+  {
+    "nodeId": "usage-mine",
+    "completedAt": "2026-03-01T23:28:04.078Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301232804",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"const d=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/mining-run.json','utf-8')); if(d.commands && d.commands.length >= 20) { console.log('Mining complete: ' + d.commands.length + ' commands'); process.exit(0); } else { process.exit(1); }\""
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:node -e \"const d=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/mining-run.json','utf-8')); if(d.commands && d.commands.length >= 20) { console.log('Mining complete: ' + d.commands.length + ' commands'); process.exit(0); } else { process.exit(1); }\"",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "1801b1cfd50ebcaf3f277bff5044d39eb3dbfe032fb78dcc5369b958046511e2",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/usage-mine/mm8drtnl-bs7bsw/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "7532d99656c358c0cc3293d0c3f25c821743f063",
+    "treeSha": "c98beac6d3c517d7ae34d57533f54236e5a35721"
   }
 ]
