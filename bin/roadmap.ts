@@ -5774,12 +5774,14 @@ async function cmdMf(note: string) {
         json({ cmd: 'mf.opt', runId: oRunId, nodes: optNodes, emitted: false });
       }
 
-      if (optNodes.length === 0) {
-        process.stderr.write('(no optimizations — run is clean)\n');
-      } else {
-        process.stderr.write(`Optimization nodes (${optNodes.length}):\n`);
-        for (const n of optNodes) {
-          process.stderr.write(`  ${n.id}: ${n.desc}\n    rationale: ${n.rationale}\n`);
+      if (_outputOpts.format === 'human') {
+        if (optNodes.length === 0) {
+          process.stderr.write('(no optimizations — run is clean)\n');
+        } else {
+          process.stderr.write(`Optimization nodes (${optNodes.length}):\n`);
+          for (const n of optNodes) {
+            process.stderr.write(`  ${n.id}: ${n.desc}\n    rationale: ${n.rationale}\n`);
+          }
         }
       }
 
@@ -5792,7 +5794,9 @@ async function cmdMf(note: string) {
       const aRequired = args.includes('--required');
       const { cmdMfAudit } = await import('../src/lib/metaflow/audit/cli.ts');
       const auditResult = cmdMfAudit(aRunId, { required: aRequired, base: repoRoot });
-      process.stderr.write(auditResult.render + '\n');
+      if (_outputOpts.format === 'human') {
+        process.stderr.write(auditResult.render + '\n');
+      }
       json(auditResult.data);
       recordTrail({ ts: new Date().toISOString(), cmd: 'mf.audit', note, repo: basename(repoRoot), position: ['mf-audit'], level: 5 });
       break;
@@ -5806,7 +5810,9 @@ async function cmdMf(note: string) {
       const dagId = loadDAG?.()?.id ?? 'unknown';
       const { cmdAuditTailEmit } = await import('../src/lib/metaflow/audit/cli.ts');
       const tailResult = cmdAuditTailEmit(dagId, repoRoot);
-      process.stderr.write(tailResult.render + '\n');
+      if (_outputOpts.format === 'human') {
+        process.stderr.write(tailResult.render + '\n');
+      }
       json(tailResult.data);
       recordTrail({ ts: new Date().toISOString(), cmd: 'mf.audit-tail', note, repo: basename(repoRoot), position: ['mf-audit-tail'], level: 5 });
       break;
@@ -7038,10 +7044,10 @@ function json(obj: unknown, renderModel?: RenderModel, jsonOpts?: JsonOpts) {
     if (jsonOpts?.hints && jsonOpts.hints.length > 0) {
       renderV1.hints = jsonOpts.hints;
     }
-    process.stderr.write((renderOutput.ansi ?? renderOutput.plain) + '\n');
-  } else if (!_outputOpts.quiet) {
-    // Minimal stderr render for commands without a RenderModel
-    process.stderr.write(`\u2501\u2501 ${_outputOpts.cmd} \u2501\u2501\n${JSON.stringify(obj, null, 2).slice(0, 500)}\n`);
+    // Only write human rendering to stderr if --human format requested
+    if (_outputOpts.format === 'human') {
+      process.stderr.write((renderOutput.ansi ?? renderOutput.plain) + '\n');
+    }
   }
 
   // Include hints in render even if no renderModel provided (e.g., for claim command)

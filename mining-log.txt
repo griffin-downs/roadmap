@@ -1,0 +1,32 @@
+[mining] Starting 30 command runs...
+[mining] 1/30 — orient --note mine-1
+[mining] 2/30 — chart 
+[mining] 3/30 — show init
+[mining] 4/30 — orient --note mine-2
+[mining] 5/30 — orient --check
+[mining] 6/30 — chart 
+[mining] 7/30 — trail 
+[mining] 8/30 — validate --note mine-validate
+[mining] 9/30 — orient --note mine-3
+[mining] 10/30 — chart 
+[mining] 11/30 — show init
+[mining] 12/30 — orient --note mine-4
+[mining] 13/30 — trail --last 10
+[mining] 14/30 — orient --note mine-5
+[mining] 15/30 — chart 
+[mining] 16/30 — claim init --owner test-agent
+[mining] 17/30 — orient 
+[mining] 18/30 — trail 
+[mining] 19/30 — orient --note mine-6
+[mining] 20/30 — chart 
+[mining] 21/30 — show init
+[mining] 22/30 — trail --last 5
+[mining] 23/30 — orient --note mine-7
+[mining] 24/30 — chart 
+[mining] 25/30 — validate --note mine-validate-2
+[mining] 26/30 — orient --note mine-8
+[mining] 27/30 — trail 
+[mining] 28/30 — orient --note mine-9
+[mining] 29/30 — chart 
+[mining] 30/30 — orient --note mine-10
+[mining] 30 commands executed

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "engine": "spec-kit",
+  "version": "0.0.0",
+  "compile_hash": "6d12bac0ad48340f5b3d7fb29a8581be1f2d1ee56cc2eb77edd06d4747301073",
+  "spec_sha": "ec4f32e6688490980f0d9ff17659b779bf1c02bda094cc249f60f48ffccbe1dc",
+  "importedAt": "2026-03-01T23:11:16.442Z",
+  "dagId": "cli-quality-improvements"
+}

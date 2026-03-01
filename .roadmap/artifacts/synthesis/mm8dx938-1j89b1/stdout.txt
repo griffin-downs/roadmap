@@ -1,0 +1,1 @@
+Synthesis complete: P50=176ms, compliance=1

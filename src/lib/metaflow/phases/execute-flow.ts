@@ -337,15 +337,9 @@ function handleDetectAuditFailures(repoRoot: string, step: FlowStep): void {
   const auditPath = (step.args as Record<string, string>).auditPath ||
     ".roadmap/metaflow/audit/audit-run.json";
 
-  let audit: any = { detectors: [] };
-  try {
-    audit = JSON.parse(
-      readFileSync(join(repoRoot, auditPath), "utf-8")
-    );
-  } catch {
-    // If audit file doesn't exist, create empty
-    audit = { detectors: [] };
-  }
+  const audit = JSON.parse(
+    readFileSync(join(repoRoot, auditPath), "utf-8")
+  );
 
   // Extract real failures from detectors
   const failures = (audit.detectors || [])
