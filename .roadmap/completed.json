@@ -6123,5 +6123,20 @@
     ],
     "gitSha": "9fc8deb15bcbd30d0731abbe9169088a4f34a84d",
     "treeSha": "bc902f9de1fc7a24baa8d50041a2f45ce307a074"
+  },
+  {
+    "nodeId": "surf-layout-verify",
+    "completedAt": "2026-03-01T10:57:14.574Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301105714",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .audit/layout-verify.receipt.json"
+      }
+    ],
+    "gitSha": "3e5770ef48286e801a6b792f4fea3d64b6aa61c5",
+    "treeSha": "5a0b67285f0ffd1ee6ac9883d5f0bec1b8988b0f"
   }
 ]
