@@ -113,7 +113,7 @@ async function executeExternalStep(repoRoot: string, step: FlowStep) {
           detectValidateLoop,
           detectAskChurn,
           detectEnforcementRetry,
-        } = await import("../miner.ts") as typeof import("../miner.ts");
+        } = await import("./miner.ts") as typeof import("./miner.ts");
 
         // Load receipts from metaflow runs
         const runsDir = join(repoRoot, ".roadmap", "metaflow", "runs");
@@ -382,10 +382,10 @@ function handleDetectAuditFailures(repoRoot: string, step: FlowStep): void {
         totalFailures: failures.length,
         failures,
         analysis: {
-          criticalCount: failures.filter((f) => f.status === "critical")
+          criticalCount: failures.filter((f: any) => f.status === "critical")
             .length,
-          warningCount: failures.filter((f) => f.status === "warning").length,
-          failureCount: failures.filter((f) => f.status === "failed").length,
+          warningCount: failures.filter((f: any) => f.status === "warning").length,
+          failureCount: failures.filter((f: any) => f.status === "failed").length,
         },
       },
       null,
