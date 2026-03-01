@@ -1,0 +1,28 @@
+{
+  "score": 49,
+  "timestamp": "2026-03-01T22:51:27.626Z",
+  "components": {
+    "unknownCommandRate": {
+      "rate": 0.0667,
+      "penalty": 2,
+      "maxPenalty": 30
+    },
+    "errorWithoutRetryRate": {
+      "rate": 0.5,
+      "penalty": 10,
+      "maxPenalty": 20
+    },
+    "workflowAbandonRate": {
+      "rate": 0.7884,
+      "penalty": 23.65,
+      "maxPenalty": 30
+    },
+    "unusedFlagPenalty": {
+      "rate": 0.7647,
+      "penalty": 15.29,
+      "maxPenalty": 20
+    }
+  },
+  "baseline": 100,
+  "formula": "100 - (unknownCommandRate * 30) - (errorWithoutRetryRate * 20) - (workflowAbandonRate * 30) - (unusedFlagPenalty * 20)"
+}

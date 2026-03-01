@@ -1,0 +1,83 @@
+{
+  "timestamp": "2026-03-01T22:51:27.625Z",
+  "metrics": {
+    "unknownCommandRate": 0.0667,
+    "unknownCommandCount": 2,
+    "totalCommandsObserved": 30,
+    "errorWithoutRetryRate": 0.5,
+    "workflowAbandonRate": 0.7884,
+    "abandonedOrientCount": 149,
+    "totalOrientCount": 189,
+    "unusedFlagPenalty": 0.7647,
+    "unusedFlags": [
+      "--json",
+      "--quiet",
+      "--dry-run",
+      "--assign",
+      "--next",
+      "--ready",
+      "--repo",
+      "--depth",
+      "--cascade",
+      "--undo",
+      "--list",
+      "--global",
+      "--deps"
+    ],
+    "totalKnownFlags": 17
+  },
+  "findings": [
+    {
+      "category": "error-handling",
+      "severity": "medium",
+      "description": "6.7% of commands exit with errors",
+      "errorCount": 2,
+      "totalCommands": 30,
+      "recommendation": "Investigate error conditions (invalid node IDs, missing DAG, permission issues)"
+    },
+    {
+      "category": "workflow",
+      "severity": "high",
+      "description": "78.8% of orient commands followed directly by another orient (without reading output)",
+      "abandonedOrients": 149,
+      "totalOrients": 189,
+      "recommendation": "After orient, users often re-orient without reading output. Add context hints or next-step prompts."
+    },
+    {
+      "category": "discoverability",
+      "severity": "medium",
+      "description": "13 documented flags are never used in observed workflows",
+      "unusedFlags": [
+        "--json",
+        "--quiet",
+        "--dry-run",
+        "--assign",
+        "--next",
+        "--ready",
+        "--repo",
+        "--depth",
+        "--cascade",
+        "--undo",
+        "--list",
+        "--global",
+        "--deps"
+      ],
+      "recommendation": "Improve flag visibility in help text, add examples in README, or consider removing/aliasing unused flags"
+    },
+    {
+      "category": "error-recovery",
+      "severity": "medium",
+      "description": "50.0% of errors are not immediately retried",
+      "recommendation": "Provide clearer error messages with recovery suggestions"
+    }
+  ],
+  "summary": {
+    "overallHealthy": false,
+    "primaryGaps": [
+      "error-handling",
+      "workflow",
+      "discoverability"
+    ],
+    "commandErrorRate": "6.7%"
+  }
+}
