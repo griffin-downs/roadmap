@@ -9,5 +9,5 @@
 export {
   repoInfo, artifactAtRef, archivedFiles, fileHistory, restore, stageAndCommit, createBranch,
   trackedFiles, isTracked, shortHash, isClean,
-} from './lib/git.ts';
-export type { RepoInfo, FileHistory } from './lib/git.ts';
+} from './lib/utils/git/git.ts';
+export type { RepoInfo, FileHistory } from './lib/utils/git/git.ts';

@@ -4,9 +4,9 @@
 
 import { appendFileSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import type { ValidationRule, ValidationCheck, IntentJudgment, EscalationResult, ObservationResult } from '../protocol.ts';
-export type { EscalationResult } from '../protocol.ts';
-import type { DiagnosisBlock } from './judgment-receipt.ts';
+import type { ValidationRule, ValidationCheck, IntentJudgment, EscalationResult, ObservationResult } from '../../protocol.ts';
+export type { EscalationResult } from '../../protocol.ts';
+import type { DiagnosisBlock } from '../judgment-receipt.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { define, graph } from '../src/protocol.ts';
-import { buildClusters } from '../src/lib/cluster.ts';
-import { buildClustersSolver } from '../src/lib/cluster-solver.ts';
+import { buildClusters } from '../src/lib/utils/cluster/cluster.ts';
+import { buildClustersSolver } from '../src/lib/utils/cluster/cluster-solver.ts';
 import type { Graph, ValidationRule } from '../src/protocol.ts';
 
 // --- Helpers ---

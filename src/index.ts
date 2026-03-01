@@ -98,8 +98,8 @@ export type {
 } from './protocol.ts';
 
 // Intent-driven expansion
-export { generateIntentExpansion, resolveProduces, detectStall, buildEscalation, extractIntentFailures } from './lib/intent-expansion.ts';
-export type { FixNodeSpec, ExpansionResult } from './lib/intent-expansion.ts';
+export { generateIntentExpansion, resolveProduces, detectStall, buildEscalation, extractIntentFailures } from './lib/intent/intent-expansion.ts';
+export type { FixNodeSpec, ExpansionResult } from './lib/intent/intent-expansion.ts';
 
 // DAG-level validation (bookend intent gates: init + terminal)
 export { validateTerminalIntentGate, validateInitIntentGate, findTerminalNodes, findInitBoundary } from './lib/validate-dag.ts';

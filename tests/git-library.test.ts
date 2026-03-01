@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { join } from 'node:path';
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { repoInfo, isClean, trackedFiles, fileHistory, artifactAtRef, shortHash } from '../src/lib/git.ts';
+import { repoInfo, isClean, trackedFiles, fileHistory, artifactAtRef, shortHash } from '../src/lib/utils/git/git.ts';
 
 const tmpRepo = join(process.cwd(), '.test-git-lib');
 

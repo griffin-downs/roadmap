@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { define, graph, validateNode } from '../src/protocol.ts';
 import type { ValidationRule, IntentJudgment, ValidationCheck } from '../src/protocol.ts';
-import { extractObservationFailures, enrichIntentFailuresWithObservations, generateIntentExpansion } from '../src/lib/intent-expansion.ts';
+import { extractObservationFailures, enrichIntentFailuresWithObservations, generateIntentExpansion } from '../src/lib/intent/intent-expansion.ts';
 
 // ── Test Helpers ──────────────────────────────────────────────────────────
 

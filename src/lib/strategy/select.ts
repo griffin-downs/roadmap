@@ -9,8 +9,8 @@ import { createHash } from 'node:crypto';
 import { STRATEGIES, getStrategy } from './registry.js';
 import type { StrategyConfig, StrategyReceipt, ActiveStrategy } from './schema.js';
 import { writeActiveStrategy } from './active.js';
-import { writeToken, tokenId } from '../token-store.ts';
-import type { BoundToken } from '../token-store.ts';
+import { writeToken, tokenId } from '../utils/tokens/token-store.ts';
+import type { BoundToken } from '../utils/tokens/token-store.ts';
 
 export interface SelectionResult {
   receipt: StrategyReceipt;

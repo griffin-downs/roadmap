@@ -2736,7 +2736,7 @@ async function cmdComplete(note: string) {
       const shouldAutoExpand = expandOnFailRules.length > 0 && !intentJudgments;
 
       if (intentJudgments || shouldAutoExpand) {
-        const { extractIntentFailures, generateIntentExpansion, detectStall, buildEscalation } = await import('../src/lib/intent-expansion.ts');
+        const { extractIntentFailures, generateIntentExpansion, detectStall, buildEscalation } = await import('../src/lib/intent/intent-expansion.ts');
 
         // If auto-expanding, synthesize minimum judgment data (confidence 0 = needs work)
         const judgmentsToUse = intentJudgments ?? expandOnFailRules.map(r => ({

@@ -6,7 +6,7 @@
 
 import { orient as liveOrient, type Graph, type Orientation } from '../../protocol.ts';
 import { CompletionStore } from '../completion-context.ts';
-import { readGitState, isFresh } from '../git-state.schema.ts';
+import { readGitState, isFresh } from '../utils/git/git-state.schema.ts';
 
 /**
  * Orient with git-state cache.

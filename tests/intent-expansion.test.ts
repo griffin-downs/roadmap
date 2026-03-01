@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   extractIntentFailures, resolveProduces, generateIntentExpansion,
   detectStall, buildEscalation,
-} from '../src/lib/intent-expansion.ts';
-import type { IntentFailure } from '../src/lib/intent-expansion.ts';
+} from '../src/lib/intent/intent-expansion.ts';
+import type { IntentFailure } from '../src/lib/intent/intent-expansion.ts';
 import { define, graph, validateNode } from '../src/protocol.ts';
 import type { ValidationRule, ValidationCheck, IntentJudgment } from '../src/protocol.ts';
 

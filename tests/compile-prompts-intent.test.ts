@@ -6,8 +6,8 @@ import { randomUUID } from 'node:crypto';
 import { define, graph } from '../src/protocol.ts';
 import type { ValidationRule } from '../src/protocol.ts';
 import { compilePrompts, fillTemplate } from '../src/lib/compile-prompts.ts';
-import { recordEvaluation, judgmentToRecord } from '../src/lib/intent-evaluator.ts';
-import type { IntentEvaluationRecord } from '../src/lib/intent-evaluator.ts';
+import { recordEvaluation, judgmentToRecord } from '../src/lib/intent/intent-evaluator.ts';
+import type { IntentEvaluationRecord } from '../src/lib/intent/intent-evaluator.ts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

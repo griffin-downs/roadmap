@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   addPeer, removePeer, loadPeers, buildFederationView, loadFederationView, federationStatus,
-} from '../src/lib/federation.js';
+} from '../src/lib/utils/federation/federation.js';
 
 function makeTmpDir(): string {
   return mkdtempSync(join(tmpdir(), 'fed-test-'));

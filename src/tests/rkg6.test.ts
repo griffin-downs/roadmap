@@ -11,8 +11,8 @@ import {
   recordConvergenceIteration,
   readConvergenceHistory,
   detectStall,
-} from '../lib/intent-expansion.ts';
-import type { IntentFailure, EvidenceItem } from '../lib/intent-expansion.ts';
+} from '../lib/intent/intent-expansion.ts';
+import type { IntentFailure, EvidenceItem } from '../lib/intent/intent-expansion.ts';
 
 // -- FR-IG-002: Structured diagnosis --
 

@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { generateClarifiedSpec } from '../src/lib/spec-generator.ts';
-import type { PlanClarityGap } from '../src/lib/intent-expansion.ts';
+import type { PlanClarityGap } from '../src/lib/intent/intent-expansion.ts';
 import type { Graph } from '../src/protocol.ts';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

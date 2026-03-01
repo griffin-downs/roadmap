@@ -10,7 +10,7 @@
 
 import type { Graph } from '../protocol.ts';
 import { criticalPath } from '../protocol.ts';
-import type { ClusterResult } from './cluster.ts';
+import type { ClusterResult } from './utils/cluster/cluster.ts';
 
 export interface SpawnWave {
   wave: number;

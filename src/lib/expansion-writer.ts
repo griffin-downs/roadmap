@@ -6,7 +6,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { NodeSpec } from '../protocol.ts';
-import type { FixNodeSpec, IntentFailure } from './intent-expansion.ts';
+import type { FixNodeSpec, IntentFailure } from './intent/intent-expansion.ts';
 
 export interface ExpansionWriterOptions {
   parentId: string;
@@ -62,7 +62,7 @@ function generateExpansionScript(opts: GenerateOptions): string {
   // Imports
   lines.push("import { readFileSync, writeFileSync } from 'node:fs';");
   lines.push("import { join } from 'node:path';");
-  lines.push("import type { FixNodeSpec } from '../src/lib/intent-expansion.ts';");
+  lines.push("import type { FixNodeSpec } from '../src/lib/intent/intent-expansion.ts';");
   lines.push('');
 
   // Load DAG

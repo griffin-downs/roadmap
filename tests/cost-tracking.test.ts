@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   extractIntentFailures, generateIntentExpansion, fixNodeCost,
   detectStall, buildEscalation,
-} from '../src/lib/intent-expansion.ts';
-import type { IntentFailure, FixNodeSpec, CostHistory } from '../src/lib/intent-expansion.ts';
+} from '../src/lib/intent/intent-expansion.ts';
+import type { IntentFailure, FixNodeSpec, CostHistory } from '../src/lib/intent/intent-expansion.ts';
 import type { ValidationRule, IntentJudgment, ValidationCheck } from '../src/protocol.ts';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

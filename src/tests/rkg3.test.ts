@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 
 import { runArgvValidator, isArgvRule, isArgvCommand, toArgv, shellescape } from '../lib/validator-argv.ts';
 import type { ArgvValidationRule } from '../lib/validator-argv.ts';
-import { makeWorkerIndex } from '../lib/git-index.ts';
+import { makeWorkerIndex } from '../lib/utils/git/git-index.ts';
 import { getHookScope, assertStagedScope, StagedOnlyFlag } from '../lib/hook-scope.ts';
 import { applyOverlay, writeOverlay, loadOverlay } from '../lib/strategy-overlay.ts';
 import type { StrategyOverlay } from '../lib/strategy-overlay.ts';

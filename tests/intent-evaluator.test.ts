@@ -9,8 +9,8 @@ import {
   readEvaluations,
   loadContextFiles,
   judgmentToRecord,
-} from '../src/lib/intent-evaluator.ts';
-import type { IntentEvaluationRecord } from '../src/lib/intent-evaluator.ts';
+} from '../src/lib/intent/intent-evaluator.ts';
+import type { IntentEvaluationRecord } from '../src/lib/intent/intent-evaluator.ts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

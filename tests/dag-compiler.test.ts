@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { define } from '../src/protocol.ts';
 import { buildScaffold } from '../src/lib/scaffold.ts';
-import { buildClusters } from '../src/lib/cluster.ts';
+import { buildClusters } from '../src/lib/utils/cluster/cluster.ts';
 import { buildSchedule } from '../src/lib/schedule.ts';
 import type { Graph } from '../src/protocol.ts';
 

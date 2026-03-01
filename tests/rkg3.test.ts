@@ -6,7 +6,7 @@ import { existsSync } from 'node:fs';
 
 import { isArgvCommand, toArgv } from '../src/lib/validator-argv.js';
 import { runValidator } from '../src/lib/validator-runner.js';
-import { makeWorkerIndex } from '../src/lib/git-index.js';
+import { makeWorkerIndex } from '../src/lib/utils/git/git-index.js';
 import { assertStagedScope, getHookScope } from '../src/lib/hook-scope.js';
 import { applyOverlay } from '../src/lib/strategy-overlay.js';
 import type { StrategyOverlay } from '../src/lib/strategy-overlay.js';

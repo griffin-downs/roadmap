@@ -3,7 +3,7 @@
 // @entry roadmap
 
 import type { Graph } from '../protocol.ts';
-import type { PlanClarityGap } from './intent-expansion.ts';
+import type { PlanClarityGap } from './intent/intent-expansion.ts';
 import type { SpecClarifiedJson, SpecFeature } from './spec-verifier.ts';
 
 // ── Core ──────────────────────────────────────────────────────────────────────

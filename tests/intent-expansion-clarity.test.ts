@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   isInitGateFailure, extractPlanClarityGaps, generateInitGateExpansion,
-} from '../src/lib/intent-expansion.ts';
-import type { IntentFailure, PlanClarityGap } from '../src/lib/intent-expansion.ts';
+} from '../src/lib/intent/intent-expansion.ts';
+import type { IntentFailure, PlanClarityGap } from '../src/lib/intent/intent-expansion.ts';
 import type { ValidationRule, IntentJudgment } from '../src/protocol.ts';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

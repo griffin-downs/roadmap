@@ -3,8 +3,8 @@ import { define, graph, validateNode } from '../src/protocol.ts';
 import type { ValidationRule, IntentJudgment, ValidationResult, EscalationResult } from '../src/protocol.ts';
 import {
   extractIntentFailures, generateIntentExpansion, detectStall, buildEscalation,
-} from '../src/lib/intent-expansion.ts';
-import type { IntentFailure, ExpansionResult } from '../src/lib/intent-expansion.ts';
+} from '../src/lib/intent/intent-expansion.ts';
+import type { IntentFailure, ExpansionResult } from '../src/lib/intent/intent-expansion.ts';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

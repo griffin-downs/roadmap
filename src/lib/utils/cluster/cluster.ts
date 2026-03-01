@@ -3,8 +3,8 @@
 // @types Cluster, ClusterResult
 // @entry roadmap
 
-import type { Graph, NodeSpec } from '../protocol.ts';
-import { consumeArtifact, order, criticalPath } from '../protocol.ts';
+import type { Graph, NodeSpec } from '../../../protocol.ts';
+import { consumeArtifact, order, criticalPath } from '../../../protocol.ts';
 import { buildClustersSolver } from './cluster-solver.ts';
 
 export interface CrossClusterDep {

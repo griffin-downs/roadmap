@@ -213,7 +213,7 @@ export function contractClosure<T extends string>(g: Graph<T>): ContractViolatio
 import { loadCompletions, getCompletedNodeIds } from './completion-tracker.ts';
 import { validatePlanSelection } from './plan-selection.ts';
 import { isSpecOrigin, SPEC_ORIGIN_PATH } from './spec-origin.ts';
-import { loadPeers } from './federation.ts';
+import { loadPeers } from './utils/federation/federation.ts';
 
 export interface Violation {
   code: string;

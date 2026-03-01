@@ -3,7 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { readFileSync, existsSync } from 'node:fs';
-import type { FixNodeSpec } from '../src/lib/intent-expansion.ts';
+import type { FixNodeSpec } from '../src/lib/intent/intent-expansion.ts';
 import type { NodeSpec, ValidationRule } from '../src/protocol.ts';
 import { writeExpansionScript } from '../src/lib/expansion-writer.ts';
 
