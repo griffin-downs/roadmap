@@ -4894,5 +4894,28 @@
     ],
     "gitSha": "90178b3a4bba1f2d6c16e087a65471aa47ab68c1",
     "treeSha": "d7ad0d64aeef20b6eb5c5dde078bfe5181aefc36"
+  },
+  {
+    "nodeId": "rkg5-pareto-governance",
+    "completedAt": "2026-03-01T09:05:00.404Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090459",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "c27fa6fb6f4111a26b1c98481c46c385f6000fa8",
+    "treeSha": "022584c197c3bb48fbc6457e3cdb0c5f0e4ec538"
   }
 ]
