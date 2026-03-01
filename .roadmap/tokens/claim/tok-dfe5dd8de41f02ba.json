@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-dfe5dd8de41f02ba",
+  "type": "claim",
+  "subject": "rkg5-failure-routing",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:18:28.305Z",
+  "expiresAt": "2026-03-01T09:23:28.305Z",
+  "boundTo": {
+    "headSha": "14885bdceef87007bb379f764affd300fbf3a42c"
+  },
+  "payload": {
+    "nodeId": "rkg5-failure-routing",
+    "claimedAt": "2026-03-01T09:18:28.305Z",
+    "claimExpiry": "2026-03-01T09:23:28.305Z"
+  },
+  "ok": true
+}

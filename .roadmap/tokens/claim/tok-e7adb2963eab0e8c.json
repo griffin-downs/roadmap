@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-e7adb2963eab0e8c",
+  "type": "claim",
+  "subject": "tu-tests",
+  "owner": "w6",
+  "issuedAt": "2026-03-01T09:25:19.626Z",
+  "expiresAt": "2026-03-01T09:30:19.626Z",
+  "boundTo": {
+    "headSha": "474765a72b43fc3019cbaa27865a85906f75e638"
+  },
+  "payload": {
+    "nodeId": "tu-tests",
+    "claimedAt": "2026-03-01T09:25:19.626Z",
+    "claimExpiry": "2026-03-01T09:30:19.626Z"
+  },
+  "ok": true
+}

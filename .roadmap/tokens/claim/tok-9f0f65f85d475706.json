@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-9f0f65f85d475706",
+  "type": "claim",
+  "subject": "sgk-intent-cmds",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:29:47.643Z",
+  "expiresAt": "2026-03-01T09:34:47.643Z",
+  "boundTo": {
+    "headSha": "85cf09106319494470b0d28a97c12019041d1dd4"
+  },
+  "payload": {
+    "nodeId": "sgk-intent-cmds",
+    "claimedAt": "2026-03-01T09:29:47.643Z",
+    "claimExpiry": "2026-03-01T09:34:47.643Z"
+  },
+  "ok": true
+}

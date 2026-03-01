@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-f5237259bdca4df1",
+  "type": "claim",
+  "subject": "surf-cli-registry",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T10:53:27.422Z",
+  "expiresAt": "2026-03-01T10:58:27.422Z",
+  "boundTo": {
+    "headSha": "5846db5fb4c7ab1487ac1e0476d8a9f3ffdeaa25"
+  },
+  "payload": {
+    "nodeId": "surf-cli-registry",
+    "claimedAt": "2026-03-01T10:53:27.422Z",
+    "claimExpiry": "2026-03-01T10:58:27.422Z"
+  },
+  "ok": true
+}

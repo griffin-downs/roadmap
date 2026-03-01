@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-7175da5dcf674ac1",
+  "type": "claim",
+  "subject": "rkg5-failure-routing",
+  "owner": "w4",
+  "issuedAt": "2026-03-01T09:15:46.099Z",
+  "expiresAt": "2026-03-01T09:20:46.099Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg5-failure-routing",
+    "claimedAt": "2026-03-01T09:15:46.099Z",
+    "claimExpiry": "2026-03-01T09:20:46.099Z"
+  },
+  "ok": false
+}

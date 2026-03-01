@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-9e30c218223c8254",
+  "type": "claim",
+  "subject": "intent-surf-001",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T11:03:46.890Z",
+  "expiresAt": "2026-03-01T11:08:46.890Z",
+  "boundTo": {
+    "headSha": "b014a094227e689ccf254b586a907749d6b2bc53"
+  },
+  "payload": {
+    "nodeId": "intent-surf-001",
+    "claimedAt": "2026-03-01T11:03:46.890Z",
+    "claimExpiry": "2026-03-01T11:08:46.890Z"
+  },
+  "ok": false
+}

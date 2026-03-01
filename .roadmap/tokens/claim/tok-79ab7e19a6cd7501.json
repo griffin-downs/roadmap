@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-79ab7e19a6cd7501",
+  "type": "claim",
+  "subject": "rkg4-contract-closure",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:04:46.428Z",
+  "expiresAt": "2026-03-01T09:09:46.428Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg4-contract-closure",
+    "claimedAt": "2026-03-01T09:04:46.428Z",
+    "claimExpiry": "2026-03-01T09:09:46.428Z"
+  },
+  "ok": true
+}

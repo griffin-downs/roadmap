@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-f384870254e3c14d",
+  "type": "claim",
+  "subject": "rkg5-pareto-governance",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:04:57.826Z",
+  "expiresAt": "2026-03-01T09:09:57.826Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg5-pareto-governance",
+    "claimedAt": "2026-03-01T09:04:57.826Z",
+    "claimExpiry": "2026-03-01T09:09:57.826Z"
+  },
+  "ok": true
+}

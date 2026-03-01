@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-02b8320d752fcd39",
+  "type": "claim",
+  "subject": "tu-cli-surface",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:19:32.709Z",
+  "expiresAt": "2026-03-01T09:24:32.709Z",
+  "boundTo": {
+    "headSha": "d40e20cab3ade773fc6eef105452a8b0b3909f67"
+  },
+  "payload": {
+    "nodeId": "tu-cli-surface",
+    "claimedAt": "2026-03-01T09:19:32.709Z",
+    "claimExpiry": "2026-03-01T09:24:32.709Z"
+  },
+  "ok": true
+}

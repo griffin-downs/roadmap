@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-408e33058450c9ff",
+  "type": "claim",
+  "subject": "integration-terminal",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T10:32:46.163Z",
+  "expiresAt": "2026-03-01T10:37:46.163Z",
+  "boundTo": {
+    "headSha": "430917733d4c0bb251a95a98a3fef068207b3594"
+  },
+  "payload": {
+    "nodeId": "integration-terminal",
+    "claimedAt": "2026-03-01T10:32:46.163Z",
+    "claimExpiry": "2026-03-01T10:37:46.163Z"
+  },
+  "ok": false
+}

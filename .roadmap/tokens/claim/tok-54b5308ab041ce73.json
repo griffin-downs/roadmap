@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-54b5308ab041ce73",
+  "type": "claim",
+  "subject": "surf-perf-schema",
+  "owner": "w-perf-schema",
+  "issuedAt": "2026-03-01T10:48:44.849Z",
+  "expiresAt": "2026-03-01T10:58:44.849Z",
+  "boundTo": {
+    "headSha": "9af7110e5a863ffff313ab2eca521c02b972b8ae7c519d554e231725bd533fc4"
+  },
+  "payload": {
+    "ttlSeconds": 600
+  },
+  "ok": false
+}

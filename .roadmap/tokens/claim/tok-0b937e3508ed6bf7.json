@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-0b937e3508ed6bf7",
+  "type": "claim",
+  "subject": "rf-chain-enforcer",
+  "owner": "w2",
+  "issuedAt": "2026-03-01T09:22:35.997Z",
+  "expiresAt": "2026-03-01T09:27:35.997Z",
+  "boundTo": {
+    "headSha": "c250f364f71bebd7ebc37e92a4c40ca94916f3c803d1f0ffa1697715c87fa658"
+  },
+  "payload": {
+    "ttlSeconds": 300
+  },
+  "ok": false
+}

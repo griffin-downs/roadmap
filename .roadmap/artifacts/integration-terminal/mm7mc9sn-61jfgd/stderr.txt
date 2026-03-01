@@ -1,0 +1,524 @@
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+position: integration-terminal
+level: 10
+progress: [████████████████████] 67/68 (99%)
+
+L00  ✅ init Existing roadmap codebase — src/protoco…
+L01  ✅ cli-output-plan Spec-kit the CLI stdout/stderr audit + …  ✅ dag-candidate-flow Non-destructive import/expand: write ca…  ✅ receipt-first-plan Spec-kit receipt-first scenarios + brea…  ✅ rkg3-validator-argv FR-IR-001 — shell validators as argv ar…  ✅ rkg4-kernel-config kernel.json schema + loader — centraliz…  ✅ rkg5-blend-receipt FR-GB-001 — BlendReceipt schema + ledge…  ✅ rkg6-judgment-receipt FR-IG-001 — IntentJudgmentReceipt schem…  ✅ sgk-plan SGK-1 — Strategy Governance Kernel: spe…  ✅ token-unify-plan Unify claims, strategy latch, and break…
+L02  ✅ dc-candidate-writer CandidateEnvelope type + writeCandidate…  ✅ rf-breakglass Breakglass open/close commands + receip…  ✅ rf-cmd-receipt CmdReceipt writer module. CmdReceipt ty…  ✅ rkg3-git-index FR-PAR-001 — per-worker git index isola…  ✅ rkg3-hook-scoping FR-PAR-002 — hook scoping staged-only. …  ✅ rkg3-perf-cache FR-PERF-001 — verify cache keyed by tre…  ✅ rkg3-strategy-ab FR-HAL-001 — strategy A/B overlays. Add…  ✅ rkg4-batch-gate FR-BATCH-001 — conflict detection as ha…  ✅ rkg4-contract-closure FR-CONTRACT-001 — DP ancestor closure +…  ✅ rkg4-env-bypass FR-STACK-001 — env clamping in validato…  ✅ rkg4-merge-branch-witness FR-MERGE-001 + FR-BRANCH-001 — namespac…  ✅ rkg4-orient-plan-receipt FR-ORIENT-001 — plan expansion receipt …  ✅ rkg4-reachability FR-REACH-001 — single-pass BFS reachabi…  ✅ rkg4-stable-order FR-DET-001 — deterministic comparator p…  ✅ rkg5-candidate-receipts FR-GB-005 — CandidateResult provenance.…  ✅ rkg5-checkset FR-GB-004 — CheckSet type + rollback ev…  ✅ rkg5-cli-explain FR-GB-009 — `roadmap gallery explain` +…  ✅ rkg5-guard-policy FR-GB-002 — guard registry + blendPolic…  ✅ rkg5-pareto-governance FR-GB-006 — quantization + pareto repor…  ✅ rkg5-statement-ownership FR-GB-003 — StatementOwnership model. E…  ✅ rkg6-convergence-metrics FR-IG-006 — convergence history receipt…  ✅ rkg6-evidence-algebra FR-IG-004 — evidence mode field + confi…  ✅ rkg6-expansion-receipt FR-IG-005 — ExpansionReceipt + sibling …  ✅ rkg6-intent-status-policy FR-IG-003 — intentPolicy gating in kern…  ✅ rkg6-rate-card FR-IG-007 — rates.json schema + rateCar…  ✅ rkg6-structured-diagnosis FR-IG-002 — structured diagnosis schema…  ✅ sgk-foundation SGK L00 — run manifest, error codes, ke…  ✅ tu-schema BoundToken type + TokenStore — read/wri…
+L03  ✅ dc-diff Implement `roadmap dag diff` — structur…  ✅ dc-expand-candidate Modify cmdExpand to write candidate via…  ✅ dc-import-candidate Modify cmdImport to write head.candidat…  ✅ rf-scenario-registry Scenario registry + loader. ScenarioReg…  ✅ rkg3-dispatch-enforcement FR-DISP-002 — dispatch plan as enforcem…  ✅ rkg4-algo-report FR-DOC-ALG-001 — `roadmap report algori…  ✅ rkg4-fixtures Fixture DAGs + expected outputs for RKG…  ✅ rkg5-failure-routing FR-GB-007 — GalleryFailure routing cont…  ✅ rkg6-fixtures Intent guard fixture suite for RKG-6. T…  ✅ sgk-receipts SGK L01 — all receipt types R1-R8 (stra…  ✅ tu-claims-migrate Migrate claims.ts to BoundToken — loadC…  ✅ tu-cli-surface roadmap token issue/list/inspect/revoke…  ✅ tu-index-gc Token index writer (append to index.ndj…  ✅ tu-strategy-migrate Delete hints.ts, update selectStrategy(…
+L04  ✅ dc-accept Implement `roadmap dag accept --note ".…  ✅ dc-reject Implement `roadmap dag reject --note ".…  ✅ rf-chain-enforcer Enforcement funnel. enforceChain() — si…  ✅ rkg3-fixtures Fixture suite for RKG-3. Tests: argv va…  ✅ rkg5-fixtures Adversarial fixture suite for RKG-5. Te…  ✅ sgk-cli-enforce SGK L02 — CLI enforcement: runid inject…  ✅ tu-tests Tests for S1-S7 — claim/strategy/gc/mig…
+L05  ✅ dc-tests Test suite covering all 8 acceptance sc…  ✅ rf-verify-integration Verify integration surfacing breakglass…  ✅ sgk-strategy-surface SGK L03 — strategy listing, auto-select…
+L06  ✅ rf-tests Tests for AT-1 through AT-6. Command re…  ✅ sgk-intent-cmds SGK L04 — init intent command, term int…
+L07  ✅ sgk-mine-audit SGK L05 — mining, audit, strategy detec…
+L08  ✅ sgk-display SGK L06 — display receipt writer, human…
+L09  ✅ sgk-e2e SGK L07 — contract tests, e2e run flow …
+L10  👉 integration-terminal Terminal integration event. All major w…
+L11  ⏳ term All RKG-3/4/5/6 governance hardening co…
+rkg-governess — RKG-3/4/5/6 — governance hardening: engine semantics, parallelism, gallery/blend, intent guards
+progress: [███████████████████░] 67/69 (97%)
+position: integration-terminal
+
+L00  ⏭️ init Existing roadmap codebase — src/protoco…
+L01  ✅ cli-output-plan Spec-kit the CLI stdout/stderr audit + …  ✅ dag-candidate-flow Non-destructive import/expand: write ca…  ✅ receipt-first-plan Spec-kit receipt-first scenarios + brea…  ✅ rkg3-validator-argv FR-IR-001 — shell validators as argv ar…  ✅ rkg4-kernel-config kernel.json schema + loader — centraliz…  ✅ rkg5-blend-receipt FR-GB-001 — BlendReceipt schema + ledge…  ✅ rkg6-judgment-receipt FR-IG-001 — IntentJudgmentReceipt schem…  ✅ sgk-plan SGK-1 — Strategy Governance Kernel: spe…  ✅ token-unify-plan Unify claims, strategy latch, and break…
+L02  ✅ dc-candidate-writer CandidateEnvelope type + writeCandidate…  ✅ rf-breakglass Breakglass open/close commands + receip…  ✅ rf-cmd-receipt CmdReceipt writer module. CmdReceipt ty…  ✅ rkg3-git-index FR-PAR-001 — per-worker git index isola…  ✅ rkg3-hook-scoping FR-PAR-002 — hook scoping staged-only. …  ✅ rkg3-perf-cache FR-PERF-001 — verify cache keyed by tre…  ✅ rkg3-strategy-ab FR-HAL-001 — strategy A/B overlays. Add…  ✅ rkg4-batch-gate FR-BATCH-001 — conflict detection as ha…  ✅ rkg4-contract-closure FR-CONTRACT-001 — DP ancestor closure +…  ✅ rkg4-env-bypass FR-STACK-001 — env clamping in validato…  ✅ rkg4-merge-branch-witness FR-MERGE-001 + FR-BRANCH-001 — namespac…  ✅ rkg4-orient-plan-receipt FR-ORIENT-001 — plan expansion receipt …  ✅ rkg4-reachability FR-REACH-001 — single-pass BFS reachabi…  ✅ rkg4-stable-order FR-DET-001 — deterministic comparator p…  ✅ rkg5-candidate-receipts FR-GB-005 — CandidateResult provenance.…  ✅ rkg5-checkset FR-GB-004 — CheckSet type + rollback ev…  ✅ rkg5-cli-explain FR-GB-009 — `roadmap gallery explain` +…  ✅ rkg5-guard-policy FR-GB-002 — guard registry + blendPolic…  ✅ rkg5-pareto-governance FR-GB-006 — quantization + pareto repor…  ✅ rkg5-statement-ownership FR-GB-003 — StatementOwnership model. E…  ✅ rkg6-convergence-metrics FR-IG-006 — convergence history receipt…  ✅ rkg6-evidence-algebra FR-IG-004 — evidence mode field + confi…  ✅ rkg6-expansion-receipt FR-IG-005 — ExpansionReceipt + sibling …  ✅ rkg6-intent-status-policy FR-IG-003 — intentPolicy gating in kern…  ✅ rkg6-rate-card FR-IG-007 — rates.json schema + rateCar…  ✅ rkg6-structured-diagnosis FR-IG-002 — structured diagnosis schema…  ✅ sgk-foundation SGK L00 — run manifest, error codes, ke…  ✅ tu-schema BoundToken type + TokenStore — read/wri…
+L03  ✅ dc-diff Implement `roadmap dag diff` — structur…  ✅ dc-expand-candidate Modify cmdExpand to write candidate via…  ✅ dc-import-candidate Modify cmdImport to write head.candidat…  ✅ rf-scenario-registry Scenario registry + loader. ScenarioReg…  ✅ rkg3-dispatch-enforcement FR-DISP-002 — dispatch plan as enforcem…  ✅ rkg4-algo-report FR-DOC-ALG-001 — `roadmap report algori…  ✅ rkg4-fixtures Fixture DAGs + expected outputs for RKG…  ✅ rkg5-failure-routing FR-GB-007 — GalleryFailure routing cont…  ✅ rkg6-fixtures Intent guard fixture suite for RKG-6. T…  ✅ sgk-receipts SGK L01 — all receipt types R1-R8 (stra…  ✅ tu-claims-migrate Migrate claims.ts to BoundToken — loadC…  ✅ tu-cli-surface roadmap token issue/list/inspect/revoke…  ✅ tu-index-gc Token index writer (append to index.ndj…  ✅ tu-strategy-migrate Delete hints.ts, update selectStrategy(…
+L04  ✅ dc-accept Implement `roadmap dag accept --note ".…  ✅ dc-reject Implement `roadmap dag reject --note ".…  ✅ rf-chain-enforcer Enforcement funnel. enforceChain() — si…  ✅ rkg3-fixtures Fixture suite for RKG-3. Tests: argv va…  ✅ rkg5-fixtures Adversarial fixture suite for RKG-5. Te…  ✅ sgk-cli-enforce SGK L02 — CLI enforcement: runid inject…  ✅ tu-tests Tests for S1-S7 — claim/strategy/gc/mig…
+L05  ✅ dc-tests Test suite covering all 8 acceptance sc…  ✅ rf-verify-integration Verify integration surfacing breakglass…  ✅ sgk-strategy-surface SGK L03 — strategy listing, auto-select…
+L06  ✅ rf-tests Tests for AT-1 through AT-6. Command re…  ✅ sgk-intent-cmds SGK L04 — init intent command, term int…
+L07  ✅ sgk-mine-audit SGK L05 — mining, audit, strategy detec…
+L08  ✅ sgk-display SGK L06 — display receipt writer, human…
+L09  ✅ sgk-e2e SGK L07 — contract tests, e2e run flow …
+L10  👉 integration-terminal Terminal integration event. All major w…
+L11  ⏳ term All RKG-3/4/5/6 governance hardening co…
+━━ env-audit ━━
+{
+  "pass": false,
+  "violations": [
+    {
+      "envVar": "ROADMAP_VALIDATING",
+      "value": "1",
+      "kernelReplacement": "policy.validating",
+      "fix": "Set policy.validating: true in .roadmap/kernel.json instead"
+    }
+  ],
+  "checkedAt": "2026-03-01T10:39:49.077Z",
+  "kernelJsonExists": true
+}
+Errors during discovery: Failed to parse /tmp/roadmap-locate-test-1772361584307/repo-corrupted/.roadmap/head.json
+━━ doctor ━━
+{
+  "nodeCount": 69,
+  "completedCount": 337,
+  "failedCount": 0,
+  "pendingCount": 2,
+  "staleCount": 271,
+  "planCount": 5,
+  "skippedCount": 1,
+  "stale": [
+    "fix-artifact-field",
+    "fix-post-commit-hook",
+    "fix-orient-completions",
+    "fr-predicates",
+    "fr-cross-orient",
+    "fr-cli-surface",
+    "fr-consumer-unblock",
+    "adv-reconcile",
+    "adv-orient",
+    "adv-property",
+    "adv-types",
+    "fix-reconcile",
+    "fix-orient",
+    "consumer-integration",
+    "phase-1-term",
+
+Errors during discovery: Failed to parse /tmp/roadmap-locate-test-1772361584307/repo-corrupted/.roadmap/head.json
+Errors during discovery: Failed to parse /tmp/roadmap-locate-test-1772361584307/repo-corrupted/.roadmap/head.json
+position: integration-terminal
+level: 10
+progress: [████████████████████] 67/68 (99%)
+
+L00  ✅ init Existing roadmap codebase — src/protoco…
+L01  ✅ cli-output-plan Spec-kit the CLI stdout/stderr audit + …  ✅ dag-candidate-flow Non-destructive import/expand: write ca…  ✅ receipt-first-plan Spec-kit receipt-first scenarios + brea…  ✅ rkg3-validator-argv FR-IR-001 — shell validators as argv ar…  ✅ rkg4-kernel-config kernel.json schema + loader — centraliz…  ✅ rkg5-blend-receipt FR-GB-001 — BlendReceipt schema + ledge…  ✅ rkg6-judgment-receipt FR-IG-001 — IntentJudgmentReceipt schem…  ✅ sgk-plan SGK-1 — Strategy Governance Kernel: spe…  ✅ token-unify-plan Unify claims, strategy latch, and break…
+L02  ✅ dc-candidate-writer CandidateEnvelope type + writeCandidate…  ✅ rf-breakglass Breakglass open/close commands + receip…  ✅ rf-cmd-receipt CmdReceipt writer module. CmdReceipt ty…  ✅ rkg3-git-index FR-PAR-001 — per-worker git index isola…  ✅ rkg3-hook-scoping FR-PAR-002 — hook scoping staged-only. …  ✅ rkg3-perf-cache FR-PERF-001 — verify cache keyed by tre…  ✅ rkg3-strategy-ab FR-HAL-001 — strategy A/B overlays. Add…  ✅ rkg4-batch-gate FR-BATCH-001 — conflict detection as ha…  ✅ rkg4-contract-closure FR-CONTRACT-001 — DP ancestor closure +…  ✅ rkg4-env-bypass FR-STACK-001 — env clamping in validato…  ✅ rkg4-merge-branch-witness FR-MERGE-001 + FR-BRANCH-001 — namespac…  ✅ rkg4-orient-plan-receipt FR-ORIENT-001 — plan expansion receipt …  ✅ rkg4-reachability FR-REACH-001 — single-pass BFS reachabi…  ✅ rkg4-stable-order FR-DET-001 — deterministic comparator p…  ✅ rkg5-candidate-receipts FR-GB-005 — CandidateResult provenance.…  ✅ rkg5-checkset FR-GB-004 — CheckSet type + rollback ev…  ✅ rkg5-cli-explain FR-GB-009 — `roadmap gallery explain` +…  ✅ rkg5-guard-policy FR-GB-002 — guard registry + blendPolic…  ✅ rkg5-pareto-governance FR-GB-006 — quantization + pareto repor…  ✅ rkg5-statement-ownership FR-GB-003 — StatementOwnership model. E…  ✅ rkg6-convergence-metrics FR-IG-006 — convergence history receipt…  ✅ rkg6-evidence-algebra FR-IG-004 — evidence mode field + confi…  ✅ rkg6-expansion-receipt FR-IG-005 — ExpansionReceipt + sibling …  ✅ rkg6-intent-status-policy FR-IG-003 — intentPolicy gating in kern…  ✅ rkg6-rate-card FR-IG-007 — rates.json schema + rateCar…  ✅ rkg6-structured-diagnosis FR-IG-002 — structured diagnosis schema…  ✅ sgk-foundation SGK L00 — run manifest, error codes, ke…  ✅ tu-schema BoundToken type + TokenStore — read/wri…
+L03  ✅ dc-diff Implement `roadmap dag diff` — structur…  ✅ dc-expand-candidate Modify cmdExpand to write candidate via…  ✅ dc-import-candidate Modify cmdImport to write head.candidat…  ✅ rf-scenario-registry Scenario registry + loader. ScenarioReg…  ✅ rkg3-dispatch-enforcement FR-DISP-002 — dispatch plan as enforcem…  ✅ rkg4-algo-report FR-DOC-ALG-001 — `roadmap report algori…  ✅ rkg4-fixtures Fixture DAGs + expected outputs for RKG…  ✅ rkg5-failure-routing FR-GB-007 — GalleryFailure routing cont…  ✅ rkg6-fixtures Intent guard fixture suite for RKG-6. T…  ✅ sgk-receipts SGK L01 — all receipt types R1-R8 (stra…  ✅ tu-claims-migrate Migrate claims.ts to BoundToken — loadC…  ✅ tu-cli-surface roadmap token issue/list/inspect/revoke…  ✅ tu-index-gc Token index writer (append to index.ndj…  ✅ tu-strategy-migrate Delete hints.ts, update selectStrategy(…
+L04  ✅ dc-accept Implement `roadmap dag accept --note ".…  ✅ dc-reject Implement `roadmap dag reject --note ".…  ✅ rf-chain-enforcer Enforcement funnel. enforceChain() — si…  ✅ rkg3-fixtures Fixture suite for RKG-3. Tests: argv va…  ✅ rkg5-fixtures Adversarial fixture suite for RKG-5. Te…  ✅ sgk-cli-enforce SGK L02 — CLI enforcement: runid inject…  ✅ tu-tests Tests for S1-S7 — claim/strategy/gc/mig…
+L05  ✅ dc-tests Test suite covering all 8 acceptance sc…  ✅ rf-verify-integration Verify integration surfacing breakglass…  ✅ sgk-strategy-surface SGK L03 — strategy listing, auto-select…
+L06  ✅ rf-tests Tests for AT-1 through AT-6. Command re…  ✅ sgk-intent-cmds SGK L04 — init intent command, term int…
+L07  ✅ sgk-mine-audit SGK L05 — mining, audit, strategy detec…
+L08  ✅ sgk-display SGK L06 — display receipt writer, human…
+L09  ✅ sgk-e2e SGK L07 — contract tests, e2e run flow …
+L10  👉 integration-terminal Terminal integration event. All major w…
+L11  ⏳ term All RKG-3/4/5/6 governance hardening co…
+Errors during discovery: Failed to parse /tmp/roadmap-locate-test-1772361584307/repo-corrupted/.roadmap/head.json
+position: integration-terminal
+level: 10
+progress: [████████████████████] 67/68 (99%)
+
+L00  ✅ init Existing roadmap codebase — src/protoco…
+L01  ✅ cli-output-plan Spec-kit the CLI stdout/stderr audit + …  ✅ dag-candidate-flow Non-destructive import/expand: write ca…  ✅ receipt-first-plan Spec-kit receipt-first scenarios + brea…  ✅ rkg3-validator-argv FR-IR-001 — shell validators as argv ar…  ✅ rkg4-kernel-config kernel.json schema + loader — centraliz…  ✅ rkg5-blend-receipt FR-GB-001 — BlendReceipt schema + ledge…  ✅ rkg6-judgment-receipt FR-IG-001 — IntentJudgmentReceipt schem…  ✅ sgk-plan SGK-1 — Strategy Governance Kernel: spe…  ✅ token-unify-plan Unify claims, strategy latch, and break…
+L02  ✅ dc-candidate-writer CandidateEnvelope type + writeCandidate…  ✅ rf-breakglass Breakglass open/close commands + receip…  ✅ rf-cmd-receipt CmdReceipt writer module. CmdReceipt ty…  ✅ rkg3-git-index FR-PAR-001 — per-worker git index isola…  ✅ rkg3-hook-scoping FR-PAR-002 — hook scoping staged-only. …  ✅ rkg3-perf-cache FR-PERF-001 — verify cache keyed by tre…  ✅ rkg3-strategy-ab FR-HAL-001 — strategy A/B overlays. Add…  ✅ rkg4-batch-gate FR-BATCH-001 — conflict detection as ha…  ✅ rkg4-contract-closure FR-CONTRACT-001 — DP ancestor closure +…  ✅ rkg4-env-bypass FR-STACK-001 — env clamping in validato…  ✅ rkg4-merge-branch-witness FR-MERGE-001 + FR-BRANCH-001 — namespac…  ✅ rkg4-orient-plan-receipt FR-ORIENT-001 — plan expansion receipt …  ✅ rkg4-reachability FR-REACH-001 — single-pass BFS reachabi…  ✅ rkg4-stable-order FR-DET-001 — deterministic comparator p…  ✅ rkg5-candidate-receipts FR-GB-005 — CandidateResult provenance.…  ✅ rkg5-checkset FR-GB-004 — CheckSet type + rollback ev…  ✅ rkg5-cli-explain FR-GB-009 — `roadmap gallery explain` +…  ✅ rkg5-guard-policy FR-GB-002 — guard registry + blendPolic…  ✅ rkg5-pareto-governance FR-GB-006 — quantization + pareto repor…  ✅ rkg5-statement-ownership FR-GB-003 — StatementOwnership model. E…  ✅ rkg6-convergence-metrics FR-IG-006 — convergence history receipt…  ✅ rkg6-evidence-algebra FR-IG-004 — evidence mode field + confi…  ✅ rkg6-expansion-receipt FR-IG-005 — ExpansionReceipt + sibling …  ✅ rkg6-intent-status-policy FR-IG-003 — intentPolicy gating in kern…  ✅ rkg6-rate-card FR-IG-007 — rates.json schema + rateCar…  ✅ rkg6-structured-diagnosis FR-IG-002 — structured diagnosis schema…  ✅ sgk-foundation SGK L00 — run manifest, error codes, ke…  ✅ tu-schema BoundToken type + TokenStore — read/wri…
+L03  ✅ dc-diff Implement `roadmap dag diff` — structur…  ✅ dc-expand-candidate Modify cmdExpand to write candidate via…  ✅ dc-import-candidate Modify cmdImport to write head.candidat…  ✅ rf-scenario-registry Scenario registry + loader. ScenarioReg…  ✅ rkg3-dispatch-enforcement FR-DISP-002 — dispatch plan as enforcem…  ✅ rkg4-algo-report FR-DOC-ALG-001 — `roadmap report algori…  ✅ rkg4-fixtures Fixture DAGs + expected outputs for RKG…  ✅ rkg5-failure-routing FR-GB-007 — GalleryFailure routing cont…  ✅ rkg6-fixtures Intent guard fixture suite for RKG-6. T…  ✅ sgk-receipts SGK L01 — all receipt types R1-R8 (stra…  ✅ tu-claims-migrate Migrate claims.ts to BoundToken — loadC…  ✅ tu-cli-surface roadmap token issue/list/inspect/revoke…  ✅ tu-index-gc Token index writer (append to index.ndj…  ✅ tu-strategy-migrate Delete hints.ts, update selectStrategy(…
+L04  ✅ dc-accept Implement `roadmap dag accept --note ".…  ✅ dc-reject Implement `roadmap dag reject --note ".…  ✅ rf-chain-enforcer Enforcement funnel. enforceChain() — si…  ✅ rkg3-fixtures Fixture suite for RKG-3. Tests: argv va…  ✅ rkg5-fixtures Adversarial fixture suite for RKG-5. Te…  ✅ sgk-cli-enforce SGK L02 — CLI enforcement: runid inject…  ✅ tu-tests Tests for S1-S7 — claim/strategy/gc/mig…
+L05  ✅ dc-tests Test suite covering all 8 acceptance sc…  ✅ rf-verify-integration Verify integration surfacing breakglass…  ✅ sgk-strategy-surface SGK L03 — strategy listing, auto-select…
+L06  ✅ rf-tests Tests for AT-1 through AT-6. Command re…  ✅ sgk-intent-cmds SGK L04 — init intent command, term int…
+L07  ✅ sgk-mine-audit SGK L05 — mining, audit, strategy detec…
+L08  ✅ sgk-display SGK L06 — display receipt writer, human…
+L09  ✅ sgk-e2e SGK L07 — contract tests, e2e run flow …
+L10  👉 integration-terminal Terminal integration event. All major w…
+L11  ⏳ term All RKG-3/4/5/6 governance hardening co…
+position: build, test
+level: 1
+progress: [██████████░░░░░░░░░░] 1/2 (50%)
+
+L00  ✅ bootstrap Create initial scaffold
+L01  👉 build Build TypeScript to JavaScript  👉 test Run test suite
+L02  ⏳ ready Project ready for release
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+position: build, test
+level: 1
+progress: [██████████░░░░░░░░░░] 1/2 (50%)
+
+L00  ✅ bootstrap Create initial scaffold
+L01  👉 build Build TypeScript to JavaScript  👉 test Run test suite
+L02  ⏳ ready Project ready for release
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+position: build, test
+level: 1
+progress: [██████████░░░░░░░░░░] 1/2 (50%)
+
+L00  ✅ bootstrap Create initial scaffold
+L01  👉 build Build TypeScript to JavaScript  👉 test Run test suite
+L02  ⏳ ready Project ready for release
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+position: build, test
+level: 1
+progress: [█████████████░░░░░░░] 2/3 (67%)
+
+L00  ✅ bootstrap Create initial scaffold
+L01  ✅ build Build TypeScript to JavaScript  👉 test Run test suite
+L02  ⏳ ready Project ready for release
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+test-consumer — Consumer project workflow
+progress: [██████████░░░░░░░░░░] 2/4 (50%)
+position: build, test
+
+L00  ✅ bootstrap Create initial scaffold
+L01  ✅ build Build TypeScript to JavaScript  👉 test Run test suite
+L02  ⏳ ready Project ready for release
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+(node:207365) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+position: start
+level: 0
+progress: [░░░░░░░░░░░░░░░░░░░░] 0/1 (0%)
+
+L00  👉 start begin
+L01  ⏳ end done
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+position: ready
+level: 2
+progress: [████████████████████] 3/3 (100%)
+
+L00  ✅ bootstrap Create initial scaffold
+L01  ✅ build Build TypeScript to JavaScript  ✅ test Run test suite
+L02  👉 ready Project ready for release
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+position: start
+level: 0
+progress: [░░░░░░░░░░░░░░░░░░░░] 0/1 (0%)
+
+L00  👉 start begin
+L01  ⏳ end done
+position: ready
+level: 2
+progress: [████████████████████] 3/3 (100%)
+
+L00  ✅ bootstrap Create initial scaffold
+L01  ✅ build Build TypeScript to JavaScript  ✅ test Run test suite
+L02  👉 ready Project ready for release
+cli-local — test cli-local
+progress: [░░░░░░░░░░░░░░░░░░░░] 0/2 (0%)
+position: start
+
+L00  👉 start begin
+L01  ⏳ end done
+cli-local — test cli-local
+progress: [░░░░░░░░░░░░░░░░░░░░] 0/2 (0%)
+position: start
+
+L00  👉 start begin
+L01  ⏳ end done
+mono-fusion — Sensor fusion monorepo
+progress: [░░░░░░░░░░░░░░░░░░░░] 0/2 (0%)
+position: adr-setup
+
+L00  👉 adr-setup ADR docs
+L01  ⏳ shared-protocol Shared protocol types
+━━ merge ━━
+{
+  "local": {
+    "id": "cli-local",
+    "nodes": 2
+  },
+  "sibling": {
+    "id": "cli-sibling",
+    "path": "/home/griffin/src/roadmap/.test-cli-cross/sibling",
+    "nodes": 2
+  },
+  "connections": {
+    "siblingToLocal": [
+      {
+        "localNode": "start",
+        "siblingNode": "init",
+        "artifact": "lib.h"
+      }
+    ],
+    "localToSibling": []
+  },
+  "summary": "1 artifact(s) flow sibling→local, 0 flow local→sibling"
+}
+━━ merge ━━
+{
+  "local": {
+    "id": "mono-fusion",
+    "nodes": 2
+  },
+  "sibling": {
+    "id": "donjon",
+    "path": "/home/griffin/src/roadmap/.test-fr-e2e/donjon",
+    "nodes": 3
+  },
+  "connections": {
+    "siblingToLocal": [
+      {
+        "localNode": "shared-protocol",
+        "siblingNode": "build-container",
+        "artifact": "Dockerfile.build"
+      },
+      {
+        "localNode": "shared-protocol",
+        "siblingNode": "style-config",
+        "artifact": ".clang-format"
+      }
+    ],
+    "
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+position: adr-setup
+level: 0
+progress: [░░░░░░░░░░░░░░░░░░░░] 0/1 (0%)
+
+L00  👉 adr-setup ADR docs
+L01  ⏳ shared-protocol Shared protocol types
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+[metaflow/guards] WARNING: SKIP_PLAN_GATE is set but has no effect on metaflow sovereignty checks. Use a bypass receipt instead.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+[metaflow/guards] WARNING: SKIP_PLAN_GATE is set but has no effect on metaflow sovereignty checks. Use a bypass receipt instead.
+[metaflow/guards] WARNING: SKIP_VALIDATE is set but has no effect on metaflow sovereignty checks. Use a bypass receipt instead.
+[metaflow/guards] WARNING: SKIP_AUTHORITY is set but has no effect on metaflow sovereignty checks. Use a bypass receipt instead.
+[metaflow/guards] WARNING: SKIP_PLAN_GATE is set but has no effect on metaflow sovereignty checks. Use a bypass receipt instead.
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Suites 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/git-library.test.ts[2m [ tests/git-library.test.ts ][22m
+[31m[1mError[22m: EACCES: permission denied, mkdir '/.test-git-lib'[39m
+[36m [2m❯[22m tests/git-library.test.ts:[2m11:3[22m[39m
+    [90m  9| [39m[34mbeforeAll[39m(() [33m=>[39m {
+    [90m 10| [39m  [34mrmSync[39m(tmpRepo[33m,[39m { recursive[33m:[39m [35mtrue[39m[33m,[39m force[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m 11| [39m  [34mmkdirSync[39m(tmpRepo[33m,[39m { recursive[33m:[39m [35mtrue[39m })[33m;[39m
+    [90m   | [39m  [31m^[39m
+    [90m 12| [39m  [34mexecSync[39m([32m'git init'[39m[33m,[39m { cwd[33m:[39m tmpRepo[33m,[39m stdio[33m:[39m [32m'pipe'[39m })[33m;[39m
+    [90m 13| [39m  execSync('git config user.email "test@example.com" && git config use…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/cli.test.ts[2m > [22mbin/roadmap CLI[2m > [22mtrail[2m > [22mrecords invocations to trail.jsonl
+[31m[1mAssertionError[22m: expected 1 to be greater than or equal to 5[39m
+[36m [2m❯[22m tests/cli.test.ts:[2m115:28[22m[39m
+    [90m113| [39m      // orient + describe + describe + parallel + validate + validate…
+    [90m114| [39m      // (trail is cleared by beforeAll, so we expect entries from tes…
+    [90m115| [39m      [34mexpect[39m(result[33m.[39mcount)[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m5[39m)[33m;[39m
+    [90m   | [39m                           [31m^[39m
+    [90m116| [39m      [34mexpect[39m(result[33m.[39mentries[[34m0[39m])[33m.[39m[34mtoHaveProperty[39m([32m'ts'[39m)[33m;[39m
+    [90m117| [39m      [34mexpect[39m(result[33m.[39mentries[[34m0[39m])[33m.[39m[34mtoHaveProperty[39m([32m'cmd'[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+

@@ -1,0 +1,402 @@
+{
+  "id": "cp-20260301093137",
+  "timestamp": 1772357497426,
+  "roadmapPosition": [
+    "rf-tests",
+    "sgk-intent-cmds"
+  ],
+  "phase": "complete:rf-tests",
+  "artifacts": [
+    {
+      "path": "/home/griffin/src/roadmap/src/protocol.ts",
+      "hash": "e1a08090332b2aead6761b5e56af8789f2e4704bf1f4d42ce5313bef24ec0f4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/validator-runner.ts",
+      "hash": "3137f1c368bf6bac967366eeffc29db0faaa807952bd42371e1599f2116be008"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/completion-store.ts",
+      "hash": "232c33dd93a90748b08b6d698d6d016ac37958d1a02797cf0425e885cc3d5959"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/pre-spec/cli-output.md",
+      "hash": "c90569b0cb8386a27eba6fc1a60a50b02641de8236888b8a3f1df9bd84f6f646"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/cli-output/spec.md",
+      "hash": "d20dedf4eee7dafcc71ebe6e85b7410f36540004387f8d6143b85c3cace3c6d5"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/cli-output/tasks.md",
+      "hash": "ea64d1f238a96d949222af89e877bb69aaddb6b055d3d7722639a9fe6a179821"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/pre-spec/dag-candidate.md",
+      "hash": "ec7267a829f6b97071ea5ce3212a8f1cced6f79157ab02dc8b5cf8a292b10839"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/dag-candidate/spec.md",
+      "hash": "645bbb92ed053ba465718f66a3ebe8855d6678cfb93488a540331a2d31e32590"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/dag-candidate/tasks.md",
+      "hash": "a73a448331c8608aa8b00be2e8a769019f6409764c5729761222104c39219290"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/pre-spec/receipt-first.md",
+      "hash": "e4435508df16e54b053dde5ea10bf8f0df9f6e6749382e78c8ffc3e0e20baf6c"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/receipt-first/spec.md",
+      "hash": "5c2374a22d45e9a883b3eba8c7b728d5ed4fe64c29b834d9adfccf6e3221c08c"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/receipt-first/tasks.md",
+      "hash": "e1386b049c473e635171ec8fb7d4f8cfbe304c7cef923e7237f815c42f062c3c"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/validator-argv.ts",
+      "hash": "0acd3b0e6e8c2901617e9e35d36e7ef16bde7aa2ed1576c06ef7b1a547e4d069"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/protocol.ts",
+      "hash": "e1a08090332b2aead6761b5e56af8789f2e4704bf1f4d42ce5313bef24ec0f4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/kernel-config.ts",
+      "hash": "de8ebf87fe71e7f4a6f41dda5cb95db3fefbaa7ae234b61578d83b5afacb477d"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.roadmap/kernel.json",
+      "hash": "758f5721ff50c8583323921337b0077156024b0850ca30d0852736605ff680a3"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/blend.ts",
+      "hash": "8c9ca2fd9abb575cb5b81ee543c08b8a2ebb7ec54eb8b2fdafb2f2e9c91f0011"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/blend-receipt.ts",
+      "hash": "acbd19e25acfe074b36fc1c01d27754ab87d77bb1b73df6863d396017dd8e11e"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/intent-evaluator.ts",
+      "hash": "a3eb7e6d6d25f9d558de8e7f4ce0fd4a9102188e565a81e0514faa4e49b1b87c"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/judgment-receipt.ts",
+      "hash": "83680b4f34832ee2a5d267aa1133d93466cdaf7ec8e6fbbf9dc1162876cfef83"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/pre-spec/sgk.md",
+      "hash": "cfb50fe03629bb6f2572b2ada9c339e9014d5c2f684f313abdfb4829938a68e2"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/sgk/spec.md",
+      "hash": "8547b927a2ce626ae8ee552cb2096a10b6dbf4f0b8b748119489980664fb2384"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/sgk/tasks.md",
+      "hash": "f1c095467abe6240e4713674cdf22fb362a43bfb27a0ba504e1d14dbd724eaec"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/pre-spec/token-unify.md",
+      "hash": "d35de9cd9c9473931e74c09e60b7de6ebbdfa435d1c94be09ca05b66fb4dde5d"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/token-unify/spec.md",
+      "hash": "49c22d16451e8456f35a23092f2af384259fcf4b6638ba6762bc296bde80f189"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.specify/specs/token-unify/tasks.md",
+      "hash": "9c2db22c8d8ae02619571ec1fc4f44ebf9ca61c31c0f801cdd86f7707bf982ab"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/dag-candidate.ts",
+      "hash": "370be7289199b1cdab8284bbcf41191342a3b47ef6aca0c9ad6545574df895f0"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/receipt-first/breakglass.ts",
+      "hash": "139f5cfedbcfd52bafae0198255d6ee3bb6184e7c752cf71b910f42b7190a606"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/receipt-first/cmd-receipt.ts",
+      "hash": "ffb60f7d1ce6a3f4a9ae4d89b40f0e0d1afb9ae344567853329a9355c50dbaed"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/git-index.ts",
+      "hash": "b6623caf1788950d224fdd644c5e924accfe83e4a58c57bbd492a58ead2dd8d6"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/hook-scope.ts",
+      "hash": "115655f470679d8b7073c770625e7a7008d714af40cc3921f05ba859cecf6971"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/verify-cache.ts",
+      "hash": "ae02df26469cf95a6ff0976ba59a85c275c789b98bcda7444ec9d4e03383b708"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/strategy-overlay.ts",
+      "hash": "64e19f807bd4d4b92ce6fc2261e4f804981c2d057d1bdefabdf5fc77a2b9f1d5"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/batch-conflicts.ts",
+      "hash": "c92660349cd58cc02a8a8841129d2d7b1cb74b86cc39946b34a176d29d6b5173"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/verify.ts",
+      "hash": "5eda85abf105eb33d03a8f1ef79aa9ca65577db7a6fd79af9bf0a23cbe24522a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/validator-runner.ts",
+      "hash": "3137f1c368bf6bac967366eeffc29db0faaa807952bd42371e1599f2116be008"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/protocol.ts",
+      "hash": "e1a08090332b2aead6761b5e56af8789f2e4704bf1f4d42ce5313bef24ec0f4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/protocol.ts",
+      "hash": "e1a08090332b2aead6761b5e56af8789f2e4704bf1f4d42ce5313bef24ec0f4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/verify.ts",
+      "hash": "5eda85abf105eb33d03a8f1ef79aa9ca65577db7a6fd79af9bf0a23cbe24522a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/protocol.ts",
+      "hash": "e1a08090332b2aead6761b5e56af8789f2e4704bf1f4d42ce5313bef24ec0f4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/emit-gallery.ts",
+      "hash": "b3ec80a01d5d56ed87e48eaa75e031aa3d200545e5dfc1ba44c7745c80f2bf45"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/blend.ts",
+      "hash": "8c9ca2fd9abb575cb5b81ee543c08b8a2ebb7ec54eb8b2fdafb2f2e9c91f0011"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "4040ce4115b599e2718a5a70272cbb0728916c399491255be53e6273494cea8a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/blend-policy.ts",
+      "hash": "38322e45217ebd37b461f480fcb10bd190299bd5022dc84231f4248446553be9"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/gallery.ts",
+      "hash": "3649340d7d57acee7c185582967276db31d1b81c73026c1f403ce52f1d67ddc6"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/blend.ts",
+      "hash": "8c9ca2fd9abb575cb5b81ee543c08b8a2ebb7ec54eb8b2fdafb2f2e9c91f0011"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/intent-expansion.ts",
+      "hash": "9582a4582aba3777cc747eee2c730fab1e2b3952a23bef5bf9ac76a2e8c92b4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/intent-expansion.ts",
+      "hash": "9582a4582aba3777cc747eee2c730fab1e2b3952a23bef5bf9ac76a2e8c92b4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/intent-expansion.ts",
+      "hash": "9582a4582aba3777cc747eee2c730fab1e2b3952a23bef5bf9ac76a2e8c92b4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/protocol.ts",
+      "hash": "e1a08090332b2aead6761b5e56af8789f2e4704bf1f4d42ce5313bef24ec0f4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/kernel-config.ts",
+      "hash": "de8ebf87fe71e7f4a6f41dda5cb95db3fefbaa7ae234b61578d83b5afacb477d"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/rate-card.ts",
+      "hash": "c21a26cb1be09e28533c966e4c98abf7d91f5d83b82dc4bc38ebc3ae0cf5b09a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.roadmap/rates.json",
+      "hash": "f3a638ea37269e8b1de96966c606d6c4d2508f36e44768bbb707a74e27cdbb52"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/intent-expansion.ts",
+      "hash": "9582a4582aba3777cc747eee2c730fab1e2b3952a23bef5bf9ac76a2e8c92b4a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/run-manifest.ts",
+      "hash": "90fa864d1dbc6f5102008f7db7cb0cd39bc5b16c26a060248bb02693b81915c7"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/kernel-ext.ts",
+      "hash": "c94c7ab91e9bc8acedaea5471535da9e7225c84bc2bca4a109a1632496004135"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/token-store.ts",
+      "hash": "c287d809b16b58c6fb1fa656d5de13c614263d9e516b67057717c037269cb8a1"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "4040ce4115b599e2718a5a70272cbb0728916c399491255be53e6273494cea8a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "4040ce4115b599e2718a5a70272cbb0728916c399491255be53e6273494cea8a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "4040ce4115b599e2718a5a70272cbb0728916c399491255be53e6273494cea8a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/receipt-first/scenario-registry.ts",
+      "hash": "bfd0220e92d8126d5bb07eb5f05bc85d0f6bfdf6580a1aa48bcadc0cf1adca43"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/dispatch-receipt.ts",
+      "hash": "043b1b117d57c38135ac8e1f574dfc4f075db863801d5e50cea6a35bddd7f665"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/algo-report.ts",
+      "hash": "0b0a25637745cb9763650dcdf3b916612c59638981cd12f90b9287ea40c0d778"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/tests/rkg4.test.ts",
+      "hash": "b4ef5d1388cb5b3b638a05ecc8c77d027485310b81d2931d3a14913785f9074a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/emit-gallery.ts",
+      "hash": "b3ec80a01d5d56ed87e48eaa75e031aa3d200545e5dfc1ba44c7745c80f2bf45"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/tests/rkg6.test.ts",
+      "hash": "c59036bb75ae4c3a2e7da07ef73ff1461ff5baea8cb8ff35cc2bfa00ecb8c3e4"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/receipts/strategy.ts",
+      "hash": "3fbe5c14541ac016af3f9ca17ebe27f2ce07f32faa64907295e08893e7971efc"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/receipts/plan.ts",
+      "hash": "489633515c41f900361bcfc2cd4a2ab602d65db1ac05bf296111a7e1a69e126a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/receipts/intent.ts",
+      "hash": "ad9e5775eb0b6efd51d115efd15ed3e6dd3895fba99c5c3bea17d7a84c1d19af"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/receipts/mine.ts",
+      "hash": "43ed0d4c6c1de42117b426af52f168c6499fff21e0d2d74e0990cb6e3d624943"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/receipts/audit.ts",
+      "hash": "bfcc28904435cf6fe0f8a7a5cc04fb9580c0f651b3b5f8e93d3e49abf4fcfa08"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/receipts/close.ts",
+      "hash": "dbc8e68d65c55bb7aff78231e7a15b1452a24ec736307e70d008c7f832b90716"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/receipts/display.ts",
+      "hash": "65e9bc8d715fbbb003a226b73c3bcc371081cb913cc47d8c30c048ce891c41a2"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/claims.ts",
+      "hash": "7d01056e7e5128bdb893ba5491934330d286fcdfa86769dfb1c5302752264f37"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "4040ce4115b599e2718a5a70272cbb0728916c399491255be53e6273494cea8a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/token-index.ts",
+      "hash": "8bbeaf54974613af06c832fee2f9127506d90151e1a00d3a44e6d8ae20adf2fb"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/strategy/active.ts",
+      "hash": "cf271c2a322ba4e4cebcf51cd42059be76182a689de275ac918cbc994102edcc"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/strategy/select.ts",
+      "hash": "7317424ee1e293eec2bad3cca605574346302ed1d68540e18bd39122440cb247"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "4040ce4115b599e2718a5a70272cbb0728916c399491255be53e6273494cea8a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "4040ce4115b599e2718a5a70272cbb0728916c399491255be53e6273494cea8a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/receipt-first/chain-enforcer.ts",
+      "hash": "3f3f3f63efad4b43e55762e55e8f6d9d248373c3d1714f7ca879e4f64d7ba402"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/tests/rkg3.test.ts",
+      "hash": "77619ac62309469186388169482118a2f6bfb51fd5153ba9faaa6453878cba8a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/tests/rkg5.test.ts",
+      "hash": "20e015871bf6f719cc945c243a79a33838d3eb178c2f939192044ecdf50d8837"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/cli/run-enforce.ts",
+      "hash": "5a1206e1c27945676839d6e11708051d3fd7aa7a9175c1b6965f316266edc24a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/cli/dispatch-gates.ts",
+      "hash": "c04a85680f59eb4f8d2ada463a170feea7b95f95e1191834c0a4650c229a32a4"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/cli/complete-binding.ts",
+      "hash": "cd4e011f3984b17fe0a3462a5a80f020d0cd9e028a2a891aa26277e27214416b"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/cli/close-gates.ts",
+      "hash": "5fb9806bf01242719ce99f362cee905e60f2588c4b41e30db2ad0e539f5099e6"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/tests/token-unify.test.ts",
+      "hash": "d8b5594a35dbc12ce02a7730fe4d91dbc9d095958368c3b0e6039776a2d51b45"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/dag-candidate.test.ts",
+      "hash": "92dd987ca723e1dbef9d6638ff92f48af51018a0d7ef92930f5ebbf91250e96d"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/receipt-first/verify-breakglass.ts",
+      "hash": "5d655d3a65a75094bc8f851dd43922bed725684d921d0d56c5d40ade46fdbf89"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/strategy-surface.ts",
+      "hash": "287e39d930638f54dbfd281ce7f5ebf28be01ad87fb768a71dd0e8a71e4d910e"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/strategy-auto.ts",
+      "hash": "ac423fa863dc86c2bfb3b937fb2a67eb03587038b44525a1d77e1fd5dd3c0312"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/cli/intent-init.ts",
+      "hash": "6d7c923236793c7cb00d0107fd22dc649be19455252273cae80779206921e5de"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/cli/intent-term.ts",
+      "hash": "7ded5bd42e2e2f7ec62a2ac7cc8cef96bdc0838fd8cd61fba5edbcfff6091c4f"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/sgk/intent-binding.ts",
+      "hash": "22e4ceb57c3d7aad1ce4da609d05ef410abb128372d20ad0358f9d048e76281b"
+    }
+  ],
+  "gitState": {
+    "branch": "master",
+    "headHash": "a2fccaeb4b0666b7bf994a42a23c75571e1518cf",
+    "clean": false
+  },
+  "metadata": {
+    "agent": "griffin",
+    "phase": "complete:rf-tests",
+    "duration": 0,
+    "success": true
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "repo": {
+    "headSha": "ad76719df1a63c08f11d0f3ce3c10f7c94d94f96",
+    "repoRoot": "/home/griffin/src/roadmap"
+  },
+  "timestamp": "2026-03-01T14:10:00Z",
+  "focus": "custodial: cleanup, dead code, deprecations, stale docs, archive",
+  "rankingWeights": {
+    "benefitMultiplier": 15,
+    "effortCap": 10,
+    "riskPenalty": { "low": 0, "med": 5, "high": 15 },
+    "conflictPenalty": 3,
+    "technicalDebtBonus": 25,
+    "legibilityBonus": 15
+  },
+  "agents": [
+    { "agentId": "custodian-lib", "scope": ["src/lib", "src/protocol"], "focus": "dead code, deprecated modules" },
+    { "agentId": "custodian-cli", "scope": ["src/cli", "bin", "scripts"], "focus": "unused commands, stale scripts" },
+    { "agentId": "custodian-test", "scope": ["tests", "docs"], "focus": "outdated tests, stale docs" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-3cfe191afa332cc2",
+  "type": "claim",
+  "subject": "rkg5-candidate-receipts",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:04:37.493Z",
+  "expiresAt": "2026-03-01T09:09:37.493Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg5-candidate-receipts",
+    "claimedAt": "2026-03-01T09:04:37.493Z",
+    "claimExpiry": "2026-03-01T09:09:37.493Z"
+  },
+  "ok": true
+}

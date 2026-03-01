@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-5c0bbc44676950e1",
+  "type": "claim",
+  "subject": "sgk-display",
+  "owner": "w2",
+  "issuedAt": "2026-03-01T09:35:42.720Z",
+  "expiresAt": "2026-03-01T09:40:42.720Z",
+  "boundTo": {
+    "headSha": "c250f364f71bebd7ebc37e92a4c40ca94916f3c803d1f0ffa1697715c87fa658"
+  },
+  "payload": {
+    "ttlSeconds": 300
+  },
+  "ok": false
+}

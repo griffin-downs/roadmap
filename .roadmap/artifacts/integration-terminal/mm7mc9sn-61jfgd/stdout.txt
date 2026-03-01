@@ -1,0 +1,342 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/griffin/src/roadmap[39m
+
+ [32m✓[39m tests/commit-cmd.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 5666[2mms[22m[39m
+     [33m[2m✓[22m[39m errors without --node [33m 1678[2mms[22m[39m
+     [33m[2m✓[22m[39m errors without --message [33m 1381[2mms[22m[39m
+     [33m[2m✓[22m[39m errors when artifact missing [33m 1231[2mms[22m[39m
+     [33m[2m✓[22m[39m commits node with trailer when artifact exists [33m 1346[2mms[22m[39m
+ [32m✓[39m tests/plan-gate.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 7717[2mms[22m[39m
+     [33m[2m✓[22m[39m governed-no-plan: governed file without rm-* Track 0 node → fail with violation [33m 1676[2mms[22m[39m
+     [33m[2m✓[22m[39m governed-with-plan: governed file covered by rm-* Track 0 node → pass [33m 1165[2mms[22m[39m
+     [33m[2m✓[22m[39m docs-only: changed file not in any node produces/affects → ungoverned, passed=true [33m 1099[2mms[22m[39m
+     [33m[2m✓[22m[39m rm-* node with track undefined defaults to Track 0 → qualifies as approver [33m 1262[2mms[22m[39m
+     [33m[2m✓[22m[39m rm-* node with track=1 does NOT qualify → violation [33m 1306[2mms[22m[39m
+     [33m[2m✓[22m[39m affects field also governs files [33m 1208[2mms[22m[39m
+ [32m✓[39m tests/spec-origin-gate.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 7906[2mms[22m[39m
+     [33m[2m✓[22m[39m head-unchanged: head.json not in diff → pass immediately [33m 1303[2mms[22m[39m
+     [33m[2m✓[22m[39m manual-edit: head.json changed, no spec field → pass with warning [33m 1172[2mms[22m[39m
+     [33m[2m✓[22m[39m spec-pipeline: full chain valid → pass [33m 1828[2mms[22m[39m
+     [33m[2m✓[22m[39m hash-mismatch: spec-compile receipt has wrong compile_hash → fail [33m 1287[2mms[22m[39m
+     [33m[2m✓[22m[39m missing-import-receipt: spec-compile found but no import receipt → fail [33m 1115[2mms[22m[39m
+     [33m[2m✓[22m[39m dag-hash-mismatch: import receipt dag_hash does not match head.json content → fail [33m 1200[2mms[22m[39m
+ [32m✓[39m tests/show.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 9895[2mms[22m[39m
+     [33m[2m✓[22m[39m returns full node spec by ID [33m 1672[2mms[22m[39m
+     [33m[2m✓[22m[39m includes mode for plan nodes [33m 1420[2mms[22m[39m
+     [33m[2m✓[22m[39m includes level and status [33m 1239[2mms[22m[39m
+     [33m[2m✓[22m[39m errors on unknown node [33m 1505[2mms[22m[39m
+     [33m[2m✓[22m[39m show --batch returns all nodes at a level [33m 1454[2mms[22m[39m
+     [33m[2m✓[22m[39m show --batch with no level defaults to current [33m 1336[2mms[22m[39m
+     [33m[2m✓[22m[39m show --batch L1 parses level prefix [33m 1265[2mms[22m[39m
+ [32m✓[39m tests/roadmap-locate.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 11263[2mms[22m[39m
+     [33m[2m✓[22m[39m discovers single roadmap in directory [33m 1035[2mms[22m[39m
+     [33m[2m✓[22m[39m discovers multiple roadmaps in nested structure [33m 1391[2mms[22m[39m
+     [33m[2m✓[22m[39m returns correct position for incomplete DAG [33m 1144[2mms[22m[39m
+     [33m[2m✓[22m[39m excludes node_modules, .git, and standard dirs [33m 1176[2mms[22m[39m
+     [33m[2m✓[22m[39m returns blockedBy dependencies correctly [33m 1047[2mms[22m[39m
+     [33m[2m✓[22m[39m handles corrupted DAG gracefully [33m 1442[2mms[22m[39m
+     [33m[2m✓[22m[39m returns timestamp in ISO format [33m 1329[2mms[22m[39m
+     [33m[2m✓[22m[39m sorts results by path [33m 1766[2mms[22m[39m
+     [33m[2m✓[22m[39m returns complete=true when position is term node [33m 926[2mms[22m[39m
+ [32m✓[39m tests/ui-snapshot.test.ts [2m([22m[2m14 tests[22m[2m)[22m[33m 7153[2mms[22m[39m
+     [33m[2m✓[22m[39m stderr contains render output (progress bar or DAG layer) [33m 1336[2mms[22m[39m
+     [33m[2m✓[22m[39m stdout is valid JSON with --json flag [33m 1448[2mms[22m[39m
+     [33m[2m✓[22m[39m orient --quiet produces no stdout [33m 1496[2mms[22m[39m
+     [33m[2m✓[22m[39m orient render.body is deterministic across two runs [33m 2866[2mms[22m[39m
+ [32m✓[39m tests/plan-exec-gate.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 6275[2mms[22m[39m
+     [33m[2m✓[22m[39m complete rejects without PLAN_SELECTED.json [33m 1698[2mms[22m[39m
+     [33m[2m✓[22m[39m complete proceeds with --skip-plan-gate flag [33m 1323[2mms[22m[39m
+     [33m[2m✓[22m[39m advance rejects without PLAN_SELECTED.json [33m 1888[2mms[22m[39m
+     [33m[2m✓[22m[39m expand rejects without PLAN_SELECTED.json [33m 1364[2mms[22m[39m
+ [32m✓[39m tests/dag-diff.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 5224[2mms[22m[39m
+     [33m[2m✓[22m[39m detects added and modified nodes from file path [33m 1365[2mms[22m[39m
+     [33m[2m✓[22m[39m detects removed nodes [33m 1192[2mms[22m[39m
+     [33m[2m✓[22m[39m shows no changes when DAGs are identical [33m 1218[2mms[22m[39m
+     [33m[2m✓[22m[39m detects deps changes [33m 1446[2mms[22m[39m
+ [32m✓[39m tests/certify-cmd.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 5406[2mms[22m[39m
+     [33m[2m✓[22m[39m node with passing validators exits 0 and certified: true [33m 1340[2mms[22m[39m
+     [33m[2m✓[22m[39m node with failing validators exits 1 and certified: false [33m 1299[2mms[22m[39m
+     [33m[2m✓[22m[39m node not in DAG exits 1 with error [33m 1183[2mms[22m[39m
+     [33m[2m✓[22m[39m node with no validators always passes [33m 1582[2mms[22m[39m
+ [32m✓[39m tests/state-introspection.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 3230[2mms[22m[39m
+     [33m[2m✓[22m[39m returns JSON with node counts [33m 304[2mms[22m[39m
+     [33m[2m✓[22m[39m done and pending are non-negative [33m 307[2mms[22m[39m
+     [33m[2m✓[22m[39m includes failed, skipped, planned counts [33m 305[2mms[22m[39m
+     [33m[2m✓[22m[39m count matches remaining array length [33m 426[2mms[22m[39m
+     [33m[2m✓[22m[39m returns JSON diagnostics with --json [33m 371[2mms[22m[39m
+     [33m[2m✓[22m[39m includes stale, pending, failed, plan, skipped arrays [33m 345[2mms[22m[39m
+     [33m[2m✓[22m[39m has ok field and issues array [33m 349[2mms[22m[39m
+ [32m✓[39m tests/plan-status.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 5727[2mms[22m[39m
+     [33m[2m✓[22m[39m exits 1 with error when no .roadmap/head.json [33m 1485[2mms[22m[39m
+     [33m[2m✓[22m[39m exits 1 with invalid status, reason, and fix [33m 1376[2mms[22m[39m
+     [33m[2m✓[22m[39m exits 0 with valid status, headShaMatch true, receipt field [33m 1460[2mms[22m[39m
+     [33m[2m✓[22m[39m exits 1 with invalid status, headShaMatch false, fix, staleReceipt with receipt field [33m 1406[2mms[22m[39m
+ [32m✓[39m tests/cli-contract.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 4918[2mms[22m[39m
+     [33m[2m✓[22m[39m orient emits valid JSON envelope [33m 354[2mms[22m[39m
+     [33m[2m✓[22m[39m chart emits valid JSON envelope [33m 328[2mms[22m[39m
+     [33m[2m✓[22m[39m trail emits valid JSON envelope [33m 332[2mms[22m[39m
+     [33m[2m✓[22m[39m show emits JSON envelope for valid node [33m 302[2mms[22m[39m
+     [33m[2m✓[22m[39m plan status emits JSON envelope [33m 315[2mms[22m[39m
+     [33m[2m✓[22m[39m orient --human produces non-JSON text [33m 304[2mms[22m[39m
+     [33m[2m✓[22m[39m trail --human produces non-JSON text [33m 303[2mms[22m[39m
+     [33m[2m✓[22m[39m --json overrides --human [33m 420[2mms[22m[39m
+     [33m[2m✓[22m[39m successful orient has no JSON on stderr [33m 318[2mms[22m[39m
+     [33m[2m✓[22m[39m exit 0 when ok=true [33m 316[2mms[22m[39m
+     [33m[2m✓[22m[39m exit 1 for missing note [33m 343[2mms[22m[39m
+ [32m✓[39m tests/checkpoint-cmd.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 4809[2mms[22m[39m
+     [33m[2m✓[22m[39m errors without --label [33m 1488[2mms[22m[39m
+     [33m[2m✓[22m[39m creates checkpoint with --label [33m 1823[2mms[22m[39m
+     [33m[2m✓[22m[39m --list shows existing checkpoints [33m 1461[2mms[22m[39m
+ [32m✓[39m tests/completion-gitsha.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 3755[2mms[22m[39m
+     [33m[2m✓[22m[39m complete emits gitSha in completed.json [33m 1815[2mms[22m[39m
+     [33m[2m✓[22m[39m certify emits gitSha in completed.json [33m 1810[2mms[22m[39m
+ [32m✓[39m tests/rkg-integration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 3833[2mms[22m[39m
+     [33m[2m✓[22m[39m tsc --noEmit is clean [33m 3831[2mms[22m[39m
+ [32m✓[39m tests/consumer-integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 2227[2mms[22m[39m
+     [33m[2m✓[22m[39m orient() finds position from real filesystem [33m 374[2mms[22m[39m
+     [33m[2m✓[22m[39m orient() reports correct produces/consumes for current node [33m 346[2mms[22m[39m
+     [33m[2m✓[22m[39m orient() identifies remaining nodes [33m 326[2mms[22m[39m
+     [33m[2m✓[22m[39m advancing by adding receipt moves position forward [33m 324[2mms[22m[39m
+ [32m✓[39m tests/test-enforcement.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 1787[2mms[22m[39m
+ [32m✓[39m tests/orient-json.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 1456[2mms[22m[39m
+ [32m✓[39m tests/cli-cross-repo.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 1406[2mms[22m[39m
+     [33m[2m✓[22m[39m orient clears blockedBy when sibling has artifact [33m 328[2mms[22m[39m
+ [32m✓[39m tests/env-audit.test.ts [2m([22m[2m16 tests[22m[2m)[22m[33m 1158[2mms[22m[39m
+       [33m[2m✓[22m[39m runs as script and outputs valid JSON [33m 1151[2mms[22m[39m
+ [32m✓[39m tests/runtime-explore.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 1339[2mms[22m[39m
+     [33m[2m✓[22m[39m parses valid JSON output from a script [33m 1218[2mms[22m[39m
+ [32m✓[39m tests/fr-consumer-e2e.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 908[2mms[22m[39m
+     [33m[2m✓[22m[39m shows donjon position in combined view [33m 303[2mms[22m[39m
+ [32m✓[39m tests/expansion-writer.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 1147[2mms[22m[39m
+     [33m[2m✓[22m[39m uses Unix timestamp in filename (sortable) [33m 1104[2mms[22m[39m
+ [31m❯[39m tests/cli.test.ts [2m([22m[2m14 tests[22m[2m | [22m[31m1 failed[39m[2m | [22m[33m1 skipped[39m[2m)[22m[33m 1008[2mms[22m[39m
+       [32m✓[39m rejects commands without --note[32m 67[2mms[22m[39m
+       [32m✓[39m help does not require --note[32m 65[2mms[22m[39m
+       [32m✓[39m trail does not require --note[32m 71[2mms[22m[39m
+       [32m✓[39m returns JSON with position + produces[32m 92[2mms[22m[39m
+       [32m✓[39m returns full API surface[32m 144[2mms[22m[39m
+       [32m✓[39m includes @exports from file headers[32m 99[2mms[22m[39m
+       [32m✓[39m returns batched execution groups[32m 84[2mms[22m[39m
+       [32m✓[39m validates single node[32m 67[2mms[22m[39m
+       [2m[90m↓[39m[22m validates all nodes (summary)
+[31m       [31m×[31m records invocations to trail.jsonl[39m[32m 67[2mms[22m[39m
+       [32m✓[39m orient entries include position[32m 66[2mms[22m[39m
+       [32m✓[39m supports --last N[32m 63[2mms[22m[39m
+       [32m✓[39m outputs help text with --note docs[32m 57[2mms[22m[39m
+       [32m✓[39m returns JSON error for unknown command[32m 64[2mms[22m[39m
+ [32m✓[39m tests/metaflow/cli.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 383[2mms[22m[39m
+ [32m✓[39m tests/orient-assign.test.ts [2m([22m[2m22 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[33m 657[2mms[22m[39m
+ [32m✓[39m tests/migrate-memory.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 281[2mms[22m[39m
+ [32m✓[39m tests/silent-orient.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 825[2mms[22m[39m
+ [32m✓[39m tests/cli-init-gate.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 633[2mms[22m[39m
+ [32m✓[39m tests/audit/integration-detectors.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 373[2mms[22m[39m
+ [32m✓[39m tests/intake.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 286[2mms[22m[39m
+ [32m✓[39m tests/adv-atomic-modify.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 147[2mms[22m[39m
+ [32m✓[39m tests/git-state-caching.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 128[2mms[22m[39m
+ [32m✓[39m tests/metaflow/authority.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 233[2mms[22m[39m
+ [32m✓[39m tests/completion/auto-commit.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 238[2mms[22m[39m
+ [32m✓[39m tests/metaflow/verify.e2e.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 242[2mms[22m[39m
+ [31m❯[39m tests/git-library.test.ts [2m([22m[2m6 tests[22m[2m | [22m[33m6 skipped[39m[2m)[22m[32m 4[2mms[22m[39m
+     [2m[90m↓[39m[22m repoInfo returns branch and HEAD
+     [2m[90m↓[39m[22m isClean detects clean repo
+     [2m[90m↓[39m[22m trackedFiles lists git-tracked files
+     [2m[90m↓[39m[22m fileHistory returns commits for a file
+     [2m[90m↓[39m[22m artifactAtRef checks file existence at ref
+     [2m[90m↓[39m[22m shortHash returns abbreviated commit
+ [32m✓[39m tests/federation.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m tests/metaflow/kernel-bridge.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 100[2mms[22m[39m
+ [32m✓[39m tests/validate-enforcement.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m tests/validator-runner.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m tests/env-bypass-removal.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 64[2mms[22m[39m
+ [32m✓[39m tests/cli/audit.e2e.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m tests/trail-metrics.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m tests/audit/cli.e2e.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m tests/skip-validate-quarantine.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m tests/install-skills.test.ts [2m([22m[2m43 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m tests/cluster.test.ts [2m([22m[2m49 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/completion-evidence.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m tests/auto-integrate-full.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m test/receipt-first.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m tests/brief-handoff.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m tests/claim.test.ts [2m([22m[2m20 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m tests/cross-orient.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m tests/ux-explain.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/tests/rkg5.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/predicates-cross-repo.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/tests/token-unify.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m tests/shell-validate.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m tests/rkg3.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/tests/rkg3.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/metaflow/bypass.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/gallery.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/verify/cli-compliance.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/cli/strategy-gate.test.ts [2m([22m[2m6 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/rkg5.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/metaflow/render.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m tests/dag-compiler.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/rkg7-fixtures.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/protocol.test.ts [2m([22m[2m37 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/audit/strategy-detectors.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m tests/rkg8-fixtures.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m tests/compile-prompts.test.ts [2m([22m[2m39 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/predicates.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/rkg4.test.ts [2m([22m[2m30 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/emit-gallery.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/sgk/contract.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/intent-expansion.test.ts [2m([22m[2m33 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/metaflow.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m tests/dag-candidate.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/cli-human.test.ts [2m([22m[2m58 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/sgk/e2e-run-flow.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m tests/plan-selection.test.ts [2m([22m[2m34 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/rkg6.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/compile-prompts-intent.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m tests/completion-tracker.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/batch-state-exhaustive.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/init-gate-e2e.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/intent-expansion-clarity.test.ts [2m([22m[2m34 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/cli/strategy.test.ts [2m([22m[2m10 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/tests/rkg6.test.ts [2m([22m[2m22 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/intent-evaluator.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/audit.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/intent-expansion-e2e.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/plan-mode.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/metaflow-receipt-writer.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/metaflow/flows.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/metaflow-mine-run.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/spec-threading-e2e.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/build-discoverer.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 0[2mms[22m[39m
+ [32m✓[39m tests/audit/audit-engine.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/plan-select.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/adv-property.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/validate-plan-clarity.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/verify-kernel.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m tests/env-audit-runtime.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/plan-selected-pointer.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/cost-tracking.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/cli/metaflow-audit.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/audit/metaflow-detectors.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/cli/inventory.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/propagate.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/cli/compliance.e2e.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/verify.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m tests/spec-contract.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/chart-states.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/intent-visual.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+[90mstdout[2m | tests/version-validation.test.ts[2m > [22m[2mversioning: loadDAG auto-migrates 0.2.0 to 0.3.0
+[22m[39mMigrating DAG: Fill required idempotent field (infer from semantics)
+
+[90mstdout[2m | tests/version-validation.test.ts[2m > [22m[2mversioning: loadDAG auto-migrates 0.2.0 to 0.3.0
+[22m[39m✓ Migration complete
+
+ [32m✓[39m tests/version-validation.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/tests/rkg4.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m tests/spec-origin-lib.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/audit/display-detectors.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/spec-origin.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/speckit-import.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/batch-conflicts.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/next-batch.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/intent-expansion-validate.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+[90mstdout[2m | tests/consumer-adoption.test.ts[2m > [22m[2mconsumer: version compatibility for old DAG
+[22m[39mMigrating DAG: Fill required idempotent field (infer from semantics)
+
+ [32m✓[39m tests/metaflow/active-run.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+[90mstdout[2m | tests/consumer-adoption.test.ts[2m > [22m[2mconsumer: version compatibility for old DAG
+[22m[39m✓ Migration complete
+
+ [32m✓[39m tests/consumer-adoption.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m tests/multi-repo.test.ts [2m([22m[2m6 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/api-tree-shaking.test.ts [2m([22m[2m28 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/gantt.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/attestation.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/plan-overlay.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/orient-receipt-semantics.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/completion-regression.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/auto-integrate.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 1[2mms[22m[39m
+[90mstdout[2m | tests/agent-executor.test.ts[2m > [22m[2mexecutor: can checkpoint and restore
+[22m[39mCheckpoint: test-1 { [32m'src/test.ts'[39m: [33mtrue[39m }
+
+[90mstdout[2m | tests/agent-executor.test.ts[2m > [22m[2mexecutor: can checkpoint and restore
+[22m[39mRestoring: test-1
+
+[90mstdout[2m | tests/agent-executor.test.ts[2m > [22m[2mexecutor: advance updates status
+[22m[39mAgent status: in-progress
+
+[90mstdout[2m | tests/agent-executor.test.ts[2m > [22m[2mexecutor: bootstrap initializes agent
+[22m[39mAgent bootstrapped for node: placeholder
+
+ [32m✓[39m tests/agent-executor.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/spec-verifier.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m tests/doctor-cmd.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/spawn-plan.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/batch-validation.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/dispatch.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/cli-envelope.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/bootstrap-gen.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/errors.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/adv-branch.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/adv-merge.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/cli/doctor-cli.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/ready-nodes.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/validate-dag-bookend.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/audit/opt-map.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/regent-integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/import/audit-tail-gate.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/loop-target.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/batch-position.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/completion-store-ext.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/receipt-chain.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/metaflow/self-insert.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/project-detector.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m tests/completion-store-api.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/remaining-cmd.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/node-type-ext.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/adv-orient.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/validate-dag.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/parallel-order.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/completion-context.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/head-spec-meta.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/cli/exemptions.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/adv-reconcile.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m tests/strategy/registry.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/strategy/hints.test.ts [2m([22m[2m8 tests[22m[2m | [22m[33m3 skipped[39m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/adv-modify.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 0[2mms[22m[39m
+ [32m✓[39m tests/spec-ir.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/critical-path.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m tests/dependency-resolver.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/gov-004-batch-conflicts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/pending-contracts.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m tests/render/metaflow-header.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/orient-receipt-hardening.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/migrations.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/consumer-categories.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 1[2mms[22m[39m
+ [32m✓[39m tests/git-ops.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 22224[2mms[22m[39m
+       [33m[2m✓[22m[39m reads file from repo HEAD [33m 1745[2mms[22m[39m
+       [33m[2m✓[22m[39m reads file from specific ref [33m 1668[2mms[22m[39m
+       [33m[2m✓[22m[39m writes file to working tree [33m 1786[2mms[22m[39m
+       [33m[2m✓[22m[39m supports from-file input [33m 1721[2mms[22m[39m
+       [33m[2m✓[22m[39m returns true for existing file [33m 2012[2mms[22m[39m
+       [33m[2m✓[22m[39m returns false for missing file [33m 1591[2mms[22m[39m
+       [33m[2m✓[22m[39m lists files in repo [33m 2261[2mms[22m[39m
+       [33m[2m✓[22m[39m gets commit history for file [33m 1877[2mms[22m[39m
+       [33m[2m✓[22m[39m commits files atomically [33m 2262[2mms[22m[39m
+       [33m[2m✓[22m[39m supports session squash [33m 3137[2mms[22m[39m
+       [33m[2m✓[22m[39m reads from one repo, writes to another [33m 1107[2mms[22m[39m
+       [33m[2m✓[22m[39m writes only to working tree, not committed [33m 994[2mms[22m[39m
+ [32m✓[39m tests/cli-cross-project.test.ts [2m([22m[2m12 tests[22m[2m)[22m[33m 24478[2mms[22m[39m
+       [33m[2m✓[22m[39m returns roadmaps array with timestamp [33m 2529[2mms[22m[39m
+       [33m[2m✓[22m[39m returns JSON with roadmaps, count, timestamp [33m 2224[2mms[22m[39m
+       [33m[2m✓[22m[39m accepts --format json explicitly [33m 2244[2mms[22m[39m
+       [33m[2m✓[22m[39m accepts --format tree [33m 2072[2mms[22m[39m
+       [33m[2m✓[22m[39m --cross-repo includes siblings [33m 1973[2mms[22m[39m
+       [33m[2m✓[22m[39m --cross-repo --graph combines both [33m 2108[2mms[22m[39m
+       [33m[2m✓[22m[39m records commands in trail [33m 6812[2mms[22m[39m
+       [33m[2m✓[22m[39m handles missing DAG and missing skill gracefully [33m 2987[2mms[22m[39m
+       [33m[2m✓[22m[39m parallel --cross-repo --graph provides complete view [33m 1349[2mms[22m[39m
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m181 passed[39m[22m[90m (183)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2139 passed[39m[22m[2m | [22m[33m15 skipped[39m[90m (2155)[39m
+[2m   Start at [22m 11:39:43
+[2m   Duration [22m 24.85s[2m (transform 4.47s, setup 0ms, import 10.85s, tests 157.92s, environment 23ms)[22m
+

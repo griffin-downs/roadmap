@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-84b2d2790c1b3149",
+  "type": "claim",
+  "subject": "surf-cli-wrap-core",
+  "owner": "w-wrap-core",
+  "issuedAt": "2026-03-01T10:52:02.619Z",
+  "expiresAt": "2026-03-01T10:57:02.619Z",
+  "boundTo": {
+    "headSha": "3fba44458171f927c7f5997dc4d9976036203313"
+  },
+  "payload": {
+    "nodeId": "surf-cli-wrap-core",
+    "claimedAt": "2026-03-01T10:52:02.619Z",
+    "claimExpiry": "2026-03-01T10:57:02.619Z"
+  },
+  "ok": false
+}

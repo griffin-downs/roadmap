@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-2505556335324929",
+  "type": "claim",
+  "subject": "dc-expand-candidate",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:18:11.819Z",
+  "expiresAt": "2026-03-01T09:23:11.819Z",
+  "boundTo": {
+    "headSha": "8dd2ae490a68839544497569f051c1a161703b56"
+  },
+  "payload": {
+    "nodeId": "dc-expand-candidate",
+    "claimedAt": "2026-03-01T09:18:11.819Z",
+    "claimExpiry": "2026-03-01T09:23:11.819Z"
+  },
+  "ok": true
+}

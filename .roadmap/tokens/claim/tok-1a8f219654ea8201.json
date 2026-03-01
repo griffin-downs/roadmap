@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-1a8f219654ea8201",
+  "type": "claim",
+  "subject": "rf-breakglass",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:10:00.700Z",
+  "expiresAt": "2026-03-01T09:15:00.700Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rf-breakglass",
+    "claimedAt": "2026-03-01T09:10:00.700Z",
+    "claimExpiry": "2026-03-01T09:15:00.700Z"
+  },
+  "ok": true
+}

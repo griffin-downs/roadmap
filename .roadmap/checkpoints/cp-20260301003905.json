@@ -1,0 +1,45 @@
+{
+  "id": "cp-20260301003905",
+  "timestamp": 1772325545591,
+  "roadmapPosition": [
+    "mf-sv-render-receipts"
+  ],
+  "phase": "complete:mf-sv-render-receipts",
+  "artifacts": [
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/flow-schema.ts",
+      "hash": "9b96d8ccd16e244789fa75502bc55f1c322552d0a57da06c44a4c8821f3200b4"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/authority-schema.ts",
+      "hash": "454026ccb1d8c58e0d27202d7d737709e24b264047d93c0e8b80cdaf336b2697"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/authority.ts",
+      "hash": "7247c7d3f4174a6fde877e381996bd4d7f977321199259eef0e71c90506fc046"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/metaflow/authority.test.ts",
+      "hash": "64f568017cb8fe73f95924befcf02c86f2761b1f12d4ea562022207eb3a07895"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/flows.ts",
+      "hash": "44249804463b7dd2b0dab97bd3b288696ece4c38ceed4d84591fb4001bd2dad5"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/metaflow/flows.test.ts",
+      "hash": "94b98d071679615cac77baad28aa05ac41a9c42bd6c426613c31b0aab44136d0"
+    }
+  ],
+  "gitState": {
+    "branch": "master",
+    "headHash": "c1f77936502f1db1c3af47dd79f2c88f3da82b3b",
+    "clean": false
+  },
+  "metadata": {
+    "agent": "griffin",
+    "phase": "complete:mf-sv-render-receipts",
+    "duration": 0,
+    "success": true
+  }
+}

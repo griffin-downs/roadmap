@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-28a59ef27888a4c9",
+  "type": "claim",
+  "subject": "integration-terminal",
+  "owner": "w1",
+  "issuedAt": "2026-03-01T10:06:34.252Z",
+  "expiresAt": "2026-03-01T10:11:34.252Z",
+  "boundTo": {
+    "headSha": "f9246ac8902d5c5601e8464b497290d0c7f9e713"
+  },
+  "payload": {
+    "nodeId": "integration-terminal",
+    "claimedAt": "2026-03-01T10:06:34.252Z",
+    "claimExpiry": "2026-03-01T10:11:34.252Z"
+  },
+  "ok": false
+}

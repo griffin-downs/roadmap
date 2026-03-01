@@ -1,0 +1,17 @@
+{
+  "latch": {
+    "latched": true,
+    "matchedTokens": [
+      "parallel"
+    ],
+    "latchedAt": "2026-03-01T08:33:07.338Z"
+  },
+  "strategy": {
+    "schema_version": 1,
+    "strategyId": "hybrid",
+    "runId": "run-1772354243253",
+    "latchedAt": "2026-03-01T08:37:23.262Z",
+    "boundAt": "2026-03-01T08:37:23.262Z",
+    "receiptPath": ".roadmap/receipts/strategy-select-2026-03-01T08-37-23-262Z.json"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-6eec9f630d90f1f9",
+  "type": "claim",
+  "subject": "rf-chain-enforcer",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:23:11.883Z",
+  "expiresAt": "2026-03-01T09:28:11.883Z",
+  "boundTo": {
+    "headSha": "caccdf0c717eb342daa5ef14ebc7bad3ffee1008"
+  },
+  "payload": {
+    "nodeId": "rf-chain-enforcer",
+    "claimedAt": "2026-03-01T09:23:11.883Z",
+    "claimExpiry": "2026-03-01T09:28:11.883Z"
+  },
+  "ok": true
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-72d117a6dbed8acc",
+  "type": "claim",
+  "subject": "sgk-e2e",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:41:48.740Z",
+  "expiresAt": "2026-03-01T09:46:48.740Z",
+  "boundTo": {
+    "headSha": "82fbcc67df69a72407ccdad1d76fd3fb9261d669"
+  },
+  "payload": {
+    "nodeId": "sgk-e2e",
+    "claimedAt": "2026-03-01T09:41:48.740Z",
+    "claimExpiry": "2026-03-01T09:46:48.740Z"
+  },
+  "ok": true
+}

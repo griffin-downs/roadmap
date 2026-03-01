@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-eb4d8d595b1be3b0",
+  "type": "claim",
+  "subject": "surf-perf-budget-gate",
+  "owner": "w-perf-schema",
+  "issuedAt": "2026-03-01T11:02:46.486Z",
+  "expiresAt": "2026-03-01T11:07:46.486Z",
+  "boundTo": {
+    "headSha": "f3bf33aaac779c51d2015b6d9f426c98a5f03bdf"
+  },
+  "payload": {
+    "nodeId": "surf-perf-budget-gate",
+    "claimedAt": "2026-03-01T11:02:46.486Z",
+    "claimExpiry": "2026-03-01T11:07:46.486Z"
+  },
+  "ok": false
+}

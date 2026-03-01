@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-463d2adc30090793",
+  "type": "claim",
+  "subject": "surf-perf-vitest-cmd",
+  "owner": "w1",
+  "issuedAt": "2026-03-01T11:01:23.243Z",
+  "expiresAt": "2026-03-01T11:06:23.243Z",
+  "boundTo": {
+    "headSha": "a910a1793537f60a4216dd7993bfd4caf40f5841"
+  },
+  "payload": {
+    "nodeId": "surf-perf-vitest-cmd",
+    "claimedAt": "2026-03-01T11:01:23.243Z",
+    "claimExpiry": "2026-03-01T11:06:23.243Z"
+  },
+  "ok": false
+}

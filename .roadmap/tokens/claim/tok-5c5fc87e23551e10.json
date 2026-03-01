@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-5c5fc87e23551e10",
+  "type": "claim",
+  "subject": "rkg6-structured-diagnosis",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:09:54.893Z",
+  "expiresAt": "2026-03-01T09:14:54.893Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg6-structured-diagnosis",
+    "claimedAt": "2026-03-01T09:09:54.893Z",
+    "claimExpiry": "2026-03-01T09:14:54.893Z"
+  },
+  "ok": true
+}

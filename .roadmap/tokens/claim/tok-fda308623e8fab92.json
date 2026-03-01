@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-fda308623e8fab92",
+  "type": "claim",
+  "subject": "surf-perf-budget-gate",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T11:02:22.505Z",
+  "expiresAt": "2026-03-01T11:07:22.505Z",
+  "boundTo": {
+    "headSha": "4bddb5b057bab58f748ca3f3add1481c52f2b3ea"
+  },
+  "payload": {
+    "nodeId": "surf-perf-budget-gate",
+    "claimedAt": "2026-03-01T11:02:22.505Z",
+    "claimExpiry": "2026-03-01T11:07:22.505Z"
+  },
+  "ok": false
+}

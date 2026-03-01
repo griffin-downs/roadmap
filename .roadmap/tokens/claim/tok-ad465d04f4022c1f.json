@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-ad465d04f4022c1f",
+  "type": "claim",
+  "subject": "surf-audit-cli",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T10:57:23.137Z",
+  "expiresAt": "2026-03-01T11:02:23.137Z",
+  "boundTo": {
+    "headSha": "0a8d0e3a4e7d52aa602c39d410d427ce7d80a72c"
+  },
+  "payload": {
+    "nodeId": "surf-audit-cli",
+    "claimedAt": "2026-03-01T10:57:23.137Z",
+    "claimExpiry": "2026-03-01T11:02:23.137Z"
+  },
+  "ok": false
+}

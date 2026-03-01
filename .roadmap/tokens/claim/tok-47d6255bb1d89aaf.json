@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-47d6255bb1d89aaf",
+  "type": "claim",
+  "subject": "surf-archive-verify",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T11:01:23.176Z",
+  "expiresAt": "2026-03-01T11:06:23.176Z",
+  "boundTo": {
+    "headSha": "a910a1793537f60a4216dd7993bfd4caf40f5841"
+  },
+  "payload": {
+    "nodeId": "surf-archive-verify",
+    "claimedAt": "2026-03-01T11:01:23.176Z",
+    "claimExpiry": "2026-03-01T11:06:23.176Z"
+  },
+  "ok": false
+}

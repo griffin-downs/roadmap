@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-9b5fffb5469c41f1",
+  "type": "claim",
+  "subject": "surf-ts-input",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T10:52:54.395Z",
+  "expiresAt": "2026-03-01T10:57:54.395Z",
+  "boundTo": {
+    "headSha": "33b01eda33a9e572cedda3b2e9e826167b3a86b3"
+  },
+  "payload": {
+    "nodeId": "surf-ts-input",
+    "claimedAt": "2026-03-01T10:52:54.395Z",
+    "claimExpiry": "2026-03-01T10:57:54.395Z"
+  },
+  "ok": true
+}

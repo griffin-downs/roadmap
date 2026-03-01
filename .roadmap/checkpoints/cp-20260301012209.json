@@ -1,0 +1,54 @@
+{
+  "id": "cp-20260301012209",
+  "timestamp": 1772328129578,
+  "roadmapPosition": [
+    "rm-audit-engine",
+    "rm-strategy-registry"
+  ],
+  "phase": "complete:rm-audit-engine",
+  "artifacts": [
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/types.ts",
+      "hash": "28d7826d5510a93f14ea8ad31a9995a71b5e9810d9ee1017a86d4f49e5a75a70"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/miner.ts",
+      "hash": "f49cb859aa4a71b1f9ee5c303c83628d609ddffd81a264507e153bff7c0819d5"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "e236ac99963b4be9324d72e9e2e6f583b3237b89d7ba9c2aafd769de7bb25cfa"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/required-schema.ts",
+      "hash": "615e7a2827d13858d3c011cf8fbf11948b1c160ea3b4e547d4d89ba6998b9d74"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.roadmap/metaflow/audit/REQUIRED.json",
+      "hash": "05a11293c35bd06e2a6527272b40c36e3a5802db4ed4dafb828c5dfa9575bf1c"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/docs/metaflow/AUDIT_REQUIRED.md",
+      "hash": "febf204c910ad28475fbd523c3cbaf22c8b56d610469fa49b7f9d56663bbbdad"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "e236ac99963b4be9324d72e9e2e6f583b3237b89d7ba9c2aafd769de7bb25cfa"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/required-schema.ts",
+      "hash": "615e7a2827d13858d3c011cf8fbf11948b1c160ea3b4e547d4d89ba6998b9d74"
+    }
+  ],
+  "gitState": {
+    "branch": "master",
+    "headHash": "bcd856cad6464aa448fd6c020f70a1b5f338ccea",
+    "clean": false
+  },
+  "metadata": {
+    "agent": "griffin",
+    "phase": "complete:rm-audit-engine",
+    "duration": 0,
+    "success": true
+  }
+}

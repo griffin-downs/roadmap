@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-8badb5690e607dfc",
+  "type": "claim",
+  "subject": "dc-accept",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:23:14.629Z",
+  "expiresAt": "2026-03-01T09:28:14.629Z",
+  "boundTo": {
+    "headSha": "78f843c0598757b4299104e602a096379e9f7aec"
+  },
+  "payload": {
+    "nodeId": "dc-accept",
+    "claimedAt": "2026-03-01T09:23:14.629Z",
+    "claimExpiry": "2026-03-01T09:28:14.629Z"
+  },
+  "ok": true
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-eaeee078e435052b",
+  "type": "claim",
+  "subject": "surf-layout-verify",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T10:57:29.303Z",
+  "expiresAt": "2026-03-01T11:02:29.303Z",
+  "boundTo": {
+    "headSha": "c3fbd2f61a8ea7a827d3cbdda940c5e134be725d"
+  },
+  "payload": {
+    "nodeId": "surf-layout-verify",
+    "claimedAt": "2026-03-01T10:57:29.303Z",
+    "claimExpiry": "2026-03-01T11:02:29.303Z"
+  },
+  "ok": true
+}

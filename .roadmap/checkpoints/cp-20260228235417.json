@@ -1,0 +1,60 @@
+{
+  "id": "cp-20260228235417",
+  "timestamp": 1772322857680,
+  "roadmapPosition": [
+    "mf-gantt-render",
+    "mf-interaction-receipt-writer",
+    "mf-session-binding",
+    "mf-transcript-miner"
+  ],
+  "phase": "complete:mf-session-binding",
+  "artifacts": [
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/cli-envelope.ts",
+      "hash": "6b0015b895763420fff1f6d76acc628dd852cfa6263fa395e290c08dcb42ea14"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/render/index.ts",
+      "hash": "8caab616733f47ad59951e47decb15dc83e817fc9a54b0c5c1020ebe9ed3b8c4"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "c87a8684c415b125be92f2702e910886ea87882db2fbce71c7bef37991d1fb87"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/types.ts",
+      "hash": "28d7826d5510a93f14ea8ad31a9995a71b5e9810d9ee1017a86d4f49e5a75a70"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/fs.ts",
+      "hash": "d127212c3363dc118018a3f55a64972ef77e0114ae741beba75615f45c88b13e"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/run-id.ts",
+      "hash": "2f04ec387ba62eeab12273ef5413452f081bbd22ef88e60ad384cbcbdbf513af"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/render/gantt.ts",
+      "hash": "ff2ced01c0403575deaf6c08d43979e0d7a07376eb246c38371342742146bb48"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/render/index.ts",
+      "hash": "8caab616733f47ad59951e47decb15dc83e817fc9a54b0c5c1020ebe9ed3b8c4"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/miner.ts",
+      "hash": "f49cb859aa4a71b1f9ee5c303c83628d609ddffd81a264507e153bff7c0819d5"
+    }
+  ],
+  "gitState": {
+    "branch": "master",
+    "headHash": "22d49a81f3666e18cfd15f4c5b81834f2f8fb92a",
+    "clean": false
+  },
+  "metadata": {
+    "agent": "griffin",
+    "phase": "complete:mf-session-binding",
+    "duration": 0,
+    "success": true
+  }
+}

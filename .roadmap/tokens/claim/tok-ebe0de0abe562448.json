@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-ebe0de0abe562448",
+  "type": "claim",
+  "subject": "tu-claims-migrate",
+  "owner": "w6",
+  "issuedAt": "2026-03-01T09:17:57.480Z",
+  "expiresAt": "2026-03-01T09:22:57.480Z",
+  "boundTo": {
+    "headSha": "a45f05b54da26d3cb37a692418a26b31a79df288"
+  },
+  "payload": {
+    "nodeId": "tu-claims-migrate",
+    "claimedAt": "2026-03-01T09:17:57.480Z",
+    "claimExpiry": "2026-03-01T09:22:57.480Z"
+  },
+  "ok": false
+}

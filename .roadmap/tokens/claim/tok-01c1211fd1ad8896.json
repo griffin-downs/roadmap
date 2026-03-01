@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-01c1211fd1ad8896",
+  "type": "claim",
+  "subject": "rkg6-evidence-algebra",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:05:57.183Z",
+  "expiresAt": "2026-03-01T09:10:57.183Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg6-evidence-algebra",
+    "claimedAt": "2026-03-01T09:05:57.183Z",
+    "claimExpiry": "2026-03-01T09:10:57.183Z"
+  },
+  "ok": true
+}

@@ -1,0 +1,134 @@
+{
+  "id": "cp-20260301013009",
+  "timestamp": 1772328609657,
+  "roadmapPosition": [
+    "rm-import-audit-tail-gate",
+    "rm-strategy-propose-select-cli"
+  ],
+  "phase": "complete:rm-strategy-propose-select-cli",
+  "artifacts": [
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/types.ts",
+      "hash": "28d7826d5510a93f14ea8ad31a9995a71b5e9810d9ee1017a86d4f49e5a75a70"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/miner.ts",
+      "hash": "f49cb859aa4a71b1f9ee5c303c83628d609ddffd81a264507e153bff7c0819d5"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "bb2eedb472dbe6718387f2dc9bd2c091cfe22bcdcb4cf10c5e633d42a1f98162"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/required-schema.ts",
+      "hash": "615e7a2827d13858d3c011cf8fbf11948b1c160ea3b4e547d4d89ba6998b9d74"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.roadmap/metaflow/audit/REQUIRED.json",
+      "hash": "05a11293c35bd06e2a6527272b40c36e3a5802db4ed4dafb828c5dfa9575bf1c"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/docs/metaflow/AUDIT_REQUIRED.md",
+      "hash": "febf204c910ad28475fbd523c3cbaf22c8b56d610469fa49b7f9d56663bbbdad"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "bb2eedb472dbe6718387f2dc9bd2c091cfe22bcdcb4cf10c5e633d42a1f98162"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/required-schema.ts",
+      "hash": "615e7a2827d13858d3c011cf8fbf11948b1c160ea3b4e547d4d89ba6998b9d74"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/audit.ts",
+      "hash": "641e6bc670a2d23658086f7abc3f34d12231948228d5d129f039971ebbc92cab"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/report.ts",
+      "hash": "64f513fa6f0913f5d41101b370863c42516e06ad410eaf40a66b2ab01ba51a13"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/receipt.ts",
+      "hash": "97c44a0c096e3ee8137983b150f1d75d8f1a24b31d1ca79a4f6bac4c5e952187"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/audit/audit-engine.test.ts",
+      "hash": "6ae6dc0124ae9ad4f11340ff783787676659017df49843c1229ab0e0443f0878"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/strategy/registry.ts",
+      "hash": "eb3125530eb5b4c8af6fcd932407eb339e62cb21b1e0f784d3ee0a3455e3654b"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/strategy/schema.ts",
+      "hash": "2f16ce5bedb300c3d5fb049ba77da3753d84a02939629f0b5377a9e8b8e2a628"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/.roadmap/strategy/REGISTRY.json",
+      "hash": "d63614a4db7b5d51c35253726566462b149914813e7cfb41c10658619490a94d"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/strategy/registry.test.ts",
+      "hash": "6622d17ab1687c96b1f949b9b3bfe9cc983330b1f2010075e698d108ea351f1a"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/detectors/display.ts",
+      "hash": "a00f36da3da7e048e383cc4b34cb1eaadc7d5d3713f1ce413742f6e7f3567e70"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/audit/display-detectors.test.ts",
+      "hash": "a705514c8b0f196d2391ff5a9823111463a35604be1c0f23eea6755c1d6d23ba"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/metaflow/audit/detectors/integration.ts",
+      "hash": "adff64af9aae594700d097818e5edb51171f5c7eca129be3839873254cd7c5de"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/audit/integration-detectors.test.ts",
+      "hash": "e7b50fb6232032ac290e6c8a5b648926d60861bb31f723e038e41f0270f0df2f"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/completion/auto-commit.ts",
+      "hash": "efb03c93113f004af3c3bf759a35f326d3f60d295323fdec5927bc4efdb6901c"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/bin/roadmap.ts",
+      "hash": "bb2eedb472dbe6718387f2dc9bd2c091cfe22bcdcb4cf10c5e633d42a1f98162"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/completion/auto-commit.test.ts",
+      "hash": "15c602bf3496394295b49194a53c06ea2a0e7d17a3bf74496f2c37c14a6255fa"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/strategy/hints.ts",
+      "hash": "2c947349ec118791c479b118383bf0ebd9c25c7a16b755a87e4d5932dcbd748c"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/strategy/active.ts",
+      "hash": "cf46e0e1940992cd37062e548512eea0a680c39cfef9b63628e6e75cf8310ff5"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/strategy/hints.test.ts",
+      "hash": "ac0f096df3bb3049db7a18e759fcd88984597f3e7f25094c60fab9302e6e7ba7"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/src/lib/import/audit-tail-gate.ts",
+      "hash": "57eb0ef70ffff54aa450b8f2fb764a05aa82ba0a0a26389f9f09c70de1019fff"
+    },
+    {
+      "path": "/home/griffin/src/roadmap/tests/import/audit-tail-gate.test.ts",
+      "hash": "3b864e1a6dbd0a982337776c170848b3c1304b1c5c750534b01d6ec794f511f6"
+    }
+  ],
+  "gitState": {
+    "branch": "master",
+    "headHash": "c1c3f5514891f1abb5029042e636d73b487405fa",
+    "clean": false
+  },
+  "metadata": {
+    "agent": "w3",
+    "phase": "complete:rm-strategy-propose-select-cli",
+    "duration": 0,
+    "success": true
+  }
+}

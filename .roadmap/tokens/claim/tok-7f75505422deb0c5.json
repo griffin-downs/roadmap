@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-7f75505422deb0c5",
+  "type": "claim",
+  "subject": "sgk-mine-audit",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:35:05.622Z",
+  "expiresAt": "2026-03-01T09:40:05.622Z",
+  "boundTo": {
+    "headSha": "6247c82e2adb696023cc2391995978bca98f2d7e"
+  },
+  "payload": {
+    "nodeId": "sgk-mine-audit",
+    "claimedAt": "2026-03-01T09:35:05.622Z",
+    "claimExpiry": "2026-03-01T09:40:05.622Z"
+  },
+  "ok": true
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-8c7f36921d61f1b1",
+  "type": "claim",
+  "subject": "rkg4-orient-plan-receipt",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:04:50.182Z",
+  "expiresAt": "2026-03-01T09:09:50.182Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg4-orient-plan-receipt",
+    "claimedAt": "2026-03-01T09:04:50.182Z",
+    "claimExpiry": "2026-03-01T09:09:50.182Z"
+  },
+  "ok": true
+}

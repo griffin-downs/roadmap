@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-ec638cee157a1f10",
+  "type": "claim",
+  "subject": "rf-tests",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:31:37.405Z",
+  "expiresAt": "2026-03-01T09:36:37.405Z",
+  "boundTo": {
+    "headSha": "a2fccaeb4b0666b7bf994a42a23c75571e1518cf"
+  },
+  "payload": {
+    "nodeId": "rf-tests",
+    "claimedAt": "2026-03-01T09:31:37.405Z",
+    "claimExpiry": "2026-03-01T09:36:37.405Z"
+  },
+  "ok": false
+}

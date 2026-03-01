@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-b3fd0c776758ba70",
+  "type": "claim",
+  "subject": "rkg5-guard-policy",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:10:04.937Z",
+  "expiresAt": "2026-03-01T09:15:04.937Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg5-guard-policy",
+    "claimedAt": "2026-03-01T09:10:04.937Z",
+    "claimExpiry": "2026-03-01T09:15:04.937Z"
+  },
+  "ok": true
+}

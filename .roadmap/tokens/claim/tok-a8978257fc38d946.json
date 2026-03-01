@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-a8978257fc38d946",
+  "type": "claim",
+  "subject": "rkg4-fixtures",
+  "owner": "w3",
+  "issuedAt": "2026-03-01T09:15:31.753Z",
+  "expiresAt": "2026-03-01T09:20:31.753Z",
+  "boundTo": {
+    "headSha": "facdb4076a1e72b8affc5c9473b3d1900ab7574c"
+  },
+  "payload": {
+    "nodeId": "rkg4-fixtures",
+    "claimedAt": "2026-03-01T09:15:31.753Z",
+    "claimExpiry": "2026-03-01T09:20:31.753Z"
+  },
+  "ok": true
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-8bf923b9a68a19b3",
+  "type": "claim",
+  "subject": "surf-perf-vitest-cmd",
+  "owner": "w-ts-input",
+  "issuedAt": "2026-03-01T10:59:21.643Z",
+  "expiresAt": "2026-03-01T11:09:21.643Z",
+  "boundTo": {
+    "headSha": "eabd2598c1b3d4fbc1eb1722dd3c7b07a577fed017423ba12c06b1b9f20c50e4"
+  },
+  "payload": {
+    "ttlSeconds": 600
+  },
+  "ok": false
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-fe0ad9f346c209bc",
+  "type": "claim",
+  "subject": "dc-reject",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:23:26.485Z",
+  "expiresAt": "2026-03-01T09:28:26.485Z",
+  "boundTo": {
+    "headSha": "a49b7c64678dcf8fee9c5a9727ebd6916bc1a31c"
+  },
+  "payload": {
+    "nodeId": "dc-reject",
+    "claimedAt": "2026-03-01T09:23:26.485Z",
+    "claimExpiry": "2026-03-01T09:28:26.485Z"
+  },
+  "ok": true
+}

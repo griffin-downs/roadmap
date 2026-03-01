@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-efe4d44670337240",
+  "type": "claim",
+  "subject": "rkg5-fixtures",
+  "owner": "griffin",
+  "issuedAt": "2026-03-01T09:24:48.530Z",
+  "expiresAt": "2026-03-01T09:29:48.530Z",
+  "boundTo": {
+    "headSha": "fbf1550b17c035e4607e2cee94480ddfbe702e45"
+  },
+  "payload": {
+    "nodeId": "rkg5-fixtures",
+    "claimedAt": "2026-03-01T09:24:48.530Z",
+    "claimExpiry": "2026-03-01T09:29:48.530Z"
+  },
+  "ok": true
+}

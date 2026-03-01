@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "tokenId": "tok-525aecdcb8fa671c",
+  "type": "claim",
+  "subject": "surf-layout-verify",
+  "owner": "w-perf-schema",
+  "issuedAt": "2026-03-01T10:56:01.813Z",
+  "expiresAt": "2026-03-01T11:06:01.813Z",
+  "boundTo": {
+    "headSha": "eabd2598c1b3d4fbc1eb1722dd3c7b07a577fed017423ba12c06b1b9f20c50e4"
+  },
+  "payload": {
+    "ttlSeconds": 600
+  },
+  "ok": false
+}
