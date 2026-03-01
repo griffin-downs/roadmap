@@ -3992,5 +3992,31 @@
     ],
     "gitSha": "85573c77303b034dde18092fe09ce345d03096e5",
     "treeSha": "878e26512ce47b9000d8012b319827fc91c5e9b8"
+  },
+  {
+    "nodeId": "rm-strategy-exec-gate",
+    "completedAt": "2026-03-01T01:33:24.165Z",
+    "owner": "w1",
+    "checkpointId": "cp-20260301013322",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/cli/strategy-gate.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/cli/strategy-gate.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "08d36301e09cc2afe0e4506cd3ed6017a76ce99dc80fc5e3282f8e8895cd1434",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-strategy-exec-gate/mm72t5it-b99lv1/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "599b270c821666777b392e2410e2d8e2beab7f86",
+    "treeSha": "bb99fa09ade4c0337a1260198cde28fb1d7a5df4"
   }
 ]
