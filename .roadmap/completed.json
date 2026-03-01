@@ -308,5 +308,33 @@
     ],
     "gitSha": "332cf60a5ca9c0d815c4543973cbd36b06cbf521",
     "treeSha": "420b36eaa60afd0d685492633295421b8b005db0"
+  },
+  {
+    "nodeId": "reorganize-core-layer",
+    "completedAt": "2026-03-01T14:19:07.483Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301141856",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/core/index.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm run test -- tests/ --run 2>&1 | grep -q 'pass'"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm run test -- tests/ --run 2>&1 | grep -q 'pass'",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "b45f4d2dc91c69a3b021d2233939d77b0b641c20",
+    "treeSha": "6da3825c5cd02f5b606c4e3031db1f0e447ac28f"
   }
 ]
