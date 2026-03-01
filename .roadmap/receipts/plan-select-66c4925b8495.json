@@ -1,0 +1,8 @@
+{
+  "type": "plan-select",
+  "headSha": "ab38d886788355f6553caa59cef156f53bc3de674a82b153dfe3cebe72f9abc5",
+  "candidateId": "disconnected-systems-repair-001",
+  "selectedAt": "2026-03-01T16:17:54.848Z",
+  "selector": "griffin",
+  "note": "reconcile DAG tracking after detector-dag-subsystem implementation"
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "git_sha": "3f2d088042dfa3158dcac6cd343f3db82638c876",
+  "timestamp": "2026-03-01T17:10:36+01:00",
+  "spec_inputs": [
+    {
+      "path": ".specify/disconnected-systems-tasks.md",
+      "sha256": "785af4d2872e3989ec7149091f210d1c2c1e5458b8b4d3914e6426f2a8cea2c1"
+    }
+  ],
+  "spec_kit_version": null,
+  "dag_id": "disconnected-systems-repair-001",
+  "dag_hash": "39ba549bff0dbe3044835bf8bba4fc08e1e58477febb0df2fb74e5df2315fe4f",
+  "nodes": 23,
+  "validation": {
+    "define_passed": true,
+    "verify_warnings": 0,
+    "check_orphans": 21
+  },
+  "warnings": [
+    "check: 21 unreachable node(s)",
+    "terminal-intent: Terminal node 'term' requires at least one intent rule with expandOnFail: true",
+    "init-intent: Init boundary node 'term' requires an intent rule with expandOnFail: true and mention of plan/clarity/unambiguous"
+  ]
+}

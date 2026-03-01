@@ -1,0 +1,8 @@
+{
+  "type": "plan-select",
+  "headSha": "842bee5b11bf9b23a79cff4e5225a40a391fec540b10b23681eed4bf15b0c2b3",
+  "candidateId": "dir-refactor-001",
+  "selectedAt": "2026-03-01T14:31:19.526Z",
+  "selector": "griffin",
+  "note": "re-select for verify-imports completion"
+}

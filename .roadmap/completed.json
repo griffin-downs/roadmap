@@ -463,5 +463,20 @@
     ],
     "gitSha": "f33aab6a406c2f264bc41e7815fb67e1d701be8d",
     "treeSha": "21a686e0592a47bf52b224457aa738fded944ef4"
+  },
+  {
+    "nodeId": "detector-dag-subsystem",
+    "completedAt": "2026-03-01T16:17:56.920Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301161756",
+    "validationChecks": [
+      {
+        "rule": "spec-conformance",
+        "passed": true,
+        "evidence": "spec conformance: stories [] found in .specify/disconnected-systems-repair.md"
+      }
+    ],
+    "gitSha": "24d42d2ad2ff1f9f473d1b4ab146b11f77508d8c",
+    "treeSha": "c563902e931d1a4edd5da77357b7bb4bc85fe453"
   }
 ]
