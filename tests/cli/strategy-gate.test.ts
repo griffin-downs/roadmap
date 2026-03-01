@@ -12,6 +12,7 @@ describe('strategy exec gate', () => {
     tmp = mkdtempSync(join(tmpdir(), 'gate-'));
     mkdirSync(join(tmp, '.roadmap/strategy'), { recursive: true });
     mkdirSync(join(tmp, '.roadmap/receipts'), { recursive: true });
+    mkdirSync(join(tmp, '.roadmap/tokens/strategy'), { recursive: true });
   });
   afterEach(() => { rmSync(tmp, { recursive: true, force: true }); });
 
@@ -49,9 +50,10 @@ describe('strategy exec gate', () => {
     expect(checkStrategyGate(tmp).blocked).toBe(true);
   });
 
-  it('not blocked after clearing latch', () => {
+  it('not blocked after clearing latch', async () => {
     writeLatch(tmp, ['swarm']);
     expect(checkStrategyGate(tmp).blocked).toBe(true);
+    await new Promise(r => setTimeout(r, 10)); // Ensure timestamps differ by millisecond
     clearLatch(tmp);
     expect(checkStrategyGate(tmp).blocked).toBe(false);
   });
