@@ -5591,5 +5591,28 @@
     ],
     "gitSha": "caccdf0c717eb342daa5ef14ebc7bad3ffee1008",
     "treeSha": "95d7597c8cfb37dcea9484975aec3162ead62ccc"
+  },
+  {
+    "nodeId": "dc-accept",
+    "completedAt": "2026-03-01T09:23:17.094Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301092315",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "78f843c0598757b4299104e602a096379e9f7aec",
+    "treeSha": "dbf31a4628586ec7d28562c1aa00bd2cc2fb070a"
   }
 ]
