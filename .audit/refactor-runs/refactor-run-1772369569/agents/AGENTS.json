@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "runId": "refactor-run-1740842400",
+  "agents": [
+    {
+      "agentId": "survey-01",
+      "promptHash": "sha256-abc123",
+      "scope": {
+        "directories": ["src/lib", "src/protocol", "src/agent"],
+        "exclude": ["dist", "node_modules", "archive"]
+      }
+    },
+    {
+      "agentId": "survey-02",
+      "promptHash": "sha256-def456",
+      "scope": {
+        "directories": ["bin", "tests"],
+        "exclude": ["dist", "node_modules", ".out"]
+      }
+    },
+    {
+      "agentId": "survey-03",
+      "promptHash": "sha256-ghi789",
+      "scope": {
+        "directories": ["docs", "scripts"],
+        "exclude": ["dist", "node_modules", ".archive"]
+      }
+    }
+  ]
+}
