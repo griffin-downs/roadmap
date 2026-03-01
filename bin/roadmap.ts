@@ -4,7 +4,7 @@
 // @exports (CLI binary — no programmatic exports)
 // @entry bin/roadmap
 
-import { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync, readdirSync, statSync, unlinkSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
@@ -3745,9 +3745,11 @@ function cmdClaim() {
 function cmdDag(note: string) {
   const sub = args[1];
   switch (sub) {
-    case 'diff': return cmdDagDiff();
+    case 'diff':   return cmdDagDiff();
+    case 'accept': return cmdDagAccept(note);
+    case 'reject': return cmdDagReject(note);
     default:
-      json({ error: `Unknown dag subcommand: ${sub}`, fix: 'roadmap dag diff' });
+      json({ error: `Unknown dag subcommand: ${sub}`, fix: 'roadmap dag diff|accept|reject' });
       process.exit(1);
   }
 }
@@ -3781,6 +3783,104 @@ function cmdDagDiff() {
     candidateSource: envelope.source,
     staleDrift,
   });
+}
+
+function cmdDagAccept(note: string) {
+  const envelope = loadCandidate(repoRoot);
+  if (!envelope) {
+    json({ error: 'No candidate to accept', fix: 'Run roadmap import or roadmap expand first' });
+    process.exit(1);
+    return;
+  }
+
+  // Stale check
+  const headSha = computeHeadSha(repoRoot);
+  if (headSha !== envelope.baseSha) {
+    json({ error: 'Candidate is stale', fix: 'roadmap dag diff to review, then reject and re-import' });
+    process.exit(1);
+    return;
+  }
+
+  // Validate candidate DAG
+  try { define(envelope.dag); } catch (e: any) {
+    json({ error: 'Candidate DAG failed define()', detail: e.message, fix: 'Reject candidate and fix source' });
+    process.exit(1);
+    return;
+  }
+
+  const verifyErrors = verify(envelope.dag);
+  if (verifyErrors.length > 0) {
+    json({ error: 'Candidate DAG failed verify()', errors: verifyErrors, fix: 'Reject candidate and fix source' });
+    process.exit(1);
+    return;
+  }
+
+  const checkResult = check(envelope.dag);
+  if (!checkResult.done) {
+    json({ error: 'Candidate DAG failed check()', orphans: checkResult.orphans, fix: 'Reject candidate and fix source' });
+    process.exit(1);
+    return;
+  }
+
+  // Compute diff for receipt
+  const liveDag = loadDAG();
+  const liveIds = new Set(Object.keys(liveDag.nodes));
+  const candidateIds = new Set(Object.keys(envelope.dag.nodes));
+  const nodesAdded = [...candidateIds].filter(id => !liveIds.has(id)).length;
+  const nodesRemoved = [...liveIds].filter(id => !candidateIds.has(id)).length;
+
+  // Promote: overwrite head.json
+  const headPath = join(repoRoot, '.roadmap', 'head.json');
+  writeFileSync(headPath, JSON.stringify(envelope.dag, null, 2) + '\n');
+
+  // Delete candidate
+  const candidatePath = join(repoRoot, '.roadmap', 'head.candidate.json');
+  unlinkSync(candidatePath);
+
+  // Write acceptance receipt
+  const acceptedAt = new Date().toISOString();
+  const receiptsDir = join(repoRoot, '.roadmap', 'receipts');
+  if (!existsSync(receiptsDir)) mkdirSync(receiptsDir, { recursive: true });
+  const receiptPath = join(receiptsDir, `dag-accept-${acceptedAt.replace(/[:.]/g, '-')}.json`);
+  const receipt = { accepted: true, baseSha: envelope.baseSha, source: envelope.source, acceptedAt, nodesAdded, nodesRemoved, note };
+  writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
+
+  recordTrail({
+    ts: acceptedAt, cmd: 'dag.accept', note,
+    repo: basename(repoRoot),
+    detail: { baseSha: envelope.baseSha, source: envelope.source, nodesAdded, nodesRemoved, receiptPath },
+  });
+
+  json({ accepted: true, baseSha: envelope.baseSha, source: envelope.source, nodesAdded, nodesRemoved, receiptPath });
+}
+
+function cmdDagReject(note: string) {
+  const envelope = loadCandidate(repoRoot);
+  if (!envelope) {
+    json({ error: 'No candidate to reject' });
+    process.exit(1);
+    return;
+  }
+
+  // Delete candidate
+  const candidatePath = join(repoRoot, '.roadmap', 'head.candidate.json');
+  unlinkSync(candidatePath);
+
+  // Write rejection receipt
+  const rejectedAt = new Date().toISOString();
+  const receiptsDir = join(repoRoot, '.roadmap', 'receipts');
+  if (!existsSync(receiptsDir)) mkdirSync(receiptsDir, { recursive: true });
+  const receiptPath = join(receiptsDir, `dag-reject-${rejectedAt.replace(/[:.]/g, '-')}.json`);
+  const receipt = { rejected: true, baseSha: envelope.baseSha, source: envelope.source, rejectedAt, note };
+  writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
+
+  recordTrail({
+    ts: rejectedAt, cmd: 'dag.reject', note,
+    repo: basename(repoRoot),
+    detail: { baseSha: envelope.baseSha, source: envelope.source, receiptPath },
+  });
+
+  json({ rejected: true, baseSha: envelope.baseSha, source: envelope.source, receiptPath, headJsonUnchanged: true });
 }
 
 // --- token: issue, list, inspect, revoke, gc ---
