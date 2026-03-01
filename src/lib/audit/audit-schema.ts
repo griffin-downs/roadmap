@@ -1,7 +1,33 @@
-// DEPRECATED: Use src/lib/schema.ts instead
-// This file is kept for reference but no longer imported.
-// All ValidatorRule types moved to src/lib/schema.ts
+// @module audit/schema
+// @exports SurfaceSchema, FileEntry, FileRole
+// @entry roadmap/audit
 
-export const DEPRECATED_NOTICE = "This module has been consolidated into src/lib/schema.ts";
+export type FileRole =
+  | 'cli-entry'
+  | 'command'
+  | 'test'
+  | 'script'
+  | 'doc'
+  | 'config'
+  | 'generated'
+  | 'core'
+  | 'lib';
 
-// Removed: All exports redirected to src/lib/schema.ts
+export interface FileEntry {
+  path: string;
+  role: FileRole;
+  hash: string;
+  sizeBytes: number;
+  exports?: string[];
+}
+
+export interface SurfaceSchema {
+  version: number;
+  timestamp: string;
+  root: string;
+  files: FileEntry[];
+  summary: {
+    total: number;
+    byRole: Record<FileRole, number>;
+  };
+}

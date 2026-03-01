@@ -1,6 +1,9 @@
 // @module audit
-// @exports AuditTrail, createAuditTrail, runAuditIngest, parseTranscript, runAuditRecommend, scanSurface, buildImportGraph, scoreArchival, deriveLayout, generateMovePlan
+// @exports SurfaceSchema, FileEntry, FileRole, AuditTrail, createAuditTrail, runAuditIngest, parseTranscript, runAuditRecommend, scanSurface, buildImportGraph, scoreArchival, deriveLayout, generateMovePlan
 // @entry roadmap/audit
+
+// Schema types
+export type { SurfaceSchema, FileEntry, FileRole } from './audit-schema.ts';
 
 // Session audit trail
 export { AuditTrail, createAuditTrail } from './trail.ts';
