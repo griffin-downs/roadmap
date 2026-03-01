@@ -1,959 +1,440 @@
 {
-  "id": "fr-surf-001",
-  "desc": "Merged DAG: FR-SK-INTEGRATE-001 + FR-MF-HARDEN-001",
-  "init": "sk-dir-integration",
+  "id": "fr-sk-integrate-001",
+  "desc": "FR-SK-INTEGRATE-001: Spec-Kit Agent Integration Protocol",
+  "init": "init",
   "term": "term",
   "nodes": {
-    "sk-dir-integration": {
-      "id": "sk-dir-integration",
-      "desc": "Establish `.roadmap/spec/` as spec-kit workspace. Create directory structure, add README with conventions (file naming: `<dag-id>-spec.md`, `<dag-id>-plan.md`, `<dag-id>-tasks.md`, `<dag-id>-selected.json`, `<dag-id>-gallery.json`). Add backward-compat note for `.specify/` migration. Produces: `.roadmap/spec/README.md`, `.roadmap/spec/.gitkeep`",
-      "produces": [],
+    "sk-directory-schema": {
+      "id": "sk-directory-schema",
+      "desc": "Define .roadmap/spec/ directory structure + naming conventions",
+      "produces": [
+        "docs/SPEC-KIT-DIRECTORY.md",
+        ".roadmap/spec/"
+      ],
       "consumes": [],
-      "deps": [],
-      "validate": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "docs/SPEC-KIT-DIRECTORY.md"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "test -d .roadmap/spec"
+        }
+      ],
       "idempotent": true
     },
     "sk-validation-rules": {
       "id": "sk-validation-rules",
-      "desc": "Implement `validateSpecKitPlan(planPath)` and `validateSpecKitTasks(tasksPath)` in `src/spec-kit/validation.ts`. Plan validation: required sections present, node IDs referenced. Tasks validation: every node has id + description + produces + consumes + dependencies + validate, node IDs valid (no spaces/special chars), all dependencies exist (no orphans), DAG is acyclic, init/term nodes exist. Returns `ValidationResult` with errors + warnings. Depends: sk-dir-integration. Produces: `src/spec-kit/validation.ts`, `tests/spec-kit/validation.test.ts`",
-      "produces": [],
+      "desc": "Implement validators for spec-kit plan.md and tasks.md outputs",
+      "produces": [
+        "src/spec-kit/validation.ts"
+      ],
       "consumes": [],
       "deps": [
-        "sk-dir-integration"
+        "init"
       ],
-      "validate": [],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/spec-kit/validation.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "tsc --noEmit"
+        }
+      ],
       "idempotent": true
     },
-    "sk-agent-brief-gen": {
-      "id": "sk-agent-brief-gen",
-      "desc": "Implement `generateAgentBrief(options)` in `src/spec-kit/agent-brief.ts`. Takes `dagId`, `intent`, `roadmapPosition` (Orientation), `specKitWorkspace` path. Produces markdown + YAML frontmatter brief with: current batch + position, node produces/consumes, intent statement, spec file locations, next commands to run, error handling tips. Depends: sk-dir-integration. Produces: `src/spec-kit/agent-brief.ts`, `tests/spec-kit/agent-brief.test.ts`",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "sk-dir-integration"
+    "agent-brief-generator": {
+      "id": "agent-brief-generator",
+      "desc": "Implement context builder. Generate briefs with roadmap position + spec-kit workflow",
+      "produces": [
+        "src/spec-kit/agent-brief.ts",
+        "src/spec-kit/types-brief.ts"
       ],
-      "validate": [],
-      "idempotent": true
-    },
-    "sk-brief-template-doc": {
-      "id": "sk-brief-template-doc",
-      "desc": "Write agent brief template at `docs/AGENT-SPEC-KIT-BRIEF.md`. Covers: when to use `/speckit.specify` vs roadmap node descriptions, how to feed plan output into roadmap import, error recovery (plan fails, import rejects), intent formulation guidance with examples. Depends: sk-agent-brief-gen. Produces: `docs/AGENT-SPEC-KIT-BRIEF.md`",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "sk-agent-brief-gen"
+      "consumes": [
+        "src/spec-kit/validation.ts"
       ],
-      "validate": [],
-      "idempotent": true
-    },
-    "sk-workflow-doc": {
-      "id": "sk-workflow-doc",
-      "desc": "Write workflow documentation at `docs/SPEC-KIT-ROADMAP-WORKFLOW.md`. Sections: spec-driven feature intake (step-by-step), output format expectations (plan.md structure, tasks.md structure, receipts), failure modes + remediation, best practices (clear intents, iterating on spec, splitting multi-feature specs). Depends: sk-validation-rules. Produces: `docs/SPEC-KIT-ROADMAP-WORKFLOW.md`",
-      "produces": [],
-      "consumes": [],
       "deps": [
         "sk-validation-rules"
       ],
-      "validate": [],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/spec-kit/agent-brief.ts",
+            "src/spec-kit/types-brief.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "tsc --noEmit"
+        }
+      ],
       "idempotent": true
     },
-    "sk-e2e-tests": {
-      "id": "sk-e2e-tests",
-      "desc": "End-to-end tests proving composition works. Test scenarios: AT-SK-001 (agent reads spec → runs specify → produces plan), AT-SK-002 (plan has valid structure), AT-SK-003 (tasks compatible with roadmap import), AT-SK-004 (roadmap import succeeds), AT-SK-005 (agent brief includes correct context), AT-SK-006 (validation catches invalid plan/tasks). Depends: sk-brief-template-doc, sk-workflow-doc. Produces: `tests/spec-kit/e2e-integration.test.ts`",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "sk-brief-template-doc",
-        "sk-workflow-doc"
+    "agent-brief-template": {
+      "id": "agent-brief-template",
+      "desc": "Create example brief markdown templates agents receive",
+      "produces": [
+        "docs/AGENT-SPEC-KIT-BRIEF.md",
+        "templates/agent-brief-spec-driven.md"
       ],
-      "validate": [],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts"
+      ],
+      "deps": [
+        "sk-directory-schema",
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "docs/AGENT-SPEC-KIT-BRIEF.md",
+            "templates/agent-brief-spec-driven.md"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "grep -c 'example\\\\|Example' docs/AGENT-SPEC-KIT-BRIEF.md | grep -E '^[2-9]|^[1-9][0-9]'"
+        }
+      ],
       "idempotent": true
     },
-    "sk-integrate-term": {
-      "id": "sk-integrate-term",
-      "desc": "Terminal integration gate. Verify all acceptance scenarios pass: directory structure exists, validation catches format mismatches, agent brief has correct roadmap context, workflow documented, E2E tests pass. Depends: sk-e2e-tests. Produces: `docs/FR-SK-INTEGRATE-001-RECEIPT.md`",
+    "workflow-guide-spec-kit": {
+      "id": "workflow-guide-spec-kit",
+      "desc": "Document spec-kit command sequence, output formats, error recovery",
+      "produces": [
+        "docs/SPEC-KIT-WORKFLOW.md"
+      ],
+      "consumes": [
+        "src/spec-kit/validation.ts",
+        "src/spec-kit/agent-brief.ts"
+      ],
+      "deps": [
+        "sk-directory-schema",
+        "sk-validation-rules",
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "docs/SPEC-KIT-WORKFLOW.md"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "grep -c 'example\\\\|/speckit' docs/SPEC-KIT-WORKFLOW.md | grep -E '^[3-9]|^[1-9][0-9]'"
+        }
+      ],
+      "idempotent": true
+    },
+    "workflow-guide-integration": {
+      "id": "workflow-guide-integration",
+      "desc": "Document how roadmap + spec-kit compose. Full spec-driven feature intake walkthrough",
+      "produces": [
+        "docs/SPEC-KIT-ROADMAP-WORKFLOW.md"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts",
+        "docs/SPEC-KIT-WORKFLOW.md"
+      ],
+      "deps": [
+        "agent-brief-generator",
+        "workflow-guide-spec-kit"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "docs/SPEC-KIT-ROADMAP-WORKFLOW.md"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "grep -c 'roadmap\\\\|/speckit' docs/SPEC-KIT-ROADMAP-WORKFLOW.md | grep -E '^[5-9]|^[1-9][0-9]'"
+        }
+      ],
+      "idempotent": true
+    },
+    "roadmap-compile-brief-wiring": {
+      "id": "roadmap-compile-brief-wiring",
+      "desc": "Wire agent-brief-generator into roadmap compile-brief command",
+      "produces": [
+        "bin/roadmap.ts (modified)",
+        "src/commands/compile-brief.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts"
+      ],
+      "deps": [
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/commands/compile-brief.ts"
+          ]
+        },
+        {
+          "type": "build-produces",
+          "target": "bin/roadmap"
+        },
+        {
+          "type": "shell",
+          "command": "bin/roadmap compile-brief --help | grep -i spec"
+        }
+      ],
+      "idempotent": true
+    },
+    "import-format-validation": {
+      "id": "import-format-validation",
+      "desc": "Add validation to roadmap import for spec-kit tasks format",
+      "produces": [
+        "src/commands/import.ts (modified)",
+        "src/spec-kit/import-validator.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/validation.ts"
+      ],
+      "deps": [
+        "sk-validation-rules"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/spec-kit/import-validator.ts"
+          ]
+        },
+        {
+          "type": "build-produces",
+          "target": "bin/roadmap"
+        },
+        {
+          "type": "shell",
+          "command": "tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "directory-migration-helper": {
+      "id": "directory-migration-helper",
+      "desc": "Create migration tool: .specify/ → .roadmap/spec/. Backward-compat redirects.",
+      "produces": [
+        "src/spec-kit/directory-migration.ts",
+        "scripts/migrate-specify-to-roadmap.ts"
+      ],
+      "consumes": [
+        "docs/SPEC-KIT-DIRECTORY.md"
+      ],
+      "deps": [
+        "sk-directory-schema"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/spec-kit/directory-migration.ts",
+            "scripts/migrate-specify-to-roadmap.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "cli-spec-init": {
+      "id": "cli-spec-init",
+      "desc": "New command: roadmap spec-kit init <dag-id> --intent '...'",
+      "produces": [
+        "bin/roadmap.ts (modified, spec-init handler)",
+        "src/commands/spec-init.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts",
+        "docs/SPEC-KIT-DIRECTORY.md"
+      ],
+      "deps": [
+        "sk-directory-schema",
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "src/commands/spec-init.ts"
+          ]
+        },
+        {
+          "type": "build-produces",
+          "target": "bin/roadmap"
+        },
+        {
+          "type": "shell",
+          "command": "bin/roadmap spec-kit init --help | grep -i intent"
+        }
+      ],
+      "idempotent": true
+    },
+    "tests-sk-validation": {
+      "id": "tests-sk-validation",
+      "desc": "Unit tests for plan/task validators",
+      "produces": [
+        "tests/spec-kit/validation.test.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/validation.ts"
+      ],
+      "deps": [
+        "sk-validation-rules"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "tests/spec-kit/validation.test.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "npm test -- validation.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "tests-sk-brief-generator": {
+      "id": "tests-sk-brief-generator",
+      "desc": "Tests for agent brief generation",
+      "produces": [
+        "tests/spec-kit/agent-brief.test.ts"
+      ],
+      "consumes": [
+        "src/spec-kit/agent-brief.ts"
+      ],
+      "deps": [
+        "agent-brief-generator"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "tests/spec-kit/agent-brief.test.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "npm test -- agent-brief.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "tests-sk-workflow-e2e": {
+      "id": "tests-sk-workflow-e2e",
+      "desc": "E2E test: agent reads brief → tasks → roadmap import succeeds",
+      "produces": [
+        "tests/spec-kit/e2e.test.ts"
+      ],
+      "consumes": [
+        "src/commands/compile-brief.ts",
+        "src/commands/spec-init.ts",
+        "src/spec-kit/import-validator.ts"
+      ],
+      "deps": [
+        "roadmap-compile-brief-wiring",
+        "import-format-validation",
+        "cli-spec-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "paths": [
+            "tests/spec-kit/e2e.test.ts"
+          ]
+        },
+        {
+          "type": "shell",
+          "command": "npm test -- spec-kit/e2e.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "sk-integration-validation": {
+      "id": "sk-integration-validation",
+      "desc": "Validation gate: all tests pass, docs complete, integration ready",
+      "produces": [],
+      "consumes": [
+        "tests/spec-kit/",
+        "docs/SPEC-KIT-ROADMAP-WORKFLOW.md"
+      ],
+      "deps": [
+        "tests-sk-validation",
+        "tests-sk-brief-generator",
+        "tests-sk-workflow-e2e"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test -- spec-kit && test -f docs/SPEC-KIT-ROADMAP-WORKFLOW.md && test -f docs/AGENT-SPEC-KIT-BRIEF.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "init": {
+      "id": "init",
+      "desc": "Synthetic init — start of FR-SK-INTEGRATE-001",
       "produces": [],
       "consumes": [],
-      "deps": [
-        "sk-e2e-tests"
-      ],
+      "deps": [],
       "validate": [],
-      "idempotent": true
+      "idempotent": false
     },
     "intent-metaflow-audit-fr-sk-integrate": {
       "id": "intent-metaflow-audit-fr-sk-integrate",
-      "desc": "Governance audit gate — spec-kit agent integration verified against metaflow audit compliance. Terminal intent gate. Depends: sk-integrate-term. Produces: audit-evidence collected, integration compliance certified.",
+      "desc": "Governance audit gate — spec-kit agent integration verified against metaflow audit compliance. Terminal intent gate.",
       "produces": [],
       "consumes": [],
       "deps": [
-        "sk-integrate-term"
-      ],
-      "validate": [],
-      "idempotent": true
-    },
-    "mf-schema-types": {
-      "id": "mf-schema-types",
-      "desc": "TypeScript types for MF.json, RUN.json, events, MINING, AUDIT, DETECTORS",
-      "produces": [
-        "src/metaflow/types.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "sk-integrate-term"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/types.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "mf-config-scaffold": {
-      "id": "mf-config-scaffold",
-      "desc": "Initialize .roadmap/metaflow/ directory structure + default MF.json",
-      "produces": [
-        ".roadmap/metaflow/MF.json",
-        ".roadmap/metaflow/runs/",
-        ".roadmap/metaflow/audit/"
-      ],
-      "consumes": [],
-      "deps": [
-        "sk-integrate-term"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            ".roadmap/metaflow/MF.json"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "test -d .roadmap/metaflow/runs && test -d .roadmap/metaflow/audit"
-        }
-      ],
-      "idempotent": true
-    },
-    "detectors-registry-schema": {
-      "id": "detectors-registry-schema",
-      "desc": "Define DETECTORS.json schema + initialize empty registry",
-      "produces": [
-        "src/metaflow/detectors.ts",
-        ".roadmap/metaflow/audit/DETECTORS.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "sk-integrate-term"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/detectors.ts",
-            ".roadmap/metaflow/audit/DETECTORS.json"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "mf-wrapper-integration": {
-      "id": "mf-wrapper-integration",
-      "desc": "Install metaflow wrapper in bin/roadmap.ts main loop",
-      "produces": [
-        "bin/roadmap.ts (modified)",
-        "src/metaflow/wrapper.ts"
-      ],
-      "consumes": [
-        "src/metaflow/types.ts"
-      ],
-      "deps": [
-        "mf-schema-types"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "bin/roadmap.ts",
-            "src/metaflow/wrapper.ts"
-          ]
-        },
-        {
-          "type": "build-produces",
-          "target": "bin/roadmap"
-        },
-        {
-          "type": "shell",
-          "command": "bin/roadmap --version"
-        }
-      ],
-      "idempotent": true
-    },
-    "event-ndjson-writer": {
-      "id": "event-ndjson-writer",
-      "desc": "Event writer: captures cmd, argv, exitCode, stdout/stderr digests, timing",
-      "produces": [
-        "src/metaflow/event-writer.ts"
-      ],
-      "consumes": [
-        "src/metaflow/types.ts"
-      ],
-      "deps": [
-        "mf-schema-types"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/event-writer.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "stdout-envelope-parser": {
-      "id": "stdout-envelope-parser",
-      "desc": "Parse JSON envelope from command stdout (if present)",
-      "produces": [
-        "src/metaflow/envelope-parser.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "sk-integrate-term"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/envelope-parser.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "mining-latency-calculator": {
-      "id": "mining-latency-calculator",
-      "desc": "Compute p50/p95 latency per command from event log",
-      "produces": [
-        "src/metaflow/mining-latency.ts"
-      ],
-      "consumes": [
-        "src/metaflow/event-writer.ts"
-      ],
-      "deps": [
-        "event-ndjson-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/mining-latency.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "mining-tool-call-counter": {
-      "id": "mining-tool-call-counter",
-      "desc": "Count tool calls per command from envelope (mock for Pilot)",
-      "produces": [
-        "src/metaflow/mining-tool-calls.ts"
-      ],
-      "consumes": [
-        "src/metaflow/event-writer.ts",
-        "src/metaflow/envelope-parser.ts"
-      ],
-      "deps": [
-        "event-ndjson-writer",
-        "stdout-envelope-parser"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/mining-tool-calls.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "mining-friction-ranker": {
-      "id": "mining-friction-ranker",
-      "desc": "Rank friction items (failures, retries, warnings). Placeholder for Pilot",
-      "produces": [
-        "src/metaflow/mining-friction.ts"
-      ],
-      "consumes": [
-        "src/metaflow/event-writer.ts"
-      ],
-      "deps": [
-        "event-ndjson-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/mining-friction.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "semantic-diff-detector": {
-      "id": "semantic-diff-detector",
-      "desc": "Diff head.json snapshots before/after run. Derive whether expand/propagate should have been called",
-      "produces": [
-        "src/metaflow/semantic-diff.ts"
-      ],
-      "consumes": [
-        "src/metaflow/detectors.ts"
-      ],
-      "deps": [
-        "detectors-registry-schema"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/semantic-diff.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "d1-expand-propagate-detector": {
-      "id": "d1-expand-propagate-detector",
-      "desc": "D1 detector instance. Use semantic-diff to check for missing expand/propagate",
-      "produces": [
-        "src/metaflow/detectors/d1.ts"
-      ],
-      "consumes": [
-        "src/metaflow/semantic-diff.ts"
-      ],
-      "deps": [
-        "semantic-diff-detector"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/detectors/d1.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "phaseTransitions-matcher": {
-      "id": "phaseTransitions-matcher",
-      "desc": "Match actual CLI events against required transitions (expand, propagate, complete, etc)",
-      "produces": [
-        "src/metaflow/phase-transitions.ts"
-      ],
-      "consumes": [
-        "src/metaflow/event-writer.ts"
-      ],
-      "deps": [
-        "event-ndjson-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/phase-transitions.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "run-record-writer": {
-      "id": "run-record-writer",
-      "desc": "Create + update RUN.json throughout execution",
-      "produces": [
-        "src/metaflow/run-record.ts"
-      ],
-      "consumes": [
-        "src/metaflow/wrapper.ts",
-        "src/metaflow/event-writer.ts"
-      ],
-      "deps": [
-        "mf-wrapper-integration",
-        "event-ndjson-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/run-record.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "mining-receipt-writer": {
-      "id": "mining-receipt-writer",
-      "desc": "Aggregate mining outputs into MINING.json",
-      "produces": [
-        "src/metaflow/mining-receipt.ts"
-      ],
-      "consumes": [
-        "src/metaflow/mining-latency.ts",
-        "src/metaflow/mining-tool-calls.ts",
-        "src/metaflow/mining-friction.ts"
-      ],
-      "deps": [
-        "mining-latency-calculator",
-        "mining-tool-call-counter",
-        "mining-friction-ranker"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/mining-receipt.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "audit-receipt-writer": {
-      "id": "audit-receipt-writer",
-      "desc": "Aggregate detector outputs + phase transitions into AUDIT.json",
-      "produces": [
-        "src/metaflow/audit-receipt.ts"
-      ],
-      "consumes": [
-        "src/metaflow/detectors/d1.ts",
-        "src/metaflow/phase-transitions.ts"
-      ],
-      "deps": [
-        "d1-expand-propagate-detector",
-        "phaseTransitions-matcher"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/audit-receipt.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "mf-init-bootstrap": {
-      "id": "mf-init-bootstrap",
-      "desc": "Initialize metaflow run directory + create initial RUN.json",
-      "produces": [
-        "src/metaflow/init-bootstrap.ts"
-      ],
-      "consumes": [
-        ".roadmap/metaflow/MF.json",
-        "src/metaflow/run-record.ts"
-      ],
-      "deps": [
-        "mf-config-scaffold",
-        "run-record-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/init-bootstrap.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "roadmap-mf-init-command": {
-      "id": "roadmap-mf-init-command",
-      "desc": "roadmap mf init <dag-id> command. Initialize run directory + RUN.json",
-      "produces": [
-        "bin/roadmap.ts (mf-init handler)",
-        "src/metaflow/mf-init-cmd.ts"
-      ],
-      "consumes": [
-        "src/metaflow/init-bootstrap.ts"
-      ],
-      "deps": [
-        "mf-init-bootstrap"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/mf-init-cmd.ts"
-          ]
-        },
-        {
-          "type": "build-produces",
-          "target": "bin/roadmap"
-        },
-        {
-          "type": "shell",
-          "command": "bin/roadmap mf init --help"
-        }
-      ],
-      "idempotent": true
-    },
-    "roadmap-mf-mine-command": {
-      "id": "roadmap-mf-mine-command",
-      "desc": "roadmap mf mine command. Triggers mining + audit receipt generation",
-      "produces": [
-        "bin/roadmap.ts (mf-mine handler)",
-        "src/metaflow/mf-mine-cmd.ts"
-      ],
-      "consumes": [
-        "src/metaflow/mining-receipt.ts",
-        "src/metaflow/audit-receipt.ts"
-      ],
-      "deps": [
-        "mining-receipt-writer",
-        "audit-receipt-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/mf-mine-cmd.ts"
-          ]
-        },
-        {
-          "type": "build-produces",
-          "target": "bin/roadmap"
-        },
-        {
-          "type": "shell",
-          "command": "bin/roadmap mf mine --help"
-        }
-      ],
-      "idempotent": true
-    },
-    "roadmap-mf-status-command": {
-      "id": "roadmap-mf-status-command",
-      "desc": "roadmap mf status command. Show current run status",
-      "produces": [
-        "bin/roadmap.ts (mf-status handler)",
-        "src/metaflow/mf-status-cmd.ts"
-      ],
-      "consumes": [
-        "src/metaflow/run-record.ts"
-      ],
-      "deps": [
-        "run-record-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/mf-status-cmd.ts"
-          ]
-        },
-        {
-          "type": "build-produces",
-          "target": "bin/roadmap"
-        },
-        {
-          "type": "shell",
-          "command": "bin/roadmap mf status --help"
-        }
-      ],
-      "idempotent": true
-    },
-    "roadmap-mf-audit-command": {
-      "id": "roadmap-mf-audit-command",
-      "desc": "roadmap mf audit command. Print AUDIT.json findings",
-      "produces": [
-        "bin/roadmap.ts (mf-audit handler)",
-        "src/metaflow/mf-audit-cmd.ts"
-      ],
-      "consumes": [
-        "src/metaflow/audit-receipt.ts"
-      ],
-      "deps": [
-        "audit-receipt-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "src/metaflow/mf-audit-cmd.ts"
-          ]
-        },
-        {
-          "type": "build-produces",
-          "target": "bin/roadmap"
-        },
-        {
-          "type": "shell",
-          "command": "bin/roadmap mf audit --help"
-        }
-      ],
-      "idempotent": true
-    },
-    "tests-mf-schemas": {
-      "id": "tests-mf-schemas",
-      "desc": "Tests for all schema types (MF.json, RUN.json, events, MINING, AUDIT, DETECTORS)",
-      "produces": [
-        "tests/metaflow/schemas.test.ts"
-      ],
-      "consumes": [
-        "src/metaflow/types.ts",
-        "src/metaflow/detectors.ts"
-      ],
-      "deps": [
-        "mf-schema-types",
-        "detectors-registry-schema"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "tests/metaflow/schemas.test.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "npm test -- schemas.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "tests-mf-event-capture": {
-      "id": "tests-mf-event-capture",
-      "desc": "Tests for wrapper + event writer + envelope parser",
-      "produces": [
-        "tests/metaflow/event-capture.test.ts"
-      ],
-      "consumes": [
-        "src/metaflow/wrapper.ts",
-        "src/metaflow/event-writer.ts",
-        "src/metaflow/envelope-parser.ts"
-      ],
-      "deps": [
-        "mf-wrapper-integration",
-        "event-ndjson-writer",
-        "stdout-envelope-parser"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "tests/metaflow/event-capture.test.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "npm test -- event-capture.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "tests-mf-mining": {
-      "id": "tests-mf-mining",
-      "desc": "Tests for latency calculator, tool-call counter, friction ranker",
-      "produces": [
-        "tests/metaflow/mining.test.ts"
-      ],
-      "consumes": [
-        "src/metaflow/mining-latency.ts",
-        "src/metaflow/mining-tool-calls.ts",
-        "src/metaflow/mining-friction.ts"
-      ],
-      "deps": [
-        "mining-latency-calculator",
-        "mining-tool-call-counter",
-        "mining-friction-ranker"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "tests/metaflow/mining.test.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "npm test -- mining.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "tests-mf-audit-d1": {
-      "id": "tests-mf-audit-d1",
-      "desc": "Tests for D1 detector (semantic diff + expand/propagate detection)",
-      "produces": [
-        "tests/metaflow/audit-d1.test.ts"
-      ],
-      "consumes": [
-        "src/metaflow/detectors/d1.ts"
-      ],
-      "deps": [
-        "d1-expand-propagate-detector"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "tests/metaflow/audit-d1.test.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "npm test -- audit-d1.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "tests-mf-cli": {
-      "id": "tests-mf-cli",
-      "desc": "Tests for CLI commands (mf init, mf mine, mf status, mf audit)",
-      "produces": [
-        "tests/metaflow/cli.test.ts"
-      ],
-      "consumes": [
-        "src/metaflow/mf-init-cmd.ts",
-        "src/metaflow/mf-mine-cmd.ts",
-        "src/metaflow/mf-status-cmd.ts",
-        "src/metaflow/mf-audit-cmd.ts"
-      ],
-      "deps": [
-        "roadmap-mf-init-command",
-        "roadmap-mf-mine-command",
-        "roadmap-mf-status-command",
-        "roadmap-mf-audit-command"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "tests/metaflow/cli.test.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "npm test -- cli.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "tests-mf-e2e": {
-      "id": "tests-mf-e2e",
-      "desc": "End-to-end: full run (init → orient → show → mine → audit) with all receipts valid",
-      "produces": [
-        "tests/metaflow/e2e.test.ts"
-      ],
-      "consumes": [
-        "src/metaflow/ (all modules)"
-      ],
-      "deps": [
-        "tests-mf-schemas",
-        "tests-mf-event-capture",
-        "tests-mf-mining",
-        "tests-mf-audit-d1",
-        "tests-mf-cli"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "tests/metaflow/e2e.test.ts"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "npm test -- e2e.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "mf-config-guide": {
-      "id": "mf-config-guide",
-      "desc": "Guide to configuring MF.json (mode, detectors, required transitions)",
-      "produces": [
-        "docs/METAFLOW-CONFIG.md"
-      ],
-      "consumes": [
-        ".roadmap/metaflow/MF.json"
-      ],
-      "deps": [
-        "mf-config-scaffold"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "docs/METAFLOW-CONFIG.md"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "grep -c 'example\\\\|Example' docs/METAFLOW-CONFIG.md | grep -E '^[3-9]|^[1-9][0-9]'"
-        }
-      ],
-      "idempotent": true
-    },
-    "mf-debugging-guide": {
-      "id": "mf-debugging-guide",
-      "desc": "How to debug metaflow issues (read event log, parse receipts, inspect diffs)",
-      "produces": [
-        "docs/METAFLOW-DEBUG.md"
-      ],
-      "consumes": [
-        "src/metaflow/event-writer.ts",
-        "src/metaflow/audit-receipt.ts"
-      ],
-      "deps": [
-        "event-ndjson-writer",
-        "audit-receipt-writer"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "paths": [
-            "docs/METAFLOW-DEBUG.md"
-          ]
-        },
-        {
-          "type": "shell",
-          "command": "grep -c 'example\\\\|Example\\\\|troubleshoot' docs/METAFLOW-DEBUG.md | grep -E '^[2-9]|^[1-9][0-9]'"
-        }
-      ],
-      "idempotent": true
-    },
-    "mf-pilot-validation": {
-      "id": "mf-pilot-validation",
-      "desc": "Validation gate: all tests pass, docs complete, pilot ready to run",
-      "produces": [],
-      "consumes": [
-        "tests/metaflow/ (all test files)",
-        "docs/METAFLOW-CONFIG.md",
-        "docs/METAFLOW-DEBUG.md"
-      ],
-      "deps": [
-        "tests-mf-e2e",
-        "mf-config-guide",
-        "mf-debugging-guide"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npm test -- metaflow && test -f docs/METAFLOW-CONFIG.md && test -f docs/METAFLOW-DEBUG.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "intent-metaflow-audit-fr-mf-harden": {
-      "id": "intent-metaflow-audit-fr-mf-harden",
-      "desc": "Governance audit gate — metaflow pilot verified against audit compliance. Terminal intent gate.",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "mf-pilot-validation"
+        "sk-integration-validation"
       ],
       "validate": [],
       "idempotent": true
     },
     "term": {
       "id": "term",
-      "desc": "Synthetic term — gates on all leaf tasks from SK + MF",
+      "desc": "Synthetic term — gates on all leaf tasks",
       "produces": [],
       "consumes": [],
       "deps": [
-        "sk-dir-integration",
+        "sk-directory-schema",
         "sk-validation-rules",
-        "sk-agent-brief-gen",
-        "sk-brief-template-doc",
-        "sk-workflow-doc",
-        "sk-e2e-tests",
-        "sk-integrate-term",
-        "intent-metaflow-audit-fr-sk-integrate",
-        "mf-schema-types",
-        "mf-config-scaffold",
-        "detectors-registry-schema",
-        "mf-wrapper-integration",
-        "event-ndjson-writer",
-        "stdout-envelope-parser",
-        "mining-latency-calculator",
-        "mining-tool-call-counter",
-        "mining-friction-ranker",
-        "semantic-diff-detector",
-        "d1-expand-propagate-detector",
-        "phaseTransitions-matcher",
-        "run-record-writer",
-        "mining-receipt-writer",
-        "audit-receipt-writer",
-        "mf-init-bootstrap",
-        "roadmap-mf-init-command",
-        "roadmap-mf-mine-command",
-        "roadmap-mf-status-command",
-        "roadmap-mf-audit-command",
-        "tests-mf-schemas",
-        "tests-mf-event-capture",
-        "tests-mf-mining",
-        "tests-mf-audit-d1",
-        "tests-mf-cli",
-        "tests-mf-e2e",
-        "mf-config-guide",
-        "mf-debugging-guide",
-        "mf-pilot-validation",
-        "intent-metaflow-audit-fr-mf-harden"
+        "agent-brief-generator",
+        "agent-brief-template",
+        "workflow-guide-spec-kit",
+        "workflow-guide-integration",
+        "roadmap-compile-brief-wiring",
+        "import-format-validation",
+        "directory-migration-helper",
+        "cli-spec-init",
+        "tests-sk-validation",
+        "tests-sk-brief-generator",
+        "tests-sk-workflow-e2e",
+        "sk-integration-validation",
+        "init",
+        "intent-metaflow-audit-fr-sk-integrate"
       ],
       "validate": [],
       "idempotent": false
