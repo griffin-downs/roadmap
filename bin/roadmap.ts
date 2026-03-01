@@ -708,12 +708,31 @@ async function cmdOrient(note: string | undefined) {
     ],
   };
 
+  // Build hints for workflow guidance
+  const hints: Array<{ text: string; example: string }> = [];
+  const position = result.position as string[];
+  const remaining = result.remaining as number;
+
+  if (position.length > 0) {
+    hints.push({
+      text: 'Next step: view details of current batch',
+      example: `roadmap show ${position[0]}`,
+    });
+  }
+
+  if (remaining > 0) {
+    hints.push({
+      text: 'View full progress',
+      example: 'roadmap chart',
+    });
+  }
+
   // --json: emit v1 machine envelope
   if (args.includes('--json')) {
     const v1 = buildOrientV1(dag, result, pos);
-    json(v1, orientRenderModel);
+    json(v1, orientRenderModel, { hints });
   } else {
-    json(result, orientRenderModel);
+    json(result, orientRenderModel, { hints });
   }
 }
 
@@ -1496,8 +1515,17 @@ async function cmdChart() {
 
   const chartData = { dagId: dag.id, done: doneCount, total: totalNodes, pct, position: pos.position, level: pos.level };
 
+  // Build hints for workflow guidance
+  const chartHints: Array<{ text: string; example: string }> = [];
+  if (pos.position.length > 0) {
+    chartHints.push({
+      text: 'View current batch details',
+      example: `roadmap show ${pos.position[0]}`,
+    });
+  }
+
   // Route through JSON envelope
-  json(chartData, chartRenderModel);
+  json(chartData, chartRenderModel, { hints: chartHints });
 
   // Render human output if requested (separate from envelope)
   if (_outputOpts.format === 'human') {
@@ -3817,7 +3845,14 @@ function cmdClaim() {
   };
   writeToken(repoRoot, claimToken);
 
-  json({ claimed: nodeId, owner, claimedAt, claimExpiry, ttlSeconds, tokenId: tokId });
+  const claimHints: Array<{ text: string; example: string }> = [
+    {
+      text: 'Complete this node when done',
+      example: `roadmap complete ${nodeId} --note "description"`,
+    },
+  ];
+
+  json({ claimed: nodeId, owner, claimedAt, claimExpiry, ttlSeconds, tokenId: tokId }, undefined, { hints: claimHints });
 }
 
 // --- dag: candidate operations (diff, accept, reject) ---
@@ -6958,7 +6993,11 @@ function cmdGate(note: string) {
   if (!result.pass) process.exit(1);
 }
 
-function json(obj: unknown, renderModel?: RenderModel) {
+interface JsonOpts {
+  hints?: Array<{ text: string; example: string }>;
+}
+
+function json(obj: unknown, renderModel?: RenderModel, jsonOpts?: JsonOpts) {
   const hasError = typeof obj === 'object' && obj !== null && 'error' in obj;
 
   // Build render output + RenderV1 envelope field
@@ -6970,6 +7009,9 @@ function json(obj: unknown, renderModel?: RenderModel) {
       mime: 'text/x-roadmap-ui',
       title: renderModel.title,
     };
+    if (jsonOpts?.hints && jsonOpts.hints.length > 0) {
+      renderV1.hints = jsonOpts.hints;
+    }
     process.stderr.write((renderOutput.ansi ?? renderOutput.plain) + '\n');
   } else if (!_outputOpts.quiet) {
     // Minimal stderr render for commands without a RenderModel

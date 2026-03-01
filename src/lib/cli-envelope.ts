@@ -15,10 +15,16 @@ export interface RenderSection {
   body: string;
 }
 
+export interface Hint {
+  text: string;
+  example: string;
+}
+
 export interface RenderV1 {
   format: 'ansi' | 'plain';
   mime: 'text/x-roadmap-ui';
   title: string;
+  hints?: Hint[];
 }
 
 export interface CliEnvelope<T = unknown> {
