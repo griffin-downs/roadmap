@@ -9,8 +9,8 @@ import { runArgvValidator, isArgvRule, isArgvCommand, toArgv, shellescape } from
 import type { ArgvValidationRule } from '../lib/validator-argv.ts';
 import { makeWorkerIndex } from '../lib/utils/git/git-index.ts';
 import { getHookScope, assertStagedScope, StagedOnlyFlag } from '../lib/hook-scope.ts';
-import { applyOverlay, writeOverlay, loadOverlay } from '../lib/strategy-overlay.ts';
-import type { StrategyOverlay } from '../lib/strategy-overlay.ts';
+import { applyOverlay, writeOverlay, loadOverlay } from '../lib/strategies/strategy-overlay.ts';
+import type { StrategyOverlay } from '../lib/strategies/strategy-overlay.ts';
 import { writeDispatchReceipt, loadDispatchReceipt, validateDispatchFreshness } from '../lib/recipes/dispatch/dispatch-receipt.ts';
 import type { DispatchReceipt } from '../lib/recipes/dispatch/dispatch-receipt.ts';
 import { loadCache, saveCache, getCached, setCached } from '../lib/verify-cache.ts';

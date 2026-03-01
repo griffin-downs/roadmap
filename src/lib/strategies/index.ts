@@ -59,3 +59,5 @@ export function getStrategy(id: string): StrategySpec {
   if (!s) throw new Error(`Unknown strategy: "${id}". Available: ${STRATEGIES.map(s => s.id).join(', ')}`)
   return s
 }
+
+export * from './strategy-overlay.ts';

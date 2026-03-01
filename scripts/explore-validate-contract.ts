@@ -10,7 +10,7 @@
 import { chromium } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { checkVisible, checkCount, checkContrast } from '../src/lib/explore-helpers.ts';
+import { checkVisible, checkCount, checkContrast } from '../src/lib/exploration/index.ts';
 import type { ObservationResult, ExploreResult } from '../src/protocol.ts';
 
 // ─────────────────────────────────────────────────────────────────────────────

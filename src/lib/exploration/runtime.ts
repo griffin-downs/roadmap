@@ -5,7 +5,7 @@
 
 import { spawn, execSync } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
-import type { ExploreResult, ObservationResult, ValidationCheck, ValidationRule } from '../protocol.ts';
+import type { ExploreResult, ObservationResult, ValidationCheck, ValidationRule } from '../../protocol.ts';
 
 // Handle returned by launchApp — caller must teardown
 export interface LaunchHandle {

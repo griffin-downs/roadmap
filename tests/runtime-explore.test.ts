@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { graph, define, validateNode } from '../src/protocol.ts';
 import type { ExploreResult, ObservationResult, ValidationRule } from '../src/protocol.ts';
-import { mapObservationsToChecks, runExploreScript, teardown } from '../src/lib/runtime-explore.ts';
+import { mapObservationsToChecks, runExploreScript, teardown } from '../src/lib/exploration/runtime.ts';
 import { spawn } from 'node:child_process';
 
 // Clear recursion guard — tests need shell validators to actually run

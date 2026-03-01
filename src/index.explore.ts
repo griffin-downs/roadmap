@@ -24,7 +24,7 @@ export {
   checkTitle,
   checkComputedStyle,
   checkInViewport,
-} from './lib/explore-helpers.ts';
+} from './lib/exploration/index.ts';
 
 // Interaction helpers (19)
 export {
@@ -47,7 +47,7 @@ export {
   getConsoleMessages,
   getNetworkCalls,
   screenshot,
-} from './lib/explore-interactions.ts';
+} from './lib/exploration/index.ts';
 
 // Runtime orchestration (launch, run, teardown)
 export {
@@ -55,9 +55,9 @@ export {
   runExploreScript,
   mapObservationsToChecks,
   teardown,
-} from './lib/runtime-explore.ts';
+} from './lib/exploration/runtime.ts';
 
-export type { LaunchHandle, ExploreScriptResult } from './lib/runtime-explore.ts';
+export type { LaunchHandle, ExploreScriptResult } from './lib/exploration/runtime.ts';
 
 // Types
 export type { ObservationResult, ExploreResult } from './protocol.ts';
