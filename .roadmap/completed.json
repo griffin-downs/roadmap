@@ -123,5 +123,33 @@
     ],
     "gitSha": "ae3d52bff255b46d9a72948773ebef0263bec550",
     "treeSha": "692188b56a7ec9b822ba27e740f91c98bb142532"
+  },
+  {
+    "nodeId": "roadmap-verify-invariant",
+    "completedAt": "2026-03-01T13:34:34.970Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301133434",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/validation/invariants/metaloop-evidence.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm run test -- tests/validation/invariants/ --run 2>&1 | grep -q 'pass'"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm run test -- tests/validation/invariants/ --run 2>&1 | grep -q 'pass'",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "46f0837dc834e1a29f349c64f49efa54480ba154",
+    "treeSha": "7cf4d9daf0d34d45c0ce876b46a05d1e3ac7bf7f"
   }
 ]
