@@ -1,0 +1,101 @@
+{
+  "timestamp": "2026-03-01T22:01:30.589Z",
+  "iterN": 9,
+  "source": "cli-hardening-instrumented",
+  "baseline": {
+    "iterN": 8,
+    "latencyP50": 671,
+    "latencyP95": 690
+  },
+  "commandsAnalyzed": 8,
+  "latencyP50": 134,
+  "latencyP95": 137,
+  "envelopeComplianceRate": 1,
+  "exitCodeZeroRate": 1,
+  "totalDurationMs": 1057,
+  "avgMemDeltaKb": 73,
+  "byStructure": {
+    "envelope": 7,
+    "mixed": 1,
+    "text": 0
+  },
+  "commands": [
+    {
+      "cmd": "orient",
+      "exitCode": 0,
+      "durationMs": 134,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 4014,
+      "memKb": 119
+    },
+    {
+      "cmd": "chart",
+      "exitCode": 0,
+      "durationMs": 134,
+      "outputStructure": "mixed",
+      "outputSize": 6607,
+      "memKb": 70
+    },
+    {
+      "cmd": "show",
+      "exitCode": 0,
+      "durationMs": 130,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 807,
+      "memKb": 61
+    },
+    {
+      "cmd": "validate",
+      "exitCode": 0,
+      "durationMs": 131,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 559,
+      "memKb": 53
+    },
+    {
+      "cmd": "parallel",
+      "exitCode": 0,
+      "durationMs": 135,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 6340,
+      "memKb": 64
+    },
+    {
+      "cmd": "claim",
+      "exitCode": 0,
+      "durationMs": 130,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 41034,
+      "memKb": 93
+    },
+    {
+      "cmd": "trail",
+      "exitCode": 0,
+      "durationMs": 126,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 1379,
+      "memKb": 60
+    },
+    {
+      "cmd": "orient",
+      "exitCode": 0,
+      "durationMs": 137,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 4014,
+      "memKb": 65
+    }
+  ],
+  "cliHardeningModules": [
+    "src/lib/metaflow/command-instrumentation.ts",
+    "src/lib/claims/claims-atomic.ts",
+    "src/lib/completion/corruption-detector.ts",
+    "src/lib/cli-envelope.ts"
+  ]
+}
