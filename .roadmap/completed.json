@@ -6061,17 +6061,17 @@
   },
   {
     "nodeId": "surf-layout-plan",
-    "completedAt": "2026-03-01T10:51:57.907Z",
+    "completedAt": "2026-03-01T10:52:03.930Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301105157",
+    "checkpointId": "cp-20260301105203",
     "validationChecks": [
       {
-        "rule": "artifact-exists",
-        "passed": true,
-        "evidence": "artifact exists: src/lib/audit/layout-plan.ts"
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
       }
     ],
-    "gitSha": "c755179a9dbdaa02d35ab49dfc47894905164108",
-    "treeSha": "289140292cebd09964f9434f251481d768e3ae72"
+    "gitSha": "88c4a54be96dc966d618b91c6af8ace7ab17ce11",
+    "treeSha": "dfe2e4199a69ee0335be1bd7093d83d84abf32ff"
   }
 ]
