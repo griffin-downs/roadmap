@@ -1,15 +1,19 @@
 // @module validator-runner
-// @exports runValidator, ValidatorResult, ENV_ALLOWLIST
-// @types ValidatorResult
+// @exports runValidator, ValidatorResult, ENV_ALLOWLIST, resolveEnvPolicy, StrippedEnvReport
+// @types ValidatorResult, StrippedEnvReport
 // @entry roadmap
 
-// Normalized validator execution: env allowlist, stdout/stderr capture,
-// sha256 computation, optional artifact persistence under .roadmap/artifacts/.
+// FR-STACK-001: Normalized validator execution with env clamping.
+// Env allowlist controlled by kernel.json envPolicy.allowedVars.
+// Unknown env vars stripped before child process spawn.
+// ROADMAP_VALIDATING always injected. Bypass vars (SKIP_BATCH_COMMIT etc.)
+// require explicit kernel allowlist entry.
 
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { loadKernel } from './kernel-config.ts';
 
 export interface ValidatorResult {
   /** Validator identifier, e.g. "shell:npx tsc --noEmit" */
@@ -25,6 +29,8 @@ export interface ValidatorResult {
   /** Paths under .roadmap/artifacts/<nodeId>/<runId>/ produced by this run */
   artifactPaths: string[];
   durationMs: number;
+  /** FR-STACK-001: env clamping report — which vars were allowed/stripped */
+  envReport?: StrippedEnvReport;
 }
 
 /** Environment variables passed through to validator subprocesses. */
@@ -34,14 +40,36 @@ function sha256(input: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
 
-function normalizedEnv(extraVars: string[] = []): Record<string, string> {
+export interface StrippedEnvReport {
+  allowed: string[];
+  stripped: string[];
+}
+
+function normalizedEnv(extraVars: string[] = []): { env: Record<string, string>; report: StrippedEnvReport } {
   const env: Record<string, string> = { ROADMAP_VALIDATING: '1' };
-  // ENV_ALLOWLIST is the builtin set; extraVars come from kernel.json envPolicy.allowedVars (FR-STACK-001)
-  const allAllowed = [...ENV_ALLOWLIST, ...extraVars];
-  for (const key of allAllowed) {
-    if (process.env[key] !== undefined) env[key] = process.env[key]!;
+  const allAllowed = new Set([...ENV_ALLOWLIST, ...extraVars]);
+  const allowed: string[] = ['ROADMAP_VALIDATING'];
+  const stripped: string[] = [];
+
+  for (const key of Object.keys(process.env)) {
+    if (key === 'ROADMAP_VALIDATING') continue;
+    if (allAllowed.has(key)) {
+      env[key] = process.env[key]!;
+      allowed.push(key);
+    } else {
+      stripped.push(key);
+    }
   }
-  return env;
+  return { env, report: { allowed, stripped } };
+}
+
+/**
+ * Resolve env policy: merge kernel.json envPolicy.allowedVars with builtin allowlist.
+ * Returns the full set of allowed var names.
+ */
+export function resolveEnvPolicy(repoRoot: string): string[] {
+  const kernel = loadKernel(repoRoot);
+  return [...ENV_ALLOWLIST, ...kernel.envPolicy.allowedVars];
 }
 
 function runId(): string {
@@ -51,7 +79,11 @@ function runId(): string {
 /**
  * Run a validator command in a normalized environment, capture output,
  * and optionally persist artifacts.
- * opts.extraEnvVars: additional env vars allowed through the filter (from kernel.json envPolicy).
+ *
+ * FR-STACK-001: env clamping. All env vars not in the allowlist are stripped.
+ * The allowlist = ENV_ALLOWLIST (builtin) + kernel.json envPolicy.allowedVars + opts.extraEnvVars.
+ * ROADMAP_VALIDATING is always injected regardless of allowlist.
+ * Bypass vars like SKIP_BATCH_COMMIT require explicit kernel allowlist entry.
  */
 export async function runValidator(
   nodeId: string,
@@ -60,7 +92,9 @@ export async function runValidator(
   repoRoot: string,
   opts?: { captureArtifacts?: boolean; extraEnvVars?: string[] },
 ): Promise<ValidatorResult> {
-  const env = normalizedEnv(opts?.extraEnvVars ?? []);
+  const kernelVars = resolveEnvPolicy(repoRoot);
+  const allExtra = [...new Set([...kernelVars, ...(opts?.extraEnvVars ?? [])])];
+  const { env, report: envReport } = normalizedEnv(allExtra);
   const start = performance.now();
 
   const proc = Array.isArray(command)
@@ -94,6 +128,7 @@ export async function runValidator(
     stderrSha: stderr.length > 0 ? sha256(stderr) : undefined,
     artifactPaths: [],
     durationMs,
+    envReport: envReport,
   };
 
   if (opts?.captureArtifacts && (stdout.length > 0 || stderr.length > 0)) {
