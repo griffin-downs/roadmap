@@ -1,0 +1,12 @@
+{
+  "clusterId": "move-io-purity-001",
+  "agentProposal": "Move IO imports from src/lib to src/io",
+  "completed": true,
+  "changes": [
+    "src/io/audit-engine.ts created (IO wrapper)",
+    "src/lib/* purified (no fs/path/process imports)",
+    "Import paths updated: src/lib → src/io for IO ops"
+  ],
+  "purityEnforced": true,
+  "testsPassed": true
+}

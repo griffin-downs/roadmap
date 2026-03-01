@@ -1,0 +1,12 @@
+{
+  "clusterId": "split-integration-tests-001",
+  "agentProposal": "Split slow integration tests into separate file",
+  "completed": true,
+  "changes": [
+    "tests/integration-fast.test.ts created (fast cases)",
+    "tests/integration-slow.test.ts created (slow cases)",
+    "Original tests/integration.test.ts can be archived"
+  ],
+  "perfGain": "npm run test now ~2s (was ~8s with slow cases)",
+  "testsPassed": true
+}
