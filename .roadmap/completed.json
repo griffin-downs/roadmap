@@ -4983,5 +4983,28 @@
     ],
     "gitSha": "16fdf3a3b58e3142588aff624fb2f061dd6ef8a5",
     "treeSha": "55ea0c8e24671bb4697ad529983328d1b13cd150"
+  },
+  {
+    "nodeId": "rkg3-perf-cache",
+    "completedAt": "2026-03-01T09:05:40.444Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090539",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "11928ae108fd4ff70930146b64b6d6e094f089ab",
+    "treeSha": "0a0680f851e45ddd830014cc4aeb453950458aa4"
   }
 ]
