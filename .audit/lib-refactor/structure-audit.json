@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "timestamp": "2026-03-01T14:45:00Z",
+  "scope": "src/lib (213 TypeScript files)",
+  "findings": [
+    {
+      "category": "module-consolidation",
+      "title": "Recovery/checkpoint/audit modules (3 files, related state tracking)",
+      "evidence": {
+        "recovery.ts": "CheckpointManager interface + recovery logic",
+        "checkpoint.ts": "Checkpoint type + persistence",
+        "audit-trail.ts": "AuditTrail class + logging"
+      },
+      "consolidation_target": "src/lib/audit.ts (unified audit/recovery module)",
+      "estimated_lines_saved": 180,
+      "risk": "low"
+    },
+    {
+      "category": "export-reduction",
+      "title": "Validation module exports too many internals (5+ exported, only 2 needed)",
+      "evidence": {
+        "validation.ts": "validateNode, validateGraph, validateType, validatePath, validateRef, validateSchema"
+      },
+      "reduction_target": "Hide validateType, validatePath, validateRef (move to internal/)",
+      "estimated_exports_removed": 4,
+      "risk": "low"
+    },
+    {
+      "category": "type-consolidation",
+      "title": "Interface definitions scattered across 10+ files",
+      "evidence": [
+        "protocol.ts: NodeSpec, Graph, Orientation",
+        "validation.ts: ValidationRule",
+        "errors.ts: RoadmapError",
+        "audit.ts: Checkpoint, AuditEntry",
+        "recovery.ts: RecoveryState"
+      ],
+      "consolidation_target": "src/lib/types.ts (single source of truth)",
+      "estimated_affected_imports": 45,
+      "risk": "medium"
+    },
+    {
+      "category": "dead-code",
+      "title": "Deprecated/legacy functions in protocol.ts + versioning.ts",
+      "evidence": [
+        "protocol.ts: oldParallelOrder (v0.5.0), deprecatedValidatorCheck",
+        "versioning.ts: legacyMigration, v04to05Compat"
+      ],
+      "removal_target": "Archive to .archive/lib-deprecated/",
+      "estimated_lines_removed": 120,
+      "risk": "low"
+    },
+    {
+      "category": "organization",
+      "title": "Files grouped by function, not by concern (no clear core/agent/recovery split)",
+      "evidence": {
+        "current": "1 flat src/lib/ directory with 213 files",
+        "target": "src/lib/{core,agent,recovery,internal}/"
+      },
+      "refactoring_scope": "High-value reorganization (98 pts)",
+      "risk": "high"
+    }
+  ],
+  "summary": {
+    "consolidation_opportunities": 1,
+    "export_reduction_opportunities": 1,
+    "type_consolidation_opportunities": 1,
+    "dead_code_opportunities": 1,
+    "organization_opportunities": 1,
+    "total_estimated_value": 287,
+    "total_estimated_risk": "medium"
+  }
+}
