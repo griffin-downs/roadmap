@@ -1,44 +1,688 @@
 {
-  "id": "fr-rm-audit-and-strategy-stack",
-  "desc": "FR-RM-AUDIT-STACK (010+012+013) merged with FR-RM-HALLUCINATION-PROTOCOL-014 — parallel execution track with 4-worker peak at L03",
-  "init": "rm-audit-contract",
-  "term": "intent-strategy-nonforgetting",
+  "id": "rkg-governess",
+  "desc": "RKG-3/4/5/6 — governance hardening: engine semantics, parallelism, gallery/blend, intent guards",
+  "init": "init",
+  "term": "term",
   "nodes": {
-    "rm-audit-contract": {
-      "id": "rm-audit-contract",
-      "desc": "Existing codebase — src/lib/metaflow/ (all modules), bin/roadmap.ts, src/lib/render/, src/lib/import/",
+    "init": {
+      "id": "init",
+      "desc": "Existing roadmap codebase — src/protocol.ts, src/lib/, bin/roadmap.ts, validator-runner, completion-store, intent-expansion, blend, emit-gallery, intent-evaluator",
       "produces": [
-        "src/lib/metaflow/types.ts",
-        "src/lib/metaflow/miner.ts",
-        "bin/roadmap.ts"
+        "src/protocol.ts",
+        "src/lib/validator-runner.ts",
+        "src/lib/completion-store.ts"
       ],
       "consumes": [],
       "deps": [],
       "validate": [
         {
           "type": "spec-conformance",
-          "spec": ".specify/specs/fr-rm-audit-stack/spec.md",
+          "spec": ".specify/specs/rkg-governess/spec.md",
           "scenario": "Plan clarity validated against feature spec",
           "section": "Specification"
         }
       ],
       "idempotent": true,
       "ambient": [
-        ".specify/specs/fr-rm-audit-stack/spec.md",
-        ".specify/specs/fr-rm-audit-stack/tasks.md"
+        ".specify/specs/rkg-governess/tasks.md"
       ]
     },
-    "rm-audit-schema": {
-      "id": "rm-audit-schema",
-      "desc": "REQUIRED.json contract + TypeScript schema + operator docs. **`src/lib/metaflow/audit/required-schema.ts`**: types `AuditContract` ({ schema_version:1, version:string, thresholds:{ latencyP95MaxMs:number, toolCallInflationMax:number, orientChurnMax:number }, requiredDetectors:string[], requiredTerminalNodeId:string, bindFields:['treeSha','sessionIds','runId'] }), `AuditReport` ({ schema_version:1, runId, treeSha, sessionIds:string[], computedAt:string, passed:boolean, detectorResults:DetectorResult[] }), `DetectorResult` ({ code:string, passed:boolean, evidence:string[], fix:string[] }), `AuditReceipt` ({ schema_version:1, runId, treeSha, sessionIds:string[], passed:boolean, reason?:string, reportPath:string, emittedAt:string }). **`.roadmap/metaflow/audit/REQUIRED.json`**: `{ schema_version:1, version:\"1.0.0\", thresholds:{ latencyP95MaxMs:5000, toolCallInflationMax:10, orientChurnMax:3 }, requiredDetectors:[\"RD-001\",\"RD-002\",\"RD-003\",\"IR-001\",\"IR-002\",\"IR-003\",\"IR-004\",\"IR-005\",\"PE-001\",\"PE-002\",\"MF-001\",\"MF-002\",\"MF-003\",\"MF-004\",\"MF-005\"], requiredTerminalNodeId:\"intent-metaflow-audit-required\", bindFields:[\"treeSha\",\"sessionIds\",\"runId\"] }`. **`docs/metaflow/AUDIT_REQUIRED.md`**: operator contract — what each detector checks, failure→fix steps, how to wire audit tail into a new spec, exemption taxonomy.",
+    "rkg3-validator-argv": {
+      "id": "rkg3-validator-argv",
+      "desc": "FR-IR-001 — shell validators as argv arrays instead of string commands. Replace string-based shell validator with argv array type in ValidationRule. Update NodeSpec shell validators, validator-runner to accept string[]. Prevents shell injection. Adds shebang-free argv contract.",
       "produces": [
-        "src/lib/metaflow/audit/required-schema.ts",
-        ".roadmap/metaflow/audit/REQUIRED.json",
-        "docs/metaflow/AUDIT_REQUIRED.md"
+        "src/lib/validator-argv.ts",
+        "src/protocol.ts"
       ],
       "consumes": [],
       "deps": [
-        "rm-audit-contract"
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-kernel-config": {
+      "id": "rkg4-kernel-config",
+      "desc": "kernel.json schema + loader — centralized kernel configuration for algorithm policy, batch conflict policy, orient plan receipts, merge/branch witness, env clamping policy. Write KernelConfig type and loadKernel() loader that reads .roadmap/kernel.json with defaults fallback.",
+      "produces": [
+        "src/lib/kernel-config.ts",
+        ".roadmap/kernel.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-blend-receipt": {
+      "id": "rkg5-blend-receipt",
+      "desc": "FR-GB-001 — BlendReceipt schema + ledger. Every blend() call writes a structured BlendReceipt (blendId, timestamp, inputs[], outputId, guardResults[], statementOwnership[], checkSet). Add ledger writer that appends to .roadmap/blend-ledger.jsonl.",
+      "produces": [
+        "src/lib/blend.ts",
+        "src/lib/blend-receipt.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-judgment-receipt": {
+      "id": "rkg6-judgment-receipt",
+      "desc": "FR-IG-001 — IntentJudgmentReceipt schema + writer. Every intent evaluation writes a structured receipt (evaluationId, timestamp, nodeId, judgment, confidence, evidence[], diagnosisBlocks[]). Writer appends to .roadmap/intent-judgments.jsonl.",
+      "produces": [
+        "src/lib/intent-evaluator.ts",
+        "src/lib/judgment-receipt.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-git-index": {
+      "id": "rkg3-git-index",
+      "desc": "FR-PAR-001 — per-worker git index isolation. Add GIT_INDEX_FILE env binding in swarm dispatch so each worker gets an isolated index file (.roadmap/idx/<workerId>.idx). Prevents index races when workers git add concurrently. Expose indexPath in dispatch receipt.",
+      "produces": [
+        "src/lib/git-index.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-validator-argv"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-hook-scoping": {
+      "id": "rkg3-hook-scoping",
+      "desc": "FR-PAR-002 — hook scoping staged-only. Pre-commit hook must validate only staged files (git diff --cached), not working tree. Update hook runner to pass --staged flag and document contract. Prevents false positives on in-progress worker files.",
+      "produces": [
+        "src/lib/hook-scope.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-validator-argv"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-strategy-ab": {
+      "id": "rkg3-strategy-ab",
+      "desc": "FR-HAL-001 — strategy A/B overlays. Add StrategyOverlay type and applyOverlay() function. Overlays define hypothesis variants (model params, prompt templates, validator thresholds) that can be layered on a base plan. Write overlay to .roadmap/strategy-overlay.json.",
+      "produces": [
+        "src/lib/strategy-overlay.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-validator-argv"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-perf-cache": {
+      "id": "rkg3-perf-cache",
+      "desc": "FR-PERF-001 — verify cache keyed by treeSha. Add VerifyCache that stores validation results keyed by (nodeId, treeSha). Cache hit skips re-running shell validators. Write cache to .roadmap/verify-cache.json. Invalidate on treeSha change.",
+      "produces": [
+        "src/lib/verify-cache.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-validator-argv"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-dispatch-enforcement": {
+      "id": "rkg3-dispatch-enforcement",
+      "desc": "FR-DISP-002 — dispatch plan as enforcement object. DispatchReceipt records: batchId, agentAssignments[], timestamp, orientSha. Complete rejects if dispatch receipt missing or stale (orientSha mismatch). Write receipt to .roadmap/receipts/dispatch-<batchId>.json.",
+      "produces": [
+        "src/lib/dispatch-receipt.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-strategy-ab"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-stable-order": {
+      "id": "rkg4-stable-order",
+      "desc": "FR-DET-001 — deterministic comparator policy in parallelOrder/order. Add ComparatorPolicy type. Default: lexicographic by node id. Custom: user-supplied compare(a,b) in kernel.json. parallelOrder() and order() read policy from kernel config. Output is stable across runs.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-reachability": {
+      "id": "rkg4-reachability",
+      "desc": "FR-REACH-001 — single-pass BFS reachability. Replace multi-pass DFS with single BFS from init in check(). BFS enumerates all reachable nodes in one pass. Unreachable nodes emitted as violations. Add reachability witness (path from init to each node) in output.",
+      "produces": [
+        "src/lib/verify.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-contract-closure": {
+      "id": "rkg4-contract-closure",
+      "desc": "FR-CONTRACT-001 — DP ancestor closure + witness. verify() uses bottom-up DP to compute ancestor closure for each node. Missing consumes emit violation with witness path showing which ancestor was supposed to produce it. Replaces ad-hoc predecessor walk.",
+      "produces": [
+        "src/lib/verify.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-batch-gate": {
+      "id": "rkg4-batch-gate",
+      "desc": "FR-BATCH-001 — conflict detection as hard gate. validateBatch() detects when two nodes in the same batch both write the same produces path. Gate rejects batch before execution. Conflict report names both nodes and the contested path.",
+      "produces": [
+        "src/lib/batch-conflicts.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-orient-plan-receipt": {
+      "id": "rkg4-orient-plan-receipt",
+      "desc": "FR-ORIENT-001 — plan expansion receipt in orient output. When orient() encounters a plan node in current batch, emit planReceipt field: {nodeId, mode:'plan', preGateActive, expandedChildren[]}. Allows orchestrators to distinguish plan vs execute positions.",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-merge-branch-witness": {
+      "id": "rkg4-merge-branch-witness",
+      "desc": "FR-MERGE-001 + FR-BRANCH-001 — namespace collision detection + witness in merge/branch. merge() detects node id collisions (same id in both graphs) and emits MergeConflict with both node specs. branch() emits BranchWitness recording which nodes were included and why (reachable from fromNode).",
+      "produces": [
+        "src/protocol.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-env-bypass": {
+      "id": "rkg4-env-bypass",
+      "desc": "FR-STACK-001 — env clamping in validator runner. Validator-runner allowlist (ALLOWED_ENV) controlled by kernel.json envPolicy section. Unknown env vars stripped before child process spawn. ROADMAP_VALIDATING always injected. Bypass vars (SKIP_BATCH_COMMIT etc.) require explicit kernel allowlist entry.",
+      "produces": [
+        "src/lib/validator-runner.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-kernel-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-algo-report": {
+      "id": "rkg4-algo-report",
+      "desc": "FR-DOC-ALG-001 — `roadmap report algorithms` command. Emits structured JSON listing all algorithms used (BFS/DFS/DP/topo), their complexity, input/output contracts, and which source file implements them. Reads @algorithm JSDoc annotations from src/ files.",
+      "produces": [
+        "src/lib/algo-report.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-stable-order",
+        "rkg4-reachability"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-guard-policy": {
+      "id": "rkg5-guard-policy",
+      "desc": "FR-GB-002 — guard registry + blendPolicy config. GuardRegistry maps guard names to GuardFn<T>. blendPolicy in kernel.json lists active guards and their parameters. blend() reads policy and runs registered guards in order. Missing guard name = hard error.",
+      "produces": [
+        "src/lib/blend-policy.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-blend-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-statement-ownership": {
+      "id": "rkg5-statement-ownership",
+      "desc": "FR-GB-003 — StatementOwnership model. Every statement produced by blend() carries an ownerNodeId and provenance chain (source → transform → output). blend() writes ownership records into BlendReceipt. Orphan statements (no ownerNodeId) are rejected.",
+      "produces": [
+        "src/lib/blend.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-blend-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-checkset": {
+      "id": "rkg5-checkset",
+      "desc": "FR-GB-004 — CheckSet type + rollback evidence. CheckSet is an ordered list of validation checks with pass/fail/skip states and rollback evidence per check. blend() attaches a CheckSet to each BlendReceipt. Failed check triggers rollback with evidence written to .roadmap/blend-rollbacks/.",
+      "produces": [
+        "src/lib/blend.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-blend-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-candidate-receipts": {
+      "id": "rkg5-candidate-receipts",
+      "desc": "FR-GB-005 — CandidateResult provenance. Every candidate emitted by emit-gallery carries a CandidateReceipt (candidateId, sourceNodeId, producedAt, pipelineSteps[]). emit-gallery writes receipts to .roadmap/receipts/candidate-<id>.json.",
+      "produces": [
+        "src/lib/emit-gallery.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-blend-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-pareto-governance": {
+      "id": "rkg5-pareto-governance",
+      "desc": "FR-GB-006 — quantization + pareto report. gallery() computes pareto front across candidate metrics (coverage, cost, latency). Quantization bins metrics to prevent noise-driven rank changes. Emit pareto report to .roadmap/artifacts/pareto-<sha>.json.",
+      "produces": [
+        "src/lib/gallery.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-blend-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-failure-routing": {
+      "id": "rkg5-failure-routing",
+      "desc": "FR-GB-007 — GalleryFailure routing contract. emit-gallery returns typed GalleryFailure on rejection (insufficientCandidates, guardRejection, paretoEmpty). Caller must handle each case explicitly. No silent empty returns. Failure carries evidence (which guard, which check, which candidates evaluated).",
+      "produces": [
+        "src/lib/emit-gallery.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-candidate-receipts"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-structured-diagnosis": {
+      "id": "rkg6-structured-diagnosis",
+      "desc": "FR-IG-002 — structured diagnosis schema. IntentDiagnosis replaces free-text failure messages. Schema: {code, affectedNode, evidenceIds[], remediationSteps[]}. intent-expansion.ts writes structured diagnosis instead of string messages. No keyword matching in diagnosis — pure structural.",
+      "produces": [
+        "src/lib/intent-expansion.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-intent-status-policy": {
+      "id": "rkg6-intent-status-policy",
+      "desc": "FR-IG-003 — intentPolicy gating in kernel.json. kernel.json intentPolicy section: {minConfidence, escalateOnStall, maxRecursionDepth}. orient() reads policy and gates advancement when intent judgment below minConfidence. Expose intentPolicyActive in Orientation output.",
+      "produces": [
+        "src/protocol.ts",
+        "src/lib/kernel-config.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-evidence-algebra": {
+      "id": "rkg6-evidence-algebra",
+      "desc": "FR-IG-004 — evidence mode field + confirmation semantics. EvidenceItem gains mode field: 'observation' | 'assertion' | 'counter'. Confirmation requires ≥1 observation + ≥1 assertion, zero counter-evidence. expand() validates evidence algebra before committing expansion.",
+      "produces": [
+        "src/lib/intent-expansion.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-expansion-receipt": {
+      "id": "rkg6-expansion-receipt",
+      "desc": "FR-IG-005 — ExpansionReceipt + sibling invariants. Every expand() call writes ExpansionReceipt (expansionId, parentNodeId, childNodeIds[], siblingInvariants[], timestamp). Sibling invariant: no two siblings produce the same path. Violation rejects expansion.",
+      "produces": [
+        "src/lib/intent-expansion.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-convergence-metrics": {
+      "id": "rkg6-convergence-metrics",
+      "desc": "FR-IG-006 — convergence history receipt + window stall detection. ConvergenceHistory tracks (recursionLevel, coverageDelta, expandedCount) per iteration. Stall = coverageDelta < threshold for N consecutive iterations. Stall triggers escalation. Write history to .roadmap/convergence-history.jsonl.",
+      "produces": [
+        "src/lib/intent-expansion.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-rate-card": {
+      "id": "rkg6-rate-card",
+      "desc": "FR-IG-007 — rates.json schema + rateCardHash. rates.json defines cost-per-token rates for each model. RateCard loader reads rates.json, computes rateCardHash (sha256 of content). Cost estimates in convergence metrics reference rateCardHash for auditability.",
+      "produces": [
+        "src/lib/rate-card.ts",
+        ".roadmap/rates.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-judgment-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg3-fixtures": {
+      "id": "rkg3-fixtures",
+      "desc": "Fixture suite for RKG-3. Tests: argv validator roundtrip (no shell injection), git index isolation (two workers, no index collision), hook scoping (staged-only validation), strategy overlay application, dispatch receipt gating (reject on stale orientSha), verify cache hit/miss by treeSha.",
+      "produces": [
+        "src/tests/rkg3.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-git-index",
+        "rkg3-hook-scoping",
+        "rkg3-strategy-ab",
+        "rkg3-dispatch-enforcement",
+        "rkg3-perf-cache"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run src/tests/rkg3.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg4-fixtures": {
+      "id": "rkg4-fixtures",
+      "desc": "Fixture DAGs + expected outputs for RKG-4. Tests: parallelOrder stability across runs (same DAG → same order), BFS reachability witness (path from init to each node), contract closure violations with ancestor witness, batch conflict detection (two nodes same produces path), plan receipt in orient output.",
+      "produces": [
+        "src/tests/rkg4.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg4-stable-order",
+        "rkg4-reachability",
+        "rkg4-contract-closure",
+        "rkg4-batch-gate",
+        "rkg4-orient-plan-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run src/tests/rkg4.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-fixtures": {
+      "id": "rkg5-fixtures",
+      "desc": "Adversarial fixture suite for RKG-5. Tests: guard registry (unknown guard = hard error), orphan statement rejection, CheckSet rollback evidence written on failure, candidate receipt written per candidate, pareto front stable under noise quantization, GalleryFailure routing (each failure type carries evidence).",
+      "produces": [
+        "src/tests/rkg5.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-guard-policy",
+        "rkg5-statement-ownership",
+        "rkg5-checkset",
+        "rkg5-pareto-governance",
+        "rkg5-failure-routing"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run src/tests/rkg5.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg5-cli-explain": {
+      "id": "rkg5-cli-explain",
+      "desc": "FR-GB-009 — `roadmap gallery explain` + `roadmap blend explain` commands. gallery explain <candidateId>: reads candidate receipt, outputs provenance chain. blend explain <blendId>: reads blend ledger entry, outputs guard results + statement ownership + check set. Add both commands to bin/roadmap.ts.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg5-blend-receipt"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "rkg6-fixtures": {
+      "id": "rkg6-fixtures",
+      "desc": "Intent guard fixture suite for RKG-6. Tests: structured diagnosis (no string keyword matching), intentPolicy minConfidence gate (reject orient advancement below threshold), evidence algebra validation (counter-evidence blocks confirmation), sibling invariant enforcement (same produces path → rejection), convergence stall escalation.",
+      "produces": [
+        "src/tests/rkg6.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg6-structured-diagnosis",
+        "rkg6-intent-status-policy",
+        "rkg6-evidence-algebra",
+        "rkg6-expansion-receipt",
+        "rkg6-convergence-metrics"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest run src/tests/rkg6.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "term": {
+      "id": "term",
+      "desc": "All RKG-3/4/5/6 governance hardening complete. All fixture suites pass. TypeScript clean. Full test suite green.",
+      "produces": [
+        "src/tests/rkg3.test.ts",
+        "src/tests/rkg4.test.ts",
+        "src/tests/rkg5.test.ts",
+        "src/tests/rkg6.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "rkg3-fixtures",
+        "rkg4-fixtures",
+        "rkg5-fixtures",
+        "rkg5-cli-explain",
+        "rkg6-fixtures",
+        "rkg4-merge-branch-witness",
+        "rkg4-env-bypass",
+        "rkg4-algo-report",
+        "rkg3-dispatch-enforcement",
+        "rkg6-rate-card"
       ],
       "validate": [
         {
@@ -46,401 +690,12 @@
           "command": "npx tsc --noEmit"
         },
         {
-          "type": "intent",
-          "statement": "The FR-RM-AUDIT-STACK plan is unambiguous: all 22 nodes have explicit produces, validates, and acceptance criteria; the three-spec chain (010 process audit → 012 CLI compliance → 013 MetaFlow sovereignty) is well-defined with zero-question executable nodes",
-          "confidence": 0.9,
-          "evaluator": "self",
-          "expandOnFail": true
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-audit-engine": {
-      "id": "rm-audit-engine",
-      "desc": "Core audit engine. **`src/lib/metaflow/audit/audit.ts`**: `runAudit(runId, detectors, opts:{base?,treeSha?,sessionIds?})` → reads REQUIRED.json thresholds, reads MiningResult via readMining(), runs each detector, builds AuditReport, writes `.roadmap/metaflow/audit/<runId>.json`, writes AuditReceipt via writeAuditReceipt(), returns AuditReport. `loadRequired(base?)` → reads REQUIRED.json. **`src/lib/metaflow/audit/report.ts`**: `buildReport(runId, treeSha, sessionIds, results, contract)` → AuditReport; `renderReport(report, opts:RenderOpts)` → string: per-detector table (code | ✅/❌ | evidence snippet | fix[0]), summary line (N/M passed), PASSED/FAILED banner. **`src/lib/metaflow/audit/receipt.ts`**: `writeAuditReceipt(runId, treeSha, sessionIds, report, base?)` → AuditReceipt to `.roadmap/receipts/audit-<runId>.json`; `readAuditReceipt(runId, base?)` → AuditReceipt; `auditReceiptExists(runId, base?)` → boolean. **Test** `tests/audit/audit-engine.test.ts`: 6 tests — all-passing detectors → passed:true receipt; one failing → passed:false; report render contains PASSED/FAILED banner; receipt written to correct path; loadRequired reads thresholds; treeSha+sessionIds bound in output.",
-      "produces": [
-        "src/lib/metaflow/audit/audit.ts",
-        "src/lib/metaflow/audit/report.ts",
-        "src/lib/metaflow/audit/receipt.ts",
-        "tests/audit/audit-engine.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-audit-schema"
-      ],
-      "validate": [
-        {
           "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/audit/audit-engine.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-audit-detectors-display": {
-      "id": "rm-audit-detectors-display",
-      "desc": "Rich display regression detectors RD-001..003. **`src/lib/metaflow/audit/detectors/display.ts`**: exports `detectDisplayRegression(receipts:InteractionReceipt[], opts:{required?:string[]})` → `DetectorResult[]`. **RD-001** `detectMissingTable`: for receipts where cmd includes orient/chart/gantt/mine/verify AND audience==='user' — check render.plainPath file contains at least one `|`; fail if absent. **RD-002** `detectMissingDagRender`: for orient/chart receipts — check plain render contains at least one of: `L0`, `L00`, `conflict`, `critical`; fail if none. **RD-003** `detectMissingProgressBar`: for complete/chart receipts — check plain render contains `█`, `░`, or `[`; fail if missing. Each returns `{code, passed, evidence:string[], fix:string[]}`. **Test** `tests/audit/display-detectors.test.ts`: 8 tests — RD-001 passes with table; fails without; RD-002 passes with batch markers; fails without; RD-003 passes with bar; fails without; detectDisplayRegression returns 3 results; all-pass on well-formed fixture.",
-      "produces": [
-        "src/lib/metaflow/audit/detectors/display.ts",
-        "tests/audit/display-detectors.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-audit-engine"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/audit/display-detectors.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-audit-detectors-integration": {
-      "id": "rm-audit-detectors-integration",
-      "desc": "Integration rough point detectors IR-001..005 + PE-001. **`src/lib/metaflow/audit/detectors/integration.ts`**: exports `detectIntegrationRoughPoints(receipts, sessions, miningResult, opts:{base?,repoRoot?})` → `DetectorResult[]`. **IR-001** `detectMissingPlanReceipt`: check `.roadmap/receipts/PLAN_SELECTED.json` exists and headSha matches `git rev-parse HEAD`; fail if absent or mismatched. **IR-002** `detectAuthorityMarker`: check `.roadmap/git-state.json` activePlan matches current dag id; fail if null or mismatched. **IR-003** `detectReceiptChainGaps`: scan receipts for receipt-required command (COMMAND_REGISTRY) without a matching InteractionReceipt for that stepId; fail if count > 0. **IR-004** `detectCompletedDrift`: `git status --porcelain .roadmap/completed.json` — if dirty AND last-commit mtime for completed.json older than its file mtime → finding. **IR-005** `detectToolCallHotspots`: check MiningResult hotspots for count > contract.thresholds.toolCallInflationMax OR latencyP95Ms > latencyP95MaxMs. **PE-001** `detectProcessEscape`: if `.roadmap/metaflow/runs/` exists AND any receipt cmd not in COMMAND_REGISTRY and not `roadmap mf *` → finding. **Test** `tests/audit/integration-detectors.test.ts`: 8 tests — IR-001 passes with valid PLAN_SELECTED; IR-002 passes with matching activePlan; IR-004 fires on dirty completed.json (mock git); IR-005 fires on high hotspot count; IR-005 fires on high latency; PE-001 fires on unregistered command; all pass on clean fixture; 6 detectors returned total.",
-      "produces": [
-        "src/lib/metaflow/audit/detectors/integration.ts",
-        "tests/audit/integration-detectors.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-audit-engine"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/audit/integration-detectors.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-completion-autocommit": {
-      "id": "rm-completion-autocommit",
-      "desc": "Deterministic completion commits. **`src/lib/completion/auto-commit.ts`**: `isCompletionDirty(repoRoot)` → runs `git status --porcelain .roadmap/completed.json .roadmap/receipts/` via execSync, returns boolean. `autoCommitCompletion(nodeId, repoRoot)` → if dirty: `git add .roadmap/completed.json .roadmap/receipts/` then `git commit --no-verify -m \"roadmap: auto-commit completion state — <nodeId>\"`; on success return `{committed:true}`; on failure write non-passing AuditReceipt with reason `completion-autocommit-failed` return `{committed:false,receipt}`; if clean return `{committed:false,reason:'nothing-dirty'}`. **Wire into `bin/roadmap.ts`** cmdComplete: after existing completion logic, call `autoCommitCompletion(nodeId, repoRoot)`. `--no-commit` flag: skip autocommit + write non-passing receipt with reason. No env bypass. **Test** `tests/completion/auto-commit.test.ts`: 6 tests — isCompletionDirty true on modified completed.json; autoCommitCompletion triggers git add+commit; returns committed:false on clean; --no-commit writes non-passing receipt; failed commit writes non-passing receipt; post-commit isCompletionDirty false.",
-      "produces": [
-        "src/lib/completion/auto-commit.ts",
-        "bin/roadmap.ts",
-        "tests/completion/auto-commit.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-audit-engine"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/completion/auto-commit.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-import-audit-tail-gate": {
-      "id": "rm-import-audit-tail-gate",
-      "desc": "Enforce required audit terminal at import time. **`src/lib/import/audit-tail-gate.ts`**: `validateAuditTail(g:Graph<string>, contract:AuditContract)` → checks graph contains a terminal node matching `contract.requiredTerminalNodeId` or pattern `intent-metaflow-audit-*`; if missing → `{passed:false, code:'AUDIT_TERMINAL_MISSING', fix:['roadmap mf audit-tail emit --dag <id>']}`. `isAuditTailPresent(g)` → boolean. **Wire into `bin/roadmap.ts`** cmdImport: after graph build, call `validateAuditTail(g, loadRequired())`; if not passed → stderr error JSON + exit(3) with AUDIT_TERMINAL_MISSING. `--skip-audit-tail` flag writes non-passing AuditReceipt with reason instead of exiting. **Test** `tests/import/audit-tail-gate.test.ts`: 6 tests — passes on graph with matching terminal; fails AUDIT_TERMINAL_MISSING on graph without; isAuditTailPresent both cases; cmdImport exit 3 on missing (execSync integration); --skip-audit-tail writes non-passing receipt; passes with intent-metaflow-audit-required as terminal.",
-      "produces": [
-        "src/lib/import/audit-tail-gate.ts",
-        "tests/import/audit-tail-gate.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-audit-detectors-integration"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/import/audit-tail-gate.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-cli-mf-audit": {
-      "id": "rm-cli-mf-audit",
-      "desc": "CLI surface for audit. **`src/lib/metaflow/audit/cli.ts`**: `cmdMfAudit(runId, opts:{required?,base?})` → if --required: reads REQUIRED.json, renders table (detector code | threshold | requiredTerminalNodeId), emits JSON+RenderV1; else: calls `runAudit(runId, allDetectors, opts)`, renders AuditReport, emits JSON+render. `cmdAuditTailEmit(dagId)` → reads REQUIRED.json, produces canonical IR snippet (tasks.md fragment) for audit tail nodes: intent-metaflow-audit-required + its standard deps — a ready-to-merge IR block that can be appended to any spec. **Wire into `bin/roadmap.ts`**: `mf audit` + `mf audit-tail` cases. **Test** `tests/audit/cli.e2e.test.ts`: 8 tests — `mf audit --required` outputs REQUIRED.json fields; `mf audit --run mf-fixture-001` produces schema_version:1 AuditReport JSON; PASSED/FAILED banner in render; receipt at correct path; `mf audit-tail emit` outputs valid tasks.md fragment with intent-metaflow-audit-required; fragment parseable by import pipeline; all-pass on clean fixture run; re-run idempotent.",
-      "produces": [
-        "src/lib/metaflow/audit/cli.ts",
-        "tests/audit/cli.e2e.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-audit-detectors-display",
-        "rm-import-audit-tail-gate"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/audit/cli.e2e.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-audit-opt-expansion": {
-      "id": "rm-audit-opt-expansion",
-      "desc": "Map detector findings to OptimizationNodes. **`src/lib/metaflow/audit/opt-map.ts`**: `DETECTOR_TO_OPT:Record<string,{id:string;desc:string}>` for all 9 base detector codes + 5 MF codes (mapped in later phase). `buildAuditOptNodes(report:AuditReport)` → `OptimizationNode[]` for each failing detector, deduped by id. `emitAuditOptExpansion(runId, nodes, base?)` → writes `.roadmap/expansions/expand-audit-opt-<runId>.ts`. **Wire into `bin/roadmap.ts`** mf opt: also run buildAuditOptNodes if audit report exists for run. **Test** `tests/audit/opt-map.test.ts`: 6 tests — DETECTOR_TO_OPT has all 9 codes; buildAuditOptNodes maps failing RD-001 → opt-add-tables node; deduplicates; emitAuditOptExpansion writes valid TS; file imports from protocol.ts; re-emit idempotent.",
-      "produces": [
-        "src/lib/metaflow/audit/opt-map.ts",
-        "tests/audit/opt-map.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-cli-mf-audit"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/audit/opt-map.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "intent-metaflow-audit-required": {
-      "id": "intent-metaflow-audit-required",
-      "desc": "Terminal gate for 010 — passing audit receipt bound to treeSha+sessionIds, all detectors satisfied, display invariants met, completed.json drift prevented. Runs all 010 test suites end-to-end.",
-      "produces": [
-        ".roadmap/metaflow/audit/REQUIRED.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-audit-opt-expansion",
-        "rm-completion-autocommit"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/audit/ && npx vitest run tests/completion/ && npx vitest run tests/import/"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-cli-inventory-cmd": {
-      "id": "rm-cli-inventory-cmd",
-      "desc": "CLI command registry inventory. **`src/lib/cli/inventory.ts`**: `CommandEntry` type: `{ id:string, tokens:string[], description:string, flags:string[], mustHaveDisplayReceipt:boolean, exempt?:{exemptClass:'plumbing'|'internal'|'deprecated', exemptReason:string, removalPlanNode?:string}, requiredSignals:string[], examples:string[] }`. `buildInventory(argv:string[][])` → scans bin/roadmap.ts switch cases (or reads a COMMAND_MANIFEST.json if present) and builds CommandEntry[]. `validateInventory(entries)` → fails any non-exempt entry without examples[] (MISSING_EXAMPLE_VECTOR). `writeInventory(entries, base?)` → writes `.roadmap/cli/commands.json`. **`roadmap cli inventory [--write]`** command in bin/roadmap.ts: builds inventory, validates, if --write writes commands.json, emits JSON+render (table: command | receipt-required | exempt | examples-count). **Test** `tests/cli/inventory.test.ts`: 6 tests — buildInventory returns entries for known commands; non-exempt with no examples fails validation; exempt entry passes without examples; --write produces commands.json; commands.json is deterministic (second run diff-empty); requiredSignals propagated from COMMAND_REGISTRY.",
-      "produces": [
-        "src/lib/cli/inventory.ts",
-        "tests/cli/inventory.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "intent-metaflow-audit-required"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/cli/inventory.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-cli-audit-runner": {
-      "id": "rm-cli-audit-runner",
-      "desc": "Compliance audit runner with fast/full sampling. **`src/lib/cli/audit.ts`**: `ComplianceState` = 'COMPLIANT'|'EXEMPT'|'NONCOMPLIANT'. `ComplianceResult` = `{id, tokens, state, evidence:string[], failingInvariant?:string}`. `auditCommand(entry:CommandEntry, mode:'fast'|'full')` → for non-exempt: runs entry.examples[0] via execSync, checks DisplayReceipt exists + ok:true + requiredSignals present; returns ComplianceResult. For exempt: verifies machine-only JSON envelope (no display receipt needed). **`src/lib/cli/audit-samples.ts`**: `FAST_SAMPLE = ['orient','chart','mf.gantt','mf.mine','mf.audit','mf.wrap','receipts.show']` — critical command subset for fast mode. `runComplianceAudit(mode:'fast'|'full', base?)` → loads commands.json, runs auditCommand per entry (fast: FAST_SAMPLE only), returns ComplianceResult[]. **`roadmap cli audit [--sample fast|full] [--json]`** in bin/roadmap.ts. **Test** `tests/cli/audit.e2e.test.ts`: 6 tests — auditCommand COMPLIANT on well-formed receipt; NONCOMPLIANT on missing receipt; EXEMPT on exempt entry; fast mode runs only sample; full mode runs all; compliance report JSON has schema_version:1.",
-      "produces": [
-        "src/lib/cli/audit.ts",
-        "src/lib/cli/audit-samples.ts",
-        "tests/cli/audit.e2e.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-cli-inventory-cmd"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/cli/audit.e2e.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-cli-compliance-tests": {
-      "id": "rm-cli-compliance-tests",
-      "desc": "100% coverage compliance test harness. **`tests/cli/compliance.e2e.test.ts`**: one test per command in inventory — for non-exempt: invokes command example, asserts DisplayReceipt exists + ok:true + requiredSignals. For exempt: asserts no DisplayReceipt written and output is valid JSON. All commands covered; any NONCOMPLIANT fails the suite. **`tests/cli/exemptions.test.ts`**: for each exempt command — asserts exemptClass is valid enum value; asserts exemptReason is non-empty; asserts machine-only JSON output (no ansi in stdout); for deprecated: asserts removalPlanNode is set. Exemption count capped at 10 (assertion); each internal/deprecated exemption must have removalPlanNode.",
-      "produces": [
-        "tests/cli/compliance.e2e.test.ts",
-        "tests/cli/exemptions.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-cli-audit-runner"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/cli/compliance.e2e.test.ts && npx vitest run tests/cli/exemptions.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-doctor-cli-compliance": {
-      "id": "rm-doctor-cli-compliance",
-      "desc": "Human-readable compliance status. **`src/lib/cli/doctor-cli.ts`**: `renderCliCompliance(results:ComplianceResult[], opts:RenderOpts)` → string: table (command | state emoji | evidence | requiredSignals | failing invariant) + progress bar showing % compliant + PASSED/FAILED summary. `cmdDoctorCliCompliance(opts:{base?})` → runs compliance audit fast mode, renders table, emits JSON+RenderV1. **`roadmap doctor cli --compliance`** in bin/roadmap.ts. **Test** `tests/cli/doctor-cli.test.ts`: 6 tests — renderCliCompliance produces table with | separators; contains progress bar (█/░); FAILED banner when any NONCOMPLIANT; PASSED banner when all compliant; cmdDoctorCliCompliance emits JSON with schema_version:1; table includes at least one diagram when failures present.",
-      "produces": [
-        "src/lib/cli/doctor-cli.ts",
-        "tests/cli/doctor-cli.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-cli-audit-runner"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/cli/doctor-cli.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-verify-cli-compliance-invariant": {
-      "id": "rm-verify-cli-compliance-invariant",
-      "desc": "Wire CLI_COMPLIANCE into roadmap verify. **`src/lib/verify/invariants/cli-compliance.ts`**: `CLI_COMPLIANCE` invariant: runs `runComplianceAudit('fast')` and fails if any result.state === 'NONCOMPLIANT'. `CLI_COMPLIANCE_FULL`: same with 'full' mode. **`src/lib/verify/kernel-config.ts`**: add CLI_COMPLIANCE to default kernel invariant set. **Wire into `bin/roadmap.ts`** verify: if CLI_COMPLIANCE in invariant list, run fast compliance audit. **Test** `tests/verify/cli-compliance.test.ts`: 6 tests — CLI_COMPLIANCE passes on all-compliant audit; fails on one NONCOMPLIANT command; kernel config includes CLI_COMPLIANCE; fast mode called by default; full mode on --release flag; invariant result has code + evidence + fix[].",
-      "produces": [
-        "src/lib/verify/invariants/cli-compliance.ts",
-        "src/lib/verify/kernel-config.ts",
-        "tests/verify/cli-compliance.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-cli-compliance-tests",
-        "rm-doctor-cli-compliance"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/verify/cli-compliance.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "intent-cli-compliance-terminal": {
-      "id": "intent-cli-compliance-terminal",
-      "desc": "Terminal gate for 012 — CLI inventory is authoritative, every command is COMPLIANT or EXEMPT with tests, verify enforces CLI_COMPLIANCE, CI blocks drift.",
-      "produces": [
-        ".roadmap/cli/commands.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-verify-cli-compliance-invariant"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/cli/ && npx vitest run tests/verify/cli-compliance.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-metaflow-self-insert-layer": {
-      "id": "rm-metaflow-self-insert-layer",
-      "desc": "Auto wrapSubcommand injection in CLI dispatch pipeline. **`src/lib/metaflow/self-insert.ts`**: `ELIGIBLE_COMMANDS:string[]` = commands that mutate DAG state, receipts, dispatch agents, complete nodes, perform plan selection, or emit interactive human output (populate from COMMAND_REGISTRY intersected with inventory mustHaveDisplayReceipt). `readActiveRun(base?)` → reads `.roadmap/metaflow/active-run.json` or null if absent. `isEligible(tokens:string[])` → boolean check against ELIGIBLE_COMMANDS. `selfInsert(argv:string[], activeRunId:RunId, base?)` → calls wrapSubcommand({runId: activeRunId, stepId: auto-generated StepId, cmd: argv.join(' '), base}), writes `.roadmap/receipts/metaflow-self-insert-<stepId>.json` (AuditReceipt-style). **Wire into `bin/roadmap.ts`** entry point: before command dispatch, if activeRun exists AND isEligible(argv) AND no --mf-run in argv → call selfInsert(); if selfInsert throws SESSION_BINDING_MISSING → exit(3) META_FLOW_REQUIRED. **Test** `tests/metaflow/self-insert.test.ts`: 6 tests (written but the test files will be created in this node — since auto-commit doesn't exist yet, they are run after rm-completion-autocommit is wired).",
-      "produces": [
-        "src/lib/metaflow/self-insert.ts",
-        "tests/metaflow/self-insert.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "intent-cli-compliance-terminal"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/metaflow/self-insert.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-metaflow-active-run": {
-      "id": "rm-metaflow-active-run",
-      "desc": "active-run.json lifecycle and binding rules. **`src/lib/metaflow/active-run.ts`**: `ActiveRun` type: `{ schema_version:1, runId:RunId, stage:string, startedAt:string, sessionIds:string[] }`. `writeActiveRun(run:ActiveRun, base?)` → writes `.roadmap/metaflow/active-run.json`. `readActiveRun(base?)` → ActiveRun or null. `clearActiveRun(base?, opts:{requireMiningExists?:boolean, requireAuditReceipt?:boolean})` → validates mining.json + audit receipt exist (if opts set) then removes active-run.json; fails with ACTIVE_RUN_NOT_CLEARABLE if conditions unmet. **Wire into `bin/roadmap.ts`**: `mf init` → calls writeActiveRun; `mf complete` → calls clearActiveRun({requireMiningExists:true, requireAuditReceipt:true}). **Test** `tests/metaflow/active-run.test.ts`: 6 tests — writeActiveRun creates file; readActiveRun returns null if absent; clearActiveRun succeeds when mining+audit exist; fails ACTIVE_RUN_NOT_CLEARABLE without mining; fails without audit receipt; mf init writes active-run.json.",
-      "produces": [
-        "src/lib/metaflow/active-run.ts",
-        "tests/metaflow/active-run.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-metaflow-self-insert-layer"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/metaflow/active-run.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-metaflow-surface-header": {
-      "id": "rm-metaflow-surface-header",
-      "desc": "Required MetaFlow header block in human renderer. **`src/lib/render/metaflow-header.ts`**: `renderMetaflowHeader(run:ActiveRun, stepId:StepId, treeSha:string, opts:RenderOpts)` → string: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\\nMetaFlow Run: <runId>\\nStage: <stage>\\nStep: <stepId>\\nTreeSha: <sha[:12]>\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`. Export from src/lib/render/index.ts. **Wire into `bin/roadmap.ts`** render path: when active-run.json present AND command is eligible (isEligible), prepend renderMetaflowHeader to stderr render output. Also write `.roadmap/receipts/metaflow-surface-<stepId>.json` with presence proof. **Test** `tests/render/metaflow-header.test.ts`: 6 tests — renderMetaflowHeader contains runId; contains StepId; contains sha[:12]; contains ━ border chars; stable across two calls with same input (deterministic); width respects opts.width.",
-      "produces": [
-        "src/lib/render/metaflow-header.ts",
-        "src/lib/render/index.ts",
-        "tests/render/metaflow-header.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-metaflow-active-run"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/render/metaflow-header.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-metaflow-surface-detectors": {
-      "id": "rm-metaflow-surface-detectors",
-      "desc": "MF-001..MF-005 detectors + PE-002. **`src/lib/metaflow/audit/detectors/metaflow.ts`**: exports `detectMetaflowCompliance(receipts, sessions, opts:{base?})` → `DetectorResult[]`. **MF-001** `detectMissingSelfInsert`: if active-run.json exists AND eligible command in receipts without matching metaflow-self-insert-*.json receipt → finding. **MF-002** `detectMissingSurfaceHeader`: for each wrapped-command receipt — check metaflow-surface-*.json exists and its render.plainPath file contains `MetaFlow Run:` AND `━` border → failing if absent. **MF-003** `detectActiveRunNotPrinted`: for mf audit/mine/wrap receipts — check plain render contains the active runId string. **MF-004** `detectStateMutationWithoutRunBinding`: IR-004 analogue — any completion/dispatch command without corresponding self-insert receipt → finding. **MF-005** `detectDisplayReceiptMissingRunId`: if DisplayReceipt (receipt with --mf-run context) omits runId field → finding. **PE-002** `detectProcessEscapePostSelfInsert`: eligible command invoked without wrap when authority present AND no self-insert receipt emitted → fail closed. **Test** `tests/audit/metaflow-detectors.test.ts`: 8 tests — MF-001 fires on missing self-insert; MF-002 fires on missing header; MF-003 fires on missing runId in render; MF-004 fires on state mutation without binding; PE-002 fires on unwrapped eligible command; all pass on properly wrapped fixture; detectMetaflowCompliance returns 6 results on fixture; updateDAETECTOR_TO_OPT includes all MF codes.",
-      "produces": [
-        "src/lib/metaflow/audit/detectors/metaflow.ts",
-        "tests/audit/metaflow-detectors.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-metaflow-surface-header"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/audit/metaflow-detectors.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "rm-cli-audit-metaflow": {
-      "id": "rm-cli-audit-metaflow",
-      "desc": "Extend cli audit to include MetaFlow compliance. **`src/lib/cli/audit-metaflow.ts`**: `auditMetaflowCompliance(entries:CommandEntry[], base?)` → for each eligible non-exempt command: checks self-insert receipt exists, surface header present, runId in render; returns `MetaflowComplianceResult[]` with state COMPLIANT|NONCOMPLIANT|EXEMPT. **`roadmap cli audit --metaflow`** in bin/roadmap.ts: runs both compliance audit + metaflow compliance audit, renders combined table (command | receipt-state | metaflow-state | self-insert | header). **Test** `tests/cli/metaflow-audit.test.ts`: 6 tests — auditMetaflowCompliance COMPLIANT on command with all receipts; NONCOMPLIANT on missing self-insert; NONCOMPLIANT on missing header; cli audit --metaflow renders combined table; zero noncompliant on fixture; table contains ━ border chars.",
-      "produces": [
-        "src/lib/cli/audit-metaflow.ts",
-        "tests/cli/metaflow-audit.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-metaflow-surface-detectors"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/cli/metaflow-audit.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "intent-metaflow-self-inserting-sovereign": {
-      "id": "intent-metaflow-self-inserting-sovereign",
-      "desc": "Terminal intent — if authority present, eligible commands are auto-wrapped, surfaced with MetaFlow header, MF-001..MF-005 + PE-002 detectors satisfied, cli audit --metaflow zero noncompliant. No command can mutate DAG state outside MetaFlow when active.",
-      "produces": [
-        ".roadmap/metaflow/active-run.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-cli-audit-metaflow"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/metaflow/ && npx vitest run tests/audit/ && npx vitest run tests/cli/metaflow-audit.test.ts && npx vitest run tests/render/metaflow-header.test.ts"
+          "command": "npx vitest run"
         },
         {
           "type": "spec-conformance",
-          "spec": ".specify/specs/fr-rm-audit-stack/spec.md",
+          "spec": ".specify/specs/rkg-governess/spec.md",
           "scenario": "All acceptance scenarios pass (User Stories 1-6)",
           "section": "Feature Specification"
         },
@@ -453,201 +708,10 @@
           "type": "shell",
           "command": "npm run build 2>&1 | grep -q \"built\"",
           "expectExitCode": 0
-        },
-        {
-          "type": "intent",
-          "statement": "Eligible CLI commands auto-insert into active MetaFlow runs; surface header and self-insert receipts are mandatory; MF-001..MF-005 and PE-002 detectors all pass; cli audit --metaflow shows zero noncompliant; no DAG mutation escapes MetaFlow when active",
-          "confidence": 0.85,
-          "evaluator": "self",
-          "expandOnFail": true,
-          "context": [
-            "src/lib/metaflow/",
-            "src/lib/cli/",
-            "tests/metaflow/",
-            "tests/cli/metaflow-audit.test.ts"
-          ]
         }
       ],
       "idempotent": true,
-      "ambient": [
-        ".specify/specs/fr-rm-audit-stack/spec.md"
-      ]
-    },
-    "rm-strategy-contract": {
-      "id": "rm-strategy-contract",
-      "desc": "Existing codebase — src/lib/strategy/ (if any), bin/roadmap.ts, src/lib/metaflow/audit/, .roadmap/strategy.json",
-      "produces": [
-        "bin/roadmap.ts",
-        "src/lib/metaflow/audit/required-schema.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-audit-contract"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": "src/lib/metaflow/audit/required-schema.ts"
-        }
-      ],
-      "idempotent": true,
-      "expandedFrom": "fr-rm-hallucination-protocol-014"
-    },
-    "rm-strategy-registry": {
-      "id": "rm-strategy-registry",
-      "desc": "Implement strategy registry + schema generation; ship REGISTRY.json. src/lib/strategy/registry.ts: StrategyConfig type; registry array with HALLUCINATE_ROUNDS_THEN_VALIDATE (rounds:2, gateMode:terminal, risk:medium), VALIDATE_AS_YOU_GO (rounds:1, gateMode:per-batch, risk:low), HYBRID (rounds:2, gateMode:per-phase, risk:medium); getStrategy(id); listStrategies(). src/lib/strategy/schema.ts: StrategyConfig, StrategyReceipt ({schema_version:1, strategyId, runId, headSha, treeSha, selectionMethod:auto|ask|manual, candidateSetHash, config, evidence, selectedAt}), ActiveStrategy ({schema_version:1, strategyId, runId, latchedAt, boundAt, receiptPath}). .roadmap/strategy/REGISTRY.json: generated from registry array. tests/strategy/registry.test.ts: 6 tests.",
-      "produces": [
-        "src/lib/strategy/registry.ts",
-        "src/lib/strategy/schema.ts",
-        ".roadmap/strategy/REGISTRY.json",
-        "tests/strategy/registry.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-strategy-contract"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/strategy/registry.test.ts"
-        }
-      ],
-      "idempotent": true,
-      "expandedFrom": "fr-rm-hallucination-protocol-014"
-    },
-    "rm-strategy-hint-latch": {
-      "id": "rm-strategy-hint-latch",
-      "desc": "Implement hint detection + per-run latch persistence. src/lib/strategy/hints.ts: HINT_TOKENS=[hallucinate,swarm,parallel,lookahead,fidelity,mass parallel,validate later]; detectHint(text) → {latched,matchedTokens}; shouldLatch(note). src/lib/strategy/active.ts: readActiveLatch; writeLatch; clearLatch; isLatched; readActiveStrategy; writeActiveStrategy → .roadmap/strategy/active.json. tests/strategy/hints.test.ts: 8 tests — detectHint(\"using our hallucination approach\") → latched:true; detectHint(\"normal work\") → latched:false; shouldLatch matches on any token; writeLatch/isLatched/clearLatch round-trip.",
-      "produces": [
-        "src/lib/strategy/hints.ts",
-        "src/lib/strategy/active.ts",
-        "tests/strategy/hints.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-strategy-registry"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/strategy/hints.test.ts"
-        }
-      ],
-      "idempotent": true,
-      "expandedFrom": "fr-rm-hallucination-protocol-014"
-    },
-    "rm-strategy-propose-select-cli": {
-      "id": "rm-strategy-propose-select-cli",
-      "desc": "CLI commands propose/select/auto/status/clear with receipts + renderers. src/lib/strategy/select.ts: proposeCandidates; selectStrategy → writes StrategyReceipt to .roadmap/receipts/strategy-select-<ts>.json + ActiveStrategy to .roadmap/strategy/active.json; autoSelect (maxParallelism>2 → HALLUCINATE else VALIDATE_AS_YOU_GO); clearStrategy. src/lib/render/strategy.ts: renderCandidates (table: ID|Name|Rounds|Gate|Risk); renderActive; renderReceipt. Wire into bin/roadmap.ts: strategy propose/select/auto/status/clear; orient --note parsing calls shouldLatch → if latched+no strategy include strategyRequired:true + candidates. tests/cli/strategy.test.ts: 10 tests.",
-      "produces": [
-        "src/lib/strategy/select.ts",
-        "src/lib/render/strategy.ts",
-        "bin/roadmap.ts",
-        "tests/cli/strategy.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-strategy-hint-latch",
-        "rm-completion-autocommit"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/cli/strategy.test.ts"
-        }
-      ],
-      "idempotent": true,
-      "expandedFrom": "fr-rm-hallucination-protocol-014"
-    },
-    "rm-strategy-exec-gate": {
-      "id": "rm-strategy-exec-gate",
-      "desc": "Gate dispatch/complete when latch=true and no active strategy. src/lib/strategy/exec-gate.ts: checkStrategyGate(base?) → if isLatched AND readActiveStrategy===null → {blocked:true, code:STRATEGY_REQUIRED, fix:[...]} else {blocked:false}; no env bypass. Wire into bin/roadmap.ts: dispatch and complete call checkStrategyGate at entry; blocked → stderr JSON + exit(4). tests/cli/strategy-gate.test.ts: 6 tests.",
-      "produces": [
-        "src/lib/strategy/exec-gate.ts",
-        "tests/cli/strategy-gate.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-strategy-propose-select-cli"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/cli/strategy-gate.test.ts"
-        }
-      ],
-      "idempotent": true,
-      "expandedFrom": "fr-rm-hallucination-protocol-014"
-    },
-    "rm-strategy-audit-detectors": {
-      "id": "rm-strategy-audit-detectors",
-      "desc": "Strategy compliance detectors for audit tail. src/lib/metaflow/audit/detectors/strategy.ts: detectStrategyCompliance → DetectorResult[]. STRAT-001 detectLatchWithoutStrategy: latch file exists+no receipt → finding. STRAT-002 detectStrategyHeadShaMatch: receipt.headSha !== git HEAD → finding. STRAT-003 detectMissingStrategyReceipt: dispatch/complete receipt exists but no matching strategy receipt → finding. Register STRAT-001/002/003 in REQUIRED.json requiredDetectors. tests/audit/strategy-detectors.test.ts: 8 tests.",
-      "produces": [
-        "src/lib/metaflow/audit/detectors/strategy.ts",
-        "tests/audit/strategy-detectors.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "rm-strategy-exec-gate",
-        "intent-metaflow-audit-required"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/audit/strategy-detectors.test.ts"
-        }
-      ],
-      "idempotent": true,
-      "expandedFrom": "fr-rm-hallucination-protocol-014"
-    },
-    "intent-strategy-nonforgetting": {
-      "id": "intent-strategy-nonforgetting",
-      "desc": "Terminal intent — once hint-latched, roadmap proposes concrete strategy candidates, requires selection receipt, binds to run, and never asks user to restate the approach. Governs both strategy protocol and the full audit+compliance+sovereignty stack.",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "rm-strategy-audit-detectors",
-        "intent-metaflow-self-inserting-sovereign"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/cli/strategy.test.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/cli/strategy-gate.test.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/audit/strategy-detectors.test.ts"
-        },
-        {
-          "type": "intent",
-          "statement": "Once a user hints at hallucination/parallelism strategy via any hint token, roadmap proposes 3 structured strategy candidates, gates dispatch/complete with STRATEGY_REQUIRED until selection, writes a receipt, binds to the run, and all subsequent commands reuse the binding without questioning the user",
-          "confidence": 0.9,
-          "evaluator": "self",
-          "expandOnFail": true
-        }
-      ],
-      "idempotent": true,
-      "expandedFrom": "fr-rm-hallucination-protocol-014",
-      "mode": "plan"
+      "ambient": []
     }
-  },
-  "version": "0.3.0",
-  "protocolVersion": "0.3.0",
-  "spec": {
-    "compiled_sha256": "965da035d6a74c50426efc4aee218c65576faad3a0ce6f779aab58ef3e532094",
-    "engine": {
-      "name": "speckit",
-      "version": "0.1.0"
-    },
-    "inputs": [
-      {
-        "path": ".specify/specs/fr-rm-audit-stack/tasks.md",
-        "sha256": "965da035d6a74c50426efc4aee218c65576faad3a0ce6f779aab58ef3e532094"
-      }
-    ]
   }
 }
