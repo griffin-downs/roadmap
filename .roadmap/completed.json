@@ -6231,9 +6231,9 @@
   },
   {
     "nodeId": "surf-perf-budget-gate",
-    "completedAt": "2026-03-01T11:02:07.965Z",
+    "completedAt": "2026-03-01T11:02:25.080Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301110207",
+    "checkpointId": "cp-20260301110225",
     "validationChecks": [
       {
         "rule": "skip-validate",
@@ -6241,7 +6241,7 @@
         "evidence": "validation skipped by --skip-validate flag"
       }
     ],
-    "gitSha": "6327e4164bf537332974f2eaf1e1734e4e962824",
-    "treeSha": "08ca7d73408383b6047f03514ab5b67f2cb12a0f"
+    "gitSha": "4bddb5b057bab58f748ca3f3add1481c52f2b3ea",
+    "treeSha": "d2a92bf1443902ab4a06a9a84626a95afbdcddbc"
   }
 ]
