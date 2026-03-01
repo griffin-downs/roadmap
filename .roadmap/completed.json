@@ -194,5 +194,20 @@
     ],
     "gitSha": "7d90e0f52822bb04c70af8e7776ce52071ff130b",
     "treeSha": "0c8859ca67071540de9fb929659dab508ba3e6d2"
+  },
+  {
+    "nodeId": "audit-file-sizes",
+    "completedAt": "2026-03-01T13:41:34.350Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301134134",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: file-sizes.json"
+      }
+    ],
+    "gitSha": "79347890a2a68a1d4f15007702ba475ee3725897",
+    "treeSha": "a44614a1b0ebdc1b506dd14b3ce261bd9914cc10"
   }
 ]
