@@ -1,0 +1,8 @@
+{
+  "type": "plan-select",
+  "headSha": "eabd2598c1b3d4fbc1eb1722dd3c7b07a577fed017423ba12c06b1b9f20c50e4",
+  "candidateId": "rkg-governess",
+  "selectedAt": "2026-03-01T10:53:26.592Z",
+  "selector": "griffin",
+  "note": "re-select after DAG modifications by swarm workers"
+}
