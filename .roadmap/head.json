@@ -673,43 +673,14 @@
       ],
       "consumes": [],
       "deps": [
-        "rkg3-fixtures",
-        "rkg4-fixtures",
-        "rkg5-fixtures",
-        "rkg5-cli-explain",
-        "rkg6-fixtures",
-        "rkg4-merge-branch-witness",
-        "rkg4-env-bypass",
-        "rkg4-algo-report",
-        "rkg3-dispatch-enforcement",
-        "rkg6-rate-card",
-        "cli-output-plan",
-        "dag-candidate-flow"
+        "integration-terminal"
       ],
       "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        },
-        {
-          "type": "shell",
-          "command": "npx vitest run"
-        },
         {
           "type": "spec-conformance",
           "spec": ".specify/specs/rkg-governess/spec.md",
           "scenario": "All acceptance scenarios pass (User Stories 1-6)",
           "section": "Feature Specification"
-        },
-        {
-          "type": "shell",
-          "command": "test -f package.json && npm run test 2>&1 | grep -q 'test'",
-          "expectExitCode": 0
-        },
-        {
-          "type": "shell",
-          "command": "npm run build 2>&1 | grep -q \"built\"",
-          "expectExitCode": 0
         },
         {
           "type": "intent",
@@ -800,6 +771,73 @@
         }
       ],
       "idempotent": false
+    },
+    "integration-terminal": {
+      "id": "integration-terminal",
+      "desc": "Terminal integration event. All major workflows exercised end-to-end: CLI commands emit clean JSON with render.body, import → candidate → accept cycle, governance validators run, receipt system writes, spec-kit intake produces valid DAG. If this node passes, the system does what it says it does.",
+      "mode": "execute",
+      "produces": [
+        ".roadmap/integration-terminal.receipt.json"
+      ],
+      "consumes": [],
+      "ambient": [
+        "bin/roadmap.ts",
+        "src/lib/cli-envelope.ts",
+        "src/lib/metaflow/receipt-writer.ts"
+      ],
+      "deps": [
+        "rkg3-fixtures",
+        "rkg4-fixtures",
+        "rkg5-fixtures",
+        "rkg5-cli-explain",
+        "rkg6-fixtures",
+        "rkg4-merge-branch-witness",
+        "rkg4-env-bypass",
+        "rkg4-algo-report",
+        "rkg3-dispatch-enforcement",
+        "rkg6-rate-card",
+        "cli-output-plan",
+        "dag-candidate-flow"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": ".roadmap/integration-terminal.receipt.json"
+        },
+        {
+          "type": "shell",
+          "command": "node -e \"const r=require('./.roadmap/integration-terminal.receipt.json'); if(!r.pass) throw new Error('integration receipt: pass=false')\"",
+          "expectExitCode": 0
+        },
+        {
+          "type": "shell",
+          "command": "bin/roadmap orient --note \"integration-terminal smoke\" 2>/dev/null | python3 -c \"import sys,json; d=json.load(sys.stdin); assert d['ok'], 'orient not ok'\"",
+          "expectExitCode": 0
+        },
+        {
+          "type": "shell",
+          "command": "bin/roadmap orient --note \"integration-terminal json-clean\" 2>/dev/null | python3 -m json.tool > /dev/null",
+          "expectExitCode": 0
+        },
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit",
+          "expectExitCode": 0
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run",
+          "expectExitCode": 0
+        },
+        {
+          "type": "intent",
+          "statement": "All major CLI workflows emit clean JSON stdout with render.body populated, all governance fixture suites pass, import/expand/accept cycle is non-destructive, receipt system writes interaction evidence. The system behaves as specified.",
+          "confidence": 0.95,
+          "evaluator": "self",
+          "expandOnFail": true
+        }
+      ],
+      "idempotent": true
     }
   }
 }
