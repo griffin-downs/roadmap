@@ -6,7 +6,7 @@
 // FR-SPEC-003: Receipt chain types — compiled_sha256, dag_sha256, engine identity, input hashes.
 // Shared type file for cryptographic provenance of node completions.
 
-import type { SpecInput } from './spec-ir.ts';
+import type { SpecInput } from './intake/spec-ir.ts';
 
 export interface ReceiptChainEntry {
   node_id: string;

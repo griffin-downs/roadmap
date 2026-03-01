@@ -15,7 +15,7 @@
 // [P<n>] is priority/phase — tasks with same P value can run in parallel.
 // Dependencies override phase ordering when specified.
 
-import type { Graph, NodeSpec, ValidationRule } from '../protocol.ts';
+import type { Graph, NodeSpec, ValidationRule } from '../../protocol.ts';
 import { existsSync } from 'fs';
 
 export interface ParsedTask {

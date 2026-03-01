@@ -7,9 +7,9 @@
 // Maps each parallelOrder() batch to a team-spawn directive so the executor
 // reads "spawn N workers for batch L" rather than inferring parallelism itself.
 
-import type { Graph } from '../protocol.ts';
-import { parallelOrder, batchConflicts } from '../protocol.ts';
-import type { BatchConflict } from '../protocol.ts';
+import type { Graph } from '../../../protocol.ts';
+import { parallelOrder, batchConflicts } from '../../../protocol.ts';
+import type { BatchConflict } from '../../../protocol.ts';
 
 export interface WorkerDirective {
   workerId: number;   // 1-indexed within the batch

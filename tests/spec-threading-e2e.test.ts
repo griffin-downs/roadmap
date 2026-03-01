@@ -8,9 +8,9 @@ import { describe, it, expect } from 'vitest';
 import { graph, define } from '../src/protocol.ts';
 import type { ObservationResult } from '../src/protocol.ts';
 import { validatePlanClarity } from '../src/lib/validate-plan-clarity.ts';
-import { generateClarifiedSpec } from '../src/lib/spec-generator.ts';
-import { verifyObservationsAgainstContract } from '../src/lib/spec-verifier.ts';
-import type { SpecClarifiedJson } from '../src/lib/spec-verifier.ts';
+import { generateClarifiedSpec } from '../src/lib/intake/spec-generator.ts';
+import { verifyObservationsAgainstContract } from '../src/lib/intake/spec-verifier.ts';
+import type { SpecClarifiedJson } from '../src/lib/intake/spec-verifier.ts';
 import { validateTerminalSpecWiring } from '../src/lib/validate-terminal-gate-spec.ts';
 
 // ── Test DAG: vague plan with gaps ──────────────────────────────────────────

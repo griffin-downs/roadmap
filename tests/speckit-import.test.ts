@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseTasksMd, tasksToDAG } from '../src/lib/speckit-import.ts';
+import { parseTasksMd, tasksToDAG } from '../src/lib/intake/speckit-import.ts';
 import { define, check, verify } from '../src/protocol.ts';
 
 const SIMPLE_MD = `

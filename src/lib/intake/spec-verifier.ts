@@ -2,7 +2,7 @@
 // @exports verifyObservationsAgainstContract, SpecClarifiedJson, SpecFeature, VerificationResult, VerificationFailure
 // @entry roadmap
 
-import type { ObservationResult } from '../protocol.ts';
+import type { ObservationResult } from '../../protocol.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

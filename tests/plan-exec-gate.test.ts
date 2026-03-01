@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { requirePlanGate } from '../src/lib/plan-gate.ts';
+import { requirePlanGate } from '../src/lib/recipes/plan/plan-gate.ts';
 import { writePointer } from '../src/lib/receipts/plan-selected-pointer.ts';
 
 let tmpDir: string;

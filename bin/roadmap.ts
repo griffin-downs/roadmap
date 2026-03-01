@@ -20,14 +20,14 @@ import { crossOrient } from '../src/lib/cross-orient.ts';
 import { CompletionStore } from '../src/lib/completion-context.ts';
 import { discoverDependencies, resolveSiblingPath } from '../src/lib/dependency-resolver.ts';
 import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, assignBatch } from '../src/lib/claims/claims.ts';
-import { parseTasksMd, tasksToDAG } from '../src/lib/speckit-import.ts';
-import { compileIR, parseIRFile, defaultConfig } from '../src/lib/spec-ir.ts';
-import type { SpecConfig, SpecIR, SpecIRTask, SpecInput } from '../src/lib/spec-ir.ts';
+import { parseTasksMd, tasksToDAG } from '../src/lib/intake/speckit-import.ts';
+import { compileIR, parseIRFile, defaultConfig } from '../src/lib/intake/spec-ir.ts';
+import type { SpecConfig, SpecIR, SpecIRTask, SpecInput } from '../src/lib/intake/spec-ir.ts';
 import { enrichIntentGate } from '../src/lib/intent/intent-gate-enrichment.ts';
 import { loadCompletions, getCompletedNodeIds } from '../src/lib/completion-tracker.ts';
 import { saveCompletionWithEvidence, loadCompletionsWithEvidence, hasPassingReceipt } from '../src/lib/evidence/completion-evidence.ts';
 import type { EvidenceRecord } from '../src/lib/evidence/completion-evidence.ts';
-import { buildSpawnPlan } from '../src/lib/spawn-plan.ts';
+import { buildSpawnPlan } from '../src/lib/recipes/spawn/spawn-plan.ts';
 import { buildScaffold } from '../src/lib/scaffold.ts';
 import { buildClusters } from '../src/lib/utils/cluster/cluster.ts';
 import { buildSchedule } from '../src/lib/schedule.ts';
@@ -36,23 +36,23 @@ import { compilePrompts } from '../src/lib/compile-prompts.ts';
 import { compileBrief } from '../src/lib/compile-brief.ts';
 import { recordEvaluation, judgmentToRecord } from '../src/lib/intent/intent-evaluator.ts';
 import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } from '../src/lib/validate-dag.ts';
-import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/spec-origin.ts';
-import type { SpecOrigin, SpecImportReceipt } from '../src/lib/spec-origin.ts';
-import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake.ts';
-import { runIntakeAbsorb } from '../src/lib/intake-cmd.ts';
+import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/intake/spec-origin.ts';
+import type { SpecOrigin, SpecImportReceipt } from '../src/lib/intake/spec-origin.ts';
+import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake/intake.ts';
+import { runIntakeAbsorb } from '../src/lib/intake/intake-cmd.ts';
 import { addPeer, removePeer, buildFederationView, federationStatus } from '../src/lib/utils/federation/federation.ts';
 import { buildPlanOverlay, writePlanOverlay, loadPlanOverlay, isOverlayValid } from '../src/lib/plan-overlay.ts';
-import { runOverlayFromIntake } from '../src/lib/overlay-cmd.ts';
-import { createDispatchPlan, applyDispatchPlan, loadDispatchPlan, dispatchStatus } from '../src/lib/dispatch.ts';
+import { runOverlayFromIntake } from '../src/lib/recipes/overlay/overlay-cmd.ts';
+import { createDispatchPlan, applyDispatchPlan, loadDispatchPlan, dispatchStatus } from '../src/lib/recipes/dispatch/dispatch.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { listNodeReceipts, completionDoctor, completionCompact } from '../src/lib/receipts-ux.ts';
-import { certifyAutoIntake } from '../src/lib/auto-intake.ts';
+import { certifyAutoIntake } from '../src/lib/intake/auto-intake.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { runEnvAudit } from '../src/lib/env-audit.ts';
 import { runAuditIngest } from '../src/lib/audit/ingest.ts';
 import { runAuditRecommend } from '../src/lib/audit/recommend.ts';
 import { runProfile } from '../src/lib/profile-cmd.ts';
-import { runPatchStack } from '../src/lib/patch-stack-cmd.ts';
+import { runPatchStack } from '../src/lib/recipes/patch/patch-stack-cmd.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
 import { loadCandidate, computeHeadSha, candidateExists, writeCandidateDAG } from '../src/lib/dag-candidate.ts';
 import { writeToken, readToken, listTokens, isTokenExpired, tokenId as deriveTokenId, TOKEN_DIR } from '../src/lib/utils/tokens/token-store.ts';
@@ -828,7 +828,7 @@ async function cmdAdvance(note: string) {
   }
 
   if (!args.includes('--skip-plan-gate')) {
-    const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
+    const { requirePlanGate } = await import('../src/lib/recipes/plan/plan-gate.ts');
     const gate = requirePlanGate(repoRoot);
     if (!gate.ok) { json({ error: gate.reason, fix: gate.fix }); process.exit(1); }
   }
@@ -1072,7 +1072,7 @@ async function cmdCheck(note: string) {
 
 async function cmdExpand(note: string) {
   if (!args.includes('--skip-plan-gate')) {
-    const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
+    const { requirePlanGate } = await import('../src/lib/recipes/plan/plan-gate.ts');
     const gate = requirePlanGate(repoRoot);
     if (!gate.ok) { json({ error: gate.reason, fix: gate.fix }); process.exit(1); }
   }
@@ -2582,7 +2582,7 @@ async function cmdComplete(note: string) {
   }
 
   if (!args.includes('--skip-plan-gate')) {
-    const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
+    const { requirePlanGate } = await import('../src/lib/recipes/plan/plan-gate.ts');
     const gate = requirePlanGate(repoRoot);
     if (!gate.ok) { json({ error: gate.reason, fix: gate.fix }); process.exit(1); }
   }
@@ -6109,7 +6109,7 @@ async function cmdPlanStatus() {
     process.exit(1);
   }
 
-  const { requirePlanGate } = await import('../src/lib/plan-gate.ts');
+  const { requirePlanGate } = await import('../src/lib/recipes/plan/plan-gate.ts');
   const { readPointer, computeHeadSha } = await import('../src/lib/plan-selection.ts');
   const { loadPlanSelectReceipt } = await import('../src/lib/plan-selection.ts');
   const gate = requirePlanGate(repoRoot);
@@ -6608,7 +6608,7 @@ function cmdGate(note: string) {
   const targetIdx = args.indexOf('--target');
   const target = targetIdx !== -1 ? args[targetIdx + 1] : undefined;
 
-  const { runMergeGate } = require('../src/lib/merge-gate-cmd.ts') as typeof import('../src/lib/merge-gate-cmd.ts');
+  const { runMergeGate } = require('../src/lib/recipes/merge/merge-gate-cmd.ts') as typeof import('../src/lib/recipes/merge/merge-gate-cmd.ts');
   const result = runMergeGate({ repoRoot, target });
 
   recordTrail({

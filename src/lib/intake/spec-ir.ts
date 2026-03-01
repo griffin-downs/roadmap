@@ -6,7 +6,7 @@
 // FR-SPEC-001: Roadmap-owned intermediate representation for spec → DAG compilation.
 // Engine-agnostic: any backend that produces this format is compatible.
 
-import type { ValidationRule } from '../protocol.ts';
+import type { ValidationRule } from '../../protocol.ts';
 
 export interface SpecInput {
   path: string;
@@ -72,7 +72,7 @@ export function defaultConfig(dagId: string): SpecConfig {
 // Compile IR tasks → ParsedTask[] compatible format (for tasksToDAG reuse)
 import type { ParsedTask, ImportOptions } from './speckit-import.ts';
 import { tasksToDAG } from './speckit-import.ts';
-import type { Graph } from '../protocol.ts';
+import type { Graph } from '../../protocol.ts';
 
 export function irTasksToParsed(tasks: SpecIRTask[]): ParsedTask[] {
   return tasks.map(t => ({

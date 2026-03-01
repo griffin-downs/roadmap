@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildSpawnPlan } from '../src/lib/spawn-plan.ts';
+import { buildSpawnPlan } from '../src/lib/recipes/spawn/spawn-plan.ts';
 import { define } from '../src/protocol.ts';
 import type { Graph } from '../src/protocol.ts';
 

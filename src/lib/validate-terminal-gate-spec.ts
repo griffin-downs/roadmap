@@ -5,7 +5,7 @@
 import type { Graph, ConsumeSpec } from '../protocol.ts';
 import { consumeArtifact } from '../protocol.ts';
 import { findTerminalNodes } from './validate-dag.ts';
-import type { SpecClarifiedJson } from './spec-verifier.ts';
+import type { SpecClarifiedJson } from './intake/spec-verifier.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

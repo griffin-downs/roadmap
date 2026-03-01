@@ -6,29 +6,29 @@ import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 // intake
-import type { IntakeRecord, IntakeReceipt, IntakeCommit, DetectedCluster, ProposedNodeSpec } from '../src/lib/intake.ts';
-import { isIntakeRecord, isIntakeReceipt } from '../src/lib/intake.ts';
+import type { IntakeRecord, IntakeReceipt, IntakeCommit, DetectedCluster, ProposedNodeSpec } from '../src/lib/intake/intake.ts';
+import { isIntakeRecord, isIntakeReceipt } from '../src/lib/intake/intake.ts';
 
 // intake-receipt
-import { isIntakeReceiptValid, writeIntakeReceipt, readIntakeReceipt, verifyIntakeReceiptDeterminism } from '../src/lib/intake-receipt.ts';
+import { isIntakeReceiptValid, writeIntakeReceipt, readIntakeReceipt, verifyIntakeReceiptDeterminism } from '../src/lib/intake/intake-receipt.ts';
 
 // intake-cluster
-import { jaccardSimilarity, clusterCommits, buildProposedNodes } from '../src/lib/intake-cluster.ts';
+import { jaccardSimilarity, clusterCommits, buildProposedNodes } from '../src/lib/intake/intake-cluster.ts';
 
 // overlay
-import type { OverlayRecord } from '../src/lib/overlay.ts';
-import { isOverlayRecord } from '../src/lib/overlay.ts';
+import type { OverlayRecord } from '../src/lib/recipes/overlay/overlay.ts';
+import { isOverlayRecord } from '../src/lib/recipes/overlay/overlay.ts';
 
 // overlay-cmd
-import { runOverlayFromIntake } from '../src/lib/overlay-cmd.ts';
+import { runOverlayFromIntake } from '../src/lib/recipes/overlay/overlay-cmd.ts';
 
 // patch-stack
-import { branchName, isPatchRecord, isPatchReceipt } from '../src/lib/patch-stack.ts';
+import { branchName, isPatchRecord, isPatchReceipt } from '../src/lib/recipes/patch/patch-stack.ts';
 
 // merge-gate
-import { REQUIRED_RECEIPTS, formatMergeGateError, isMergeGateResult } from '../src/lib/merge-gate.ts';
-import type { MergeGateResult } from '../src/lib/merge-gate.ts';
-import { runMergeGate } from '../src/lib/merge-gate-cmd.ts';
+import { REQUIRED_RECEIPTS, formatMergeGateError, isMergeGateResult } from '../src/lib/recipes/merge/merge-gate.ts';
+import type { MergeGateResult } from '../src/lib/recipes/merge/merge-gate.ts';
+import { runMergeGate } from '../src/lib/recipes/merge/merge-gate-cmd.ts';
 
 // env-audit
 import { runEnvAudit, DEPRECATED_ENV_VARS, KERNEL_REPLACEMENTS } from '../src/lib/env-audit.ts';

@@ -9,7 +9,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import type { PlanOverlay } from './plan-overlay.ts';
+import type { PlanOverlay } from '../../plan-overlay.ts';
 
 export interface DispatchWorktree {
   id: string;

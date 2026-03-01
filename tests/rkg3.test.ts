@@ -12,8 +12,8 @@ import { applyOverlay } from '../src/lib/strategy-overlay.js';
 import type { StrategyOverlay } from '../src/lib/strategy-overlay.js';
 import { getCached, setCached, loadCache } from '../src/lib/verify-cache.js';
 import type { CacheEntry, VerifyCache } from '../src/lib/verify-cache.js';
-import { validateDispatchFreshness } from '../src/lib/dispatch-receipt.js';
-import type { DispatchReceipt } from '../src/lib/dispatch-receipt.js';
+import { validateDispatchFreshness } from '../src/lib/recipes/dispatch/dispatch-receipt.js';
+import type { DispatchReceipt } from '../src/lib/recipes/dispatch/dispatch-receipt.js';
 
 function makeTmpDir(): string {
   return mkdtempSync(join(tmpdir(), 'rkg3-test-'));

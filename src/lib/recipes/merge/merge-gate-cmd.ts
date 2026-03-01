@@ -6,7 +6,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { MergeGateResult, ReceiptCheck, MergeGateError } from './merge-gate.ts';
 import { REQUIRED_RECEIPTS } from './merge-gate.ts';
-import { loadKernel } from './kernel-config.ts';
+import { loadKernel } from '../../kernel-config.ts';
 
 export interface MergeGateOptions {
   target?: string;

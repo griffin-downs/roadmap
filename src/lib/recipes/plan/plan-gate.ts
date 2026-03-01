@@ -3,8 +3,8 @@
 // @types PlanGateResult
 // @entry roadmap
 
-import type { PlanSelectedPointer } from './receipts/plan-selected-pointer.ts';
-import { pointerValid } from './receipts/plan-selected-pointer.ts';
+import type { PlanSelectedPointer } from '../../receipts/plan-selected-pointer.ts';
+import { pointerValid } from '../../receipts/plan-selected-pointer.ts';
 
 export type PlanGateResult =
   | { ok: true; pointer: PlanSelectedPointer }

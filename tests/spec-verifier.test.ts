@@ -4,7 +4,7 @@ import {
   type SpecClarifiedJson,
   type SpecFeature,
   type VerificationResult,
-} from '../src/lib/spec-verifier.ts';
+} from '../src/lib/intake/spec-verifier.ts';
 import type { ObservationResult } from '../src/protocol.ts';
 
 // -- Helpers --

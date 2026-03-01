@@ -6,10 +6,10 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import type { OverlayRecord, OverlayReceipt } from './overlay.ts';
-import type { IntakeRecord, ProposedNodeSpec } from './intake.ts';
+import type { IntakeRecord, ProposedNodeSpec } from '../../intake/intake.ts';
 import type { CandidateNode } from './overlay.ts';
 import { OVERLAY_DIR } from './overlay.ts';
-import { INTAKE_DIR } from './intake.ts';
+import { INTAKE_DIR } from '../../intake/intake.ts';
 
 export interface OverlayFromIntakeOptions {
   intakeId: string;

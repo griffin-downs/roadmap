@@ -7,7 +7,7 @@ import { isTranscriptSession, type TranscriptSession } from '../src/lib/transcri
 import { parseTranscript } from '../src/lib/audit/ingest.ts';
 import { computeFriction, FRICTION_WEIGHTS, type FrictionMetrics } from '../src/lib/friction-engine.ts';
 import { runAuditRecommend, type AuditRecommendation } from '../src/lib/audit/recommend.ts';
-import { detectUnaccountedCommits, isPendingCertify, certifyAutoIntake } from '../src/lib/auto-intake.ts';
+import { detectUnaccountedCommits, isPendingCertify, certifyAutoIntake } from '../src/lib/intake/auto-intake.ts';
 import { detectGovernanceBreach, emitGovernanceBreachReceipt, GovernanceBreachDetector } from '../src/lib/governance-breach.ts';
 import { checkKernelEnforcement } from '../src/lib/kernel-enforcement.ts';
 import { computeParallelismUtilization, DEFAULT_PROFILE_CONFIG, type ProfileReport } from '../src/lib/profile-schema.ts';

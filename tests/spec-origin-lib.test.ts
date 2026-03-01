@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import {
   writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit,
   hasSpecOriginSync, SPEC_ORIGIN_PATH,
-} from '../src/lib/spec-origin.js';
-import type { SpecOrigin, SpecImportReceipt } from '../src/lib/spec-origin.js';
+} from '../src/lib/intake/spec-origin.js';
+import type { SpecOrigin, SpecImportReceipt } from '../src/lib/intake/spec-origin.js';
 
 const sampleOrigin: SpecOrigin = {
   schemaVersion: 1,

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   createDispatchPlan, applyDispatchPlan, loadDispatchPlan, dispatchStatus,
-} from '../src/lib/dispatch.js';
+} from '../src/lib/recipes/dispatch/dispatch.js';
 import type { PlanOverlay } from '../src/lib/plan-overlay.js';
 
 function makeTmpDir(): string {

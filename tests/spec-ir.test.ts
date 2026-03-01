@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { compileIR, parseIRFile, defaultConfig } from '../src/lib/spec-ir.ts';
-import type { SpecIR } from '../src/lib/spec-ir.ts';
+import { compileIR, parseIRFile, defaultConfig } from '../src/lib/intake/spec-ir.ts';
+import type { SpecIR } from '../src/lib/intake/spec-ir.ts';
 import { define } from '../src/protocol.ts';
 
 describe('FR-SPEC-001: spec IR', () => {

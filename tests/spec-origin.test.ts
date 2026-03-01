@@ -13,8 +13,8 @@ import {
   writeSpecOrigin,
   writeSpecImportReceipt,
   requireSpecOriginForEdit,
-} from '../src/lib/spec-origin.ts';
-import type { SpecOrigin, SpecImportReceipt } from '../src/lib/spec-origin.ts';
+} from '../src/lib/intake/spec-origin.ts';
+import type { SpecOrigin, SpecImportReceipt } from '../src/lib/intake/spec-origin.ts';
 
 let tmp: string;
 

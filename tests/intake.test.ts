@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync, mkdirSync
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
-import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake.js';
+import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake/intake.js';
 
 function makeTmpGitRepo(): string {
   const tmp = mkdtempSync(join(tmpdir(), 'intake-test-'));
