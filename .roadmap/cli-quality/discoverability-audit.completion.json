@@ -1,0 +1,27 @@
+{
+  "nodeId": "discoverability-audit",
+  "dagId": "metaflow-cli-quality",
+  "completedAt": "2026-03-01T22:51:27.626Z",
+  "owner": "griffin",
+  "validationPassed": true,
+  "validationCheck": {
+    "rule": "shell",
+    "cmd": "Discoverability score validation",
+    "result": "score=49, valid range [0,100]",
+    "exitCode": 0
+  },
+  "artifacts": {
+    "audit": ".roadmap/cli-quality/discoverability-audit.json",
+    "score": ".roadmap/cli-quality/discoverability-score.json"
+  },
+  "summary": {
+    "score": 49,
+    "key_findings": [
+      "78.8% workflow abandon rate — users re-orient without reading output",
+      "76.5% unused flag penalty — advanced flags not discovered",
+      "6.7% command error rate",
+      "50% error without retry rate"
+    ]
+  },
+  "gitCommit": "ec65cb2107df7c5ac145200979b2e749980ada42"
+}
