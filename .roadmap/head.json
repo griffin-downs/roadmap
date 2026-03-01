@@ -1447,7 +1447,7 @@
       "validate": [
         {
           "type": "shell",
-          "cmd": "npx tsc --noEmit"
+          "command": "npx tsc --noEmit"
         },
         {
           "type": "artifact-exists",
