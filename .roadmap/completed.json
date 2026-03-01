@@ -514,5 +514,14 @@
     "validationChecks": [],
     "gitSha": "5c784352262f7601fd51ec5dab1feb52237a5a1e",
     "treeSha": "d516e985d89e326a9d56e31b36d7a7ee2469447f"
+  },
+  {
+    "nodeId": "detector-intent-subsystem",
+    "completedAt": "2026-03-01T16:19:17.130Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301161917",
+    "validationChecks": [],
+    "gitSha": "a4976623da395cf9d33f0dfe43c7b06837f0feb6",
+    "treeSha": "2bfe5cbe59913a7d21ffffa5e13f15b1628e61ca"
   }
 ]
