@@ -1204,5 +1204,36 @@
     ],
     "gitSha": "b4c320ca33a1c4ceb56b23cf2f81131fa8ec1c92",
     "treeSha": "2f484bfae78f6ea864b6d913d3a724ea1a2d13d2"
+  },
+  {
+    "nodeId": "validate-json-output",
+    "completedAt": "2026-03-01T21:42:30.376Z",
+    "owner": "validator",
+    "checkpointId": "cp-20260301214222",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: tests/cli/json-output.test.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm test -- json-output.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm test -- json-output.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "c8cfc0eac1072fba83f79ddf5b34f7fec0dd2151f3a26d9704f383e7a2ccecf5",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/validate-json-output/mm8a02j2-0t4aet/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "cb8c07fa881da502f79098a9c5cad86d8957a957",
+    "treeSha": "c917d4cd4895cfeecd48a72b399487c740fdd2f9"
   }
 ]
