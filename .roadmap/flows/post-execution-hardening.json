@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "post-execution-hardening",
+  "desc": "Post-batch composition: mining → spec-conformance → intent-convergence → audit-recovery → hardening report",
+  "stageMin": 0,
+  "stageMax": 10,
+  "requiresAuthority": true,
+  "steps": [
+    {
+      "id": "step-1-mining-extraction",
+      "desc": "Extract mining data from completed runs",
+      "cmd": "roadmap mf mine",
+      "args": {"note": "post-execution-hardening: mining extraction"},
+      "produces": [".roadmap/metaflow/mining/extracted-metrics.json"],
+      "consumes": [],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/mining/extracted-metrics.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-2-spec-conformance",
+      "desc": "Validate DAG against spec-kit scenarios",
+      "cmd": "roadmap internal validate-spec-conformance",
+      "args": {"specPath": ".specify/spec.md", "headPath": ".roadmap/head.json"},
+      "produces": [".roadmap/metaflow/spec/conformance-report.json"],
+      "consumes": [".roadmap/metaflow/mining/extracted-metrics.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/spec/conformance-report.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-3-intent-convergence",
+      "desc": "Validate intent alignment with DAG changes",
+      "cmd": "roadmap internal validate-intent-convergence",
+      "args": {"trailPath": ".roadmap/trail.jsonl", "headPath": ".roadmap/head.json"},
+      "produces": [".roadmap/metaflow/intent/convergence-report.json"],
+      "consumes": [".roadmap/metaflow/spec/conformance-report.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/intent/convergence-report.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-4-audit-recovery",
+      "desc": "Run audit-recovery-flow for final validation",
+      "cmd": "roadmap internal execute-flow",
+      "args": {"flowId": "audit-recovery-flow"},
+      "produces": [".roadmap/metaflow/recovery/recovery-report.json"],
+      "consumes": [".roadmap/metaflow/intent/convergence-report.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/recovery/recovery-report.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-5-hardening-report",
+      "desc": "Generate comprehensive hardening report",
+      "cmd": "roadmap internal generate-hardening-report",
+      "args": {
+        "miningPath": ".roadmap/metaflow/mining/extracted-metrics.json",
+        "specPath": ".roadmap/metaflow/spec/conformance-report.json",
+        "intentPath": ".roadmap/metaflow/intent/convergence-report.json",
+        "auditPath": ".roadmap/metaflow/recovery/recovery-report.json"
+      },
+      "produces": [".roadmap/metaflow/composition/hardening-report.json", ".roadmap/metaflow/composition/hardening-summary.md"],
+      "consumes": [".roadmap/metaflow/mining/extracted-metrics.json", ".roadmap/metaflow/spec/conformance-report.json", ".roadmap/metaflow/intent/convergence-report.json", ".roadmap/metaflow/recovery/recovery-report.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/composition/hardening-report.json"},
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/composition/hardening-summary.md"}
+      ],
+      "render": {"required": true}
+    }
+  ]
+}

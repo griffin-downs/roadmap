@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "audit-recovery-flow",
+  "desc": "Run compliance audit, detect failures, apply recovery strategies, re-validate",
+  "stageMin": 0,
+  "stageMax": 10,
+  "requiresAuthority": true,
+  "steps": [
+    {
+      "id": "step-1-audit-initial",
+      "desc": "Run initial compliance audit",
+      "cmd": "roadmap mf audit",
+      "args": {"note": "audit-recovery-flow: initial audit"},
+      "produces": [".roadmap/metaflow/audit/audit-run.json"],
+      "consumes": [],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/audit/audit-run.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-2-detect-failures",
+      "desc": "Parse audit results and identify failures",
+      "cmd": "roadmap internal detect-audit-failures",
+      "args": {"auditPath": ".roadmap/metaflow/audit/audit-run.json"},
+      "produces": [".roadmap/metaflow/recovery/failures.json"],
+      "consumes": [".roadmap/metaflow/audit/audit-run.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/recovery/failures.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-3-apply-recovery",
+      "desc": "Apply recovery strategies for each failure type",
+      "cmd": "roadmap internal apply-recovery",
+      "args": {"failurePath": ".roadmap/metaflow/recovery/failures.json"},
+      "produces": [".roadmap/metaflow/recovery/recovery-log.json"],
+      "consumes": [".roadmap/metaflow/recovery/failures.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/recovery/recovery-log.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-4-audit-final",
+      "desc": "Re-run audit after recovery",
+      "cmd": "roadmap mf audit",
+      "args": {"note": "audit-recovery-flow: post-recovery validation"},
+      "produces": [".roadmap/metaflow/audit/audit-run-final.json"],
+      "consumes": [".roadmap/metaflow/recovery/recovery-log.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/audit/audit-run-final.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-5-report",
+      "desc": "Generate recovery report",
+      "cmd": "roadmap internal report-recovery",
+      "args": {"initialAudit": ".roadmap/metaflow/audit/audit-run.json", "finalAudit": ".roadmap/metaflow/audit/audit-run-final.json"},
+      "produces": [".roadmap/metaflow/recovery/recovery-report.json"],
+      "consumes": [".roadmap/metaflow/audit/audit-run.json", ".roadmap/metaflow/audit/audit-run-final.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/recovery/recovery-report.json"}
+      ],
+      "render": {"required": true}
+    }
+  ]
+}

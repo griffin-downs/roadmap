@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "performance-hardening-flow",
+  "desc": "Mine latency data, detect regressions, identify slow commands, generate optimizations",
+  "stageMin": 0,
+  "stageMax": 10,
+  "requiresAuthority": true,
+  "steps": [
+    {
+      "id": "step-1-mine-latency",
+      "desc": "Extract latency data from mining results",
+      "cmd": "roadmap mf mine",
+      "args": {"note": "performance-hardening-flow: latency mining", "metric": "latency"},
+      "produces": [".roadmap/metaflow/performance/latency-data.json"],
+      "consumes": [],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/performance/latency-data.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-2-compute-percentiles",
+      "desc": "Compute p50, p95, p99 latencies by command",
+      "cmd": "roadmap internal compute-latency-percentiles",
+      "args": {"latencyPath": ".roadmap/metaflow/performance/latency-data.json"},
+      "produces": [".roadmap/metaflow/performance/latency-percentiles.json"],
+      "consumes": [".roadmap/metaflow/performance/latency-data.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/performance/latency-percentiles.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-3-detect-regressions",
+      "desc": "Compare against baseline and detect regressions",
+      "cmd": "roadmap internal detect-latency-regressions",
+      "args": {"percentilePath": ".roadmap/metaflow/performance/latency-percentiles.json", "baselinePath": ".roadmap/fidelity/benchmarks.json"},
+      "produces": [".roadmap/metaflow/performance/regression-report.json"],
+      "consumes": [".roadmap/metaflow/performance/latency-percentiles.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/performance/regression-report.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-4-identify-slow",
+      "desc": "Identify slow commands and breakdown by type",
+      "cmd": "roadmap internal analyze-slow-commands",
+      "args": {"latencyPath": ".roadmap/metaflow/performance/latency-data.json", "threshold": 1000},
+      "produces": [".roadmap/metaflow/performance/slow-commands.json"],
+      "consumes": [".roadmap/metaflow/performance/latency-data.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/performance/slow-commands.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-5-optimization-proposals",
+      "desc": "Generate optimization proposals",
+      "cmd": "roadmap internal propose-optimizations",
+      "args": {
+        "slowPath": ".roadmap/metaflow/performance/slow-commands.json",
+        "regressionPath": ".roadmap/metaflow/performance/regression-report.json"
+      },
+      "produces": [".roadmap/metaflow/performance/optimization-proposals.json"],
+      "consumes": [".roadmap/metaflow/performance/slow-commands.json", ".roadmap/metaflow/performance/regression-report.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/performance/optimization-proposals.json"}
+      ],
+      "render": {"required": true}
+    }
+  ]
+}

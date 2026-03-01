@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "verify-iteration-ready",
+  "desc": "Pre-execution composition: audit-recovery → state-coherence → performance check → readiness verdict",
+  "stageMin": 0,
+  "stageMax": 10,
+  "requiresAuthority": true,
+  "steps": [
+    {
+      "id": "step-1-run-audit-recovery",
+      "desc": "Execute audit-recovery-flow",
+      "cmd": "roadmap internal execute-flow",
+      "args": {"flowId": "audit-recovery-flow"},
+      "produces": [".roadmap/metaflow/recovery/recovery-report.json"],
+      "consumes": [],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/recovery/recovery-report.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-2-run-state-coherence",
+      "desc": "Execute state-coherence-flow",
+      "cmd": "roadmap internal execute-flow",
+      "args": {"flowId": "state-coherence-flow"},
+      "produces": [".roadmap/metaflow/coherence/coherence-report.json"],
+      "consumes": [".roadmap/metaflow/recovery/recovery-report.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/coherence/coherence-report.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-3-run-performance",
+      "desc": "Execute performance-hardening-flow",
+      "cmd": "roadmap internal execute-flow",
+      "args": {"flowId": "performance-hardening-flow"},
+      "produces": [".roadmap/metaflow/performance/optimization-proposals.json"],
+      "consumes": [".roadmap/metaflow/coherence/coherence-report.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/performance/optimization-proposals.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-4-readiness-verdict",
+      "desc": "Aggregate results and generate readiness verdict",
+      "cmd": "roadmap internal generate-readiness-verdict",
+      "args": {
+        "recoveryPath": ".roadmap/metaflow/recovery/recovery-report.json",
+        "coherencePath": ".roadmap/metaflow/coherence/coherence-report.json",
+        "performancePath": ".roadmap/metaflow/performance/optimization-proposals.json"
+      },
+      "produces": [".roadmap/metaflow/composition/readiness-verdict.json"],
+      "consumes": [".roadmap/metaflow/recovery/recovery-report.json", ".roadmap/metaflow/coherence/coherence-report.json", ".roadmap/metaflow/performance/optimization-proposals.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/composition/readiness-verdict.json"}
+      ],
+      "render": {"required": true, "template": "VERDICT: {{verdict.status}} - {{verdict.summary}}"}
+    }
+  ]
+}

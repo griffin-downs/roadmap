@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "version": "1.0.0",
-  "thresholds": { "latencyP95MaxMs": 5000, "toolCallInflationMax": 10, "orientChurnMax": 3 },
-  "requiredDetectors": ["RD-001","RD-002","RD-003","IR-001","IR-002","IR-003","IR-004","IR-005","PE-001","PE-002","MF-001","MF-002","MF-003","MF-004","MF-005"],
+  "thresholds": { "latencyP95MaxMs": 1500, "toolCallInflationMax": 2, "orientChurnMax": 1 },
+  "requiredDetectors": ["RD-001","RD-002","RD-003","IR-001","IR-002","IR-003","IR-004","IR-005","PE-001","PE-002","MF-001","MF-002","MF-003","MF-004","MF-005","MF-006","ST-001","ST-002","ST-003","ST-004","ST-005"],
   "requiredTerminalNodeId": "intent-metaflow-audit-required",
   "bindFields": ["treeSha","sessionIds","runId"]
 }
