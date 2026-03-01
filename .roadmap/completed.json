@@ -6096,9 +6096,9 @@
   },
   {
     "nodeId": "surf-layout-apply",
-    "completedAt": "2026-03-01T10:54:23.856Z",
+    "completedAt": "2026-03-01T10:54:34.964Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301105423",
+    "checkpointId": "cp-20260301105434",
     "validationChecks": [
       {
         "rule": "artifact-exists",
@@ -6106,7 +6106,7 @@
         "evidence": "artifact exists: src/lib/layout-apply.receipt.json"
       }
     ],
-    "gitSha": "824b46e780929bfdf6a855e130d3f3a93de75b7a",
-    "treeSha": "1f449dc825b1284059dfa7a8fb3a011d209d0ee2"
+    "gitSha": "9a0f42f94e4bc64e7daf45328a28354a118bc3df",
+    "treeSha": "9042c31c489fda9898b7ebf013b1a6ae0205a61c"
   }
 ]
