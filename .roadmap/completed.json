@@ -4917,5 +4917,25 @@
     ],
     "gitSha": "c27fa6fb6f4111a26b1c98481c46c385f6000fa8",
     "treeSha": "022584c197c3bb48fbc6457e3cdb0c5f0e4ec538"
+  },
+  {
+    "nodeId": "sgk-foundation",
+    "completedAt": "2026-03-01T09:05:06.285Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090506",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/run-manifest.ts"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/kernel-ext.ts"
+      }
+    ],
+    "gitSha": "4b4dd39580c2eae9bb97c7d9ea67d36d3d9015ba",
+    "treeSha": "e2134bf3a5113fbc9796b9a7ee6689f54e0bc1eb"
   }
 ]
