@@ -5888,5 +5888,33 @@
     ],
     "gitSha": "19e61d2141bd237438e5272d14c70bd0eaa8b5a1",
     "treeSha": "7f13376f10008db416815ce5dc8025380983874b"
+  },
+  {
+    "nodeId": "sgk-e2e",
+    "completedAt": "2026-03-01T09:41:51.225Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301094149",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: tests/sgk/e2e-run-flow.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "82fbcc67df69a72407ccdad1d76fd3fb9261d669",
+    "treeSha": "65fddf86308b7411fef3acce8effd086cd26b05c"
   }
 ]
