@@ -557,5 +557,545 @@
     ],
     "gitSha": "153cb277723b40a95bad85dc70f3d382fc68b5e9",
     "treeSha": "f7ed901cbceb73f1bd5030dafcfe0fd0b9bd66ee"
+  },
+  {
+    "nodeId": "iter-1-measure",
+    "completedAt": "2026-03-01T21:34:20.824Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213420",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-1/metrics.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-2-mine",
+    "completedAt": "2026-03-01T21:34:26.316Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213426",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-2/mining.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-2-audit",
+    "completedAt": "2026-03-01T21:34:26.605Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213426",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-2/audit.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-2-propose",
+    "completedAt": "2026-03-01T21:34:26.865Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213426",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-2/proposals.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-2-implement",
+    "completedAt": "2026-03-01T21:34:27.140Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213427",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-2/impl.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-2-measure",
+    "completedAt": "2026-03-01T21:34:27.381Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213427",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-2/metrics.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-3-mine",
+    "completedAt": "2026-03-01T21:34:27.656Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213427",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-3/mining.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-3-audit",
+    "completedAt": "2026-03-01T21:34:27.914Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213427",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-3/audit.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-3-propose",
+    "completedAt": "2026-03-01T21:34:28.197Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213428",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-3/proposals.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-3-implement",
+    "completedAt": "2026-03-01T21:34:28.450Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213428",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-3/impl.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-3-measure",
+    "completedAt": "2026-03-01T21:34:28.698Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213428",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-3/metrics.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-4-mine",
+    "completedAt": "2026-03-01T21:34:28.956Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213428",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-4/mining.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-4-audit",
+    "completedAt": "2026-03-01T21:34:29.206Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213429",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-4/audit.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-4-propose",
+    "completedAt": "2026-03-01T21:34:29.457Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213429",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-4/proposals.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-4-implement",
+    "completedAt": "2026-03-01T21:34:29.700Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213429",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-4/impl.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-4-measure",
+    "completedAt": "2026-03-01T21:34:29.942Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213429",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-4/metrics.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-5-mine",
+    "completedAt": "2026-03-01T21:34:30.184Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213430",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-5/mining.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-5-audit",
+    "completedAt": "2026-03-01T21:34:30.436Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213430",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-5/audit.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-5-propose",
+    "completedAt": "2026-03-01T21:34:30.695Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213430",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-5/proposals.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-5-implement",
+    "completedAt": "2026-03-01T21:34:30.959Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213430",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-5/impl.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-5-measure",
+    "completedAt": "2026-03-01T21:34:31.219Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213431",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-5/metrics.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-6-mine",
+    "completedAt": "2026-03-01T21:34:31.474Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213431",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-6/mining.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-6-audit",
+    "completedAt": "2026-03-01T21:34:31.724Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213431",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-6/audit.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-6-propose",
+    "completedAt": "2026-03-01T21:34:31.975Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213431",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-6/proposals.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-6-implement",
+    "completedAt": "2026-03-01T21:34:32.234Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213432",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-6/impl.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-6-measure",
+    "completedAt": "2026-03-01T21:34:32.489Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213432",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-6/metrics.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-7-mine",
+    "completedAt": "2026-03-01T21:34:32.728Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213432",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-7/mining.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-7-audit",
+    "completedAt": "2026-03-01T21:34:32.975Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213432",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-7/audit.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-7-propose",
+    "completedAt": "2026-03-01T21:34:33.252Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213433",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-7/proposals.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-7-implement",
+    "completedAt": "2026-03-01T21:34:33.494Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213433",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-7/impl.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-7-measure",
+    "completedAt": "2026-03-01T21:34:33.745Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213433",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-7/metrics.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-8-mine",
+    "completedAt": "2026-03-01T21:34:33.998Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213433",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-8/mining.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-8-audit",
+    "completedAt": "2026-03-01T21:34:34.262Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213434",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-8/audit.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-8-propose",
+    "completedAt": "2026-03-01T21:34:34.499Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213434",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-8/proposals.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-8-implement",
+    "completedAt": "2026-03-01T21:34:34.757Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213434",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-8/impl.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
+  },
+  {
+    "nodeId": "iter-8-measure",
+    "completedAt": "2026-03-01T21:34:35.008Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301213434",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-8/metrics.json"
+      }
+    ],
+    "gitSha": "b9d5bd2885fa6c024a228152fcc21c0a698084cb",
+    "treeSha": "00e310f58bcaf90aca19ca2a2cc00a42c303e187"
   }
 ]
