@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-03-01T14:40:00Z",
+  "scan_root": "src/lib",
+  "total_files": 108,
+  "files_over_400_lines": [
+    {
+      "path": "src/lib/intent-expansion.ts",
+      "lines": 841,
+      "over_by": 441,
+      "priority": "critical",
+      "suggested_split": ["detection.ts", "gaps.ts", "proposals.ts"]
+    },
+    {
+      "path": "src/lib/explore-helpers.ts",
+      "lines": 735,
+      "over_by": 335,
+      "priority": "critical",
+      "suggested_split": ["visibility.ts", "text.ts", "style.ts", "interactions.ts"]
+    },
+    {
+      "path": "src/lib/verify.ts",
+      "lines": 578,
+      "over_by": 178,
+      "priority": "high",
+      "suggested_split": ["validate-dag.ts", "validate-node.ts", "validate-batch.ts"]
+    },
+    {
+      "path": "src/lib/explore-interactions.ts",
+      "lines": 509,
+      "over_by": 109,
+      "priority": "high",
+      "suggested_split": ["click.ts", "type.ts", "drag.ts", "wait.ts"]
+    },
+    {
+      "path": "src/lib/cluster-solver.ts",
+      "lines": 479,
+      "over_by": 79,
+      "priority": "high",
+      "suggested_split": ["algorithm.ts", "cost-model.ts"]
+    },
+    {
+      "path": "src/lib/compile-prompts.ts",
+      "lines": 415,
+      "over_by": 15,
+      "priority": "medium",
+      "suggested_split": ["system-prompt.ts", "context-prompt.ts"]
+    }
+  ],
+  "files_with_metadata_suffix": [
+    "checkpoint.schema.ts",
+    "git-state.schema.ts",
+    "orient-schema.ts",
+    "profile-schema.ts",
+    "project-metadata.schema.ts",
+    "transcript-schema.ts",
+    "layout-apply.receipt.json"
+  ],
+  "summary": {
+    "total_lines_in_lib": 24500,
+    "average_lines_per_file": 226,
+    "median_lines_per_file": 180,
+    "files_over_400": 6,
+    "files_over_300": 12,
+    "urgency": "6 files need splitting, total overflow: 1057 lines"
+  }
+}
