@@ -101,6 +101,21 @@ describe('CLI Integration Suite', () => {
         expect(env.error).toBeDefined();
       }
     });
+
+    it('orient P50 latency guard < 300ms', () => {
+      const durations: number[] = [];
+      for (let i = 0; i < 10; i++) {
+        const result = runCli(`orient --note "perf-test-${i}"`);
+        if (result.durationMs === undefined) {
+          throw new Error(`durationMs not set for run ${i}`);
+        }
+        durations.push(result.durationMs);
+      }
+      durations.sort((a, b) => a - b);
+      const p50 = durations[4];
+      console.log(`P50 latency: ${p50}ms`);
+      expect(p50).toBeLessThan(300);
+    });
   });
 
   // --- chart ---
