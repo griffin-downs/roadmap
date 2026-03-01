@@ -1,0 +1,39 @@
+{
+  "report": "cli-integration-coverage",
+  "generatedAt": "2026-03-01T21:49:00Z",
+  "testFile": "tests/cli/integration.test.ts",
+  "totalTests": 26,
+  "passed": 26,
+  "failed": 0,
+  "commandsCovered": [
+    "orient",
+    "orient --check",
+    "chart",
+    "show",
+    "claim --list",
+    "trail --last",
+    "help",
+    "validate (single node)",
+    "parallel",
+    "retire --list",
+    "diff"
+  ],
+  "scenariosCovered": {
+    "envelopeSchema": 4,
+    "errorHandling": 3,
+    "concurrency": 1,
+    "metaflowInstrumentation": 4,
+    "crossCommandWorkflow": 2,
+    "commandSpecific": 12
+  },
+  "crossCuttingConcerns": [
+    "JSON envelope consistency across all commands",
+    "schema_version, ok, cmd, repoRoot present on every envelope",
+    "Error envelopes on unknown commands and missing flags",
+    "Concurrent orient calls do not corrupt state",
+    "Metaflow CommandInstrument records real CLI output",
+    "Mining persistence with summary statistics",
+    "End-to-end orient -> chart -> show -> validate workflow",
+    "Orient data consistent with chart render"
+  ]
+}

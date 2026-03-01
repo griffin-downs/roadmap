@@ -1266,5 +1266,36 @@
     ],
     "gitSha": "ecf0b6983cd3311c5eb11f21782db13a2a11f020",
     "treeSha": "d76215c31cd99477775d01313208386a2beb48be"
+  },
+  {
+    "nodeId": "metaflow-instrumentation",
+    "completedAt": "2026-03-01T21:46:38.316Z",
+    "owner": "claims-handler",
+    "checkpointId": "cp-20260301214637",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "all artifacts exist: src/lib/metaflow/command-instrumentation.ts, tests/cli/metaflow-integration.test.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm test -- metaflow-integration.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm test -- metaflow-integration.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "3d6bc9d8c7e5cdf02eaa40d5de12d0c51ec5a9f04f4aed03010ed6a1300a8860",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/metaflow-instrumentation/mm8a5dum-fhwmdf/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "08580e73ec9a5835a366d7d5e922ab82f40f6592",
+    "treeSha": "c8ad56d93afb3853f43d7094e9fe6c96bd6a7bc7"
   }
 ]
