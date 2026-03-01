@@ -5843,10 +5843,30 @@
       {
         "rule": "shell",
         "passed": true,
-        "evidence": "npx vitest run test/receipt-first.test.ts \u2014 16/16 passing"
+        "evidence": "npx vitest run test/receipt-first.test.ts — 16/16 passing"
       }
     ],
     "gitSha": "b37dc27750fc0b9beeb77f4cfd0b14e757e33463",
     "treeSha": "850078d88c2d883e2f7602e0a0d369ec831af366"
+  },
+  {
+    "nodeId": "sgk-mine-audit",
+    "completedAt": "2026-03-01T09:35:05.656Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301093505",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/mine.ts"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/audit.ts"
+      }
+    ],
+    "gitSha": "6247c82e2adb696023cc2391995978bca98f2d7e",
+    "treeSha": "108bf20430120a7c2b67629ed5b7726a94908ea4"
   }
 ]
