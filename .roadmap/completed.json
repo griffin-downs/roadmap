@@ -1840,5 +1840,20 @@
     ],
     "gitSha": "1556fc2cd131c26c6881aa7155274a229f8fe3e9",
     "treeSha": "19aed6688dbc325e437c10cf43d8af9992fe0f97"
+  },
+  {
+    "nodeId": "p2-init",
+    "completedAt": "2026-03-01T23:56:40.432Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301235640",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: p2-init.marker"
+      }
+    ],
+    "gitSha": "31e96d840361ecbe63789c18ce6646de7f311e9a",
+    "treeSha": "74af68eca55e7791be0c4087ddccbf89131e15a7"
   }
 ]
