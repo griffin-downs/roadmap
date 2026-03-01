@@ -327,6 +327,11 @@
       ],
       "validate": [
         {
+          "type": "intent",
+          "statement": "Surface consolidated: CLI canonical, audit/archive complete, vitest <15s",
+          "expandOnFail": true
+        },
+        {
           "type": "launch-check"
         }
       ],
