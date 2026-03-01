@@ -3241,5 +3241,51 @@
     ],
     "gitSha": "18b2cfdbcab67f74226119c523a6c2f94acafabe",
     "treeSha": "cc8e9b8d48609917c6b3793885311957573bd141"
+  },
+  {
+    "nodeId": "mf-guided-ask-answer",
+    "completedAt": "2026-03-01T00:01:12.598Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301000111",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "788d57daca1dd5b27af8b9a97b328884c30f27ae",
+    "treeSha": "593f190744e8ad12f9a9e56009e35996730512d9"
+  },
+  {
+    "nodeId": "mf-wrap-subcommand",
+    "completedAt": "2026-03-01T00:02:03.553Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301000202",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "a4619b55c1d195f5a19d6e478b417ea2ac22dd5d",
+    "treeSha": "1f3471617cf6bb8797a730fc5692e18f3cd66c0d"
   }
 ]
