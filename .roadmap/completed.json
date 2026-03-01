@@ -6058,5 +6058,20 @@
     ],
     "gitSha": "a7f5051c180746b160cc07c6476a9048fb27f8c4",
     "treeSha": "345a6fb8c835374b94a9d7f82a9fed63298d7ad8"
+  },
+  {
+    "nodeId": "surf-layout-plan",
+    "completedAt": "2026-03-01T10:51:57.907Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301105157",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/audit/layout-plan.ts"
+      }
+    ],
+    "gitSha": "c755179a9dbdaa02d35ab49dfc47894905164108",
+    "treeSha": "289140292cebd09964f9434f251481d768e3ae72"
   }
 ]
