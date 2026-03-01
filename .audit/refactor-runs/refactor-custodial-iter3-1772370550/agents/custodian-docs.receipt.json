@@ -1,0 +1,46 @@
+{
+  "agentId": "custodian-docs",
+  "phase": "iteration-3",
+  "focus": "documentation alignment post-refactoring",
+  "findings": [
+    {
+      "kind": "update-api-docs",
+      "title": "Update API docs to reflect src/lib/schema.ts consolidation",
+      "evidence": [
+        {"path": "docs/API.md", "symbols": ["ValidatorRule"], "lines": [45, 67]}
+      ],
+      "proposal": {
+        "action": "update",
+        "target": "docs/API.md",
+        "changes": "Single import path (schema.ts), remove deprecated references"
+      },
+      "impact": {"risk": "low", "effortHours": 1, "benefit": ["correctness"]},
+      "acceptance": ["API docs match current code"]
+    },
+    {
+      "kind": "create-module-guide",
+      "title": "Create MODULE-STRUCTURE.md: guide to new src/lib/internal organization",
+      "evidence": [{"path": "src/lib/", "lines": []}],
+      "proposal": {
+        "action": "create",
+        "file": "docs/MODULE-STRUCTURE.md",
+        "content": "Public vs internal APIs, import patterns, module responsibilities"
+      },
+      "impact": {"risk": "low", "effortHours": 1.5, "benefit": ["onboarding"]},
+      "acceptance": ["Module structure documented + examples"]
+    },
+    {
+      "kind": "roadmap-sync",
+      "title": "Update roadmap.ts comments to reflect v0.7.0+ architecture",
+      "evidence": [{"path": "roadmap.ts", "lines": [1, 12, 34]}],
+      "proposal": {
+        "action": "update",
+        "target": "roadmap.ts",
+        "comments": "Reflect schema consolidation, CLI registry, test organization"
+      },
+      "impact": {"risk": "low", "effortHours": 0.5, "benefit": ["clarity"]},
+      "acceptance": ["Comments reflect current architecture"]
+    }
+  ],
+  "valueScore": 44
+}
