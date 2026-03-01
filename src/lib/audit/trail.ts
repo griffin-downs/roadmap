@@ -1,5 +1,5 @@
-// @module audit
-// @exports AuditTrail
+// @module audit/trail
+// @exports AuditTrail, createAuditTrail
 // @types AuditEntry, AuditSession
 // @entry roadmap/recovery
 

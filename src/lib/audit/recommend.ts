@@ -1,4 +1,4 @@
-// @module audit-recommend
+// @module audit/recommend
 // @exports runAuditRecommend, AuditRecommendation, AuditRecommendResult, AuditRecommendReceipt
 // @types AuditRecommendation, AuditRecommendResult, AuditRecommendReceipt
 // @entry roadmap
@@ -6,9 +6,9 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import type { TranscriptSession } from './transcript-schema.ts';
-import { AUDIT_DIR, isTranscriptSession } from './transcript-schema.ts';
-import { computeFriction } from './friction-engine.ts';
+import type { TranscriptSession } from '../transcript-schema.ts';
+import { AUDIT_DIR, isTranscriptSession } from '../transcript-schema.ts';
+import { computeFriction } from '../friction-engine.ts';
 
 export interface AuditRecommendation {
   type: 'kernel-modification' | 'new-spec-node' | 'index-isolation' | 'env-var-deprecation' | 'high-friction-pattern';

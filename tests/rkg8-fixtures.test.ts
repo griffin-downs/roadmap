@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { isTranscriptSession, type TranscriptSession } from '../src/lib/transcript-schema.ts';
-import { parseTranscript } from '../src/lib/audit-ingest.ts';
+import { parseTranscript } from '../src/lib/audit/ingest.ts';
 import { computeFriction, FRICTION_WEIGHTS, type FrictionMetrics } from '../src/lib/friction-engine.ts';
-import { runAuditRecommend, type AuditRecommendation } from '../src/lib/audit-recommend.ts';
+import { runAuditRecommend, type AuditRecommendation } from '../src/lib/audit/recommend.ts';
 import { detectUnaccountedCommits, isPendingCertify, certifyAutoIntake } from '../src/lib/auto-intake.ts';
 import { detectGovernanceBreach, emitGovernanceBreachReceipt, GovernanceBreachDetector } from '../src/lib/governance-breach.ts';
 import { checkKernelEnforcement } from '../src/lib/kernel-enforcement.ts';

@@ -34,8 +34,8 @@ export { crossOrient } from './lib/cross-orient.ts';
 export type { CrossOrientation, SiblingStatus } from './lib/cross-orient.ts';
 
 // Git library
-export { repoInfo, artifactAtRef, archivedFiles, fileHistory, restore, stageAndCommit, createBranch, trackedFiles, isTracked, shortHash, isClean } from './lib/git.ts';
-export type { RepoInfo, FileHistory } from './lib/git.ts';
+export { repoInfo, artifactAtRef, archivedFiles, fileHistory, restore, stageAndCommit, createBranch, trackedFiles, isTracked, shortHash, isClean } from './lib/utils/git/git.ts';
+export type { RepoInfo, FileHistory } from './lib/utils/git/git.ts';
 
 // Typed errors
 export { RoadmapError } from './errors.ts';
@@ -43,7 +43,7 @@ export type { ErrorCode, RoadmapErrorContext } from './errors.ts';
 
 // Recovery + execution
 export { CheckpointManager } from './lib/checkpoint.ts';
-export { AuditTrail } from './lib/audit.ts';
+export { AuditTrail } from './lib/audit/trail.ts';
 export { computeTrailMetrics, loadTrailEntries } from './lib/trail-metrics.ts';
 export type { TrailMetrics, BatchMetrics, NodeMetrics, TrailEntry } from './lib/trail-metrics.ts';
 
@@ -123,7 +123,7 @@ export type {
   CompatibilityResult,
 } from './lib/versioning.schema.ts';
 
-export type { AuditEntry, AuditSession } from './lib/audit.ts';
+export type { AuditEntry, AuditSession } from './lib/audit/trail.ts';
 
 export type {
   Brief,

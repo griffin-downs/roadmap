@@ -6,7 +6,7 @@
  */
 
 export { CheckpointManager } from './lib/checkpoint.ts';
-export { AuditTrail } from './lib/audit.ts';
+export { AuditTrail } from './lib/audit/trail.ts';
 
 export type { GitState, Checkpoint } from './lib/checkpoint.schema.ts';
-export type { AuditEntry, AuditSession } from './lib/audit.ts';
+export type { AuditEntry, AuditSession } from './lib/audit/trail.ts';

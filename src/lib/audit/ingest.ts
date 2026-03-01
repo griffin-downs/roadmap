@@ -1,12 +1,12 @@
-// @module audit-ingest
+// @module audit/ingest
 // @exports runAuditIngest, parseTranscript, AuditIngestOptions
 // @entry roadmap
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import type { TranscriptSession, ToolCall, RetryEvent, ContaminationEvent, OrphanedAttempt, BypassFlag, EnvVarUsage } from './transcript-schema.ts';
-import { AUDIT_DIR, isToolCall } from './transcript-schema.ts';
+import type { TranscriptSession, ToolCall, RetryEvent, ContaminationEvent, OrphanedAttempt, BypassFlag, EnvVarUsage } from '../transcript-schema.ts';
+import { AUDIT_DIR, isToolCall } from '../transcript-schema.ts';
 
 export interface AuditIngestOptions {
   transcriptPath: string;
