@@ -4615,5 +4615,31 @@
     ],
     "gitSha": "c796c6d59246196af20cac5cf8203c0cd98a5401",
     "treeSha": "f2bf312a43de5d9be839f9133a976ed45ceb18e7"
+  },
+  {
+    "nodeId": "rkg3-strategy-ab",
+    "completedAt": "2026-03-01T09:04:26.421Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090424",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": false,
+        "exitCode": 2,
+        "stdoutSha": "31996fbcd648c7f0a9276474d559779a754283915db7e22688d9d570166982fb",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rkg3-strategy-ab/mm7ix6wd-ct0n1j/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "848bb0b2d43e058818b934bada2ca3ebfb488d0b",
+    "treeSha": "ac433a2718b6939a9bac23feeda4cb03cd862e44"
   }
 ]
