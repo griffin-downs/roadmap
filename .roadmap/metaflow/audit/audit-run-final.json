@@ -3,7 +3,7 @@
   "runId": "metaflows-p1",
   "treeSha": "unknown",
   "sessionIds": [],
-  "computedAt": "2026-03-01T20:23:08.974Z",
+  "computedAt": "2026-03-01T20:26:04.479Z",
   "passed": false,
   "detectorResults": [
     {
@@ -34,7 +34,7 @@
       "code": "IR-001",
       "passed": false,
       "evidence": [
-        "PLAN_SELECTED headSha afdf5874028943b0d94c28ad2c5156b7a793d0c98ca9b2d9bc781c5e8142c432 != HEAD 2722ccb7537212dfe9a98a77de62fdf401732cc6"
+        "PLAN_SELECTED headSha afdf5874028943b0d94c28ad2c5156b7a793d0c98ca9b2d9bc781c5e8142c432 != HEAD be16c9a2551ea72946bb39c1151972fc04fb23af"
       ],
       "fix": [
         "Re-run plan-select after latest commits"
@@ -82,5 +82,11 @@
       ],
       "fix": []
     }
-  ]
+  ],
+  "frictionFindings": null,
+  "selfLearningPatterns": {
+    "orientChurn": 0,
+    "validateLoops": 0,
+    "askChurn": 0
+  }
 }

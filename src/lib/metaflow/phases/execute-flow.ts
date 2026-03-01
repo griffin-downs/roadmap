@@ -5,7 +5,7 @@
 // Execute a flow step-by-step. Dispatches to handlers based on step.cmd.
 // Each handler reads inputs from step.consumes, produces step.produces artifacts.
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, statSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 import type { Flow, FlowStep } from "./flow-schema.ts";
@@ -98,21 +98,76 @@ async function executeExternalStep(repoRoot: string, step: FlowStep) {
   const subcommand = parts[2]; // e.g., "audit" or "mine"
 
   if (subcommand === "audit") {
-    // Real audit: call actual audit infrastructure
+    // Real audit: call actual audit infrastructure + friction detection
     try {
       const { cmdMfAudit } = await import(
         "../audit/cli.ts"
       ) as typeof import("../audit/cli.ts");
       const result = cmdMfAudit("metaflows-p1", { base: repoRoot });
 
+      // Also run friction detectors to identify self-learning patterns
+      let frictionFindings: any[] = [];
+      try {
+        const {
+          detectOrientChurn,
+          detectValidateLoop,
+          detectAskChurn,
+          detectEnforcementRetry,
+        } = await import("../miner.ts") as typeof import("../miner.ts");
+
+        // Load receipts from metaflow runs
+        const runsDir = join(repoRoot, ".roadmap", "metaflow", "runs");
+        const receipts: any[] = [];
+        if (existsSync(runsDir)) {
+          try {
+            for (const f of readdirSync(runsDir)) {
+              const receiptFile = join(runsDir, f, "receipts.json");
+              if (existsSync(receiptFile)) {
+                const data = JSON.parse(readFileSync(receiptFile, "utf-8"));
+                if (Array.isArray(data)) receipts.push(...data);
+              }
+            }
+          } catch {
+            /* no receipts available */
+          }
+        }
+
+        // Run friction detectors
+        frictionFindings = [
+          ...detectOrientChurn(receipts),
+          ...detectValidateLoop(receipts),
+          ...detectAskChurn(receipts),
+        ];
+      } catch {
+        /* friction detection optional */
+      }
+
       const auditDir = join(repoRoot, ".roadmap", "metaflow", "audit");
       mkdirSync(auditDir, { recursive: true });
 
       const auditFile =
         step.produces[0] || ".roadmap/metaflow/audit/audit-run.json";
+
+      // Combine audit results with friction findings for self-learning
+      const auditWithFriction = {
+        ...result.data,
+        frictionFindings: frictionFindings.length > 0 ? frictionFindings : null,
+        selfLearningPatterns: {
+          orientChurn: frictionFindings.filter((f) =>
+            f.category?.includes("orient")
+          ).length,
+          validateLoops: frictionFindings.filter((f) =>
+            f.category?.includes("validate")
+          ).length,
+          askChurn: frictionFindings.filter((f) =>
+            f.category?.includes("ask")
+          ).length,
+        },
+      };
+
       writeFileSync(
         join(repoRoot, auditFile),
-        JSON.stringify(result.data, null, 2)
+        JSON.stringify(auditWithFriction, null, 2)
       );
     } catch (e) {
       // Fallback: create audit report from scratch
@@ -129,6 +184,7 @@ async function executeExternalStep(repoRoot: string, step: FlowStep) {
           { detector: "state-recovery", status: "passed", violations: 0 },
           { detector: "state-enforcement", status: "passed", violations: 0 },
         ],
+        frictionFindings: null,
       };
       writeFileSync(
         join(repoRoot, auditFile),
