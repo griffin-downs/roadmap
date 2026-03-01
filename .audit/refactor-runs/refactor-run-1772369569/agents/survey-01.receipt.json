@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "agentId": "survey-01",
+  "repo": { "headSha": "1e97a715b9917245a535eb472f4888a3a6ae8fb0", "repoRoot": "/home/griffin/src/roadmap" },
+  "scope": { "directories": ["src/lib", "src/protocol", "src/agent"], "exclude": ["dist", "node_modules"] },
+  "findings": [
+    {
+      "kind": "move",
+      "title": "src/lib/io imports break lib purity",
+      "evidence": [{ "path": "src/lib/audit/audit-engine.ts", "symbols": ["readFileSync"], "lines": [23, 45] }],
+      "proposal": { "action": "move", "from": "src/lib/audit/audit-engine.ts", "to": "src/io/audit-engine.ts" },
+      "impact": { "risk": "low", "effortHours": 2, "benefit": ["clarity", "testSpeed"] },
+      "dependencies": [],
+      "acceptance": ["No fs imports in src/lib/**"]
+    },
+    {
+      "kind": "consolidate",
+      "title": "Audit schema duplication across files",
+      "evidence": [{ "path": "src/lib/audit/audit-schema.ts", "symbols": ["ValidatorRule"], "lines": [12, 34, 67] }],
+      "proposal": { "action": "consolidate", "targets": ["audit-schema.ts", "perf-schema.ts"], "into": "src/lib/schema.ts" },
+      "impact": { "risk": "med", "effortHours": 3, "benefit": ["consolidation", "testSpeed"] },
+      "dependencies": [],
+      "acceptance": ["Single schema module", "All validators in one file"]
+    }
+  ],
+  "metrics": { "duplicationClusters": 2, "suspectEntryPoints": 1, "testHotspots": [] }
+}

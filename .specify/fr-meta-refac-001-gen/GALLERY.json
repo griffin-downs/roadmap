@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "specId": "fr-meta-refac-001-gen",
+  "strategies": [
+    { "id": "cluster-first", "name": "High-Value Clusters First", "description": "Execute by score" },
+    { "id": "risk-first", "name": "Risky Changes First", "description": "De-risk early" }
+  ]
+}

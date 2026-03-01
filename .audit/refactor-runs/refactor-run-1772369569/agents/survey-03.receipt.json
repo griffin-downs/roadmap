@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "agentId": "survey-03",
+  "repo": { "headSha": "1e97a715b9917245a535eb472f4888a3a6ae8fb0", "repoRoot": "/home/griffin/src/roadmap" },
+  "scope": { "directories": ["docs", "scripts"], "exclude": ["dist", "node_modules"] },
+  "findings": [
+    {
+      "kind": "consolidate",
+      "title": "Schema duplication: audit vs perf",
+      "evidence": [{ "path": "src/lib/audit/audit-schema.ts", "symbols": ["ValidatorRule"], "lines": [12] }],
+      "proposal": { "action": "consolidate", "targets": ["audit-schema", "perf-schema"], "into": "src/lib/schema" },
+      "impact": { "risk": "med", "effortHours": 3, "benefit": ["consolidation"] },
+      "dependencies": [],
+      "acceptance": ["Single unified schema module"]
+    },
+    {
+      "kind": "CLI-wrap",
+      "title": "scripts/expand-*.ts should be CLI-wrapped",
+      "evidence": [{ "path": "scripts/expand-dag-candidate.ts", "symbols": ["main"], "lines": [1] }],
+      "proposal": { "action": "wrap-cli", "command": "expand", "from": "scripts/expand-*.ts" },
+      "impact": { "risk": "low", "effortHours": 2, "benefit": ["surfaceReduction", "usability"] },
+      "dependencies": [],
+      "acceptance": ["roadmap expand command works for all scripts"]
+    }
+  ],
+  "metrics": { "duplicationClusters": 1, "suspectEntryPoints": 3, "testHotspots": [] }
+}

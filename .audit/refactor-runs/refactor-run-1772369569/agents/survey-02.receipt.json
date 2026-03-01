@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "agentId": "survey-02",
+  "repo": { "headSha": "1e97a715b9917245a535eb472f4888a3a6ae8fb0", "repoRoot": "/home/griffin/src/roadmap" },
+  "scope": { "directories": ["bin", "tests"], "exclude": ["dist", "node_modules"] },
+  "findings": [
+    {
+      "kind": "wrap-cli",
+      "title": "bin/cli.ts missing audit subcommands",
+      "evidence": [{ "path": "bin/cli.ts", "symbols": ["registerCommand"], "lines": [45] }],
+      "proposal": { "action": "wrap-cli", "command": "audit", "target": "src/cli/commands/audit.ts" },
+      "impact": { "risk": "low", "effortHours": 1, "benefit": ["surfaceReduction", "usability"] },
+      "dependencies": ["surf-audit-cli exists"],
+      "acceptance": ["CLI auditsurface command works"]
+    },
+    {
+      "kind": "test-hotspot",
+      "title": "tests/integration slow on large graphs",
+      "evidence": [{ "path": "tests/integration.test.ts", "symbols": ["slowCase"], "lines": [234] }],
+      "proposal": { "action": "split", "from": "tests/integration.test.ts", "to": ["tests/integration-fast.test.ts", "tests/integration-slow.test.ts"] },
+      "impact": { "risk": "med", "effortHours": 2, "benefit": ["testSpeed", "clarity"] },
+      "dependencies": [],
+      "acceptance": ["vitest <15s for non-slow tests"]
+    }
+  ],
+  "metrics": { "duplicationClusters": 0, "suspectEntryPoints": 2, "testHotspots": ["tests/integration.test.ts::slowCase"] }
+}
