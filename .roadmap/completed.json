@@ -3914,5 +3914,31 @@
     ],
     "gitSha": "a95385cb7507225b7c40e7173c6f0bdd3ff02b9a",
     "treeSha": "6f656115233bd99c6e6446625a6ec6f069b92c07"
+  },
+  {
+    "nodeId": "rm-import-audit-tail-gate",
+    "completedAt": "2026-03-01T01:29:51.213Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301012949",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/import/audit-tail-gate.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/import/audit-tail-gate.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "109cc1e3226c60b050c003cb2bf9cf6ca71a59ee28f1adb7d2f2b47338b93280",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-import-audit-tail-gate/mm72ol7h-7p4ai8/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "8fb6446b817490b6848acfb8f9dfcde019ff7fe8",
+    "treeSha": "d2788321f531ed47f74a468de0660e419663d97d"
   }
 ]
