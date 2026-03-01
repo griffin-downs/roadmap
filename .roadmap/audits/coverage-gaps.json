@@ -1,0 +1,14 @@
+[
+  {
+    "area": "concurrent-stress-testing",
+    "priority": "high"
+  },
+  {
+    "area": "error-recovery-paths",
+    "priority": "medium"
+  },
+  {
+    "area": "large-dag-performance",
+    "priority": "medium"
+  }
+]

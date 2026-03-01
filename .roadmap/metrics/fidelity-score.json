@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-03-01T17:49:58.817Z",
+  "fidelity_pct": 82,
+  "components": {
+    "command_success_rate_pct": 100,
+    "spec_conformance_pct": 95,
+    "repairs_applied": 1,
+    "test_coverage_pct": 75
+  },
+  "status": "healthy",
+  "trend": "improving"
+}

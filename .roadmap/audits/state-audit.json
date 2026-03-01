@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-03-01T17:49:00.824Z",
+  "total_checks": 4,
+  "checks": {
+    "head_json": {
+      "exists": true,
+      "path": ".roadmap/head.json"
+    },
+    "completed_json": {
+      "exists": true,
+      "path": ".roadmap/completed.json"
+    },
+    "claims_json": {
+      "exists": false,
+      "path": ".roadmap/claims.json"
+    },
+    "trail_jsonl": {
+      "exists": true,
+      "path": ".roadmap/trail.jsonl"
+    }
+  },
+  "status": "complete"
+}

@@ -1,0 +1,327 @@
+[
+  {
+    "type": "orphaned_completion",
+    "nodeId": "init-governance",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "evidence-schema",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "claim-renderer",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "evidence-collector",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "terminal-intent-evidence-binding",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "metaloop-evidence-wiring",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "roadmap-verify-invariant",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "intent-evidence-kernel-active",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "audit-directory-structure",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "audit-file-sizes",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "plan-reorganization",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "organize-claims-domain",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "organize-metaloop-domain",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "organize-evidence-domain",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "reorganize-core-layer",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "organize-audit-domain",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "organize-intent-domain",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "reorganize-utils-layer",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "reorganize-protocol-layer",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "verify-structure",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-dag-subsystem",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-file-subsystem",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-import-subsystem",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-completion-subsystem",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-validation-subsystem",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-intent-subsystem",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "disconnect-aggregator",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-metric-constraints",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "auto-repair-file-organization",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "cli-detect-disconnects",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "repair-execution-engine",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-intent-convergence-gap",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "repair-approval-gates",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "cli-repair-interactive",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "detector-pattern-learning",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "repair-validators",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "cli-repair-auto",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "preventive-gates",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "repair-history-log",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "cli-repair-audit",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "disconnect-repair-fully-integrated",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "intent-metaflow-audit-disconnected-systems-repair",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "sk-directory-schema",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "sk-validation-rules",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "agent-brief-generator",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "directory-migration-helper",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "tests-sk-validation",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "import-format-validation",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "agent-brief-template",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "cli-spec-init",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "roadmap-compile-brief-wiring",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "tests-sk-brief-generator",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "workflow-guide-spec-kit",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "tests-sk-workflow-e2e",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "workflow-guide-integration",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "sk-integration-validation",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "intent-metaflow-audit-fr-sk-integrate",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "audit-exit-codes",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "concurrent-claims-handler",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "state-corruption-detection",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "validate-json-output",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "metaflow-instrumentation",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "integration-test-suite",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "dogfood-on-roadmap",
+    "action": "cleanup"
+  },
+  {
+    "type": "orphaned_completion",
+    "nodeId": "hardening-report",
+    "action": "cleanup"
+  }
+]

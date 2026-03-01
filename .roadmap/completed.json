@@ -980,12 +980,111 @@
     "treeSha": "auto"
   },
   {
-    "nodeId": "term",
-    "completedAt": "2026-03-01T17:45:31.683Z",
+    "nodeId": "state-audit",
+    "completedAt": "2026-03-01T17:49:06.880Z",
     "owner": "griffin",
-    "checkpointId": "cp-cli-final",
+    "checkpointId": "cp-custodial-audits",
     "validationChecks": [],
-    "gitSha": "160f7ed9833fbb4eb912d56b85383eb38fbd854d",
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "coverage-analysis",
+    "completedAt": "2026-03-01T17:49:06.880Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-audits",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "performance-profile",
+    "completedAt": "2026-03-01T17:49:06.880Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-audits",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "spec-conformance-scan",
+    "completedAt": "2026-03-01T17:49:06.880Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-audits",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "consistency-check",
+    "completedAt": "2026-03-01T17:49:22.462Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-l2",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "mining-aggregation",
+    "completedAt": "2026-03-01T17:49:22.462Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-l2",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "improvement-proposals",
+    "completedAt": "2026-03-01T17:49:36.901Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-proposals",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "auto-repairs",
+    "completedAt": "2026-03-01T17:49:51.103Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-repairs",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "fidelity-benchmark",
+    "completedAt": "2026-03-01T17:50:08.310Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-iter",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "iteration-report",
+    "completedAt": "2026-03-01T17:50:08.310Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-iter",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "loop-decision",
+    "completedAt": "2026-03-01T17:50:18.014Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-complete",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
+    "treeSha": "auto"
+  },
+  {
+    "nodeId": "term",
+    "completedAt": "2026-03-01T17:50:18.014Z",
+    "owner": "griffin",
+    "checkpointId": "cp-custodial-complete",
+    "validationChecks": [],
+    "gitSha": "9f20c57462a13f048c4c709614420f7a0ec59c0f",
     "treeSha": "auto"
   }
 ]

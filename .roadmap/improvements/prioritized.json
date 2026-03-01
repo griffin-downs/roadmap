@@ -1,0 +1,60 @@
+[
+  {
+    "id": "p-002",
+    "title": "Add concurrent stress test coverage",
+    "risk": "medium",
+    "effort": "medium",
+    "impact": "high",
+    "description": "Identified coverage gap in concurrent-claims handling. Add stress tests.",
+    "action": {
+      "type": "create_test",
+      "path": "tests/concurrent-stress.test.ts",
+      "scope": "concurrent claims under load"
+    },
+    "priority_score": null
+  },
+  {
+    "id": "p-003",
+    "title": "Add error recovery path tests",
+    "risk": "low",
+    "effort": "medium",
+    "impact": "medium",
+    "description": "Identified gap in error recovery validation. Add tests for recovery paths.",
+    "action": {
+      "type": "create_test",
+      "path": "tests/error-recovery.test.ts",
+      "scope": "error handling and recovery"
+    },
+    "priority_score": null
+  },
+  {
+    "id": "p-004",
+    "title": "Optimize command latency for critical paths",
+    "risk": "medium",
+    "effort": "medium",
+    "impact": "medium",
+    "description": "Commands averaging 671ms. Profile and optimize critical paths.",
+    "action": {
+      "type": "profile_and_optimize",
+      "commands": [
+        "orient",
+        "chart"
+      ]
+    },
+    "priority_score": null
+  },
+  {
+    "id": "p-005",
+    "title": "Establish mining data retention policy",
+    "risk": "low",
+    "effort": "low",
+    "impact": "medium",
+    "description": "Archive old mining runs to prevent disk bloat. Set 30-day retention.",
+    "action": {
+      "type": "create_policy",
+      "path": ".roadmap/policies/mining-retention.json",
+      "ttl_days": 30
+    },
+    "priority_score": null
+  }
+]

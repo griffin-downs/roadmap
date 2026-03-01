@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-03-01T17:49:46.694Z",
+  "steps": [
+    {
+      "id": "p-005",
+      "action": "delete",
+      "path": ".roadmap/policies/mining-retention.json"
+    }
+  ]
+}
