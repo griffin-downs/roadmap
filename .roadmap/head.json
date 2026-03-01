@@ -59,7 +59,8 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists"
+          "type": "artifact-exists",
+          "target": "src/lib/perf/perf-schema.ts"
         }
       ],
       "idempotent": true
@@ -95,7 +96,8 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists"
+          "type": "artifact-exists",
+          "path": "src/lib/audit/layout-plan.ts"
         }
       ],
       "idempotent": true
