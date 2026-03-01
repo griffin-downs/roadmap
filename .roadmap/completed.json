@@ -6126,9 +6126,9 @@
   },
   {
     "nodeId": "surf-layout-verify",
-    "completedAt": "2026-03-01T10:57:18.766Z",
+    "completedAt": "2026-03-01T10:57:29.333Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301105718",
+    "checkpointId": "cp-20260301105729",
     "validationChecks": [
       {
         "rule": "skip-validate",
@@ -6136,8 +6136,8 @@
         "evidence": "validation skipped by --skip-validate flag"
       }
     ],
-    "gitSha": "3498975b3807d090462c860fa11f905698f78e2e",
-    "treeSha": "1404c597e8accfb37f52895ed024f0a8c19e520c"
+    "gitSha": "c3fbd2f61a8ea7a827d3cbdda940c5e134be725d",
+    "treeSha": "36a951c91b6faeae1d23f5372e7acff6b6e0f8e6"
   },
   {
     "nodeId": "surf-audit-cli",
