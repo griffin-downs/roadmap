@@ -669,21 +669,6 @@
     "treeSha": "f8c160103e32f72ebdf79a37e44dfa292ecbcc2b"
   },
   {
-    "nodeId": "term",
-    "completedAt": "2026-03-01T16:24:48.543Z",
-    "owner": "griffin",
-    "checkpointId": "cp-20260301162448",
-    "validationChecks": [
-      {
-        "rule": "spec-conformance",
-        "passed": true,
-        "evidence": "spec conformance: stories [] found in .specify/disconnected-systems-repair.md"
-      }
-    ],
-    "gitSha": "670e1ecc190a9015714af042012a9e906e5780ab",
-    "treeSha": "ad22dd335f1c6edc4a494316fccfdbb645cbccc0"
-  },
-  {
     "nodeId": "sk-directory-schema",
     "completedAt": "2026-03-01T17:20:18.125Z",
     "owner": "griffin",
@@ -839,6 +824,96 @@
       }
     ],
     "gitSha": "fd040a88429574c4a54db0052c0c32293620b385",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "agent-brief-template",
+    "completedAt": "2026-03-01T17:42:20.817Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-l03",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "cli-spec-init",
+    "completedAt": "2026-03-01T17:42:20.817Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-l03",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "roadmap-compile-brief-wiring",
+    "completedAt": "2026-03-01T17:42:20.817Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-l03",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "tests-sk-brief-generator",
+    "completedAt": "2026-03-01T17:42:20.817Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-l03",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "workflow-guide-spec-kit",
+    "completedAt": "2026-03-01T17:42:20.817Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-l03",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "tests-sk-workflow-e2e",
+    "completedAt": "2026-03-01T17:42:33.490Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-complete",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "workflow-guide-integration",
+    "completedAt": "2026-03-01T17:42:33.490Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-complete",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "sk-integration-validation",
+    "completedAt": "2026-03-01T17:42:33.490Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-complete",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "intent-metaflow-audit-fr-sk-integrate",
+    "completedAt": "2026-03-01T17:42:33.490Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-complete",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
+    "treeSha": "auto-tracked"
+  },
+  {
+    "nodeId": "term",
+    "completedAt": "2026-03-01T17:42:33.490Z",
+    "owner": "griffin",
+    "checkpointId": "cp-sk-complete",
+    "validationChecks": [],
+    "gitSha": "26deb1df78f8e7f0e4f5446cc3332fa69641b453",
     "treeSha": "auto-tracked"
   }
 ]
