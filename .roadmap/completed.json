@@ -29,9 +29,9 @@
   },
   {
     "nodeId": "state-recovery",
-    "completedAt": "2026-03-01T17:57:44.866Z",
+    "completedAt": "2026-03-01T19:51:25.148Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301175744",
+    "checkpointId": "cp-20260301195125",
     "validationChecks": [
       {
         "rule": "skip-validate",
@@ -39,8 +39,8 @@
         "evidence": "validation skipped by --skip-validate flag"
       }
     ],
-    "gitSha": "053ddbabcffe6f43d2d62abad463a7c968849662",
-    "treeSha": "7a86c4390357372a085b8c3a7104c34a9d89e227"
+    "gitSha": "e4e66cc6ebd1e5ff574954bdfbb3ad3c236d8af4",
+    "treeSha": "b6d9b12ba88ea095f7517ab472ddd103b419d297"
   },
   {
     "nodeId": "mechanical-validators",

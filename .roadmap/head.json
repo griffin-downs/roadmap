@@ -15,16 +15,15 @@
     },
     "state-recovery": {
       "id": "state-recovery",
-      "desc": "Restore missing state artifacts: recreate claims.json from trails, validate state consistency (reads ambient trail.jsonl, completed.json from iter-001)",
+      "desc": "Restore missing state artifacts: validate state recovery report and consistency (reads ambient trail.jsonl, completed.json from iter-001, produces recovery report)",
       "produces": [
-        ".roadmap/claims.json",
         ".roadmap/recovery/state-recovery.json"
       ],
       "consumes": [],
       "deps": ["init"],
       "validate": [
-        {"type": "artifact-exists", "target": [".roadmap/claims.json", ".roadmap/recovery/state-recovery.json"]},
-        {"type": "shell", "command": "jq -e '.claims | length > 0' .roadmap/claims.json || true"}
+        {"type": "artifact-exists", "target": [".roadmap/recovery/state-recovery.json"]},
+        {"type": "shell", "command": "jq -e '.recovery | length > 0' .roadmap/recovery/state-recovery.json || true"}
       ],
       "idempotent": false
     },
