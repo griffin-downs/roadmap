@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "nodeId": "init-governance",
+    "completedAt": "2026-03-01T13:31:21.061Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301133121",
+    "validationChecks": [],
+    "gitSha": "f2ef0870a69651645839a5c1d7aeedb2a372775f",
+    "treeSha": "1ad295de66d7265a73928d5aab96e8238533ded5"
+  }
+]

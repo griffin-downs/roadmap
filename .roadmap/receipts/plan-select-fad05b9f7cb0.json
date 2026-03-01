@@ -1,0 +1,8 @@
+{
+  "type": "plan-select",
+  "headSha": "842bee5b11bf9b23a79cff4e5225a40a391fec540b10b23681eed4bf15b0c2b3",
+  "candidateId": "fr-meta-evid-001",
+  "selectedAt": "2026-03-01T13:31:18.652Z",
+  "selector": "griffin",
+  "note": "selecting FR-META-EVID-001 DAG for execution"
+}
