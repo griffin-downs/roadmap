@@ -1,5 +1,5 @@
 // @module intent-expansion
-// @exports IntentFailure, PlanClarityGap, ConvergenceLimits, CostHistory, FixNodeSpec, ExpansionResult, generateIntentExpansion, generateInitGateExpansion, resolveProduces, isInitGateFailure, extractPlanClarityGaps, detectStall, buildEscalation, extractIntentFailures, extractObservationFailures, enrichIntentFailuresWithObservations, fixNodeCost, buildDiagnosisBlock, EvidenceMode, EvidenceItem, validateEvidenceAlgebra, ExpansionReceipt, writeExpansionReceipt, checkSiblingInvariants, ConvergenceIteration, ConvergenceHistory, recordConvergenceIteration, readConvergenceHistory
+// @exports IntentFailure, IntentDiagnosis, diagnosisCode, PlanClarityGap, ConvergenceLimits, CostHistory, FixNodeSpec, ExpansionResult, generateIntentExpansion, generateInitGateExpansion, resolveProduces, isInitGateFailure, extractPlanClarityGaps, detectStall, buildEscalation, extractIntentFailures, extractObservationFailures, enrichIntentFailuresWithObservations, fixNodeCost, buildDiagnosisBlock, EvidenceMode, EvidenceItem, validateEvidenceAlgebra, ExpansionReceipt, writeExpansionReceipt, checkSiblingInvariants, ConvergenceIteration, ConvergenceHistory, recordConvergenceIteration, readConvergenceHistory
 // @entry roadmap
 
 import { appendFileSync, readFileSync, existsSync } from 'node:fs';
@@ -25,6 +25,37 @@ export interface IntentFailure {
   rule: ValidationRule & { type: 'intent' };
   observationFailures?: Array<{ id: string; description: string; evidence: string }>;  // from runtime-explore
   informedBy?: 'runtime-explore' | 'llm' | 'hybrid' | 'unevaluated'; // judgment source
+}
+
+// FR-IG-002: Structured diagnosis schema.
+// Replaces free-text failure messages with typed, machine-parseable diagnosis.
+// Code derivation is pure structural (numeric threshold comparison) — no keyword matching.
+
+export interface IntentDiagnosis {
+  code: string;
+  affectedNode: string;
+  evidenceIds: string[];
+  remediationSteps: string[];
+  statement: string;
+  achievedConfidence: number;
+  threshold: number;
+  expansionDepth: number;
+  observationFailures?: Array<{ id: string; description: string; evidence: string }>;
+  informedBy?: 'runtime-explore' | 'llm' | 'hybrid' | 'unevaluated';
+  estimatedCost?: number;
+  costRatio?: number;
+}
+
+/**
+ * FR-IG-002: Derive diagnosis code from numeric threshold comparison.
+ * Pure structural — no keyword matching on reasoning or statement text.
+ */
+export function diagnosisCode(achieved: number, threshold: number): string {
+  const gap = threshold - achieved;
+  if (achieved <= 0) return 'intent-no-confidence';
+  if (gap > 0.5) return 'intent-confidence-critical';
+  if (gap > 0.2) return 'intent-confidence-low';
+  return 'intent-confidence-marginal';
 }
 
 export interface ConvergenceLimits {
@@ -130,22 +161,10 @@ export function fixNodeCost(
 
 /**
  * Build a structured DiagnosisBlock from an IntentFailure.
- * Code is derived structurally from numeric threshold comparison, not keyword matching.
+ * Code is derived structurally via diagnosisCode() — no keyword matching.
  */
 export function buildDiagnosisBlock(nodeId: string, intent: IntentFailure): DiagnosisBlock {
-  // Structural code derivation: based on numeric relationship between achieved and threshold
-  let code: string;
-  const gap = intent.threshold - intent.achieved;
-  if (intent.achieved <= 0) {
-    code = 'intent-no-confidence';
-  } else if (gap > 0.5) {
-    code = 'intent-confidence-critical';
-  } else if (gap > 0.2) {
-    code = 'intent-confidence-low';
-  } else {
-    code = 'intent-confidence-marginal';
-  }
-
+  const code = diagnosisCode(intent.achieved, intent.threshold);
   const evidenceIds = intent.evidence.map((_, i) => `evidence-${i}`);
 
   const remediationSteps: string[] = [];
@@ -159,11 +178,30 @@ export function buildDiagnosisBlock(nodeId: string, intent: IntentFailure): Diag
   }
   remediationSteps.push(`Achieve confidence >= ${intent.threshold} (currently ${intent.achieved.toFixed(2)})`);
 
+  return { code, affectedNode: nodeId, evidenceIds, remediationSteps };
+}
+
+/**
+ * FR-IG-002: Build full IntentDiagnosis from a failure + node context.
+ * Structured replacement for _intentDiagnosis inline object.
+ */
+export function buildIntentDiagnosis(
+  nodeId: string,
+  intent: IntentFailure,
+  expansionDepth: number,
+  opts?: { estimatedCost?: number; costRatio?: number },
+): IntentDiagnosis {
+  const block = buildDiagnosisBlock(nodeId, intent);
   return {
-    code,
-    affectedNode: nodeId,
-    evidenceIds,
-    remediationSteps,
+    ...block,
+    statement: intent.statement,
+    achievedConfidence: intent.achieved,
+    threshold: intent.threshold,
+    expansionDepth,
+    observationFailures: intent.observationFailures,
+    informedBy: intent.informedBy,
+    estimatedCost: opts?.estimatedCost,
+    costRatio: opts?.costRatio,
   };
 }
 
