@@ -1,13 +1,8 @@
-// Main library exports
-// All types consolidated in src/lib/schema.ts
+// Public API: High-level exports only
+// Internal utilities: src/lib/internal/* (do not rely on these)
 
-export {
-  ValidatorRule,
-  PerfReceipt,
-  AuditSchema
-} from './schema';
-
+export { ValidatorRule, PerfReceipt, AuditSchema } from './schema';
 export { define, verify, check, orient } from './protocol';
-export { RoadmapError } from './errors';
 
-// Deprecated re-exports removed; import directly from schema.ts
+// Deprecated: re-exports removed
+// See docs/MODULE-STRUCTURE.md for migration guide
