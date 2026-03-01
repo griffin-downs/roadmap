@@ -1446,7 +1446,7 @@ function cmdTrail() {
 
 async function cmdChart() {
   if (!hasLocalDAG) {
-    console.log('📭 No roadmap in this repo. Run `roadmap install` to set up.');
+    json({ error: 'No roadmap in this repo. Run `roadmap install` to set up.' });
     return;
   }
 
@@ -1460,12 +1460,105 @@ async function cmdChart() {
   const now = new Date();
   const nodeIds = Object.keys(dag.nodes);
   const doneSet = new Set(pos.done);
+  const failedSet = new Set(completion.failingIds());
   const preGateSet = new Set(pos.preGate);
   const retired = retiredSet();
   const cpSet = showCritical ? new Set(criticalPath(dag)) : new Set<string>();
   const totalNodes = nodeIds.length;
   const doneCount = pos.done.length;
   const pct = Math.round((doneCount / totalNodes) * 100);
+
+  // Build structured chart data and render model unconditionally
+  const chartLayers: DagLayer[] = batches.map((batch, i) => ({
+    level: i,
+    nodes: batch.map((id): DagNode => {
+      const status: DagNode['status'] = retired.has(id) ? 'retired'
+        : doneSet.has(id) ? 'done'
+        : pos.position.includes(id) ? 'current'
+        : completion.hasFailing(id) ? 'fail'
+        : 'pending';
+      const node = dag.nodes[id as keyof typeof dag.nodes] as any;
+      return { id, status, desc: node?.desc };
+    }),
+  }));
+
+  const chartRenderModel: RenderModel = {
+    kind: 'chart',
+    title: `chart: ${dag.id}`,
+    nodes: [
+      { t: 'h1', s: `${dag.id} \u2014 ${dag.desc}` },
+      { t: 'bar', label: 'progress', cur: doneCount, total: totalNodes },
+      { t: 'kv', key: 'position', value: pos.position.join(', ') || '(complete)' },
+      { t: 'line' },
+      { t: 'dagLayers', layers: chartLayers },
+    ],
+  };
+
+  const chartData = { dagId: dag.id, done: doneCount, total: totalNodes, pct, position: pos.position, level: pos.level };
+
+  // Route through JSON envelope
+  json(chartData, chartRenderModel);
+
+  // Render human output if requested (separate from envelope)
+  if (_outputOpts.format === 'human') {
+    renderChartHuman({
+      dag,
+      showDeps,
+      showCritical,
+      pos,
+      batches,
+      claimStore,
+      now,
+      doneSet,
+      failedSet,
+      preGateSet,
+      retired,
+      cpSet,
+      doneCount,
+      totalNodes,
+      pct,
+      completion,
+    });
+  }
+}
+
+// Helper to render chart in human-readable format
+function renderChartHuman(opts: {
+  dag: any;
+  showDeps: boolean;
+  showCritical: boolean;
+  pos: any;
+  batches: string[][];
+  claimStore: any;
+  now: Date;
+  doneSet: Set<string>;
+  failedSet: Set<string>;
+  preGateSet: Set<string>;
+  retired: Set<string>;
+  cpSet: Set<string>;
+  doneCount: number;
+  totalNodes: number;
+  pct: number;
+  completion: any;
+}) {
+  const {
+    dag,
+    showDeps,
+    showCritical,
+    pos,
+    batches,
+    claimStore,
+    now,
+    doneSet,
+    failedSet,
+    preGateSet,
+    retired,
+    cpSet,
+    doneCount,
+    totalNodes,
+    pct,
+    completion,
+  } = opts;
 
   // Show dependency repos first if --deps
   if (showDeps && pos.deps.length) {
@@ -1586,35 +1679,6 @@ async function cmdChart() {
   }
 
   console.log('');
-
-  // When --json requested, also emit structured envelope with chart RenderModel
-  if (_outputOpts.format === 'json') {
-    const chartLayers: DagLayer[] = batches.map((batch, i) => ({
-      level: i,
-      nodes: batch.map((id): DagNode => {
-        const status: DagNode['status'] = retired.has(id) ? 'retired'
-          : doneSet.has(id) ? 'done'
-          : pos.position.includes(id) ? 'current'
-          : completion.hasFailing(id) ? 'fail'
-          : 'pending';
-        const node = dag.nodes[id as keyof typeof dag.nodes] as any;
-        return { id, status, desc: node?.desc };
-      }),
-    }));
-    const chartRenderModel: RenderModel = {
-      kind: 'chart',
-      title: `chart: ${dag.id}`,
-      nodes: [
-        { t: 'h1', s: `${dag.id} \u2014 ${dag.desc}` },
-        { t: 'bar', label: 'progress', cur: doneCount, total: totalNodes },
-        { t: 'kv', key: 'position', value: pos.position.join(', ') || '(complete)' },
-        { t: 'line' },
-        { t: 'dagLayers', layers: chartLayers },
-      ],
-    };
-    const chartData = { dagId: dag.id, done: doneCount, total: totalNodes, pct, position: pos.position, level: pos.level };
-    json(chartData, chartRenderModel);
-  }
 }
 
 function cmdDoctor() {
