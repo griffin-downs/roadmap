@@ -5,7 +5,7 @@
 // NOTE: orient() in protocol.ts is the standard version. This adds git-state caching.
 
 import { orient as liveOrient, type Graph, type Orientation } from '../../protocol.ts';
-import { CompletionStore } from '../completion-context.ts';
+import { CompletionStore } from '../completion/completion-context.ts';
 import { readGitState, isFresh } from '../utils/git/git-state.schema.ts';
 
 /**

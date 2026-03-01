@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { ValidatorResult, RunnerInfo, CompletionRecord } from '../src/lib/completion-store';
+import type { ValidatorResult, RunnerInfo, CompletionRecord } from '../src/lib/completion/completion-store';
 
 describe('completion-store types', () => {
   it('ValidatorResult has required and optional fields', () => {

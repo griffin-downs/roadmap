@@ -4,7 +4,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { CompletionStore } from '../../lib/completion-context.ts';
+import { CompletionStore } from '../../lib/completion/completion-context.ts';
 import { listNodeReceipts } from '../../lib/receipts-ux.ts';
 import type { Graph } from '../../protocol.ts';
 

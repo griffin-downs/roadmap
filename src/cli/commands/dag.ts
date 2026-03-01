@@ -5,7 +5,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { define, verify, check, parallelOrder, orient } from '../../protocol.ts';
-import { CompletionStore } from '../../lib/completion-context.ts';
+import { CompletionStore } from '../../lib/completion/completion-context.ts';
 import type { Graph } from '../../protocol.ts';
 
 // --- Command ---

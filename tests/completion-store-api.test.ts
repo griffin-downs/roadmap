@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CompletionStore } from '../src/lib/completion-context.ts';
+import { CompletionStore } from '../src/lib/completion/completion-context.ts';
 
 describe('CompletionStore extended API', () => {
   const store = CompletionStore.fromRecords([

@@ -8,7 +8,7 @@ import { resolve, basename } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { orient } from '../protocol.ts';
 import type { Orientation, Graph } from '../protocol.ts';
-import { CompletionStore } from './completion-context.ts';
+import { CompletionStore } from './completion/completion-context.ts';
 import { fileExists } from '../predicates.ts';
 import { discoverDependencies, resolveSiblingPath } from './dependency-resolver.ts';
 import type { DependencySpec } from './project-metadata.schema.ts';

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { CompletionStore } from '../src/lib/completion-context.js';
+import { CompletionStore } from '../src/lib/completion/completion-context.js';
 import { saveCompletionWithEvidence, loadCompletionsWithEvidence } from '../src/lib/completion-evidence.js';
 
 function makeTmpDir(): string {

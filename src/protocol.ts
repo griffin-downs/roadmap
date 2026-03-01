@@ -3,8 +3,8 @@
 // @types NodeSpec, Graph, SpecMeta, Orientation, ReadyNode, NextBatch, BatchConflict, Connection, Gap, ValidationRule, ValidationCheck, ValidationResult, ModifyAnalysis, ModificationRecord, ConsumeSpec, RuntimeExploreRule, ObservationSpec, ObservationResult, ExploreResult, IntentFailure, ConvergenceLimits, EscalationResult, IntentDiagnosis
 // @entry roadmap/protocol
 
-import { CompletionStore } from './lib/completion-context.ts';
-export { CompletionStore } from './lib/completion-context.ts';
+import { CompletionStore } from './lib/completion/completion-context.ts';
+export { CompletionStore } from './lib/completion/completion-context.ts';
 
 // --- Types ---
 

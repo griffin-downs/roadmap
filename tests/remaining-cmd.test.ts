@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CompletionStore } from '../src/lib/completion-context.ts';
+import { CompletionStore } from '../src/lib/completion/completion-context.ts';
 import { orient, parallelOrder } from '../src/protocol.ts';
 import type { Graph } from '../src/protocol.ts';
 

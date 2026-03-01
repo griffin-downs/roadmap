@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { loadCompletions, saveCompletion, isNodeComplete, getCompletedNodeIds } from '../src/lib/completion-tracker';
+import { loadCompletions, saveCompletion, isNodeComplete, getCompletedNodeIds } from '../src/lib/completion/completion-tracker';
 
 describe('completion-tracker', () => {
   let testDir: string;

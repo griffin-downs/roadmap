@@ -5,8 +5,8 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { CompletionRecordWithEvidence, EvidenceRecord } from './evidence/completion-evidence.ts';
-import { loadCompletionsWithEvidence, hasPassingReceipt } from './evidence/completion-evidence.ts';
+import type { CompletionRecordWithEvidence, EvidenceRecord } from '../evidence/completion-evidence.ts';
+import { loadCompletionsWithEvidence, hasPassingReceipt } from '../evidence/completion-evidence.ts';
 
 /**
  * Receipt-only completion store. A node is "done" iff it has a passing receipt.

@@ -1,6 +1,6 @@
 // Unit tests for CompletionStore — the single truth regime for node completion.
 import { describe, it, expect } from 'vitest';
-import { CompletionStore } from '../src/lib/completion-context.ts';
+import { CompletionStore } from '../src/lib/completion/completion-context.ts';
 
 describe('CompletionStore', () => {
   it('empty() has no passing nodes', () => {
