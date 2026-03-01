@@ -1,0 +1,328 @@
+{
+  "timestamp": "2026-03-02T00:15:00.000Z",
+  "analysisSource": "metaflow-cli-quality completion + mining data (mining-run.json, trail-sequences.json, discoverability-audit.json, synthesis-report.json)",
+  "opportunities": [
+    {
+      "id": "opp-001",
+      "category": "discoverability",
+      "title": "Undiscovered Advanced Flags: --assign, --next, --ready (swarm delegation)",
+      "severity": "high",
+      "impact": "high",
+      "effort": "medium",
+      "description": "13 documented flags are never used in real workflows. Of these, --assign, --next, --ready are critical for parallel execution (swarm dispatch protocol). Evidence: discoverability-audit.json shows 0% usage. trail-sequences.json shows orient commands dominate (189/251 unique commands). These flags enable DAG parallelization but are invisible in help text and examples.",
+      "evidence": [
+        "discoverability-audit.json: 13 unused flags, --assign/--next/--ready explicitly listed",
+        "synthesis-report.json: workflow hints added but do not surface advanced flags",
+        "trail-sequences.json: no --assign or --next observed in 6 time windows across 251 commands",
+        "mining-run.json: 0 executions of flag-based features"
+      ],
+      "recommendation": "1) Add mandatory help examples showing --assign batch allocation (orient --assign --note '...'). 2) Add brief context in orient output when preGate nodes are available. 3) Document --next in 'Swarm worker protocol' help section with real example. 4) Test: verify --assign appears in top 3 help results for 'parallel' or 'batch'.",
+      "estimatedBenefit": "Unlock parallel execution for 3+ node DAGs. Expected: 30-40% faster batch completion on multi-node work."
+    },
+    {
+      "id": "opp-002",
+      "category": "discoverability",
+      "title": "Hidden Advanced Flags: --json, --quiet (output control)",
+      "severity": "high",
+      "impact": "medium",
+      "effort": "small",
+      "description": "--json (machine-readable output) and --quiet (suppress UI) flags exist but are never used. These enable scripting and automation. Evidence: 0 usage in mining-run.json. Likely blocked by lack of aliases (-j for --json, -q for --quiet) and missing examples showing scripting use cases.",
+      "evidence": [
+        "discoverability-audit.json: --json, --quiet in unused list",
+        "synthesis-report.json: flag aliases added (-j, -q, -g, etc.) but adoption unknown",
+        "mining-run.json: no invocations with -j or -q flags",
+        "help system may not surface these as relevant to scripting workflows"
+      ],
+      "recommendation": "1) Add -j alias to --json in help (already coded, verify it's advertised). 2) Add -q alias to --quiet. 3) Update help text: 'Use -j for scripting/CI integration' as explicit example. 4) Test: grep for flag usage in a CI/scripting scenario (shell loop calling orient -j).",
+      "estimatedBenefit": "Enable 100% of automation use cases. Unblock CI/tooling integrations that need machine-readable output."
+    },
+    {
+      "id": "opp-003",
+      "category": "workflow",
+      "title": "Workflow Abandon Rate: 78.8% (orient without reading → re-orient)",
+      "severity": "critical",
+      "impact": "high",
+      "effort": "medium",
+      "description": "Users run orient, then immediately re-orient without reading output (78.8% abandon rate = 149/189 orient calls). This suggests: (1) output is not immediately actionable, (2) context hints are not visible, or (3) users are uncertain what to do next. Evidence: trail-sequences.json shows repeated orient→orient patterns (e.g., 22 consecutive orients in 2026-03-01T22:40:00 window). Synthesis shows hints were added (orient→show, chart→show) but adoption is unclear.",
+      "evidence": [
+        "discoverability-audit.json: workflowAbandonRate = 0.7884 (149 abandoned orients / 189 total)",
+        "trail-sequences.json: window 2026-03-01T22:40:00 contains 22 consecutive orient calls",
+        "synthesis-report.json: context-aware workflow hints added but no metric on hint effectiveness",
+        "mining-run.json: orient commands show contexts (nodeId, dagId) but no data on whether hints were read"
+      ],
+      "recommendation": "1) Add explicit 'Next Step' block to orient output showing recommended command (e.g., 'Next: roadmap show <nodeId>' or 'Next: roadmap chart'). 2) Measure hint effectiveness: instrument orient output to log when users follow suggested next step. 3) A/B test: try verbose hint (2 lines) vs minimal hint (1 line) and measure re-orient rate delta. 4) Add smart hint: if orient→orient pattern detected, offer 'Did you mean: roadmap show <nodeId>' as a redirect.",
+      "estimatedBenefit": "Reduce workflow abandon rate from 78.8% to <50% (target: 40%). Improve UX by making next action obvious. Expected: 30-40% fewer re-orients per session."
+    },
+    {
+      "id": "opp-004",
+      "category": "quality",
+      "title": "Error Recovery Gap: 50% of errors not retried (2 failures in mining-run)",
+      "severity": "high",
+      "impact": "medium",
+      "effort": "medium",
+      "description": "Mining run shows 2 command failures (exitCode 1: claim and orient without args). Error recovery rate is 50% (1 error was NOT retried immediately). Evidence: mining-run.json shows 'claim init --owner test-agent' failed (exit 1), followed by 'orient' without args (also exit 1), then recovery with 'orient --note mine-6'. No retry between failures. Suggests error messages are not actionable or users don't know how to fix.",
+      "evidence": [
+        "mining-run.json: claim command at index 11 exitCode=1, next orient at index 12 exitCode=1",
+        "discoverability-audit.json: errorWithoutRetryRate = 0.5 (50% of errors not retried)",
+        "no evidence of error message improvement or recovery suggestions in synthesis-report.json",
+        "discoverability score penalty: 10 points for errorWithoutRetryRate"
+      ],
+      "recommendation": "1) Enhance error messages for claim and orient to include recovery hint (e.g., 'claim failed: node not in current batch. Try: roadmap show <node>' or 'orient requires --note for state change. Try: roadmap orient --note <reason>'). 2) Add --help-on-error flag to repeat help for failing command. 3) Instrument error paths: log which error codes are not immediately retried, identify patterns. 4) Test: validate that 80%+ of first-time errors are retried within 2 command cycles.",
+      "estimatedBenefit": "Reduce error recovery time. Expected: 70%+ of errors retried on first attempt (up from 50%). Improve user confidence in CLI."
+    },
+    {
+      "id": "opp-005",
+      "category": "discoverability",
+      "title": "Cache Retirement Flags Undiscovered: --cascade, --undo, --list",
+      "severity": "medium",
+      "impact": "low",
+      "effort": "small",
+      "description": "Node retirement flags (--cascade, --undo, --list for 'roadmap retire') are not documented in main help. These are necessary for DAG corrections but require 'roadmap retire' discovery first. Evidence: discoverability-audit.json lists all three as unused. No retire examples in help or synthesis improvements.",
+      "evidence": [
+        "discoverability-audit.json: --cascade, --undo, --list unused",
+        "synthesis-report.json: no mention of retire command improvements",
+        "help system likely only documents retire via subcommand, not flags"
+      ],
+      "recommendation": "1) Add 'roadmap retire' to main help with one-liner and flag summary. 2) Add example: 'roadmap retire node-id --cascade' with explanation. 3) Test: 'roadmap help retire' should list all three flags with brief descriptions.",
+      "estimatedBenefit": "Enable self-service DAG error recovery. Reduce need for manual intervention on failed nodes."
+    },
+    {
+      "id": "opp-006",
+      "category": "discoverability",
+      "title": "Cross-Repo Visibility Flags: --repo, --global, --deps, --depth (trail + chart)",
+      "severity": "medium",
+      "impact": "medium",
+      "effort": "medium",
+      "description": "Trail and chart cross-repo flags (--repo, --global, --deps, --depth) are unused. These enable visibility across dependent projects. Evidence: no usage in mining-run.json. Likely blocked by: (1) not surfaced in help, (2) users unaware of cross-repo patterns, (3) examples missing.",
+      "evidence": [
+        "discoverability-audit.json: --repo, --global, --deps, --depth unused",
+        "mining-run.json: trail and chart used but no --repo or --global flags",
+        "synthesis-report.json: no improvements to trail/chart discoverability"
+      ],
+      "recommendation": "1) Add mandatory example to 'roadmap chart --help': 'See all dependencies: roadmap chart --deps' with sample output. 2) Add 'roadmap trail --global' to help with note about cross-project visibility. 3) For --repo and --depth: add examples with filter logic. 4) Test: verify help examples are discoverable and executable.",
+      "estimatedBenefit": "Unlock cross-project debugging and visibility. Enable users to understand DAG dependencies across repos."
+    },
+    {
+      "id": "opp-007",
+      "category": "performance",
+      "title": "Validate Command Latency: 749ms avg (5.3× slower than orient)",
+      "severity": "medium",
+      "impact": "medium",
+      "effort": "medium",
+      "description": "Validate command shows 749ms avg latency (mining-run.json index 6, index 17), compared to orient at 141ms avg. This is 5.3× slower. Likely causes: (1) validator recursion (checking all nodes), (2) file I/O for artifact verification, (3) shell invocation overhead. Blocking issue for pre-commit workflows that validate before complete.",
+      "evidence": [
+        "mining-run.json: validate --note mine-validate = 749ms, validate --note mine-validate-2 = 731ms",
+        "orient: P50 = 141ms, P95 = 154ms (much faster)",
+        "synthesis-report.json: no validation latency improvements mentioned"
+      ],
+      "recommendation": "1) Profile validate command: add instrumentation to identify slowest validator (artifact-exists vs shell vs function). 2) Optimize high-frequency path: cache validator results for 30s if DAG unchanged. 3) Add --fast flag to skip shell validators (lint/test) and only check artifact-exists. 4) Parallel validators: run independent shell checks in parallel. Expected: reduce validate P50 from 749ms to <250ms.",
+      "estimatedBenefit": "Improve developer workflow velocity. Validate can run in pre-commit without friction. Expected: 3× faster validation."
+    },
+    {
+      "id": "opp-008",
+      "category": "quality",
+      "title": "Command Error Classification: Claim and Orient Failures (2 errors)",
+      "severity": "medium",
+      "impact": "medium",
+      "effort": "small",
+      "description": "Two failures in mining run: (1) claim init --owner test-agent = exit 1 (reason unclear), (2) orient without args = exit 1 (expected). Mining-run.json does not capture error messages (only exit codes). Unable to diagnose root cause. Blocks understanding of failure patterns.",
+      "evidence": [
+        "mining-run.json: claim cmd (index 11) exitCode=1, no stderrLines or error message captured",
+        "mining-run.json: orient cmd (index 12) exitCode=1, no error details",
+        "instrumentation added context fields (nodeId, dagId, noteText, stderrLines) but stderrLines may be empty or not collected"
+      ],
+      "recommendation": "1) Verify stderrLines is populated in all error cases. 2) Update mining script to capture and log error messages. 3) Classify errors: (a) permission (DAG not in state for operation), (b) invalid args (missing required flag), (c) logic (node already claimed), (d) system (file I/O). 4) Add test: verify each error class has actionable message.",
+      "estimatedBenefit": "Enable error root-cause analysis. Improve error recovery by categorizing failures. Block unknown failures from reaching users."
+    },
+    {
+      "id": "opp-009",
+      "category": "automation",
+      "title": "Workflow Pattern Mining: Identify Successful vs Failing Sequences",
+      "severity": "high",
+      "impact": "high",
+      "effort": "large",
+      "description": "Trail-sequences.json shows command patterns over time but lacks analysis: Which sequences lead to completion? Which lead to abandonment? Pattern: 22× consecutive orient in window 2026-03-01T22:40:00 — likely failed attempts or confusion. No data on whether these were resolved or abandoned. To improve UX, need to: (1) detect failure patterns, (2) identify successful workflows, (3) route users to successful sequences.",
+      "evidence": [
+        "trail-sequences.json: window 2026-03-01T22:40:00 has 22 consecutive orients (suspicious pattern)",
+        "synthesis-report.json: 'no clear winning pattern detected' — mining did not analyze success/failure correlation",
+        "discoverability-audit.json: no workflow success rate metric",
+        "mining-run.json: only 30 commands, insufficient for pattern analysis"
+      ],
+      "recommendation": "1) Extend mining: run 100+ command sequences sampled from real usage (cross-repo trail). 2) Classify sequences: (a) successful (orient→show→complete), (b) abandoned (orient→orient→...), (c) error-recovery (orient→error→orient→....). 3) Analyze: which flag combinations appear in successful sequences? 4) Output: pattern-success-rate.json with (pattern, successRate, avgCycles, topFlags). 5) Use findings to prioritize help examples (show successful patterns first).",
+      "estimatedBenefit": "Reduce workflow abandonment by 20-30%. Identify and amplify successful user behaviors. Expected: empirical basis for help improvements."
+    },
+    {
+      "id": "opp-010",
+      "category": "quality",
+      "title": "Discoverability Score Gap: 49/100 (target was 50)",
+      "severity": "medium",
+      "impact": "low",
+      "effort": "small",
+      "description": "Final discoverability score is 49/100, just below the 50-point threshold (synthesis-report.json target: '≥50'). Calculated as: 100 - (0.0667×30) - (0.5×20) - (0.7884×30) - (0.7647×20) = 49. The largest penalty is workflowAbandonRate (23.65 points) and unusedFlagPenalty (15.29 points). This is not a test failure (test-success = 100%) but shows room for improvement in discoverability specifically.",
+      "evidence": [
+        "discoverability-score.json: score = 49, just below target ≥50",
+        "synthesis-report.json: allTargetsMet = true (tests passed, but discoverability acknowledged as gap)",
+        "Components: workflowAbandonRate penalty = 23.65, unusedFlagPenalty = 15.29 dominate",
+        "Pass criteria listed discoverability as pass=false but allTargetsMet=true (score acknowledged as edge case)"
+      ],
+      "recommendation": "1) View as validation success but quality opportunity. 2) Implement opp-001, opp-002, opp-003 to raise score naturally (estimated: +10-15 points). 3) Do NOT add artificial discoverability metrics — focus on real UX. 4) Retarget: next phase should aim for 65+/100 by addressing workflow abandon and flag adoption.",
+      "estimatedBenefit": "Improve CLI discoverability from 49 to 65+ by addressing root causes (workflow hints, flag visibility, error recovery). Secondary benefit: demonstrate that discoverability improvements correlate with reduced abandonment."
+    },
+    {
+      "id": "opp-011",
+      "category": "performance",
+      "title": "Cache Performance Validation: Token cache 396→1 scans, real-world measurement pending",
+      "severity": "medium",
+      "impact": "medium",
+      "effort": "small",
+      "description": "Token cache was added to eliminate 396-file scans on repeated listTokens() (synthesis-report.json: 'eliminated 396-file scans'). Lab measurement shows benefit but real-world impact unknown. Mining-run did not measure cache hit rates or I/O reduction. No evidence that cache is actually being used or that the 396-scan claim was verified in production.",
+      "evidence": [
+        "synthesis-report.json: 'Token cache: eliminated 396-file scans on repeated listTokens()'",
+        "mining-run.json: no cache hit rate metrics or file scan counts",
+        "dogfood-metrics.json: no cache performance data",
+        "Likely: cache was implemented but adoption/effectiveness not measured"
+      ],
+      "recommendation": "1) Instrument cache: add metrics (hit rate, miss rate, files scanned with/without cache). 2) Run comparison: (a) warm cache case (repeated listTokens), (b) cold cache case (first call). 3) Measure: file I/O syscalls before and after. 4) Publish: include cache metrics in next mining-run. Expected: show 95%+ cache hit rate on repeated commands.",
+      "estimatedBenefit": "Verify cache is operational and delivering expected 396→1 reduction. Unblock future token-based optimizations (e.g., distributed caching)."
+    },
+    {
+      "id": "opp-012",
+      "category": "quality",
+      "title": "Integration Test Expansion: Untested Edge Cases (49 tests all passing)",
+      "severity": "medium",
+      "impact": "medium",
+      "effort": "medium",
+      "description": "Integration test report shows 49 tests all passing. However, 100% pass rate on a small suite may hide edge cases. Observed failures in mining (claim, orient without args) suggest edge cases not covered. Test suite organized by (tests/cli/integration.test.ts: 31, tests/claims/claims-cache.test.ts: 8, tests/metaflow/command-instrumentation.test.ts: 10) but lacks signal on coverage of error paths.",
+      "evidence": [
+        "integration-test-report.json: 49 tests, 0 failures, 100% pass rate",
+        "mining-run.json: 2 command failures (claim, orient) — suggest untested scenarios",
+        "No evidence of error-path or negative-case tests in test groups",
+        "Test organization is functional (cli, claims, metaflow) not coverage-based"
+      ],
+      "recommendation": "1) Add negative-test suite: test claim on wrong node state, orient without --note, invalid DAG references. 2) Measure: code coverage report for error handlers. 3) Add invariant tests: verify state consistency after error (partial writes not left behind). 4) Expand test suite: target 65+ tests covering error paths. Expected: catch 80% of edge cases before mining.",
+      "estimatedBenefit": "Reduce field failures. Improve error messages by testing them. Expected: catch 3-5 edge cases per quarter."
+    },
+    {
+      "id": "opp-013",
+      "category": "automation",
+      "title": "Instrumentation Overhead: Context fields (nodeId, dagId, stderrLines) impact on latency",
+      "severity": "low",
+      "impact": "low",
+      "effort": "small",
+      "description": "Enhanced instrumentation added context fields (nodeId, dagId, noteText, stderrLines) to all command executions (synthesis-report.json). These are captured in mining-run.json contexts. Overhead not measured. If significant, could explain orient P50 of 141ms (vs expected <100ms for stateless operation).",
+      "evidence": [
+        "synthesis-report.json: 'Enhanced command instrumentation with context fields'",
+        "mining-run.json: all commands include context blocks but no latency breakdown",
+        "Latency: orient P50 = 141ms (reasonable but not optimal for stateless operation)",
+        "No profiling data showing context collection cost"
+      ],
+      "recommendation": "1) Benchmark: measure orient latency with and without context instrumentation. 2) Profile: identify if stderrLines capture is blocking. 3) Optimize: consider async context collection if latency impact > 5%. Expected: context overhead < 10ms.",
+      "estimatedBenefit": "Low immediate benefit but good practice for future instrumentation decisions. Validate that monitoring cost is acceptable."
+    }
+  ],
+  "summary": {
+    "totalOpportunities": 13,
+    "byCategory": {
+      "discoverability": 5,
+      "workflow": 1,
+      "quality": 3,
+      "performance": 2,
+      "automation": 2
+    },
+    "bySeverity": {
+      "critical": 1,
+      "high": 4,
+      "medium": 7,
+      "low": 1
+    },
+    "byEffort": {
+      "small": 3,
+      "medium": 7,
+      "large": 1
+    },
+    "topPriorities": [
+      "opp-003",
+      "opp-001",
+      "opp-004",
+      "opp-009"
+    ]
+  },
+  "findings": {
+    "questionsAnswered": {
+      "q1_workflow_hints_effectiveness": {
+        "question": "Did the workflow hints reduce abandonment rate?",
+        "answer": "Unclear. Hints were added (orient→show, chart→show) but abandonment rate is still 78.8%. Either hints are not visible in output, not actionable enough, or users don't read them. Evidence: discoverability-audit.json shows unchanged 78.8% abandon rate post-implementation. Recommendation: implement opp-003 to measure and improve hint visibility.",
+        "confidence": "high"
+      },
+      "q2_feature_adoption": {
+        "question": "Which new features are actually being used?",
+        "answer": "Limited adoption observed: (1) Basic commands used frequently (orient 19%, chart 23%, show 10%, trail 10%, validate 7%). (2) Advanced features largely unused: --assign, --next, --ready (0% usage), --json, --quiet (0% usage), retire flags (0% usage). (3) Cache feature (token cache) implemented but effectiveness not measured in mining. Overall: core features adopted, advanced/parallel features invisible.",
+        "confidence": "high"
+      },
+      "q3_top_pain_points": {
+        "question": "What are the top 3 user pain points remaining?",
+        "answer": [
+          "Pain Point 1: Workflow uncertainty (78.8% abandon rate). Users run orient then re-orient without reading output, suggesting unclear next step. Root cause: output not actionable or hints too subtle.",
+          "Pain Point 2: Undiscovered advanced features. 13 flags remain unused (--assign, --next, --ready, --json, --quiet, etc.), blocking parallelization and scripting. Root cause: not surfaced in help, no examples, no aliases.",
+          "Pain Point 3: Error recovery friction. 50% of errors not immediately retried. Root cause: error messages not actionable (no recovery hints), users don't know how to fix."
+        ],
+        "confidence": "high"
+      },
+      "q4_command_sequence_patterns": {
+        "question": "Are there patterns in command sequences that fail vs succeed?",
+        "answer": "Partial answer from trail-sequences.json: Observed patterns: (1) Success pattern likely: orient→show→<work>→complete. (2) Failure/confusion pattern: orient→orient→orient→orient (22× in one window). (3) Validation pattern: orient→validate→<fix>→complete. However, trail-sequences.json does NOT classify by success/failure outcome. Mining run did not include completion status, so correlation unknown. Recommend opp-009 to analyze real sequences with outcome labels.",
+        "confidence": "medium"
+      },
+      "q5_untapped_improvement": {
+        "question": "Where is the most untapped improvement potential?",
+        "answer": [
+          "Highest leverage: Workflow hints and error recovery (opp-003, opp-004). Combined estimated benefit: reduce abandon rate from 78.8% to <50%, reduce error recovery cycles by 2×. Effort: medium, impact: very high.",
+          "Second highest: Flag discoverability (opp-001, opp-002, opp-005, opp-006). Combined: unlock parallelization and scripting. Effort: small-medium, impact: high for advanced users.",
+          "Third: Validate command optimization (opp-007). Latency 5.3× baseline suggests easy wins (caching, parallelization). Effort: medium, impact: medium (dev experience)."
+        ],
+        "confidence": "high"
+      }
+    },
+    "keyMetrics": {
+      "workflowAbandonRate": "78.8% (149/189 orient calls re-oriented without reading)",
+      "errorRecoveryRate": "50% (1/2 errors not immediately retried)",
+      "flagDiscoverability": "23.5% (4/17 documented flags in use)",
+      "commandSuccessRate": "93.3% (28/30 commands successful)",
+      "orientLatency": {
+        "p50": "141ms",
+        "p95": "154ms",
+        "trend": "well below 300ms target"
+      },
+      "validateLatency": {
+        "avg": "740ms",
+        "ratio_to_orient": "5.3×"
+      },
+      "testSuccessRate": "100% (49/49 integration tests passing)",
+      "discoverabilityScore": "49/100 (target ≥50, just missed)"
+    },
+    "dataQualityNotes": [
+      "Mining run (30 commands) is small sample; patterns should be validated with 100+ commands",
+      "Trail sequences show command types but lack outcome labels (completed vs abandoned)",
+      "Error root causes not captured (only exit codes, stderrLines may be empty)",
+      "Cache performance claimed but not measured (no hit rate data)",
+      "Help effectiveness unknown (hints added but no metric on whether users read them)"
+    ]
+  },
+  "nextSteps": {
+    "immediate": [
+      "opp-003: Add explicit 'Next Step' block to orient output (1-2 line change, high impact)",
+      "opp-004: Enhance error messages with recovery hints for claim/orient failures",
+      "opp-001: Add help examples for --assign, --next, --ready with swarm use case"
+    ],
+    "phase2": [
+      "opp-009: Run expanded mining (100+ sequences) with outcome labels (success vs abandoned)",
+      "opp-007: Profile and optimize validate command (target: <250ms)",
+      "opp-002: Verify flag aliases (-j, -q) are advertised and working"
+    ],
+    "phase3": [
+      "opp-006: Document cross-repo flags (--repo, --global, --deps) with examples",
+      "opp-012: Expand integration tests to negative-path (error handling)",
+      "opp-011: Instrument and measure cache hit rates, validate 396→1 claim"
+    ]
+  }
+}
