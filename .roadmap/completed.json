@@ -151,5 +151,33 @@
     ],
     "gitSha": "46f0837dc834e1a29f349c64f49efa54480ba154",
     "treeSha": "7cf4d9daf0d34d45c0ce876b46a05d1e3ac7bf7f"
+  },
+  {
+    "nodeId": "intent-evidence-kernel-active",
+    "completedAt": "2026-03-01T13:34:54.723Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301133454",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/evidence-kernel-ACTIVE.receipt.json"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm run test -- tests/evidence tests/claims tests/validation/invariants --run 2>&1 | grep -q 'pass'"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm run test -- tests/evidence tests/claims tests/validation/invariants --run 2>&1 | grep -q 'pass'",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "5509e9bcfa92f8de76082b394d25b49061fc0b1e",
+    "treeSha": "ce8e7d4459cbf7ba172b50c30d59faad0ee004da"
   }
 ]
