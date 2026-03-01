@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { DAGMismatch } from './types';
+import { DAGMismatch } from './types.js';
 
 export interface CompletionSubsystemInput {
   roadmapRoot: string;

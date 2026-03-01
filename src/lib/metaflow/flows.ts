@@ -12,13 +12,13 @@ import {
   type FlowIndex,
   isFlow,
   isFlowIndex,
-} from "./flow-schema.ts";
+} from "./phases/flow-schema.js";
 
 export {
   type Flow,
   type FlowStep,
   type FlowValidateRule,
-} from "./flow-schema.ts";
+} from "./phases/flow-schema.js";
 
 const FLOWS_DIR = (root: string) => join(root, ".roadmap", "flows");
 const INDEX_FILE = (root: string) => join(FLOWS_DIR(root), "INDEX.json");

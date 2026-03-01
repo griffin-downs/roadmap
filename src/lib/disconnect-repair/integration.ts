@@ -1,9 +1,9 @@
 // Terminal integration — disconnect-repair fully operational
 
-import { DisconnectAggregator } from '../disconnect-detector/aggregator';
-import { RepairExecutor } from './executor';
-import { RepairHistoryLog } from './history';
-import { validatePostRepair } from './post-repair-validation';
+import { DisconnectAggregator } from '../disconnect-detector/aggregator.js';
+import { RepairExecutor } from './executor.js';
+import { RepairHistoryLog } from './history.js';
+import { validatePostRepair } from './post-repair-validation.js';
 
 export interface DisconnectRepairSystem {
   detect(): Promise<any>;

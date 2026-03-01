@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { DAGMismatch } from './types';
+import { DAGMismatch } from './types.js';
 
 export interface FileSubsystemInput {
   roadmapRoot: string;
@@ -67,7 +67,7 @@ export class FileDetector {
           const sourceFile = filePath.replace('/tests/', '/src/').replace('.test.ts', '.ts');
           if (!fs.existsSync(sourceFile)) {
             issues.push({
-              type: 'orphan',
+              type: 'state-divergence',
               file: filePath,
               detail: `Test file without corresponding source: ${sourceFile}`,
               severity: 'warn',

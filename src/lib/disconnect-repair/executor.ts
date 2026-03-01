@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { RepairOperation, RepairResult } from '../disconnect-detector/types';
+import { RepairOperation, RepairResult } from '../disconnect-detector/types.js';
 
 export interface ExecutionState {
   operationId: string;
@@ -134,7 +134,7 @@ export class RepairExecutor {
 
       case 'migrate': {
         // For migrations, backup both source and dest state
-        const sources = op.action.split('->').map(s => s.trim());
+        const sources = op.action.split('->').map((s: string) => s.trim());
         for (const src of sources) {
           const srcPath = path.join(this.root, src);
           if (fs.existsSync(srcPath)) {

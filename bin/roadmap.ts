@@ -159,7 +159,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 
 // Commands that don't require a note
 // Special case: orient/position with --check is note-exempt (silent polling)
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor', 'status', 'explain', 'receipts', 'artifacts', 'env-audit', 'completion']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor', 'status', 'explain', 'receipts', 'artifacts', 'env-audit', 'completion', 'spec-kit']);
 const isOrientCheck = (cmd === 'orient' || cmd === 'position') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -334,7 +334,7 @@ async function main() {
       case 'federation': return cmdFederation(note!);
       case 'dispatch':  return await cmdDispatch(note!);
       case 'spec':      return cmdSpec(note!);
-      case 'spec-kit':  return cmdSpecKit(note!);
+      case 'spec-kit':  return cmdSpecKit(note);
       case 'init':      return cmdInit(note!);
       case 'report':    return await cmdReport(note!);
       case 'scaffold':  return await cmdScaffold(note!);
@@ -4687,7 +4687,7 @@ function cmdSpecKitInit(note: string) {
   let orientation: Orientation | undefined;
   if (hasLocalDAG) {
     try {
-      orientation = orient(g, completionStore, retired) as Orientation;
+      orientation = orient(loadDAG(), loadStore(), retiredSet()) as Orientation;
     } catch { /* untracked — use default */ }
   }
 

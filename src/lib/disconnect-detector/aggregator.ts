@@ -1,12 +1,12 @@
 // Aggregator — collects findings from all 6 detector subsystems
 
-import { DAGDetector } from './dag-subsystem';
-import { FileDetector } from './file-subsystem';
-import { ImportDetector } from './import-subsystem';
-import { CompletionDetector } from './completion-subsystem';
-import { ValidationDetector } from './validation-subsystem';
-import { IntentDetector } from './intent-subsystem';
-import { DisconnectReport } from './types';
+import { DAGDetector } from './dag-subsystem.js';
+import { FileDetector } from './file-subsystem.js';
+import { ImportDetector } from './import-subsystem.js';
+import { CompletionDetector } from './completion-subsystem.js';
+import { ValidationDetector } from './validation-subsystem.js';
+import { IntentDetector } from './intent-subsystem.js';
+import { DisconnectReport } from './types.js';
 
 export interface AggregatorInput {
   roadmapRoot: string;

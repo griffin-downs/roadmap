@@ -3,7 +3,7 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { DAGMismatch } from './types';
+import { DAGMismatch } from './types.js';
 
 export interface ImportSubsystemInput {
   roadmapRoot: string;

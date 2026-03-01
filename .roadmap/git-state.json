@@ -1,5 +1,5 @@
 {
-  "lastCommit": "54e9949edefb9a296be7c86e7173777e0b028633",
-  "timestamp": "2026-03-01T17:27:36Z",
-  "message": "agent-brief-template: agent brief guide and example template"
+  "lastCommit": "62724ff80ff0270ca9e8dbb2aab1f2c410c1a5af",
+  "timestamp": "2026-03-01T17:40:20Z",
+  "message": "fix: import-format-validation produces spec — remove non-existent import.ts reference"
 }

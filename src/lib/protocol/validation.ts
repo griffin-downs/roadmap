@@ -41,6 +41,11 @@ export async function validateNode<T extends string>(
     if (rule.type === 'artifact-exists') {
       const artifact = rule.target ?? rule.path;
       if (!artifact) { evidence = 'artifact-exists rule missing both target and path'; }
+      else if (Array.isArray(artifact)) {
+        passed = artifact.every(a => exists(a));
+        const missing = artifact.filter(a => !exists(a));
+        evidence = passed ? `all artifacts exist: ${artifact.join(', ')}` : `missing artifacts: ${missing.join(', ')}`;
+      }
       else { passed = exists(artifact); evidence = passed ? `artifact exists: ${artifact}` : `artifact missing: ${artifact}`; }
     } else if (rule.type === 'artifact-schema') {
       // TODO: Implement schema validation
