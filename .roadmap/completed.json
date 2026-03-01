@@ -1563,5 +1563,98 @@
     ],
     "gitSha": "4fac00916eceb16269969dd282d5682cf836f221",
     "treeSha": "eba2db24bd1167077a44a627ab750e5184c17399"
+  },
+  {
+    "nodeId": "p9-003-chart-envelope",
+    "completedAt": "2026-03-01T23:26:47.196Z",
+    "owner": "w1",
+    "checkpointId": "cp-20260301232646",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/cli-quality/p9-003-chart-envelope.marker"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): bin/roadmap chart 2>/dev/null | node --input-type=commonjs -e 'var d=\"\";process.stdin.resume();process.stdin.on(\"data\",function(c){d+=c});process.stdin.on(\"end\",function(){var e=JSON.parse(d);if(e.ok&&e.cmd===\"chart\"){console.log(\"Chart envelope valid\")}else{process.exit(1)}})'"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:bin/roadmap chart 2>/dev/null | node --input-type=commonjs -e 'var d=\"\";process.stdin.resume();process.stdin.on(\"data\",function(c){d+=c});process.stdin.on(\"end\",function(){var e=JSON.parse(d);if(e.ok&&e.cmd===\"chart\"){console.log(\"Chart envelope valid\")}else{process.exit(1)}})'",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "d68216b82163f42ed334ccfd5637da31df03fc952cc04c019f2560145036e17c",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/p9-003-chart-envelope/mm8dq6bd-n4e4e2/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "68f95b04045ba482fd7d3443275f5a84a984484e",
+    "treeSha": "edb34d3b8580e1a73bd3d31e5f2463550da8f6ce"
+  },
+  {
+    "nodeId": "instrument-context",
+    "completedAt": "2026-03-01T23:27:05.882Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301232700",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/cli-quality/instrument-context.marker"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npm test -- command-instrumentation.test.ts && echo 'Instrumentation context added' || exit 1"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npm test -- command-instrumentation.test.ts && echo 'Instrumentation context added' || exit 1",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "cbebe1d70ea9c6277f15a1aecb6bb1ba789c8bb34cd163d12143445c5dd9aa18",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/instrument-context/mm8dqkqz-0wq6gs/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "68f95b04045ba482fd7d3443275f5a84a984484e",
+    "treeSha": "edb34d3b8580e1a73bd3d31e5f2463550da8f6ce"
+  },
+  {
+    "nodeId": "claims-cache",
+    "completedAt": "2026-03-01T23:27:15.489Z",
+    "owner": "w2",
+    "checkpointId": "cp-20260301232714",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/cli-quality/claims-cache.marker"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm test -- claims-cache.test.ts && echo 'Claims cache tested' || exit 1"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm test -- claims-cache.test.ts && echo 'Claims cache tested' || exit 1",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "7f61e1080bfbc7f9f5ec28a593de68493af55f625a6e02809dc20d9215a26ca6",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/claims-cache/mm8dqs5o-64yw5e/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "68f95b04045ba482fd7d3443275f5a84a984484e",
+    "treeSha": "edb34d3b8580e1a73bd3d31e5f2463550da8f6ce"
   }
 ]

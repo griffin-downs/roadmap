@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-03-01T22:50:09.704Z",
+  "timestamp": "2026-03-01T23:27:38.410Z",
   "totalCommands": 30,
   "commands": [
     {
       "cmd": "orient",
-      "args": "--note mine-1",
+      "args": "--note mine-run-1",
       "count": 1,
-      "avgDurationMs": 142,
-      "medianDurationMs": 142,
-      "minDurationMs": 142,
-      "maxDurationMs": 142,
+      "avgDurationMs": 276,
+      "medianDurationMs": 276,
+      "minDurationMs": 276,
+      "maxDurationMs": 276,
       "exitCodes": {
         "0": 1
       },
@@ -21,48 +21,13 @@
       ]
     },
     {
-      "cmd": "chart",
-      "count": 7,
-      "avgDurationMs": 144,
-      "medianDurationMs": 142,
-      "minDurationMs": 134,
-      "maxDurationMs": 164,
-      "exitCodes": {
-        "0": 7
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "show",
-      "args": "init",
-      "count": 3,
-      "avgDurationMs": 138,
-      "medianDurationMs": 135,
-      "minDurationMs": 133,
-      "maxDurationMs": 146,
-      "exitCodes": {
-        "0": 3
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
       "cmd": "orient",
-      "args": "--note mine-2",
+      "args": "--note mine-run-2",
       "count": 1,
-      "avgDurationMs": 135,
-      "medianDurationMs": 135,
-      "minDurationMs": 135,
-      "maxDurationMs": 135,
+      "avgDurationMs": 263,
+      "medianDurationMs": 263,
+      "minDurationMs": 263,
+      "maxDurationMs": 263,
       "exitCodes": {
         "0": 1
       },
@@ -77,10 +42,10 @@
       "cmd": "orient",
       "args": "--check",
       "count": 1,
-      "avgDurationMs": 134,
-      "medianDurationMs": 134,
-      "minDurationMs": 134,
-      "maxDurationMs": 134,
+      "avgDurationMs": 314,
+      "medianDurationMs": 314,
+      "minDurationMs": 314,
+      "maxDurationMs": 314,
       "exitCodes": {
         "0": 1
       },
@@ -92,14 +57,140 @@
       ]
     },
     {
-      "cmd": "trail",
-      "count": 3,
-      "avgDurationMs": 136,
-      "medianDurationMs": 136,
-      "minDurationMs": 134,
-      "maxDurationMs": 139,
+      "cmd": "orient",
+      "args": "--note mine-run-3 --json",
+      "count": 1,
+      "avgDurationMs": 266,
+      "medianDurationMs": 266,
+      "minDurationMs": 266,
+      "maxDurationMs": 266,
       "exitCodes": {
-        "0": 3
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "chart",
+      "count": 1,
+      "avgDurationMs": 200,
+      "medianDurationMs": 200,
+      "minDurationMs": 200,
+      "maxDurationMs": 200,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "chart",
+      "args": "--deps",
+      "count": 1,
+      "avgDurationMs": 238,
+      "medianDurationMs": 238,
+      "minDurationMs": 238,
+      "maxDurationMs": 238,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "chart",
+      "args": "--critical-path",
+      "count": 1,
+      "avgDurationMs": 228,
+      "medianDurationMs": 228,
+      "minDurationMs": 228,
+      "maxDurationMs": 228,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "show",
+      "args": "init --note mine-show-init",
+      "count": 1,
+      "avgDurationMs": 286,
+      "medianDurationMs": 286,
+      "minDurationMs": 286,
+      "maxDurationMs": 286,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "show",
+      "args": "usage-mine --note mine-show-self",
+      "count": 1,
+      "avgDurationMs": 283,
+      "medianDurationMs": 283,
+      "minDurationMs": 283,
+      "maxDurationMs": 283,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "show",
+      "args": "term --note mine-show-term",
+      "count": 1,
+      "avgDurationMs": 325,
+      "medianDurationMs": 325,
+      "minDurationMs": 325,
+      "maxDurationMs": 325,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "show",
+      "args": "--batch --note mine-show-batch",
+      "count": 1,
+      "avgDurationMs": 225,
+      "medianDurationMs": 225,
+      "minDurationMs": 225,
+      "maxDurationMs": 225,
+      "exitCodes": {
+        "0": 1
       },
       "contexts": [
         {
@@ -110,12 +201,12 @@
     },
     {
       "cmd": "validate",
-      "args": "--note mine-validate",
+      "args": "init --note mine-validate-init",
       "count": 1,
-      "avgDurationMs": 749,
-      "medianDurationMs": 749,
-      "minDurationMs": 749,
-      "maxDurationMs": 749,
+      "avgDurationMs": 270,
+      "medianDurationMs": 270,
+      "minDurationMs": 270,
+      "maxDurationMs": 270,
       "exitCodes": {
         "0": 1
       },
@@ -127,120 +218,13 @@
       ]
     },
     {
-      "cmd": "orient",
-      "args": "--note mine-3",
+      "cmd": "validate",
+      "args": "usage-mine --note mine-validate-self",
       "count": 1,
-      "avgDurationMs": 149,
-      "medianDurationMs": 149,
-      "minDurationMs": 149,
-      "maxDurationMs": 149,
-      "exitCodes": {
-        "0": 1
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "orient",
-      "args": "--note mine-4",
-      "count": 1,
-      "avgDurationMs": 137,
-      "medianDurationMs": 137,
-      "minDurationMs": 137,
-      "maxDurationMs": 137,
-      "exitCodes": {
-        "0": 1
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "trail",
-      "args": "--last 10",
-      "count": 1,
-      "avgDurationMs": 130,
-      "medianDurationMs": 130,
-      "minDurationMs": 130,
-      "maxDurationMs": 130,
-      "exitCodes": {
-        "0": 1
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "orient",
-      "args": "--note mine-5",
-      "count": 1,
-      "avgDurationMs": 143,
-      "medianDurationMs": 143,
-      "minDurationMs": 143,
-      "maxDurationMs": 143,
-      "exitCodes": {
-        "0": 1
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "claim",
-      "args": "init --owner test-agent",
-      "count": 1,
-      "avgDurationMs": 128,
-      "medianDurationMs": 128,
-      "minDurationMs": 128,
-      "maxDurationMs": 128,
-      "exitCodes": {
-        "1": 1
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "orient",
-      "count": 1,
-      "avgDurationMs": 128,
-      "medianDurationMs": 128,
-      "minDurationMs": 128,
-      "maxDurationMs": 128,
-      "exitCodes": {
-        "1": 1
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "orient",
-      "args": "--note mine-6",
-      "count": 1,
-      "avgDurationMs": 137,
-      "medianDurationMs": 137,
-      "minDurationMs": 137,
-      "maxDurationMs": 137,
+      "avgDurationMs": 246,
+      "medianDurationMs": 246,
+      "minDurationMs": 246,
+      "maxDurationMs": 246,
       "exitCodes": {
         "0": 1
       },
@@ -255,10 +239,153 @@
       "cmd": "trail",
       "args": "--last 5",
       "count": 1,
-      "avgDurationMs": 126,
-      "medianDurationMs": 126,
-      "minDurationMs": 126,
-      "maxDurationMs": 126,
+      "avgDurationMs": 257,
+      "medianDurationMs": 257,
+      "minDurationMs": 257,
+      "maxDurationMs": 257,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "trail",
+      "args": "--last 10",
+      "count": 1,
+      "avgDurationMs": 228,
+      "medianDurationMs": 228,
+      "minDurationMs": 228,
+      "maxDurationMs": 228,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "trail",
+      "args": "--last 20",
+      "count": 1,
+      "avgDurationMs": 200,
+      "medianDurationMs": 200,
+      "minDurationMs": 200,
+      "maxDurationMs": 200,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "parallel",
+      "args": "--note mine-parallel",
+      "count": 1,
+      "avgDurationMs": 251,
+      "medianDurationMs": 251,
+      "minDurationMs": 251,
+      "maxDurationMs": 251,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "parallel",
+      "args": "--graph --note mine-parallel-graph",
+      "count": 1,
+      "avgDurationMs": 278,
+      "medianDurationMs": 278,
+      "minDurationMs": 278,
+      "maxDurationMs": 278,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "help",
+      "count": 1,
+      "avgDurationMs": 220,
+      "medianDurationMs": 220,
+      "minDurationMs": 220,
+      "maxDurationMs": 220,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "describe",
+      "args": "--note mine-describe",
+      "count": 1,
+      "avgDurationMs": 228,
+      "medianDurationMs": 228,
+      "minDurationMs": 228,
+      "maxDurationMs": 228,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "claim",
+      "args": "--list --note mine-claim-list",
+      "count": 1,
+      "avgDurationMs": 181,
+      "medianDurationMs": 181,
+      "minDurationMs": 181,
+      "maxDurationMs": 181,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "retire",
+      "args": "--list --note mine-retire-list",
+      "count": 1,
+      "avgDurationMs": 204,
+      "medianDurationMs": 204,
+      "minDurationMs": 204,
+      "maxDurationMs": 204,
       "exitCodes": {
         "0": 1
       },
@@ -271,12 +398,84 @@
     },
     {
       "cmd": "orient",
-      "args": "--note mine-7",
+      "args": "--note mine-run-4",
       "count": 1,
-      "avgDurationMs": 145,
-      "medianDurationMs": 145,
-      "minDurationMs": 145,
-      "maxDurationMs": 145,
+      "avgDurationMs": 220,
+      "medianDurationMs": 220,
+      "minDurationMs": 220,
+      "maxDurationMs": 220,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "orient",
+      "args": "--note mine-run-5",
+      "count": 1,
+      "avgDurationMs": 268,
+      "medianDurationMs": 268,
+      "minDurationMs": 268,
+      "maxDurationMs": 268,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "orient",
+      "args": "--ready --note mine-ready",
+      "count": 1,
+      "avgDurationMs": 270,
+      "medianDurationMs": 270,
+      "minDurationMs": 270,
+      "maxDurationMs": 270,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "orient",
+      "args": "--next --note mine-next",
+      "count": 1,
+      "avgDurationMs": 895,
+      "medianDurationMs": 895,
+      "minDurationMs": 895,
+      "maxDurationMs": 895,
+      "exitCodes": {
+        "0": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "orient",
+      "args": "--staged --note mine-staged",
+      "count": 1,
+      "avgDurationMs": 892,
+      "medianDurationMs": 892,
+      "minDurationMs": 892,
+      "maxDurationMs": 892,
       "exitCodes": {
         "0": 1
       },
@@ -289,12 +488,30 @@
     },
     {
       "cmd": "validate",
-      "args": "--note mine-validate-2",
+      "args": "--note mine-validate-all",
       "count": 1,
-      "avgDurationMs": 731,
-      "medianDurationMs": 731,
-      "minDurationMs": 731,
-      "maxDurationMs": 731,
+      "avgDurationMs": 30036,
+      "medianDurationMs": 30036,
+      "minDurationMs": 30036,
+      "maxDurationMs": 30036,
+      "exitCodes": {
+        "1": 1
+      },
+      "contexts": [
+        {
+          "nodeId": "usage-mine",
+          "dagId": "metaflow-cli-quality"
+        }
+      ]
+    },
+    {
+      "cmd": "iter-id",
+      "args": "--note mine-iter-id",
+      "count": 1,
+      "avgDurationMs": 294,
+      "medianDurationMs": 294,
+      "minDurationMs": 294,
+      "maxDurationMs": 294,
       "exitCodes": {
         "0": 1
       },
@@ -306,51 +523,15 @@
       ]
     },
     {
-      "cmd": "orient",
-      "args": "--note mine-8",
+      "cmd": "report",
+      "args": "--note mine-report",
       "count": 1,
-      "avgDurationMs": 148,
-      "medianDurationMs": 148,
-      "minDurationMs": 148,
-      "maxDurationMs": 148,
+      "avgDurationMs": 30038,
+      "medianDurationMs": 30038,
+      "minDurationMs": 30038,
+      "maxDurationMs": 30038,
       "exitCodes": {
-        "0": 1
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "orient",
-      "args": "--note mine-9",
-      "count": 1,
-      "avgDurationMs": 155,
-      "medianDurationMs": 155,
-      "minDurationMs": 155,
-      "maxDurationMs": 155,
-      "exitCodes": {
-        "0": 1
-      },
-      "contexts": [
-        {
-          "nodeId": "usage-mine",
-          "dagId": "metaflow-cli-quality"
-        }
-      ]
-    },
-    {
-      "cmd": "orient",
-      "args": "--note mine-10",
-      "count": 1,
-      "avgDurationMs": 151,
-      "medianDurationMs": 151,
-      "minDurationMs": 151,
-      "maxDurationMs": 151,
-      "exitCodes": {
-        "0": 1
+        "1": 1
       },
       "contexts": [
         {
@@ -361,8 +542,8 @@
     }
   ],
   "summary": {
-    "totalDurationMs": 5397,
-    "avgCommandDurationMs": 180,
+    "totalDurationMs": 68380,
+    "avgCommandDurationMs": 2279,
     "errorCount": 2,
     "successRate": 0.9333333333333333
   }
