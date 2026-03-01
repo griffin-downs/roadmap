@@ -1,0 +1,21 @@
+{
+  "timestamp": "2026-03-01T20:12:38.674Z",
+  "status": "passed",
+  "detectors": [
+    {
+      "detector": "enforcement-schema",
+      "status": "passed",
+      "violations": 0
+    },
+    {
+      "detector": "state-recovery",
+      "status": "passed",
+      "violations": 0
+    },
+    {
+      "detector": "state-enforcement",
+      "status": "passed",
+      "violations": 0
+    }
+  ]
+}

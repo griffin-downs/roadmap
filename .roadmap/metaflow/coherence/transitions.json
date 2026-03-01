@@ -1,0 +1,116 @@
+{
+  "timestamp": "2026-03-01T20:12:40.749Z",
+  "transitions": [
+    {
+      "ts": "2026-03-01T19:56:16.577Z",
+      "cmd": "spec-init",
+      "note": "initialize spec-kit for Priority 1 metaflows",
+      "repo": "roadmap",
+      "position": [
+        "untracked"
+      ],
+      "level": 0,
+      "dagId": "metaflows-p1"
+    },
+    {
+      "ts": "2026-03-01T19:57:32.275Z",
+      "cmd": "import",
+      "note": "import Priority 1 metaflows (15 tasks + terminal)",
+      "repo": "roadmap",
+      "position": [
+        "init"
+      ],
+      "level": 0,
+      "dagId": "metaflows-p1",
+      "detail": {
+        "source": ".specify/specs/metaflows-p1/tasks.md",
+        "tasks": 16,
+        "nodes": 18,
+        "receiptPath": "/home/griffin/src/roadmap/.roadmap/receipts/import-0b1ca41f.json",
+        "dagHash": "5daa0d935fbd"
+      }
+    },
+    {
+      "ts": "2026-03-01T19:57:36.920Z",
+      "cmd": "orient",
+      "note": "metaflows-p1 — ready for parallel execution of 3 flows × 5 steps",
+      "repo": "roadmap",
+      "position": [],
+      "level": 8,
+      "dagId": "fr-custodial-iter-002",
+      "detail": {
+        "done": 15,
+        "remaining": 0,
+        "complete": true,
+        "batchRemaining": 0
+      }
+    },
+    {
+      "ts": "2026-03-01T19:57:37.067Z",
+      "cmd": "parallel",
+      "note": "show parallel execution batches",
+      "repo": "roadmap",
+      "position": [],
+      "level": 8,
+      "dagId": "fr-custodial-iter-002",
+      "detail": {
+        "crossRepo": false,
+        "showGraph": false
+      }
+    },
+    {
+      "ts": "2026-03-01T19:57:43.240Z",
+      "cmd": "branch",
+      "note": "create metaflows-p1 branch and activate DAG",
+      "repo": "roadmap",
+      "position": [],
+      "level": 8,
+      "dagId": "fr-custodial-iter-002",
+      "detail": {
+        "branch": "metaflows-p1",
+        "dagFile": null,
+        "commit": "0b1ca41"
+      }
+    },
+    {
+      "ts": "2026-03-01T19:57:51.445Z",
+      "cmd": "orient",
+      "note": "reverted to fr-custodial-iter-002 after import parse failure",
+      "repo": "roadmap",
+      "position": [],
+      "level": 8,
+      "dagId": "fr-custodial-iter-002",
+      "detail": {
+        "done": 15,
+        "remaining": 0,
+        "complete": true,
+        "batchRemaining": 0
+      }
+    },
+    {
+      "ts": "2026-03-01T20:10:24.958Z",
+      "cmd": "orient",
+      "note": "metaflows-p1 — implement execute-flow CLI + import parser for 3 parallel flows",
+      "repo": "roadmap",
+      "position": [],
+      "level": 8,
+      "dagId": "fr-custodial-iter-002",
+      "detail": {
+        "done": 15,
+        "remaining": 0,
+        "complete": true,
+        "batchRemaining": 0
+      }
+    },
+    {
+      "ts": "2026-03-01T20:12:38.674Z",
+      "cmd": "internal.execute-flow",
+      "repo": "roadmap",
+      "detail": {
+        "flowId": "audit-recovery-flow",
+        "passed": true,
+        "stepsRun": 5
+      }
+    }
+  ]
+}

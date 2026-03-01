@@ -1,5 +1,5 @@
 {
-  "lastCommit": "0b1ca41fd875baaef2af0d24a7184412f2135b03",
-  "timestamp": "2026-03-01T19:53:10Z",
-  "message": "roadmap: archive trail (43 entries)"
+  "lastCommit": "c2f33643372b335c4238c4deb3d81b6883f6515c",
+  "timestamp": "2026-03-01T20:12:35Z",
+  "message": "roadmap: implement execute-flow CLI + import parser for 3 parallel flows"
 }

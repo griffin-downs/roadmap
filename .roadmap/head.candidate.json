@@ -3,12 +3,12 @@
   "baseSha": "afdf5874028943b0d94c28ad2c5156b7a793d0c98ca9b2d9bc781c5e8142c432",
   "source": "import",
   "sourceDetail": ".specify/specs/metaflows-p1/tasks.md",
-  "createdAt": "2026-03-01T19:57:31.979Z",
+  "createdAt": "2026-03-01T20:13:22.319Z",
   "dag": {
     "id": "metaflows-p1",
     "desc": "Imported from spec-kit",
     "init": "init",
-    "term": "term",
+    "term": "intent-metaflow-audit-complete",
     "nodes": {
       "init": {
         "id": "init",
@@ -32,30 +32,334 @@
           ".specify/specs/metaflows-p1/tasks.md"
         ]
       },
-      "term": {
-        "id": "term",
-        "desc": "Synthetic term — gates on all leaf tasks",
-        "produces": [],
-        "consumes": [],
+      "audit-initial": {
+        "id": "audit-initial",
+        "desc": "Run compliance audit",
+        "produces": [
+          ".roadmap/metaflow/audit/audit-run.json"
+        ],
+        "consumes": [
+          "init.marker"
+        ],
         "deps": [
-          "audit-initial",
-          "detect-failures",
-          "apply-recovery",
-          "audit-final",
-          "recovery-report",
-          "load-transitions",
-          "verify-sequences",
-          "detect-deadlocks",
-          "validate-concurrent",
-          "coherence-report",
-          "mine-latency",
-          "compute-percentiles",
-          "detect-regressions",
-          "identify-slow",
-          "optimization-proposals",
-          "intent-metaflow-audit-complete"
+          "init"
         ],
         "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/audit/audit-run.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "detect-failures": {
+        "id": "detect-failures",
+        "desc": "Parse audit failures and identify failure types",
+        "produces": [
+          ".roadmap/metaflow/recovery/failures.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/audit/audit-run.json"
+        ],
+        "deps": [
+          "audit-initial"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/recovery/failures.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "apply-recovery": {
+        "id": "apply-recovery",
+        "desc": "Apply recovery strategies for each failure type",
+        "produces": [
+          ".roadmap/metaflow/recovery/recovery-log.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/recovery/failures.json"
+        ],
+        "deps": [
+          "detect-failures"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/recovery/recovery-log.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "audit-final": {
+        "id": "audit-final",
+        "desc": "Re-run audit after recovery",
+        "produces": [
+          ".roadmap/metaflow/audit/audit-run-final.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/recovery/recovery-log.json"
+        ],
+        "deps": [
+          "apply-recovery"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/audit/audit-run-final.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "recovery-report": {
+        "id": "recovery-report",
+        "desc": "Generate recovery report",
+        "produces": [
+          ".roadmap/metaflow/recovery/recovery-report.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/audit/audit-run.json",
+          ".roadmap/metaflow/audit/audit-run-final.json"
+        ],
+        "deps": [
+          "audit-final"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/recovery/recovery-report.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "load-transitions": {
+        "id": "load-transitions",
+        "desc": "Extract state transitions from audit trail",
+        "produces": [
+          ".roadmap/metaflow/coherence/transitions.json"
+        ],
+        "consumes": [
+          "init.marker"
+        ],
+        "deps": [
+          "init"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/coherence/transitions.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "verify-sequences": {
+        "id": "verify-sequences",
+        "desc": "Verify legal transition sequences",
+        "produces": [
+          ".roadmap/metaflow/coherence/transition-validation.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/coherence/transitions.json"
+        ],
+        "deps": [
+          "load-transitions"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/coherence/transition-validation.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "detect-deadlocks": {
+        "id": "detect-deadlocks",
+        "desc": "Detect cycles and blocking conditions",
+        "produces": [
+          ".roadmap/metaflow/coherence/deadlock-report.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/coherence/transitions.json"
+        ],
+        "deps": [
+          "load-transitions"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/coherence/deadlock-report.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "validate-concurrent": {
+        "id": "validate-concurrent",
+        "desc": "Validate concurrent operation ordering",
+        "produces": [
+          ".roadmap/metaflow/coherence/concurrent-validation.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/coherence/transitions.json"
+        ],
+        "deps": [
+          "load-transitions"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/coherence/concurrent-validation.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "coherence-report": {
+        "id": "coherence-report",
+        "desc": "Aggregate coherence metrics and violations",
+        "produces": [
+          ".roadmap/metaflow/coherence/coherence-report.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/coherence/transition-validation.json",
+          ".roadmap/metaflow/coherence/deadlock-report.json",
+          ".roadmap/metaflow/coherence/concurrent-validation.json"
+        ],
+        "deps": [
+          "verify-sequences",
+          "detect-deadlocks",
+          "validate-concurrent"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/coherence/coherence-report.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "mine-latency": {
+        "id": "mine-latency",
+        "desc": "Extract latency metrics",
+        "produces": [
+          ".roadmap/metaflow/performance/latency-data.json"
+        ],
+        "consumes": [
+          "init.marker"
+        ],
+        "deps": [
+          "init"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/performance/latency-data.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "compute-percentiles": {
+        "id": "compute-percentiles",
+        "desc": "Compute p50/p95/p99 latencies by command",
+        "produces": [
+          ".roadmap/metaflow/performance/latency-percentiles.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/performance/latency-data.json"
+        ],
+        "deps": [
+          "mine-latency"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/performance/latency-percentiles.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "detect-regressions": {
+        "id": "detect-regressions",
+        "desc": "Compare against baseline and detect regressions",
+        "produces": [
+          ".roadmap/metaflow/performance/regression-report.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/performance/latency-percentiles.json"
+        ],
+        "deps": [
+          "compute-percentiles"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/performance/regression-report.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "identify-slow": {
+        "id": "identify-slow",
+        "desc": "Find slow commands > 1000ms",
+        "produces": [
+          ".roadmap/metaflow/performance/slow-commands.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/performance/latency-data.json"
+        ],
+        "deps": [
+          "mine-latency"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/performance/slow-commands.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "optimization-proposals": {
+        "id": "optimization-proposals",
+        "desc": "Generate optimization ideas",
+        "produces": [
+          ".roadmap/metaflow/performance/optimization-proposals.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/performance/slow-commands.json",
+          ".roadmap/metaflow/performance/regression-report.json"
+        ],
+        "deps": [
+          "identify-slow",
+          "detect-regressions"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/performance/optimization-proposals.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "intent-metaflow-audit-complete": {
+        "id": "intent-metaflow-audit-complete",
+        "desc": "Metaflows execution complete, all reports generated",
+        "produces": [
+          ".roadmap/metaflow/intent-metaflow-audit-complete.json"
+        ],
+        "consumes": [
+          ".roadmap/metaflow/recovery/recovery-report.json",
+          ".roadmap/metaflow/coherence/coherence-report.json",
+          ".roadmap/metaflow/performance/optimization-proposals.json"
+        ],
+        "deps": [
+          "recovery-report",
+          "coherence-report",
+          "optimization-proposals"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "target": ".roadmap/metaflow/intent-metaflow-audit-complete.json"
+          },
           {
             "type": "spec-conformance",
             "spec": ".specify/specs/metaflows-p1/spec.md",
@@ -73,224 +377,16 @@
             "expectExitCode": 0
           }
         ],
-        "idempotent": false,
+        "idempotent": true,
         "ambient": [
           ".specify/specs/metaflows-p1/spec.md"
         ]
-      },
-      "audit-initial": {
-        "id": "audit-initial",
-        "desc": "Run compliance audit, produce audit-run.json",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "detect-failures": {
-        "id": "detect-failures",
-        "desc": "Parse audit failures, produce failures.json (consumes audit-run.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "apply-recovery": {
-        "id": "apply-recovery",
-        "desc": "Apply recovery strategies, produce recovery-log.json (consumes failures.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "audit-final": {
-        "id": "audit-final",
-        "desc": "Re-run audit post-recovery, produce audit-run-final.json (consumes recovery-log.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "recovery-report": {
-        "id": "recovery-report",
-        "desc": "Generate recovery report, produce recovery-report.json (consumes audit-run.json, audit-run-final.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "load-transitions": {
-        "id": "load-transitions",
-        "desc": "Extract state transitions from trail.jsonl, produce transitions.json",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "verify-sequences": {
-        "id": "verify-sequences",
-        "desc": "Verify legal transition sequences, produce transition-validation.json (consumes transitions.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "detect-deadlocks": {
-        "id": "detect-deadlocks",
-        "desc": "Detect cycles and blocking conditions, produce deadlock-report.json (consumes transitions.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "validate-concurrent": {
-        "id": "validate-concurrent",
-        "desc": "Validate concurrent operation ordering, produce concurrent-validation.json (consumes transitions.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "coherence-report": {
-        "id": "coherence-report",
-        "desc": "Aggregate coherence metrics, produce coherence-report.json (consumes transition-validation.json, deadlock-report.json, concurrent-validation.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "mine-latency": {
-        "id": "mine-latency",
-        "desc": "Extract latency metrics, produce latency-data.json",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "compute-percentiles": {
-        "id": "compute-percentiles",
-        "desc": "Compute p50/p95/p99 latencies, produce latency-percentiles.json (consumes latency-data.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "detect-regressions": {
-        "id": "detect-regressions",
-        "desc": "Compare against baseline, produce regression-report.json (consumes latency-percentiles.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "identify-slow": {
-        "id": "identify-slow",
-        "desc": "Find slow commands > 1000ms, produce slow-commands.json (consumes latency-data.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "optimization-proposals": {
-        "id": "optimization-proposals",
-        "desc": "Generate optimization ideas, produce optimization-proposals.json (consumes slow-commands.json, regression-report.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
-      },
-      "intent-metaflow-audit-complete": {
-        "id": "intent-metaflow-audit-complete",
-        "desc": "Metaflows execution complete, all reports generated (consumes recovery-report.json, coherence-report.json, optimization-proposals.json)",
-        "produces": [],
-        "consumes": [
-          "init.marker"
-        ],
-        "deps": [
-          "init"
-        ],
-        "validate": [],
-        "idempotent": true
       }
     },
     "version": "0.3.0",
     "protocolVersion": "0.3.0",
     "spec": {
-      "compiled_sha256": "85beb7bf731d7716dd4ba651509f9fba35c56be4f7980ed79e5f5c5e04086d24",
+      "compiled_sha256": "02d1562482cbde3be42c8c756e6fdede15024107b99d2f53dce99bcb1b80706d",
       "engine": {
         "name": "speckit",
         "version": "0.1.0"
@@ -298,7 +394,7 @@
       "inputs": [
         {
           "path": ".specify/specs/metaflows-p1/tasks.md",
-          "sha256": "85beb7bf731d7716dd4ba651509f9fba35c56be4f7980ed79e5f5c5e04086d24"
+          "sha256": "02d1562482cbde3be42c8c756e6fdede15024107b99d2f53dce99bcb1b80706d"
         }
       ]
     }
