@@ -134,7 +134,12 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists"
+          "type": "artifact-exists",
+          "path": "src/cli/commands/ts.ts"
+        },
+        {
+          "type": "artifact-exists",
+          "path": "src/lib/ts-sandbox.ts"
         }
       ],
       "idempotent": true
