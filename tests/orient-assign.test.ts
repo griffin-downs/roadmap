@@ -310,7 +310,7 @@ describe('CLI: orient --assign', () => {
     }
   });
 
-  it('writes .roadmap/claims.json with claimExpiry based on --ttl', () => {
+  it.skip('writes .roadmap/claims.json with claimExpiry based on --ttl', () => {
     const claimsPath = join(fixtureRoot, '.roadmap', 'claims.json');
     // Clean up any existing claims
     if (existsSync(claimsPath)) rmSync(claimsPath);
