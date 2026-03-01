@@ -47,7 +47,11 @@
     "detector-dag-subsystem": {
       "id": "detector-dag-subsystem",
       "desc": "Scan DAG state (head.json vs execution context vs completed.json). Detect mismatches, divergence, orphaned DAGs. Produces: `src/lib/disconnect-detector/dag-subsystem.ts`, `tests/detector/dag.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/dag-subsystem.ts",
+        "src/lib/disconnect-detector/types.ts",
+        "tests/detector/dag.test.ts"
+      ],
       "consumes": [],
       "deps": [],
       "validate": [
@@ -64,7 +68,10 @@
     "detector-file-subsystem": {
       "id": "detector-file-subsystem",
       "desc": "Scan file organization (files in correct locations, no duplicates, no orphaned files in wrong places). Depends: detector-dag-subsystem. Produces: `src/lib/disconnect-detector/file-subsystem.ts`, `tests/detector/files.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/file-subsystem.ts",
+        "tests/detector/files.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-dag-subsystem"
@@ -75,7 +82,10 @@
     "detector-import-subsystem": {
       "id": "detector-import-subsystem",
       "desc": "Scan imports (tsc clean, no broken paths, barrel exports complete, no circular deps). Depends: detector-dag-subsystem. Produces: `src/lib/disconnect-detector/import-subsystem.ts`, `tests/detector/imports.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/import-subsystem.ts",
+        "tests/detector/imports.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-dag-subsystem"
@@ -86,7 +96,10 @@
     "detector-completion-subsystem": {
       "id": "detector-completion-subsystem",
       "desc": "Scan completion state (records match artifacts, no stale checkpoints, DAG consistency). Depends: detector-dag-subsystem. Produces: `src/lib/disconnect-detector/completion-subsystem.ts`, `tests/detector/completion.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/completion-subsystem.ts",
+        "tests/detector/completion.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-dag-subsystem"
@@ -97,7 +110,10 @@
     "detector-validation-subsystem": {
       "id": "detector-validation-subsystem",
       "desc": "Scan validation rules (artifact paths exist, commands runnable, metrics pass). Depends: detector-dag-subsystem. Produces: `src/lib/disconnect-detector/validation-subsystem.ts`, `tests/detector/validation.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/validation-subsystem.ts",
+        "tests/detector/validation.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-dag-subsystem"
@@ -108,7 +124,10 @@
     "detector-intent-subsystem": {
       "id": "detector-intent-subsystem",
       "desc": "Scan intent gates (gates defined but not run, confidence thresholds not met, expansions pending). Depends: detector-dag-subsystem. Produces: `src/lib/disconnect-detector/intent-subsystem.ts`, `tests/detector/intent.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/intent-subsystem.ts",
+        "tests/detector/intent.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-dag-subsystem"
@@ -119,7 +138,10 @@
     "repair-execution-engine": {
       "id": "repair-execution-engine",
       "desc": "Execute repair operations (file moves, import updates, completion record migrations). Supports rollback. Depends: disconnect-aggregator. Produces: `src/lib/disconnect-repair/executor.ts`, `tests/repair/executor.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-repair/executor.ts",
+        "tests/repair/executor.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "disconnect-aggregator"
@@ -130,7 +152,10 @@
     "repair-approval-gates": {
       "id": "repair-approval-gates",
       "desc": "Approval gates for destructive repairs (moves, deletions, migrations). Non-destructive (updates, re-runs) auto-approve. Depends: repair-execution-engine. Produces: `src/lib/disconnect-repair/approval.ts`, `tests/repair/approval.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-repair/approval.ts",
+        "tests/repair/approval.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "repair-execution-engine"
@@ -141,7 +166,9 @@
     "repair-validators": {
       "id": "repair-validators",
       "desc": "Re-validate system state after repair (tsc, imports, file structure, completions). Depends: repair-approval-gates. Produces: `src/lib/disconnect-repair/post-repair-validation.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-repair/post-repair-validation.ts"
+      ],
       "consumes": [],
       "deps": [
         "repair-approval-gates"
@@ -152,7 +179,10 @@
     "cli-detect-disconnects": {
       "id": "cli-detect-disconnects",
       "desc": "`roadmap detect-disconnects [--subsystems dag,files,imports]`. Scan and report. Depends: disconnect-aggregator. Produces: updated `bin/roadmap.ts`, `tests/cli/detect.test.ts`",
-      "produces": [],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/cli/detect.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "disconnect-aggregator"
@@ -163,7 +193,10 @@
     "cli-repair-audit": {
       "id": "cli-repair-audit",
       "desc": "`roadmap repair-audit [--history] [--last N]`. Show repair history + decisions. Depends: repair-history-log. Produces: updated `bin/roadmap.ts`, `tests/cli/repair-audit.test.ts`",
-      "produces": [],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/cli/repair-audit.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "repair-history-log"
@@ -174,7 +207,10 @@
     "disconnect-aggregator": {
       "id": "disconnect-aggregator",
       "desc": "Aggregate findings from all subsystems, generate `DisconnectReport` with severity + repair options. Depends: detector-file-subsystem, detector-import-subsystem, detector-completion-subsystem, detector-validation-subsystem, detector-intent-subsystem. Produces: `src/lib/disconnect-detector/aggregator.ts`, `tests/detector/report.test.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/aggregator.ts",
+        "tests/detector/report.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-file-subsystem",
@@ -189,7 +225,10 @@
     "repair-history-log": {
       "id": "repair-history-log",
       "desc": "Log all repairs applied, who approved, what state before/after, any errors. Depends: repair-validators. Produces: `.roadmap/repairs/history.jsonl`, `src/lib/disconnect-repair/history.ts`",
-      "produces": [],
+      "produces": [
+        ".roadmap/repairs/history.jsonl",
+        "src/lib/disconnect-repair/history.ts"
+      ],
       "consumes": [],
       "deps": [
         "repair-validators"
@@ -200,7 +239,10 @@
     "cli-repair-interactive": {
       "id": "cli-repair-interactive",
       "desc": "`roadmap repair <disconnect-id> <option-idx>`. Interactive repair with approval. Depends: repair-approval-gates. Produces: updated `bin/roadmap.ts`, `tests/cli/repair-interactive.test.ts`",
-      "produces": [],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/cli/repair-interactive.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "repair-approval-gates"
@@ -211,7 +253,10 @@
     "cli-repair-auto": {
       "id": "cli-repair-auto",
       "desc": "`roadmap repair --auto [--dry-run]`. Auto-repair low-risk disconnects. Depends: cli-repair-interactive. Produces: updated `bin/roadmap.ts`, `tests/cli/repair-auto.test.ts`",
-      "produces": [],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/cli/repair-auto.test.ts"
+      ],
       "consumes": [],
       "deps": [
         "cli-repair-interactive"
@@ -222,7 +267,9 @@
     "detector-metric-constraints": {
       "id": "detector-metric-constraints",
       "desc": "Metric violations (file counts, line counts) detected as disconnects. Repair options: expand node with fix, split files, move files. Depends: detector-validation-subsystem. Produces: updated `src/lib/disconnect-detector/validation-subsystem.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/validation-subsystem.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-validation-subsystem"
@@ -233,7 +280,9 @@
     "auto-repair-file-organization": {
       "id": "auto-repair-file-organization",
       "desc": "Auto-repair for common case: files unmoved to domains. Generates expansion nodes + applies moves. Depends: detector-metric-constraints. Produces: `src/lib/disconnect-repair/auto-file-repair.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-repair/auto-file-repair.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-metric-constraints"
@@ -244,7 +293,9 @@
     "detector-intent-convergence-gap": {
       "id": "detector-intent-convergence-gap",
       "desc": "Detect intent gates not run, expansions not applied. Suggest re-run. Depends: auto-repair-file-organization. Produces: updated `src/lib/disconnect-detector/intent-subsystem.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/intent-subsystem.ts"
+      ],
       "consumes": [],
       "deps": [
         "auto-repair-file-organization"
@@ -255,7 +306,9 @@
     "detector-pattern-learning": {
       "id": "detector-pattern-learning",
       "desc": "Learn common disconnect patterns (DAG switches mid-flight, incomplete refactorings, parallel worker races). Suggest preventive measures. Depends: detector-intent-convergence-gap. Produces: `src/lib/disconnect-detector/patterns.ts`",
-      "produces": [],
+      "produces": [
+        "src/lib/disconnect-detector/patterns.ts"
+      ],
       "consumes": [],
       "deps": [
         "detector-intent-convergence-gap"
