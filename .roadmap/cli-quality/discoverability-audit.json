@@ -1,28 +1,23 @@
 {
-  "timestamp": "2026-03-01T22:51:27.625Z",
+  "timestamp": "2026-03-01T23:28:59.050Z",
   "metrics": {
-    "unknownCommandRate": 0.0667,
-    "unknownCommandCount": 2,
+    "unknownCommandRate": 0,
+    "unknownCommandCount": 0,
     "totalCommandsObserved": 30,
-    "errorWithoutRetryRate": 0.5,
-    "workflowAbandonRate": 0.7884,
-    "abandonedOrientCount": 149,
-    "totalOrientCount": 189,
-    "unusedFlagPenalty": 0.7647,
+    "errorWithoutRetryRate": 1,
+    "workflowAbandonRate": 0.8095,
+    "abandonedOrientCount": 34,
+    "totalOrientCount": 42,
+    "unusedFlagPenalty": 0.4706,
     "unusedFlags": [
-      "--json",
       "--quiet",
       "--dry-run",
       "--assign",
-      "--next",
-      "--ready",
       "--repo",
       "--depth",
       "--cascade",
       "--undo",
-      "--list",
-      "--global",
-      "--deps"
+      "--global"
     ],
     "totalKnownFlags": 17
   },
@@ -38,36 +33,31 @@
     {
       "category": "workflow",
       "severity": "high",
-      "description": "78.8% of orient commands followed directly by another orient (without reading output)",
-      "abandonedOrients": 149,
-      "totalOrients": 189,
+      "description": "81.0% of orient commands followed directly by another orient (without reading output)",
+      "abandonedOrients": 34,
+      "totalOrients": 42,
       "recommendation": "After orient, users often re-orient without reading output. Add context hints or next-step prompts."
     },
     {
       "category": "discoverability",
       "severity": "medium",
-      "description": "13 documented flags are never used in observed workflows",
+      "description": "8 documented flags are never used in observed workflows",
       "unusedFlags": [
-        "--json",
         "--quiet",
         "--dry-run",
         "--assign",
-        "--next",
-        "--ready",
         "--repo",
         "--depth",
         "--cascade",
         "--undo",
-        "--list",
-        "--global",
-        "--deps"
+        "--global"
       ],
       "recommendation": "Improve flag visibility in help text, add examples in README, or consider removing/aliasing unused flags"
     },
     {
       "category": "error-recovery",
       "severity": "medium",
-      "description": "50.0% of errors are not immediately retried",
+      "description": "100.0% of errors are not immediately retried",
       "recommendation": "Provide clearer error messages with recovery suggestions"
     }
   ],
@@ -76,7 +66,8 @@
     "primaryGaps": [
       "error-handling",
       "workflow",
-      "discoverability"
+      "discoverability",
+      "error-recovery"
     ],
     "commandErrorRate": "6.7%"
   }
