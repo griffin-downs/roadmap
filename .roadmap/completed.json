@@ -4587,5 +4587,33 @@
     ],
     "gitSha": "46b66b33f0401bea234f67ca0ca0773fc4073898",
     "treeSha": "8c11ae722ba3c034eb8d7d3397b539d70f3975f1"
+  },
+  {
+    "nodeId": "dc-candidate-writer",
+    "completedAt": "2026-03-01T09:04:25.405Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090423",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/dag-candidate.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "c796c6d59246196af20cac5cf8203c0cd98a5401",
+    "treeSha": "f2bf312a43de5d9be839f9133a976ed45ceb18e7"
   }
 ]
