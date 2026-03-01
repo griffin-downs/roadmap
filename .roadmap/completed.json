@@ -6153,5 +6153,20 @@
     ],
     "gitSha": "8c30e25b4b1b676fd357f270162e56de70572ea7",
     "treeSha": "0dfa62ba1715d496fe2b3f7882cbad5899c333c0"
+  },
+  {
+    "nodeId": "surf-archive-plan",
+    "completedAt": "2026-03-01T10:58:37.613Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301105837",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .audit/archive/PLAN.json"
+      }
+    ],
+    "gitSha": "323cbe52fbba223d8194d2e08d270915968b94c5",
+    "treeSha": "38586b07dfc3d6bdc0cfa6d0b5269e0cc917e4e5"
   }
 ]
