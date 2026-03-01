@@ -3,8 +3,9 @@
 // @types BlendReceipt, GuardResult, StatementOwnership, CheckSet, CheckEntry
 // @entry roadmap
 
-import { appendFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { appendFileSync, writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { createHash, randomUUID } from 'node:crypto';
 
 export interface GuardResult {
   guardName: string;
@@ -33,21 +34,43 @@ export interface CheckSet {
 }
 
 export interface BlendReceipt {
+  schema_version: 1;
   blendId: string;
-  timestamp: string;
+  timestamp: string;        // ISO 8601
+  repoRoot: string;
+  headSha: string;
   inputs: string[];         // candidate IDs
   outputId: string;         // blended result id
   guardResults: GuardResult[];
   statementOwnership: StatementOwnership[];
   checkSet: CheckSet;
+  output: { statementCount: number; sha256: string };
+  ok: boolean;
+}
+
+export function generateBlendId(): string {
+  return randomUUID();
+}
+
+export function sha256(content: string): string {
+  return createHash('sha256').update(content, 'utf-8').digest('hex');
 }
 
 const LEDGER_PATH = (repoRoot: string) => join(repoRoot, '.roadmap', 'blend-ledger.jsonl');
+const RECEIPT_DIR = (repoRoot: string) => join(repoRoot, '.roadmap', 'receipts', 'blend');
 
-export function writeBlendReceipt(receipt: BlendReceipt, repoRoot: string): void {
-  const dir = join(repoRoot, '.roadmap');
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+/** Write receipt to per-blend JSON + append to NDJSON ledger. Returns receipt JSON path. */
+export function writeBlendReceipt(receipt: BlendReceipt, repoRoot: string): string {
+  const ledgerDir = join(repoRoot, '.roadmap');
+  if (!existsSync(ledgerDir)) mkdirSync(ledgerDir, { recursive: true });
   appendFileSync(LEDGER_PATH(repoRoot), JSON.stringify(receipt) + '\n', 'utf-8');
+
+  const receiptDir = RECEIPT_DIR(repoRoot);
+  if (!existsSync(receiptDir)) mkdirSync(receiptDir, { recursive: true });
+  const receiptPath = join(receiptDir, `blend-${receipt.blendId}.json`);
+  writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n', 'utf-8');
+
+  return receiptPath;
 }
 
 export function readBlendLedger(repoRoot: string): BlendReceipt[] {

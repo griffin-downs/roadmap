@@ -5,6 +5,7 @@ import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CandidateResult, FileToIntents } from './emit-gallery.ts';
 import type { BlendReceipt, StatementOwnership, CheckSet, CheckEntry } from './blend-receipt.ts';
+import { writeBlendReceipt, generateBlendId, sha256 } from './blend-receipt.ts';
 
 export interface BlendSpec {
   primary: string;    // candidate id — base architecture source
@@ -168,12 +169,39 @@ export function blendCandidates(
     allPassed: checks.every(c => c.status !== 'fail'),
   };
 
+  // Build receipt
+  const blendId = opts?.blendId ?? generateBlendId();
+  const outputContent = JSON.stringify(workingFiles);
+  const receipt: BlendReceipt = {
+    schema_version: 1,
+    blendId,
+    timestamp: new Date().toISOString(),
+    repoRoot: opts?.repoRoot ?? process.cwd(),
+    headSha: '',  // caller can enrich; blend is fs-level, not git-aware
+    inputs: [spec.primary, ...spec.donors],
+    outputId: `blend-${blendId}`,
+    guardResults: [],
+    statementOwnership,
+    checkSet,
+    output: {
+      statementCount: statementOwnership.length,
+      sha256: sha256(outputContent),
+    },
+    ok: checkSet.allPassed,
+  };
+
+  // Persist receipt to ledger + per-blend JSON
+  if (opts?.repoRoot) {
+    writeBlendReceipt(receipt, opts.repoRoot);
+  }
+
   return {
     files: workingFiles,
     substitutions,
     reverted,
     deterministicPass: true,  // stub — production would re-run tsc/vitest
     intentScore,
+    receipt,
     statementOwnership,
     checkSet,
   };
