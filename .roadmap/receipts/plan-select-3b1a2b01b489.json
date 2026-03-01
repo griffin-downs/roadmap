@@ -1,0 +1,8 @@
+{
+  "type": "plan-select",
+  "headSha": "4bd740f0b8037f30c957ef731553be2a504def0625db7362af45f92e75155485",
+  "candidateId": "fr-rm-audit-and-strategy-stack",
+  "selectedAt": "2026-03-01T01:20:12.635Z",
+  "selector": "griffin",
+  "note": "w2 reselect after headSha mismatch"
+}

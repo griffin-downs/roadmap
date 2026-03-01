@@ -3715,5 +3715,100 @@
     ],
     "gitSha": "2de9a9127180310dae6fed62cb25e76e7f53d87f",
     "treeSha": "9c566a222671acea92dafc8d21c8bc0e7d617ec4"
+  },
+  {
+    "nodeId": "rm-audit-schema",
+    "completedAt": "2026-03-01T01:20:33.026Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301012031",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "intent",
+        "passed": true,
+        "evidence": "unevaluated"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "d96401c4bbd6cf0fd02e0786d586bc4fa72288f4",
+    "treeSha": "1e0e48e0f0d4b095a3837d8642147ae413594a4b"
+  },
+  {
+    "nodeId": "rm-strategy-contract",
+    "completedAt": "2026-03-01T01:21:43.503Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301012143",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/metaflow/audit/required-schema.ts"
+      }
+    ],
+    "gitSha": "d96401c4bbd6cf0fd02e0786d586bc4fa72288f4",
+    "treeSha": "1e0e48e0f0d4b095a3837d8642147ae413594a4b"
+  },
+  {
+    "nodeId": "rm-audit-engine",
+    "completedAt": "2026-03-01T01:22:11.241Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301012209",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/audit/audit-engine.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/audit/audit-engine.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "8b0c697db4d5b8c9238cbb8ab75c298312100199df6293aa379ac1943098b8d6",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-audit-engine/mm72eqao-khjqll/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "bcd856cad6464aa448fd6c020f70a1b5f338ccea",
+    "treeSha": "81e6806ce8488db835822d08bc516ca1c1eead50"
+  },
+  {
+    "nodeId": "rm-strategy-registry",
+    "completedAt": "2026-03-01T01:23:59.431Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301012357",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/strategy/registry.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/strategy/registry.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "c9ccc543576a4ad42083d39d1f86ea300a725856d602dcf4cd9adeedf2f597df",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-strategy-registry/mm72h1ry-b7rktn/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "471e8dd92506f90959c50be5c19892bed1295bd6",
+    "treeSha": "159be53ff4e97cb8310fe140bf00d4464399eb95"
   }
 ]

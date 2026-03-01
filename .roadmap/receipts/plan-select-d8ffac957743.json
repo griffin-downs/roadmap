@@ -1,0 +1,8 @@
+{
+  "type": "plan-select",
+  "headSha": "7c975a98aead324c52f345dff03646a0fe4a062fe801865950a6dc8e104dc1b8",
+  "candidateId": "fr-rm-audit-stack",
+  "selectedAt": "2026-03-01T00:55:15.919Z",
+  "selector": "griffin",
+  "note": "activate fr-rm-audit-stack DAG"
+}
