@@ -465,9 +465,9 @@
   },
   {
     "nodeId": "intent-metaflow-audit-complete",
-    "completedAt": "2026-03-01T20:42:05.520Z",
+    "completedAt": "2026-03-01T21:11:13.855Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301204205",
+    "checkpointId": "cp-20260301211113",
     "validationChecks": [
       {
         "rule": "skip-validate",
@@ -475,7 +475,7 @@
         "evidence": "validation skipped by --skip-validate flag"
       }
     ],
-    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
-    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+    "gitSha": "d26a57dcdee4fcb329ab08e6db0b592c61317fc7",
+    "treeSha": "c3bb64566fb36ed0cd46c6277393873c0a6fe105"
   }
 ]

@@ -5716,8 +5716,20 @@ async function cmdInternal(note: string) {
     case 'execute-flow': {
       return await cmdInternalExecuteFlow(note);
     }
+    case 'write-targets': {
+      return await cmdInternalWriteTargets(note);
+    }
+    case 'measure-iteration': {
+      return await cmdInternalMeasureIteration(note);
+    }
+    case 'check-targets': {
+      return await cmdInternalCheckTargets(note);
+    }
+    case 'implement-proposal': {
+      return await cmdInternalImplementProposal(note);
+    }
     default:
-      json({ error: `Unknown internal subcommand: ${sub}`, fix: 'roadmap internal execute-flow --flow-id <id>' });
+      json({ error: `Unknown internal subcommand: ${sub}`, fix: 'roadmap internal <write-targets|measure-iteration|check-targets|implement-proposal|execute-flow>' });
       process.exit(1);
   }
 }
@@ -5742,6 +5754,109 @@ async function cmdInternalExecuteFlow(note: string) {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     json({ error: `execute-flow failed: ${msg}` });
+    process.exit(1);
+  }
+}
+
+async function cmdInternalWriteTargets(note: string) {
+  const { writeTargets } = await import('../src/lib/metaflow/optimizer/targets.ts');
+  const targetsPath = join(repoRoot, '.roadmap/metaflow-optimizer/targets.json');
+  try {
+    writeTargets(targetsPath);
+    json({ ok: true, msg: 'Targets written', path: targetsPath });
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'internal.write-targets', note, repo: basename(repoRoot),
+      detail: { targetsPath },
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    json({ error: `write-targets failed: ${msg}` });
+    process.exit(1);
+  }
+}
+
+async function cmdInternalMeasureIteration(note: string) {
+  const iterIdx = args.indexOf('--iter');
+  const iterN = iterIdx !== -1 ? parseInt(args[iterIdx + 1], 10) : undefined;
+  if (!iterN || isNaN(iterN)) {
+    json({ error: 'Missing --iter <N>' });
+    process.exit(1);
+  }
+
+  const { measureIteration } = await import('../src/lib/metaflow/optimizer/measure.ts');
+  const { writeMetrics, writeTargetsAchieved } = await import('../src/lib/metaflow/optimizer/measure.ts');
+  const { checkTargets } = await import('../src/lib/metaflow/optimizer/targets.ts');
+
+  try {
+    const metrics = await measureIteration(iterN, repoRoot);
+    const metricsPath = join(repoRoot, `.roadmap/metaflow-optimizer/iter-${iterN}/metrics.json`);
+    writeMetrics(metricsPath, metrics);
+
+    const { met } = checkTargets(metrics);
+    if (met) {
+      const sentinelPath = join(repoRoot, '.roadmap/metaflow-optimizer/targets-achieved.json');
+      writeTargetsAchieved(sentinelPath);
+    }
+
+    json({ ok: true, metrics, targetsAchieved: met });
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'internal.measure-iteration', note, repo: basename(repoRoot),
+      detail: { iterN, targetsAchieved: met },
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    json({ error: `measure-iteration failed: ${msg}` });
+    process.exit(1);
+  }
+}
+
+async function cmdInternalCheckTargets(note: string) {
+  const metricsPath = join(repoRoot, '.roadmap/metaflow-optimizer/iter-8/metrics.json');
+  const { checkTargets } = await import('../src/lib/metaflow/optimizer/targets.ts');
+
+  try {
+    const metrics = JSON.parse(readFileSync(metricsPath, 'utf8'));
+    const result = checkTargets(metrics);
+    const gateResultPath = join(repoRoot, '.roadmap/metaflow-optimizer/optimizer-gate.json');
+    mkdirSync(dirname(gateResultPath), { recursive: true });
+    writeFileSync(gateResultPath, JSON.stringify(result, null, 2));
+
+    json({ ok: true, ...result });
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'internal.check-targets', note, repo: basename(repoRoot),
+      detail: { targetsMet: result.met, gapCount: result.gaps.length },
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    json({ error: `check-targets failed: ${msg}` });
+    process.exit(1);
+  }
+}
+
+async function cmdInternalImplementProposal(note: string) {
+  const iterIdx = args.indexOf('--iter');
+  const iterN = iterIdx !== -1 ? parseInt(args[iterIdx + 1], 10) : undefined;
+  if (!iterN || isNaN(iterN)) {
+    json({ error: 'Missing --iter <N>' });
+    process.exit(1);
+  }
+
+  const { implement } = await import('../src/lib/metaflow/optimizer/implement.ts');
+  const { writeImplementation } = await import('../src/lib/metaflow/optimizer/implement.ts');
+
+  try {
+    const result = await implement(iterN, repoRoot);
+    const implPath = join(repoRoot, `.roadmap/metaflow-optimizer/iter-${iterN}/impl.json`);
+    writeImplementation(implPath, result);
+
+    json({ ok: true, impl: result });
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'internal.implement-proposal', note, repo: basename(repoRoot),
+      detail: { iterN, strategy: result.strategy, filesModified: result.filesModified.length },
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    json({ error: `implement-proposal failed: ${msg}` });
     process.exit(1);
   }
 }
