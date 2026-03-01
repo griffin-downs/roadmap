@@ -1297,5 +1297,36 @@
     ],
     "gitSha": "08580e73ec9a5835a366d7d5e922ab82f40f6592",
     "treeSha": "c8ad56d93afb3853f43d7094e9fe6c96bd6a7bc7"
+  },
+  {
+    "nodeId": "integration-test-suite",
+    "completedAt": "2026-03-01T21:51:53.823Z",
+    "owner": "claims-handler",
+    "checkpointId": "cp-20260301215148",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "all artifacts exist: tests/cli/integration.test.ts, reports/cli-integration-coverage.json"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm test -- tests/cli/integration.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm test -- tests/cli/integration.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "6044c7f1dfaf89d616622285a93d172b318c0d90ac6f8b542207db8c3b05ca4d",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/integration-test-suite/mm8ac5aw-3v87td/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "d9cf247cff29cd4b7f2a74457eaa7712345fd9b3",
+    "treeSha": "27c2785455f34c475379b9ff73e91118b2631a17"
   }
 ]

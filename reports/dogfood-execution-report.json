@@ -1,33 +1,120 @@
 {
-  "timestamp": "2026-03-01T17:45:14.240Z",
-  "phase": "dogfood",
-  "commands": 3,
-  "success_rate": 1,
-  "total_duration_ms": 2014,
-  "executions": [
+  "report": "dogfood-execution",
+  "generatedAt": "2026-03-01T21:52:49.410Z",
+  "runId": "dogfood-cli",
+  "commandsExecuted": 11,
+  "totalDurationMs": 1462,
+  "byExitCode": {
+    "0": 11
+  },
+  "byStructure": {
+    "envelope": 8,
+    "mixed": 1,
+    "text": 2
+  },
+  "commands": [
     {
-      "label": "orient",
-      "duration_ms": 653,
-      "success": true,
-      "output_bytes": 1509,
-      "output_format": "json",
-      "timestamp": "2026-03-01T17:45:12.879Z"
+      "cmd": "orient",
+      "args": "--check",
+      "exitCode": 0,
+      "durationMs": 144,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 1730
     },
     {
-      "label": "chart",
-      "duration_ms": 671,
-      "success": true,
-      "output_bytes": 2123,
-      "output_format": "text",
-      "timestamp": "2026-03-01T17:45:13.550Z"
+      "cmd": "chart",
+      "args": "",
+      "exitCode": 0,
+      "durationMs": 137,
+      "outputStructure": "mixed",
+      "outputSize": 2146
     },
     {
-      "label": "show-init",
-      "duration_ms": 690,
-      "success": true,
-      "output_bytes": 651,
-      "output_format": "text",
-      "timestamp": "2026-03-01T17:45:14.240Z"
+      "cmd": "show",
+      "args": "init --note \"dogfood show\"",
+      "exitCode": 0,
+      "durationMs": 132,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 415
+    },
+    {
+      "cmd": "show",
+      "args": "integration-test-suite --note \"dogfood show integration\"",
+      "exitCode": 0,
+      "durationMs": 131,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 1259
+    },
+    {
+      "cmd": "parallel",
+      "args": "--note \"dogfood parallel\"",
+      "exitCode": 0,
+      "durationMs": 133,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 1157
+    },
+    {
+      "cmd": "claim",
+      "args": "--list",
+      "exitCode": 0,
+      "durationMs": 134,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 40826
+    },
+    {
+      "cmd": "trail",
+      "args": "--last 5",
+      "exitCode": 0,
+      "durationMs": 126,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 2493
+    },
+    {
+      "cmd": "help",
+      "args": "",
+      "exitCode": 0,
+      "durationMs": 131,
+      "outputStructure": "text",
+      "outputSize": 11115
+    },
+    {
+      "cmd": "validate",
+      "args": "init --note \"dogfood validate\"",
+      "exitCode": 0,
+      "durationMs": 136,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 237
+    },
+    {
+      "cmd": "diff",
+      "args": "HEAD --note \"dogfood diff\"",
+      "exitCode": 0,
+      "durationMs": 133,
+      "outputStructure": "text",
+      "outputSize": 586
+    },
+    {
+      "cmd": "retire",
+      "args": "--list --note \"dogfood retire list\"",
+      "exitCode": 0,
+      "durationMs": 125,
+      "outputStructure": "envelope",
+      "envelopeOk": true,
+      "outputSize": 613
     }
-  ]
-}
+  ],
+  "findings": {
+    "allCommandsReturnedOutput": true,
+    "envelopeCommandsOk": 8,
+    "envelopeCommandsFailed": 0,
+    "nonEnvelopeCommands": 3,
+    "crashedCommands": 0
+  }
+}\n
