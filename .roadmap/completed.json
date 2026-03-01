@@ -4334,5 +4334,31 @@
     ],
     "gitSha": "e32104444bb539fff3a18a1a3e6081201d142850",
     "treeSha": "215049a70580d87266a7694f07a860386cd6860d"
+  },
+  {
+    "nodeId": "rm-metaflow-surface-detectors",
+    "completedAt": "2026-03-01T01:50:56.804Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301015055",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/audit/metaflow-detectors.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/audit/metaflow-detectors.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "67fad963dbd9c8fe1f7ab9ed2c8d128594d1962af4506ed139278cf620280eb3",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-metaflow-surface-detectors/mm73fpqp-dqk9yk/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "f5c3c1cef06181f0d7d5ae337aeb3b2f34669e69",
+    "treeSha": "1624ef52fa74a671f5844120cd50e2e1a6fdbed8"
   }
 ]
