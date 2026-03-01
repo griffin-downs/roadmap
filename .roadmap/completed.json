@@ -4282,5 +4282,31 @@
     ],
     "gitSha": "5284b471612bbc8ff87049d76a694f68e798eb75",
     "treeSha": "0d3ade358a7945b009f97ec3cb4d426d75eec7aa"
+  },
+  {
+    "nodeId": "rm-metaflow-active-run",
+    "completedAt": "2026-03-01T01:42:31.787Z",
+    "owner": "w3",
+    "checkpointId": "cp-20260301014230",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/metaflow/active-run.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/metaflow/active-run.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "fa926868b9f4c4e952f121f61f75191d9ffca3fadb70b5a06d448d0f7c4cf9f3",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-metaflow-active-run/mm734w2r-z5m4pc/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "f4810b5a639440d3dc833085135e994d3d381ff8",
+    "treeSha": "99afdc0491d9b724dcd1ceb6c7abc62626ab7f6c"
   }
 ]
