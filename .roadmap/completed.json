@@ -4072,5 +4072,33 @@
     ],
     "gitSha": "7afe4d1e65e65cc839c0b758e074cc5aca2c55c4",
     "treeSha": "f5e796b465137f9f766571bbf4dad97cb7fdf586"
+  },
+  {
+    "nodeId": "rm-strategy-audit-detectors",
+    "completedAt": "2026-03-01T01:34:58.844Z",
+    "owner": "w1",
+    "checkpointId": "cp-20260301013457",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/audit/strategy-detectors.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/audit/strategy-detectors.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "1f8f82a0c976571c5987826873113d2d3da32f6dc74ad21e0272b23ee0e4b8fb",
+        "stderrSha": "79ff9997eb1ed3eb2adc36b29e2c59b2c1645eeaeb0753d30d62f040cac8fcc3",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-strategy-audit-detectors/mm72v6ks-4sj7m8/stdout.txt",
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-strategy-audit-detectors/mm72v6ks-4sj7m8/stderr.txt"
+        ]
+      }
+    ],
+    "gitSha": "78a280932c4fbe22e7921cf35a88559e0e0cfbf1",
+    "treeSha": "8fd45128d4a5e6e282d2431b4b46cdf587206f4c"
   }
 ]
