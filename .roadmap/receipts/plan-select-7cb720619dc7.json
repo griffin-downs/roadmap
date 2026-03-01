@@ -1,0 +1,8 @@
+{
+  "type": "plan-select",
+  "headSha": "7cb720619dc702d050e77e4196fe59bdbddda9ff3fce7f72dfbb75d70c29a737",
+  "candidateId": "fr-metaflow-001",
+  "selectedAt": "2026-03-01T00:33:27.275Z",
+  "selector": "swarm-worker",
+  "note": "fr-metaflow-001 sovereignty DAG — activated for implementation"
+}

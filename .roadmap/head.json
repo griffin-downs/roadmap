@@ -1,73 +1,225 @@
 {
-  "id": "aggressive-_specify",
-  "init": "emit",
-  "term": "converged",
+  "id": "fr-metaflow-001",
+  "desc": "Imported from spec-kit",
+  "init": "mf-sv-init",
+  "term": "intent-metaflow-sovereignty",
   "nodes": {
-    "emit": {
-      "id": "emit",
-      "desc": "Single-pass emit",
-      "produces": [],
+    "mf-sv-init": {
+      "id": "mf-sv-init",
+      "desc": "bootstrap metaflow sovereignty scaffolding — flow-schema.ts (flow step types, render field, stage_min/max, requires_authority) and authority-schema.ts (.governance/authority.json: kernel, stage, treeSha, since, receipt); no authority required for init; typecheck clean",
+      "produces": [
+        "src/lib/metaflow/flow-schema.ts",
+        "src/lib/metaflow/authority-schema.ts"
+      ],
       "consumes": [],
       "deps": [],
-      "validate": [],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        }
+      ],
       "idempotent": true
     },
-    "compile": {
-      "id": "compile",
-      "desc": "Compile gate",
-      "produces": [],
+    "mf-sv-authority": {
+      "id": "mf-sv-authority",
+      "desc": "authority.json contract + helpers — read/write/verify treeSha binding; UNGOVERNED state detection (absent authority.json → only metaflow init allowed); authority helpers used by all subsequent commands; unit tests cover: write → read → verify round-trip, treeSha mismatch detection, UNGOVERNED_REPO error",
+      "produces": [
+        "src/lib/metaflow/authority.ts",
+        "tests/metaflow/authority.test.ts"
+      ],
       "consumes": [],
       "deps": [
-        "emit"
+        "mf-sv-init"
       ],
-      "validate": [],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm -s vitest run tests/metaflow/authority.test.ts"
+        }
+      ],
       "idempotent": true
     },
-    "test": {
-      "id": "test",
-      "desc": "Test gate",
-      "produces": [],
+    "mf-sv-flow-registry": {
+      "id": "mf-sv-flow-registry",
+      "desc": "flow registry loader + schema validation — INDEX.json + per-flow files under .roadmap/flows/; load + validate on startup; reject malformed flows at load time with structured error; unit tests cover: load valid registry, reject invalid schema, empty registry → empty list",
+      "produces": [
+        "src/lib/metaflow/flows.ts",
+        "tests/metaflow/flows.test.ts"
+      ],
       "consumes": [],
       "deps": [
-        "emit"
+        "mf-sv-init"
       ],
-      "validate": [],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm -s vitest run tests/metaflow/flows.test.ts"
+        }
+      ],
       "idempotent": true
     },
-    "intent": {
-      "id": "intent",
-      "desc": "Intent gate (parallel)",
-      "produces": [],
+    "mf-sv-render-receipts": {
+      "id": "mf-sv-render-receipts",
+      "desc": "mandatory render receipts — store human-readable view as .roadmap/render/<cmd>-<treeSha>.md + JSON sidecar .roadmap/render/<cmd>-<treeSha>.json; metaflow render --last re-renders from last JSON envelope + writes receipt; render receipt required for interactive commands; unit tests: write → read back, re-render idempotent, missing receipt → error on verify",
+      "produces": [
+        "src/lib/metaflow/render-receipt.ts",
+        "tests/metaflow/render.test.ts"
+      ],
       "consumes": [],
       "deps": [
-        "emit"
+        "mf-sv-authority"
       ],
-      "validate": [],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm -s vitest run tests/metaflow/render.test.ts"
+        }
+      ],
       "idempotent": true
     },
-    "runtime": {
-      "id": "runtime",
-      "desc": "Runtime check",
-      "produces": [],
+    "mf-sv-cli-surface": {
+      "id": "mf-sv-cli-surface",
+      "desc": "roadmap metaflow subcommands — init / status / list / run / render / verify; integrate with existing JSON envelope + --human renderer (no second formatting system); metaflow run requires authority.json or returns UNGOVERNED_REPO; unit tests for each command in isolation",
+      "produces": [
+        "src/lib/metaflow/cli-sovereignty.ts",
+        "tests/metaflow/cli.test.ts"
+      ],
       "consumes": [],
       "deps": [
-        "compile",
-        "test",
-        "intent"
+        "mf-sv-flow-registry",
+        "mf-sv-render-receipts"
       ],
-      "validate": [],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm -s vitest run tests/metaflow/cli.test.ts"
+        }
+      ],
       "idempotent": true
     },
-    "converged": {
-      "id": "converged",
-      "desc": "Convergence term",
-      "produces": [],
+    "mf-sv-no-env-bypass": {
+      "id": "mf-sv-no-env-bypass",
+      "desc": "remove/deny env-variable bypass behavior — any bypass requires explicit receipt written under .roadmap/receipts/ with passed:false + reason; SKIP_* env vars do not affect behavior; test: set SKIP_PLAN_GATE=1 → verify no effect on metaflow run; no global state outside .roadmap/ + .governance/",
+      "produces": [
+        "src/lib/metaflow/guards.ts",
+        "tests/metaflow/bypass.test.ts"
+      ],
       "consumes": [],
       "deps": [
-        "runtime"
+        "mf-sv-cli-surface"
       ],
-      "validate": [],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm -s vitest run tests/metaflow/bypass.test.ts"
+        }
+      ],
       "idempotent": true
+    },
+    "mf-sv-kernel-integration": {
+      "id": "mf-sv-kernel-integration",
+      "desc": "integrate metaflow with existing kernel invariants — plan-select receipt + spec-origin receipt required for metaflow run when authority.json exists; no logic duplication (bridge to existing kernel, not fork); tests: metaflow run without plan-select receipt → fails; with receipt → proceeds",
+      "produces": [
+        "src/lib/metaflow/kernel-bridge.ts",
+        "tests/metaflow/kernel-bridge.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "mf-sv-no-env-bypass"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm -s vitest run tests/metaflow/kernel-bridge.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "mf-sv-terminal-invariants": {
+      "id": "mf-sv-terminal-invariants",
+      "desc": "metaflow verify — all invariants checked: authority present + kernel correct, schemas valid, receipts treeSha-bound, render receipts present where required, no env bypass active; e2e test suite: A) no plan-select → fail, B) SKIP_PLAN_GATE=1 → no effect, C) --human write render receipt, D) treeSha mismatch → TREE_SHA_MISMATCH, E) no authority.json → UNGOVERNED_REPO on non-init",
+      "produces": [
+        "src/lib/metaflow/verify.ts",
+        "tests/metaflow/verify.e2e.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "mf-sv-kernel-integration"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm -s vitest run tests/metaflow/verify.e2e.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "intent-metaflow-sovereignty": {
+      "id": "intent-metaflow-sovereignty",
+      "desc": "terminal intent — once authority.json exists, every workflow routes through metaflow and produces render receipts; authority marker is sovereign; no env bypass survives; SOVEREIGNTY.md documents the invariant set and acceptance evidence",
+      "produces": [
+        "docs/metaflow/SOVEREIGNTY.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "mf-sv-terminal-invariants"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test -f docs/metaflow/SOVEREIGNTY.md"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm -s tsc --noEmit"
+        }
+      ],
+      "idempotent": true,
+      "mode": "plan"
     }
+  },
+  "version": "0.3.0",
+  "protocolVersion": "0.3.0",
+  "spec": {
+    "compiled_sha256": "1854b5e5343d093cef6f6551b23b79a54acf242598a129483d9f1e9d5bd8f24d",
+    "engine": {
+      "name": "speckit",
+      "version": "0.1.0"
+    },
+    "inputs": [
+      {
+        "path": ".specify/specs/tasks-fr-metaflow-001.md",
+        "sha256": "1854b5e5343d093cef6f6551b23b79a54acf242598a129483d9f1e9d5bd8f24d"
+      }
+    ]
   }
 }
