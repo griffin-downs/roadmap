@@ -5576,5 +5576,20 @@
     ],
     "gitSha": "3d8da75c50c059e252b3ede149e624b0eed67768",
     "treeSha": "7ef150e5e200473cb1b13cf5ccf053608afb1e2d"
+  },
+  {
+    "nodeId": "rf-chain-enforcer",
+    "completedAt": "2026-03-01T09:23:11.912Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301092311",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/receipt-first/chain-enforcer.ts"
+      }
+    ],
+    "gitSha": "caccdf0c717eb342daa5ef14ebc7bad3ffee1008",
+    "treeSha": "95d7597c8cfb37dcea9484975aec3162ead62ccc"
   }
 ]
