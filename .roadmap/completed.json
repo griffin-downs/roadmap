@@ -5284,5 +5284,20 @@
     ],
     "gitSha": "b12af9b1860a3dcf171dff71d3be6dc663613b11",
     "treeSha": "bc148ab7c5817a23377b7c4f5c328e50fa040965"
+  },
+  {
+    "nodeId": "rf-scenario-registry",
+    "completedAt": "2026-03-01T09:15:45.057Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301091545",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/receipt-first/scenario-registry.ts"
+      }
+    ],
+    "gitSha": "680b15523cad625c7b3f9e2141a30cf2fbfe2115",
+    "treeSha": "46ac3912017bcb9a6d65f99ddd71403ef4f524c0"
   }
 ]
