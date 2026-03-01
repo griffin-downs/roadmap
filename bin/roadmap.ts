@@ -34,6 +34,7 @@ import { buildSchedule } from '../src/lib/schedule.ts';
 import { propagateConstraints } from '../src/lib/propagate.ts';
 import { compilePrompts } from '../src/lib/compile-prompts.ts';
 import { compileBrief } from '../src/lib/compile-brief.ts';
+import { compileBriefWithSpecKit } from '../src/commands/compile-brief-sk.ts';
 import { recordEvaluation, judgmentToRecord } from '../src/lib/intent/intent-evaluator.ts';
 import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } from '../src/lib/validate-dag.ts';
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/intake/spec-origin.ts';
@@ -54,11 +55,12 @@ import { runAuditRecommend } from '../src/lib/audit/recommend.ts';
 import { runProfile } from '../src/lib/profile-cmd.ts';
 import { runPatchStack } from '../src/lib/recipes/patch/patch-stack-cmd.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
+import { specKitInit, SPEC_KIT_INIT_HELP } from '../src/commands/spec-init.ts';
 import { loadCandidate, computeHeadSha, candidateExists, writeCandidateDAG } from '../src/lib/dag-candidate.ts';
 import { writeToken, readToken, listTokens, isTokenExpired, tokenId as deriveTokenId, TOKEN_DIR } from '../src/lib/utils/tokens/token-store.ts';
 import type { TokenType, BoundToken } from '../src/lib/utils/tokens/token-store.ts';
 import { readIndex, gcTokens } from '../src/lib/utils/tokens/token-index.ts';
-import type { Graph } from '../src/protocol.ts';
+import type { Graph, Orientation } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 import type { OrientV1, OrientDag, OrientDagNode, OrientDagEdge, OrientBlockedNode } from '../src/lib/core/orient-schema.ts';
 import { emit, emitError, parseOutputOpts, ErrorCode, type OutputFormat, type RenderV1 } from '../src/lib/cli-envelope.ts';
@@ -177,6 +179,10 @@ if (cmd === 'dag' && args[1] === 'diff') {
 // plan status is read-only
 if (cmd === 'plan' && args[1] === 'status') {
   NOTE_EXEMPT.add('plan');
+}
+// compile-brief --help is read-only
+if (cmd === 'compile-brief' && args.includes('--help')) {
+  NOTE_EXEMPT.add('compile-brief');
 }
 
 interface TrailEntry {
@@ -328,6 +334,7 @@ async function main() {
       case 'federation': return cmdFederation(note!);
       case 'dispatch':  return await cmdDispatch(note!);
       case 'spec':      return cmdSpec(note!);
+      case 'spec-kit':  return cmdSpecKit(note!);
       case 'init':      return cmdInit(note!);
       case 'report':    return await cmdReport(note!);
       case 'scaffold':  return await cmdScaffold(note!);
@@ -4641,6 +4648,71 @@ function cmdImportCompiled(note: string, irPath: string | undefined) {
   });
 }
 
+// --- spec-kit: workspace init + agent brief generation ---
+function cmdSpecKit(note: string) {
+  const sub = args[1];
+  if (sub === '--help' || sub === '-h' || args.includes('--help')) {
+    console.log(SPEC_KIT_INIT_HELP);
+    return;
+  }
+  switch (sub) {
+    case 'init': return cmdSpecKitInit(note);
+    default:
+      json({ error: `Unknown spec-kit subcommand: ${sub}`, fix: 'roadmap spec-kit init <dag-id> --intent "..." --note "..."' });
+      process.exit(1);
+  }
+}
+
+function cmdSpecKitInit(note: string) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(SPEC_KIT_INIT_HELP);
+    return;
+  }
+
+  // dag-id is positional: args = ['spec-kit', 'init', '<dag-id>']
+  const dagId = args[2];
+  if (!dagId || dagId.startsWith('--')) {
+    json({ error: 'Missing <dag-id>', fix: 'roadmap spec-kit init <dag-id> --intent "..." --note "..."' });
+    process.exit(1);
+  }
+
+  const intentIdx = args.indexOf('--intent');
+  const intent = intentIdx !== -1 ? args[intentIdx + 1] : undefined;
+  if (!intent) {
+    json({ error: 'Missing --intent', fix: 'roadmap spec-kit init <dag-id> --intent "..." --note "..."' });
+    process.exit(1);
+  }
+
+  // Get orientation if DAG exists
+  let orientation: Orientation | undefined;
+  if (hasLocalDAG) {
+    try {
+      orientation = orient(g, completionStore, retired) as Orientation;
+    } catch { /* untracked — use default */ }
+  }
+
+  const result = specKitInit({ dagId, intent, repoRoot, orientation });
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'spec-kit.init', note,
+    repo: basename(repoRoot), position: orientation?.position ?? ['untracked'], level: orientation?.level ?? 0, dagId,
+  });
+
+  console.log(result.brief.markdown);
+
+  json({
+    initialized: true,
+    dagId,
+    specFile: result.specFile,
+    briefFile: result.briefFile,
+    nextSteps: [
+      `Edit ${result.specFile} — fill in domain concepts, scenarios, constraints`,
+      `Run: roadmap spec generate --note "generate spec from pre-spec"`,
+      `Run: roadmap spec compile --note "compile IR"`,
+    ],
+  });
+}
+
 // --- spec: front-end for spec generation pipeline ---
 // FR-SPEC-001: roadmap owns the spec interface; spec-kit is a pluggable backend.
 function cmdSpec(note: string) {
@@ -5731,7 +5803,7 @@ Commands:
   explore --api         Show explore API surface (observation + interaction helpers)
   explore --api --json  Machine-readable API surface for agent context injection
   explore --run <script> [--launch <cmd>] [--port N] [--keep-alive]  Run explore script with managed lifecycle
-  compile-brief --node <id> [--env path]  Generate agent-ready work brief from node spec + environment
+  compile-brief --node <id> [--env path]  Generate agent-ready work brief from node spec + environment + spec-kit context
   compile-prompts --node <id> [--env path] Generate agent prompts from DAG nodes
   plan overlay --from-intake <id>  Write candidate nodes to .roadmap/overlays/ (no head.json mutation)
   gate merge [--target <branch>]  Local merge gate: verify required receipts before merge
@@ -6756,6 +6828,12 @@ function cmdCompilePrompts(note: string) {
 
 // --- compile-brief: generate agent-ready work briefs from node specs + environment ---
 function cmdCompileBrief(note: string) {
+  if (args.includes('--help')) {
+    console.log('compile-brief --node <id> [--env path] [--json]  Generate agent-ready work brief from node spec + environment + spec-kit context');
+    console.log('');
+    console.log('When .roadmap/spec/<dag-id>-spec.md exists, spec-kit agent brief is appended automatically.');
+    process.exit(0);
+  }
   if (!hasLocalDAG) {
     json({ error: 'No roadmap in this repo.' });
     process.exit(1);
@@ -6786,18 +6864,30 @@ function cmdCompileBrief(note: string) {
     process.exit(1);
   }
 
+  // Check for spec-kit context
+  const specFile = join(repoRoot, '.roadmap', 'spec', `${dag.id}-spec.md`);
+  const hasSpecKit = existsSync(specFile);
+  let outputMarkdown = brief.markdown;
+  let specKitResult: ReturnType<typeof compileBriefWithSpecKit> | undefined;
+
+  if (hasSpecKit) {
+    const orientation = orientWithState(dag);
+    specKitResult = compileBriefWithSpecKit(brief, dag.id, repoRoot, orientation);
+    outputMarkdown = specKitResult.merged;
+  }
+
   recordTrail({
     ts: new Date().toISOString(), cmd: 'compile-brief', note,
     repo: basename(repoRoot), position: [nodeId], level: -1, dagId: dag.id,
-    detail: { nodeId, produces: brief.whatYouProduce.length, consumes: brief.whatYouConsume.length },
+    detail: { nodeId, produces: brief.whatYouProduce.length, consumes: brief.whatYouConsume.length, specKit: hasSpecKit },
   });
 
   // Output markdown by default
   const asJson = args.includes('--json');
   if (asJson) {
-    json(brief);
+    json(specKitResult ? { ...brief, specKit: specKitResult.specKit, markdown: outputMarkdown } : brief);
   } else {
-    console.log(brief.markdown);
+    console.log(outputMarkdown);
   }
 }
 
