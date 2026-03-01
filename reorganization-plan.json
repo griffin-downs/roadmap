@@ -1,0 +1,190 @@
+{
+  "timestamp": "2026-03-01T14:45:00Z",
+  "strategy": "Move files to semantic domains, split oversized files, maintain barrel exports",
+  "phases": [
+    {
+      "phase": "Infrastructure",
+      "nodes": ["reorganize-protocol-layer", "reorganize-core-layer", "reorganize-utils-layer"],
+      "description": "Establish core semantic domains"
+    },
+    {
+      "phase": "Domains",
+      "nodes": ["organize-audit-domain", "organize-evidence-domain", "organize-claims-domain", "organize-intent-domain", "organize-metaloop-domain"],
+      "description": "Organize existing domain-specific files (parallel)"
+    },
+    {
+      "phase": "Verification",
+      "nodes": ["verify-structure", "verify-imports", "verify-tests"],
+      "description": "Ensure refactoring is complete and working"
+    }
+  ],
+  "moves": [
+    {
+      "source": "src/lib/protocol.ts",
+      "targets": ["src/lib/protocol/types.ts", "src/lib/protocol/validation.ts", "src/lib/protocol/operations.ts"],
+      "type": "split",
+      "size": "~800 lines → 3 files (~267 lines each)",
+      "rationale": "Protocol module too large, split by concern"
+    },
+    {
+      "source": "src/lib/intent-expansion.ts",
+      "targets": ["src/lib/intent/expansion/detection.ts", "src/lib/intent/expansion/gaps.ts", "src/lib/intent/expansion/proposals.ts"],
+      "type": "split",
+      "size": "841 lines → 3 files (~280 lines each)",
+      "rationale": "Split by phase: detection, gap extraction, proposal generation"
+    },
+    {
+      "source": "src/lib/explore-helpers.ts",
+      "targets": ["src/lib/exploration/visibility.ts", "src/lib/exploration/text.ts", "src/lib/exploration/style.ts", "src/lib/exploration/size.ts"],
+      "type": "split",
+      "size": "735 lines → 4 files (~184 lines each)",
+      "rationale": "Group by observation type"
+    },
+    {
+      "source": "src/lib/explore-interactions.ts",
+      "targets": ["src/lib/exploration/click.ts", "src/lib/exploration/type.ts", "src/lib/exploration/drag.ts", "src/lib/exploration/wait.ts"],
+      "type": "split",
+      "size": "509 lines → 4 files (~127 lines each)",
+      "rationale": "Group by interaction type"
+    },
+    {
+      "source": "src/lib/cluster-solver.ts",
+      "targets": ["src/lib/utils/cluster/solver.ts", "src/lib/utils/cluster/cost-model.ts"],
+      "type": "split",
+      "size": "479 lines → 2 files (~240 lines each)",
+      "rationale": "Separate algorithm from cost modeling"
+    },
+    {
+      "source": "src/lib/compile-prompts.ts",
+      "targets": ["src/lib/config/system-prompt.ts", "src/lib/config/context-prompt.ts"],
+      "type": "split",
+      "size": "415 lines → 2 files (~208 lines each)",
+      "rationale": "Separate system prompt from context prompt templates"
+    }
+  ],
+  "domain_moves": {
+    "protocol": {
+      "files": ["schema.ts", "types.ts", "index.ts", "protocol.ts"],
+      "target_dir": "src/lib/protocol/",
+      "creates_index": true
+    },
+    "core": {
+      "files": ["orient-schema.ts", "orient-cached.ts"],
+      "target_dir": "src/lib/core/",
+      "creates_index": true
+    },
+    "audit": {
+      "files": ["audit.ts", "audit-ingest.ts", "audit-recommend.ts", "audit/"],
+      "target_dir": "src/lib/audit/",
+      "creates_index": true
+    },
+    "claims": {
+      "files": ["claims.ts"],
+      "target_dir": "src/lib/claims/",
+      "existing_subdir": "yes",
+      "creates_index": true
+    },
+    "evidence": {
+      "files": ["completion-evidence.ts"],
+      "target_dir": "src/lib/evidence/",
+      "existing_subdir": "yes",
+      "creates_index": true
+    },
+    "intent": {
+      "files": ["intent-expansion.ts", "intent-evaluator.ts", "intent-gate-enrichment.ts", "intent/"],
+      "target_dir": "src/lib/intent/",
+      "creates_index": true
+    },
+    "metaloop": {
+      "files": ["transcript-schema.ts"],
+      "target_dir": "src/lib/metaloop/",
+      "existing_subdir": "yes",
+      "creates_index": true
+    },
+    "metaflow": {
+      "files": [],
+      "target_dir": "src/lib/metaflow/",
+      "existing_subdir": "yes",
+      "creates_index": true,
+      "note": "Organize internal 23 files by phase"
+    },
+    "render": {
+      "files": [],
+      "target_dir": "src/lib/render/",
+      "existing_subdir": "yes",
+      "creates_index": true,
+      "note": "Consolidate and organize 11 files"
+    },
+    "intake": {
+      "files": ["intake.ts", "intake-cmd.ts", "intake-receipt.ts", "intake-cluster.ts", "speckit-import.ts"],
+      "target_dir": "src/lib/intake/",
+      "creates_index": true
+    },
+    "completion": {
+      "files": ["completion-context.ts", "completion-store.ts", "completion-tracker.ts"],
+      "target_dir": "src/lib/completion/",
+      "existing_subdir": "yes",
+      "creates_index": true
+    },
+    "exploration": {
+      "files": ["explore-helpers.ts", "explore-interactions.ts", "runtime-explore.ts"],
+      "target_dir": "src/lib/exploration/",
+      "creates_index": true
+    },
+    "recipes": {
+      "files": ["dispatch.ts", "dispatch-receipt.ts", "merge-gate.ts", "merge-gate-cmd.ts", "patch-stack.ts", "patch-stack-cmd.ts", "plan-gate.ts", "overlay.ts", "overlay-cmd.ts", "spawn-plan.ts"],
+      "target_dir": "src/lib/recipes/",
+      "creates_index": true
+    },
+    "strategies": {
+      "files": ["strategy-overlay.ts"],
+      "target_dir": "src/lib/strategies/",
+      "existing_subdir": "yes",
+      "creates_index": true
+    },
+    "config": {
+      "files": ["kernel-config.ts", "kernel-enforcement.ts", "rate-card.ts"],
+      "target_dir": "src/lib/config/",
+      "creates_index": true
+    },
+    "utils": {
+      "files": ["git.ts", "git-index.ts", "git-state.schema.ts", "cluster.ts", "cluster-solver.ts", "dependency-resolver.ts", "federation.ts", "token-index.ts", "token-store.ts"],
+      "subdirs": ["git", "cluster", "federation", "tokens"],
+      "target_dir": "src/lib/utils/",
+      "creates_index": true
+    }
+  },
+  "barrel_exports": {
+    "src/lib/index.ts": "Updated to maintain backward compatibility",
+    "src/lib/protocol/index.ts": "Export all protocol types and functions",
+    "src/lib/core/index.ts": "Export core DAG operations",
+    "src/lib/audit/index.ts": "Export audit engine and analysis",
+    "src/lib/claims/index.ts": "Export claim rendering",
+    "src/lib/evidence/index.ts": "Export evidence collection and schema",
+    "src/lib/intent/index.ts": "Export intent expansion and binding",
+    "src/lib/metaloop/index.ts": "Export metaloop orchestration",
+    "src/lib/metaflow/index.ts": "Export metaflow phases",
+    "src/lib/render/index.ts": "Export rendering templates",
+    "src/lib/intake/index.ts": "Export import and parsing",
+    "src/lib/completion/index.ts": "Export completion tracking",
+    "src/lib/exploration/index.ts": "Export exploration helpers",
+    "src/lib/recipes/index.ts": "Export recipe operations",
+    "src/lib/strategies/index.ts": "Export specialization",
+    "src/lib/config/index.ts": "Export configuration",
+    "src/lib/utils/index.ts": "Export utilities"
+  },
+  "validation": {
+    "post_move_checks": [
+      "npm run tsc -- --noEmit",
+      "npm run test -- tests/ --run",
+      "No dir > 10 files",
+      "No code file > 400 lines"
+    ]
+  },
+  "summary": {
+    "total_files_affected": "~90 moves + 6 splits",
+    "total_domains": 15,
+    "new_subdirectories": 15,
+    "lines_to_redistribute": 1057
+  }
+}
