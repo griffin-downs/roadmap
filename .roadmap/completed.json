@@ -4230,5 +4230,31 @@
     ],
     "gitSha": "7a0ff664ae79741acf996d6127858c130e4e34b6",
     "treeSha": "257168831465826f7bf8f670807b3c33381d2354"
+  },
+  {
+    "nodeId": "intent-cli-compliance-terminal",
+    "completedAt": "2026-03-01T01:40:19.852Z",
+    "owner": "w3",
+    "checkpointId": "cp-20260301014017",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/cli/ && npx vitest run tests/verify/cli-compliance.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/cli/ && npx vitest run tests/verify/cli-compliance.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "167d214bc3b7745203ced97f2844df97493bccc54d29d866e47cfb1ae6848c22",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/intent-cli-compliance-terminal/mm73229q-pqh1xa/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "710e088c957ad4f30f82d05c9715ada830fbf59b",
+    "treeSha": "8968fa290263ae4f21214115324a13744767a0e0"
   }
 ]
