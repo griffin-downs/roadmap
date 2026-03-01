@@ -1,5 +1,5 @@
 // @module cli-envelope
-// @exports emit, emitError, parseOutputOpts, CliEnvelope, CliError, OutputOpts, OutputFormat, ErrorCode, SCHEMA_VERSION, RenderV1, RenderSection
+// @exports emit, emitError, parseOutputOpts, CliEnvelope, CliError, OutputOpts, OutputFormat, ErrorCode, SCHEMA_VERSION, RenderV1, RenderSection, Hint
 // @entry roadmap/cli-envelope
 
 import { readFileSync } from 'node:fs';
