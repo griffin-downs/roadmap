@@ -4848,5 +4848,28 @@
     ],
     "gitSha": "be16b81df066e6594e2d3836517baa6e6482475a",
     "treeSha": "2de2d4b6e4d907150521c1c6d2afd1a67dc5e73f"
+  },
+  {
+    "nodeId": "rkg4-orient-plan-receipt",
+    "completedAt": "2026-03-01T09:04:52.803Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090451",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "1681754dfa9ebfee112e87139220ac2828168b78",
+    "treeSha": "755997dd988a715228aaf69139d0997b61ed080b"
   }
 ]
