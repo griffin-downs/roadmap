@@ -1,0 +1,11 @@
+{
+  "engine": "spec-kit",
+  "dag_id": "metaflows-p1",
+  "inputs": {
+    "pre_spec": ".specify/pre-spec.md",
+    "spec": ".specify/specs/metaflows-p1/spec.md",
+    "plan": ".specify/specs/metaflows-p1/plan.md",
+    "tasks": ".specify/specs/metaflows-p1/tasks.md",
+    "data_model": ".specify/specs/metaflows-p1/data-model.md"
+  }
+}

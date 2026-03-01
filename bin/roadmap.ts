@@ -129,6 +129,10 @@ function deriveEnvelopeCmd(): string {
     if (args[1] === 'complete') return 'mf.complete';
     return 'mf';
   }
+  if (cmd === 'internal') {
+    if (args[1] === 'execute-flow') return 'internal.execute-flow';
+    return 'internal';
+  }
   return cmd;
 }
 const _outputOpts = parseOutputOpts(rawArgs, deriveEnvelopeCmd());
@@ -159,7 +163,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 
 // Commands that don't require a note
 // Special case: orient/position with --check is note-exempt (silent polling)
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor', 'status', 'explain', 'receipts', 'artifacts', 'env-audit', 'completion', 'spec-kit']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'trail', 'chart', 'install', 'dig', 'claim', 'diff', 'show', 'iter-id', 'explore', 'remaining', 'doctor', 'status', 'explain', 'receipts', 'artifacts', 'env-audit', 'completion', 'spec-kit', 'internal']);
 const isOrientCheck = (cmd === 'orient' || cmd === 'position') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -378,6 +382,7 @@ async function main() {
         return;
       case 'strategy':  return await cmdStrategy(note!);
       case 'mf':        return await cmdMf(note!);
+      case 'internal':  return await cmdInternal(note!);
       case 'help':
       case '--help':
       case '-h':        return cmdHelp();
@@ -5701,6 +5706,44 @@ async function cmdMf(note: string) {
 
   // Receipt enforcement — when --mf-run is active and command requires a receipt
   enforceReceipt();
+}
+
+// --- internal: flow execution and step handlers ---
+
+async function cmdInternal(note: string) {
+  const sub = args[1];
+  switch (sub) {
+    case 'execute-flow': {
+      return await cmdInternalExecuteFlow(note);
+    }
+    default:
+      json({ error: `Unknown internal subcommand: ${sub}`, fix: 'roadmap internal execute-flow --flow-id <id>' });
+      process.exit(1);
+  }
+}
+
+async function cmdInternalExecuteFlow(note: string) {
+  const flowIdIdx = args.indexOf('--flow-id');
+  const flowId = flowIdIdx !== -1 ? args[flowIdIdx + 1] : undefined;
+  if (!flowId) {
+    json({ error: 'Missing --flow-id <id>' });
+    process.exit(1);
+  }
+
+  const { executeFlow } = await import('../src/lib/metaflow/phases/execute-flow.ts');
+  try {
+    const report = await executeFlow(repoRoot, flowId);
+    json(report);
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'internal.execute-flow', note, repo: basename(repoRoot),
+      detail: { flowId, passed: report.passed, stepsRun: report.steps.length },
+    });
+    if (!report.passed) process.exit(1);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    json({ error: `execute-flow failed: ${msg}` });
+    process.exit(1);
+  }
 }
 
 function enforceReceipt(): void {
