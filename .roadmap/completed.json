@@ -5322,5 +5322,25 @@
     ],
     "gitSha": "22d7813e8f1aadf759da1021960306cb59e15a97",
     "treeSha": "d5ca539856aaf69049b6c1f9e40fe286fcf4f06f"
+  },
+  {
+    "nodeId": "sgk-receipts",
+    "completedAt": "2026-03-01T09:17:25.269Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301091725",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/receipts/strategy.ts"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/receipts/close.ts"
+      }
+    ],
+    "gitSha": "f31dd486f549d6899c9ea9f5d9e66e0e1b9716e6",
+    "treeSha": "a2b809c4829410bf2ad8117766ae94c62357e46c"
   }
 ]
