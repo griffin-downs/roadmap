@@ -237,5 +237,245 @@
     ],
     "gitSha": "e4f6e7f8c9b0a1d2e3f4a5b6c7d8e9f0a1b2c3d4",
     "treeSha": "f5g7f8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5"
+  },
+  {
+    "nodeId": "audit-initial",
+    "completedAt": "2026-03-01T20:34:34.166Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203434",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/audit/audit-run.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "load-transitions",
+    "completedAt": "2026-03-01T20:34:34.450Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203434",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/coherence/transitions.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "mine-latency",
+    "completedAt": "2026-03-01T20:34:34.726Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203434",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/performance/latency-data.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "compute-percentiles",
+    "completedAt": "2026-03-01T20:34:43.826Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203443",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/performance/latency-percentiles.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "detect-deadlocks",
+    "completedAt": "2026-03-01T20:34:44.089Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203444",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/coherence/deadlock-report.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "detect-failures",
+    "completedAt": "2026-03-01T20:34:44.346Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203444",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/recovery/failures.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "identify-slow",
+    "completedAt": "2026-03-01T20:34:44.591Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203444",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/performance/slow-commands.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "validate-concurrent",
+    "completedAt": "2026-03-01T20:34:44.859Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203444",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/coherence/concurrent-validation.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "verify-sequences",
+    "completedAt": "2026-03-01T20:34:45.119Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203445",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/coherence/transition-validation.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "apply-recovery",
+    "completedAt": "2026-03-01T20:34:49.827Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203449",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/recovery/recovery-log.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "coherence-report",
+    "completedAt": "2026-03-01T20:34:50.057Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203450",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/coherence/coherence-report.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "detect-regressions",
+    "completedAt": "2026-03-01T20:34:50.292Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203450",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/performance/regression-report.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "audit-final",
+    "completedAt": "2026-03-01T20:34:54.576Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203454",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/audit/audit-run-final.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "optimization-proposals",
+    "completedAt": "2026-03-01T20:34:54.810Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203454",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/performance/optimization-proposals.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "recovery-report",
+    "completedAt": "2026-03-01T20:34:59.030Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301203459",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/recovery/recovery-report.json"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
+  },
+  {
+    "nodeId": "intent-metaflow-audit-complete",
+    "completedAt": "2026-03-01T20:42:05.520Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301204205",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "1d666f15c55f05890d3f650e7c8978c957c28041",
+    "treeSha": "546bc023da4848ae365708217a578fc69775e86c"
   }
 ]
