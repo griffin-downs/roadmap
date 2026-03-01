@@ -6013,5 +6013,20 @@
     ],
     "gitSha": "85e6270ebbb4c7817b45e7d37296433eee2a8f1f",
     "treeSha": "8b1c09eb5527d36c7fa4bd7b477699811e384760"
+  },
+  {
+    "nodeId": "surf-audit-schema",
+    "completedAt": "2026-03-01T10:50:46.718Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301105046",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "504239fab53fa8ea7664f1af198c64a4ab28cf88",
+    "treeSha": "29edf21402620ab6dd248da9bc5698f9009e907c"
   }
 ]
