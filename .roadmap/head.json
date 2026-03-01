@@ -1,339 +1,395 @@
 {
-  "id": "metaflow-cli-quality",
-  "desc": "CLI quality hardening — JSON envelope enforcement, instrumentation context, claim cache, discoverability audit, workflow improvements",
+  "id": "metaflows-p1",
+  "desc": "Imported from spec-kit",
   "init": "init",
-  "term": "term",
+  "term": "intent-metaflow-audit-complete",
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Synthetic init — root of CLI quality DAG",
+      "desc": "Synthetic init — roots all P0 tasks",
       "produces": [
-        ".roadmap/cli-quality/init.marker"
+        "init.marker"
       ],
       "consumes": [],
       "deps": [],
       "validate": [
         {
-          "type": "artifact-exists",
-          "target": ".roadmap/cli-quality/init.marker"
+          "type": "spec-conformance",
+          "spec": ".specify/specs/metaflows-p1/spec.md",
+          "scenario": "Plan clarity validated against feature spec",
+          "section": "Specification"
         }
       ],
-      "idempotent": true
+      "idempotent": true,
+      "ambient": [
+        ".specify/specs/metaflows-p1/spec.md",
+        ".specify/specs/metaflows-p1/tasks.md"
+      ]
     },
-    "json-default-flip": {
-      "id": "json-default-flip",
-      "desc": "Audit and enforce JSON-as-default across all commands. Grep all cmdXxx functions for console.log bypass patterns, document findings, add test that calls orient without flags and asserts stdout parses as JSON.",
+    "audit-initial": {
+      "id": "audit-initial",
+      "desc": "Run compliance audit",
       "produces": [
-        ".roadmap/cli-quality/json-default-flip.marker"
+        ".roadmap/metaflow/audit/audit-run.json"
       ],
-      "consumes": [],
+      "consumes": [
+        "init.marker"
+      ],
       "deps": [
         "init"
       ],
       "validate": [
         {
           "type": "artifact-exists",
-          "target": ".roadmap/cli-quality/json-default-flip.marker"
-        },
-        {
-          "type": "shell",
-          "command": "bin/roadmap orient --note 'test' 2>/dev/null | node -e \"JSON.parse(require('fs').readFileSync('/dev/stdin','utf-8'))\" && echo 'JSON valid' || exit 1"
+          "target": ".roadmap/metaflow/audit/audit-run.json"
         }
       ],
-      "idempotent": true,
-      "ambient": [
-        "bin/roadmap.ts",
-        "src/lib/cli-envelope.ts"
-      ]
+      "idempotent": true
     },
-    "p9-002-latency-guard": {
-      "id": "p9-002-latency-guard",
-      "desc": "Add P50 < 300ms guard to tests/cli/integration.test.ts. Run orient N=10 times in loop using existing runCli() + CliResult.durationMs. Sort durations, assert sorted[4] < 300.",
+    "detect-failures": {
+      "id": "detect-failures",
+      "desc": "Parse audit failures and identify failure types",
       "produces": [
-        "tests/cli/integration.test.ts"
+        ".roadmap/metaflow/recovery/failures.json"
       ],
-      "consumes": [],
+      "consumes": [
+        ".roadmap/metaflow/audit/audit-run.json"
+      ],
+      "deps": [
+        "audit-initial"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/recovery/failures.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "apply-recovery": {
+      "id": "apply-recovery",
+      "desc": "Apply recovery strategies for each failure type",
+      "produces": [
+        ".roadmap/metaflow/recovery/recovery-log.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/recovery/failures.json"
+      ],
+      "deps": [
+        "detect-failures"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/recovery/recovery-log.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "audit-final": {
+      "id": "audit-final",
+      "desc": "Re-run audit after recovery",
+      "produces": [
+        ".roadmap/metaflow/audit/audit-run-final.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/recovery/recovery-log.json"
+      ],
+      "deps": [
+        "apply-recovery"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/audit/audit-run-final.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "recovery-report": {
+      "id": "recovery-report",
+      "desc": "Generate recovery report",
+      "produces": [
+        ".roadmap/metaflow/recovery/recovery-report.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/audit/audit-run.json",
+        ".roadmap/metaflow/audit/audit-run-final.json"
+      ],
+      "deps": [
+        "audit-final"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/recovery/recovery-report.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "load-transitions": {
+      "id": "load-transitions",
+      "desc": "Extract state transitions from audit trail",
+      "produces": [
+        ".roadmap/metaflow/coherence/transitions.json"
+      ],
+      "consumes": [
+        "init.marker"
+      ],
       "deps": [
         "init"
       ],
       "validate": [
         {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/coherence/transitions.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "verify-sequences": {
+      "id": "verify-sequences",
+      "desc": "Verify legal transition sequences",
+      "produces": [
+        ".roadmap/metaflow/coherence/transition-validation.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/coherence/transitions.json"
+      ],
+      "deps": [
+        "load-transitions"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/coherence/transition-validation.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "detect-deadlocks": {
+      "id": "detect-deadlocks",
+      "desc": "Detect cycles and blocking conditions",
+      "produces": [
+        ".roadmap/metaflow/coherence/deadlock-report.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/coherence/transitions.json"
+      ],
+      "deps": [
+        "load-transitions"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/coherence/deadlock-report.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "validate-concurrent": {
+      "id": "validate-concurrent",
+      "desc": "Validate concurrent operation ordering",
+      "produces": [
+        ".roadmap/metaflow/coherence/concurrent-validation.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/coherence/transitions.json"
+      ],
+      "deps": [
+        "load-transitions"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/coherence/concurrent-validation.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "coherence-report": {
+      "id": "coherence-report",
+      "desc": "Aggregate coherence metrics and violations",
+      "produces": [
+        ".roadmap/metaflow/coherence/coherence-report.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/coherence/transition-validation.json",
+        ".roadmap/metaflow/coherence/deadlock-report.json",
+        ".roadmap/metaflow/coherence/concurrent-validation.json"
+      ],
+      "deps": [
+        "verify-sequences",
+        "detect-deadlocks",
+        "validate-concurrent"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/coherence/coherence-report.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "mine-latency": {
+      "id": "mine-latency",
+      "desc": "Extract latency metrics",
+      "produces": [
+        ".roadmap/metaflow/performance/latency-data.json"
+      ],
+      "consumes": [
+        "init.marker"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/performance/latency-data.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "compute-percentiles": {
+      "id": "compute-percentiles",
+      "desc": "Compute p50/p95/p99 latencies by command",
+      "produces": [
+        ".roadmap/metaflow/performance/latency-percentiles.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/performance/latency-data.json"
+      ],
+      "deps": [
+        "mine-latency"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/performance/latency-percentiles.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "detect-regressions": {
+      "id": "detect-regressions",
+      "desc": "Compare against baseline and detect regressions",
+      "produces": [
+        ".roadmap/metaflow/performance/regression-report.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/performance/latency-percentiles.json"
+      ],
+      "deps": [
+        "compute-percentiles"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/performance/regression-report.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "identify-slow": {
+      "id": "identify-slow",
+      "desc": "Find slow commands > 1000ms",
+      "produces": [
+        ".roadmap/metaflow/performance/slow-commands.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/performance/latency-data.json"
+      ],
+      "deps": [
+        "mine-latency"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/performance/slow-commands.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "optimization-proposals": {
+      "id": "optimization-proposals",
+      "desc": "Generate optimization ideas",
+      "produces": [
+        ".roadmap/metaflow/performance/optimization-proposals.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/performance/slow-commands.json",
+        ".roadmap/metaflow/performance/regression-report.json"
+      ],
+      "deps": [
+        "identify-slow",
+        "detect-regressions"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/performance/optimization-proposals.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "intent-metaflow-audit-complete": {
+      "id": "intent-metaflow-audit-complete",
+      "desc": "Metaflows execution complete, all reports generated",
+      "produces": [
+        ".roadmap/metaflow/intent-metaflow-audit-complete.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow/recovery/recovery-report.json",
+        ".roadmap/metaflow/coherence/coherence-report.json",
+        ".roadmap/metaflow/performance/optimization-proposals.json"
+      ],
+      "deps": [
+        "recovery-report",
+        "coherence-report",
+        "optimization-proposals"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow/intent-metaflow-audit-complete.json"
+        },
+        {
+          "type": "spec-conformance",
+          "spec": ".specify/specs/metaflows-p1/spec.md",
+          "scenario": "All acceptance scenarios pass (User Stories 1-6)",
+          "section": "Feature Specification"
+        },
+        {
           "type": "shell",
-          "command": "grep -q 'P50\\|latency' tests/cli/integration.test.ts && npm test -- integration.test.ts 2>&1 | grep -q 'pass\\|✓' && exit 0 || exit 1"
+          "command": "test -f package.json && npm run test 2>&1 | grep -q 'test'",
+          "expectExitCode": 0
+        },
+        {
+          "type": "shell",
+          "command": "npm run build 2>&1 | grep -q \"built\"",
+          "expectExitCode": 0
         }
       ],
       "idempotent": true,
       "ambient": [
-        "tests/cli/integration.test.ts"
+        ".specify/specs/metaflows-p1/spec.md"
       ]
-    },
-    "p9-003-chart-envelope": {
-      "id": "p9-003-chart-envelope",
-      "desc": "Refactor cmdChart (bin/roadmap.ts:1447-1618). Build chartData + chartRenderModel unconditionally, call json(chartData, chartRenderModel) always, route human display through --human flag via cli-human.ts renderChart.",
-      "produces": [
-        "bin/roadmap.ts",
-        ".roadmap/cli-quality/p9-003-chart-envelope.marker"
-      ],
-      "consumes": [
-        ".roadmap/cli-quality/json-default-flip.marker"
-      ],
-      "deps": [
-        "json-default-flip"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/cli-quality/p9-003-chart-envelope.marker"
-        },
-        {
-          "type": "shell",
-          "command": "bin/roadmap chart 2>/dev/null | node --input-type=commonjs -e 'var d=\"\";process.stdin.resume();process.stdin.on(\"data\",function(c){d+=c});process.stdin.on(\"end\",function(){var e=JSON.parse(d);if(e.ok&&e.cmd===\"chart\"){console.log(\"Chart envelope valid\")}else{process.exit(1)}})'"
-        }
-      ],
-      "idempotent": true,
-      "ambient": [
-        "src/lib/cli-human.ts",
-        "src/lib/cli-envelope.ts"
-      ]
-    },
-    "instrument-context": {
-      "id": "instrument-context",
-      "desc": "Add nodeId?, dagId?, noteText?, stderrLines? to CommandExecution interface. Update startExecution(cmd, args, context?) to accept optional context. Add unit tests in new tests/metaflow/command-instrumentation.test.ts.",
-      "produces": [
-        "src/lib/metaflow/command-instrumentation.ts",
-        "tests/metaflow/command-instrumentation.test.ts",
-        ".roadmap/cli-quality/instrument-context.marker"
-      ],
-      "consumes": [
-        ".roadmap/cli-quality/p9-003-chart-envelope.marker"
-      ],
-      "deps": [
-        "p9-003-chart-envelope"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/cli-quality/instrument-context.marker"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npm test -- command-instrumentation.test.ts && echo 'Instrumentation context added' || exit 1"
-        }
-      ],
-      "idempotent": true
-    },
-    "claims-cache": {
-      "id": "claims-cache",
-      "desc": "Add module-level Map<string, BoundToken[]> cache in src/lib/utils/tokens/token-store.ts. listTokens(root, type) populates cache on first call per ${root}:${type} key. writeToken() deletes from cache after write. Eliminates 396-file scan on every loadClaims().",
-      "produces": [
-        "src/lib/utils/tokens/token-store.ts",
-        "tests/claims/claims-cache.test.ts",
-        ".roadmap/cli-quality/claims-cache.marker"
-      ],
-      "consumes": [
-        ".roadmap/cli-quality/p9-003-chart-envelope.marker"
-      ],
-      "deps": [
-        "p9-003-chart-envelope"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/cli-quality/claims-cache.marker"
-        },
-        {
-          "type": "shell",
-          "command": "npm test -- claims-cache.test.ts && echo 'Claims cache tested' || exit 1"
-        }
-      ],
-      "idempotent": true,
-      "ambient": [
-        "src/lib/utils/tokens/token-store.ts"
-      ]
-    },
-    "usage-mine": {
-      "id": "usage-mine",
-      "desc": "Run 20+ instrumented CLI commands (orient, chart, show, claim, validate, trail) using CommandInstrument. Capture enhanced CommandExecution data (with new context fields). Write mining-run.json with aggregated stats. Extract command sequences from .roadmap/trail.jsonl → trail-sequences.json.",
-      "produces": [
-        ".roadmap/cli-quality/mining-run.json",
-        ".roadmap/cli-quality/trail-sequences.json"
-      ],
-      "consumes": [
-        "src/lib/metaflow/command-instrumentation.ts",
-        "src/lib/utils/tokens/token-store.ts"
-      ],
-      "deps": [
-        "instrument-context",
-        "claims-cache"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/mining-run.json','utf-8')); if(d.totalCommands && d.totalCommands >= 20) { console.log('Mining complete: ' + d.totalCommands + ' total commands'); process.exit(0); } else { process.exit(1); }\""
-        }
-      ],
-      "idempotent": true
-    },
-    "discoverability-audit": {
-      "id": "discoverability-audit",
-      "desc": "Analyze trail sequences and mining data for workflow gaps. Produce scored audit using formula: 100 - (unknownCommandRate*30) - (errorWithoutRetryRate*20) - (workflowAbandonRate*30) - (unusedFlagPenalty*20)",
-      "produces": [
-        ".roadmap/cli-quality/discoverability-audit.json",
-        ".roadmap/cli-quality/discoverability-score.json"
-      ],
-      "consumes": [
-        ".roadmap/cli-quality/mining-run.json",
-        ".roadmap/cli-quality/trail-sequences.json"
-      ],
-      "deps": [
-        "usage-mine"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/discoverability-score.json','utf-8')); if(typeof d.score==='number' && d.score>=0 && d.score<=100) { console.log('Discoverability score: ' + d.score); process.exit(0); } else { process.exit(1); }\""
-        }
-      ],
-      "idempotent": true
-    },
-    "workflow-guide": {
-      "id": "workflow-guide",
-      "desc": "Add context-aware next-step hints to envelope render blocks. Target commands identified in audit: orient→suggest show <node>, chart→suggest show <current>, claim→suggest complete <node>. Hints go in render.hints[], not console.log. Add tests/cli/workflow-guide.test.ts asserting hints present in envelope.",
-      "produces": [
-        "bin/roadmap.ts",
-        "tests/cli/workflow-guide.test.ts",
-        ".roadmap/cli-quality/workflow-guide.marker"
-      ],
-      "consumes": [
-        ".roadmap/cli-quality/discoverability-audit.json"
-      ],
-      "deps": [
-        "discoverability-audit"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/cli-quality/workflow-guide.marker"
-        },
-        {
-          "type": "shell",
-          "command": "npm test -- workflow-guide.test.ts && echo 'Workflow guide added' || exit 1"
-        }
-      ],
-      "idempotent": true
-    },
-    "help-improvements": {
-      "id": "help-improvements",
-      "desc": "Based on discoverability-audit findings: add flag aliases for most-missed flags, add 3 example workflows to help output, improve top-3 error messages. Validate: bin/roadmap help output contains 'Example' or 'example'.",
-      "produces": [
-        "bin/roadmap.ts",
-        ".roadmap/cli-quality/help-improvements.marker"
-      ],
-      "consumes": [
-        ".roadmap/cli-quality/discoverability-audit.json"
-      ],
-      "deps": [
-        "discoverability-audit"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/cli-quality/help-improvements.marker"
-        },
-        {
-          "type": "shell",
-          "command": "bin/roadmap help 2>&1 | grep -i 'example' && echo 'Help improvements added' || exit 1"
-        }
-      ],
-      "idempotent": true
-    },
-    "integration-test": {
-      "id": "integration-test",
-      "desc": "Full test suite pass. All tests/cli/ + tests/claims/ + tests/metaflow/ tests pass.",
-      "produces": [
-        ".roadmap/cli-quality/integration-test-report.json"
-      ],
-      "consumes": [
-        "tests/cli/integration.test.ts",
-        "tests/metaflow/command-instrumentation.test.ts",
-        "tests/claims/claims-cache.test.ts"
-      ],
-      "deps": [
-        "workflow-guide",
-        "help-improvements"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx vitest run tests/cli tests/claims tests/metaflow 2>&1 | tee /tmp/test-report.txt && grep -q 'Test Files.*passed' /tmp/test-report.txt && node -e \"JSON.parse('{\\\"status\\\":\\\"pass\\\"}')\" && echo 'Integration tests passed' || exit 1"
-        }
-      ],
-      "idempotent": true
-    },
-    "dogfood-measure": {
-      "id": "dogfood-measure",
-      "desc": "Real-world workflow: 5× (orient→chart→show→claim→complete). Capture P50/P95, claim cache read time, envelope compliance rate.",
-      "produces": [
-        ".roadmap/cli-quality/dogfood-metrics.json"
-      ],
-      "consumes": [
-        "src/lib/metaflow/command-instrumentation.ts",
-        "src/lib/utils/tokens/token-store.ts"
-      ],
-      "deps": [
-        "workflow-guide",
-        "help-improvements"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "node -e \"const m=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/dogfood-metrics.json','utf-8')); const p50=(m.targets?.orientP50Ms?.actual ?? m.orientP50Ms); const compliance=(m.systemMetrics?.envelopeComplianceRate ?? m.envelopeComplianceRate); if(p50<300 && compliance===1.0) { console.log('Dogfood metrics OK: P50=' + p50 + 'ms, compliance=' + compliance); process.exit(0); } else { process.exit(1); }\""
-        }
-      ],
-      "idempotent": true
-    },
-    "synthesis": {
-      "id": "synthesis",
-      "desc": "Aggregate all phase metrics. Terminal gate: P50 < 300ms, compliance = 1.0, discoverability score delta >= 0.",
-      "produces": [
-        ".roadmap/cli-quality/synthesis-report.json"
-      ],
-      "consumes": [
-        ".roadmap/cli-quality/integration-test-report.json",
-        ".roadmap/cli-quality/dogfood-metrics.json",
-        ".roadmap/cli-quality/discoverability-score.json"
-      ],
-      "deps": [
-        "integration-test",
-        "dogfood-measure"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "node -e \"const s=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/synthesis-report.json','utf-8')); const p50=(s.targets?.orientP50Ms?.actual ?? s.orientP50Ms); const compliance=(s.systemMetrics?.envelopeComplianceRate ?? s.envelopeComplianceRate); if(p50<300 && compliance===1.0) { console.log('Synthesis complete: P50=' + p50 + 'ms, compliance=' + compliance); process.exit(0); } else { process.exit(1); }\""
-        }
-      ],
-      "idempotent": true
-    },
-    "term": {
-      "id": "term",
-      "desc": "CLI quality hardening complete — all targets met",
-      "produces": [
-        ".roadmap/cli-quality/term.marker"
-      ],
-      "consumes": [
-        ".roadmap/cli-quality/synthesis-report.json"
-      ],
-      "deps": [
-        "synthesis"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/cli-quality/term.marker"
-        }
-      ],
-      "idempotent": true
     }
+  },
+  "version": "0.3.0",
+  "protocolVersion": "0.3.0",
+  "spec": {
+    "compiled_sha256": "02d1562482cbde3be42c8c756e6fdede15024107b99d2f53dce99bcb1b80706d",
+    "engine": {
+      "name": "speckit",
+      "version": "0.1.0"
+    },
+    "inputs": [
+      {
+        "path": ".specify/specs/metaflows-p1/tasks.md",
+        "sha256": "02d1562482cbde3be42c8c756e6fdede15024107b99d2f53dce99bcb1b80706d"
+      }
+    ]
   }
 }

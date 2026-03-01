@@ -1796,5 +1796,31 @@
     ],
     "gitSha": "f895afb93b28591940db2f01642b27a59e59ed72",
     "treeSha": "29bd017fab93d51639df0bf7f2e4a038829074f1"
+  },
+  {
+    "nodeId": "synthesis",
+    "completedAt": "2026-03-01T23:32:17.369Z",
+    "owner": "w5",
+    "checkpointId": "cp-20260301233217",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"const s=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/synthesis-report.json','utf-8')); const p50=(s.targets?.orientP50Ms?.actual ?? s.orientP50Ms); const compliance=(s.systemMetrics?.envelopeComplianceRate ?? s.envelopeComplianceRate); if(p50<300 && compliance===1.0) { console.log('Synthesis complete: P50=' + p50 + 'ms, compliance=' + compliance); process.exit(0); } else { process.exit(1); }\""
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:node -e \"const s=JSON.parse(require('fs').readFileSync('.roadmap/cli-quality/synthesis-report.json','utf-8')); const p50=(s.targets?.orientP50Ms?.actual ?? s.orientP50Ms); const compliance=(s.systemMetrics?.envelopeComplianceRate ?? s.envelopeComplianceRate); if(p50<300 && compliance===1.0) { console.log('Synthesis complete: P50=' + p50 + 'ms, compliance=' + compliance); process.exit(0); } else { process.exit(1); }\"",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "dc4e2127b64ac4806a7a63b52b66b2ab46fae608f9213cc7fb87852ac4f425aa",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/synthesis/mm8dx938-1j89b1/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "1556fc2cd131c26c6881aa7155274a229f8fe3e9",
+    "treeSha": "19aed6688dbc325e437c10cf43d8af9992fe0f97"
   }
 ]
