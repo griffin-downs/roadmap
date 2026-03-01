@@ -126,7 +126,7 @@ export function detectNoFakePerf(evidence: EvidenceBundle): DetectionResult[] {
     if (hasPerfClaim) {
       const hasChecks = entry.backingEvidence.checks && entry.backingEvidence.checks.length > 0;
       const allChecksPassed =
-        hasChecks && entry.backingEvidence.checks.every((c) => c.passed);
+        hasChecks && entry.backingEvidence.checks!.every((c) => c.passed);
 
       if (!allChecksPassed) {
         violations.push({
