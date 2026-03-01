@@ -4178,5 +4178,31 @@
     ],
     "gitSha": "c265c1842530ec287a2b6a9fa3bcf692143241a3",
     "treeSha": "3ebef25f826ea2a4097bee650a39a1e646142e2d"
+  },
+  {
+    "nodeId": "rm-cli-compliance-tests",
+    "completedAt": "2026-03-01T01:38:40.714Z",
+    "owner": "w3",
+    "checkpointId": "cp-20260301013838",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/cli/compliance.e2e.test.ts && npx vitest run tests/cli/exemptions.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/cli/compliance.e2e.test.ts && npx vitest run tests/cli/exemptions.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "bca3064330ae35d0db1961a9056f237df0425e91dd9192deff088094da3a9e88",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-cli-compliance-tests/mm72zxrt-4y6uao/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "3157457b0c86236d90bea4ca799afee5bea38f72",
+    "treeSha": "2ddc66a2e8e9f9e8607467b9d892d3c599b78650"
   }
 ]
