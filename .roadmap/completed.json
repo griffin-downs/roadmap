@@ -6046,9 +6046,9 @@
   },
   {
     "nodeId": "surf-cli-wrap-core",
-    "completedAt": "2026-03-01T10:52:02.651Z",
+    "completedAt": "2026-03-01T10:52:07.341Z",
     "owner": "w-wrap-core",
-    "checkpointId": "cp-20260301105202",
+    "checkpointId": "cp-20260301105207",
     "validationChecks": [
       {
         "rule": "artifact-exists",
@@ -6056,8 +6056,8 @@
         "evidence": "artifact exists: src/cli/commands/verify.ts"
       }
     ],
-    "gitSha": "3fba44458171f927c7f5997dc4d9976036203313",
-    "treeSha": "c6c4f331f45e2c4e652cc3cd2b81dd8e82addcc6"
+    "gitSha": "695374e346672e67344a98ea864094c3090b9899",
+    "treeSha": "12dca97fd634f45777c32195807037e9b7d6d48f"
   },
   {
     "nodeId": "surf-layout-plan",
