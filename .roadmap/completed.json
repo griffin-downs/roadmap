@@ -5663,5 +5663,25 @@
     ],
     "gitSha": "2f28f0178c9befac5b6176312b6f784792be24c2",
     "treeSha": "b0c5b3349f6a1359be0d427843c18d140bc50320"
+  },
+  {
+    "nodeId": "sgk-cli-enforce",
+    "completedAt": "2026-03-01T09:23:50.949Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301092350",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/cli/run-enforce.ts"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/cli/dispatch-gates.ts"
+      }
+    ],
+    "gitSha": "8265c0f585eee871e7fd29c56280cf8236c32bf9",
+    "treeSha": "c7e10db51371adf5be183fddb4f7b2f6e534771c"
   }
 ]
