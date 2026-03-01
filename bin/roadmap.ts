@@ -49,8 +49,8 @@ import { listNodeReceipts, completionDoctor, completionCompact } from '../src/li
 import { certifyAutoIntake } from '../src/lib/auto-intake.ts';
 import { estimateCost } from '../src/lib/cost-estimator.ts';
 import { runEnvAudit } from '../src/lib/env-audit.ts';
-import { runAuditIngest } from '../src/lib/audit-ingest.ts';
-import { runAuditRecommend } from '../src/lib/audit-recommend.ts';
+import { runAuditIngest } from '../src/lib/audit/ingest.ts';
+import { runAuditRecommend } from '../src/lib/audit/recommend.ts';
 import { runProfile } from '../src/lib/profile-cmd.ts';
 import { runPatchStack } from '../src/lib/patch-stack-cmd.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
