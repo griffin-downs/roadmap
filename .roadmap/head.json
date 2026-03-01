@@ -315,7 +315,11 @@
       "produces": [
         ".roadmap/intent-surf-001.receipt.json"
       ],
-      "consumes": [],
+      "consumes": [
+        ".audit/archive-verify.receipt.json",
+        ".audit/layout-verify.receipt.json",
+        ".perf/vitest/budget-gate.receipt.json"
+      ],
       "deps": [
         "surf-archive-verify",
         "surf-layout-verify",
