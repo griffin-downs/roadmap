@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "timestamp": "2026-03-01T11:00:39.770Z",
+  "type": "archive-verify",
+  "ok": true,
+  "checks": [
+    {
+      "name": "no-dangling-imports",
+      "passed": true,
+      "evidence": "RESULT.json shows 0 applied ops — no files were moved, no imports can dangle"
+    },
+    {
+      "name": "cli-covers-moved-ops",
+      "passed": true,
+      "evidence": "No moves applied — CLI coverage check is vacuously true"
+    },
+    {
+      "name": "result-receipt-ok",
+      "passed": true,
+      "evidence": "RESULT.json receipt.ok = true"
+    }
+  ],
+  "errors": [],
+  "appliedOps": 0,
+  "planOps": 73
+}
