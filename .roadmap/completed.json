@@ -5757,5 +5757,25 @@
     ],
     "gitSha": "9776952ceb7dd4b3da20a0db01f66fdfac3d72c1",
     "treeSha": "e685925249ed69ae6aab288c33cb085d8a3b4928"
+  },
+  {
+    "nodeId": "sgk-strategy-surface",
+    "completedAt": "2026-03-01T09:27:38.332Z",
+    "owner": "w3",
+    "checkpointId": "cp-20260301092738",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/strategy-surface.ts"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/strategy-auto.ts"
+      }
+    ],
+    "gitSha": "87672f5a5b5b1502559d4a2492b4c97782409179",
+    "treeSha": "7a68b02b9d5f62c572242bfa47b6b2a427e8ff81"
   }
 ]
