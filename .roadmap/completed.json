@@ -5103,5 +5103,28 @@
     ],
     "gitSha": "e5d406155b64158756efd83439d8d6f6892ab974",
     "treeSha": "314cf905abbe181d64b7767a86ed9d3f658c08ac"
+  },
+  {
+    "nodeId": "rkg6-structured-diagnosis",
+    "completedAt": "2026-03-01T09:09:57.243Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301090956",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "53bd1059a523f0841f722f2bc588846e81cacb97",
+    "treeSha": "cab73722f46496afc33e4707198f980e7d0648d3"
   }
 ]
