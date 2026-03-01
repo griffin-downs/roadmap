@@ -1,0 +1,642 @@
+{
+  "version": 1,
+  "timestamp": "2026-03-01T10:58:06.625Z",
+  "ops": [
+    {
+      "type": "move",
+      "from": "src/lib/audit/audit-engine.ts",
+      "to": "src/audit/audit/audit-engine.ts",
+      "hash": "3da25ceab25c0b9c"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/audit/audit-schema.ts",
+      "to": "src/audit/audit/audit-schema.ts",
+      "hash": "6c5aaa70d45aa6d7"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/audit/layout-plan.ts",
+      "to": "src/audit/audit/layout-plan.ts",
+      "hash": "9ea91b9801f4fefd"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/audit-ingest.ts",
+      "to": "src/audit/audit-ingest.ts",
+      "hash": "6abd7bc80a1e4433"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/audit-recommend.ts",
+      "to": "src/audit/audit-recommend.ts",
+      "hash": "c46c1de5bafe82a3"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/cli/audit-metaflow.ts",
+      "to": "src/cli/cli/audit-metaflow.ts",
+      "hash": "ff2098f4090eb08e"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/cli/audit-samples.ts",
+      "to": "src/cli/cli/audit-samples.ts",
+      "hash": "22a6abf1c0291cba"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/cli/audit.ts",
+      "to": "src/cli/cli/audit.ts",
+      "hash": "3cad39ac26cb0f16"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/cli/doctor-cli.ts",
+      "to": "src/cli/cli/doctor-cli.ts",
+      "hash": "9ffa092d337b7744"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/cli/inventory.ts",
+      "to": "src/cli/cli/inventory.ts",
+      "hash": "401f05418f51e89d"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/cli-envelope.ts",
+      "to": "src/cli/cli-envelope.ts",
+      "hash": "6b0015b895763420"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/cli-human.ts",
+      "to": "src/cli/cli-human.ts",
+      "hash": "233dfbce62b4f71c"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/env-audit.ts",
+      "to": "src/audit/env-audit.ts",
+      "hash": "e7c50999e8710002"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/import/audit-tail-gate.ts",
+      "to": "src/audit/import/audit-tail-gate.ts",
+      "hash": "57eb0ef70ffff54a"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/active-run.ts",
+      "to": "src/metaflow/metaflow/active-run.ts",
+      "hash": "6601676e5a8cd9e0"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/ask.ts",
+      "to": "src/metaflow/metaflow/ask.ts",
+      "hash": "9c9ca9a2876ec01d"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/audit.ts",
+      "to": "src/metaflow/metaflow/audit/audit.ts",
+      "hash": "641e6bc670a2d236"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/cli.ts",
+      "to": "src/metaflow/metaflow/audit/cli.ts",
+      "hash": "252e858a3c307cca"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/detectors/display.ts",
+      "to": "src/metaflow/metaflow/audit/detectors/display.ts",
+      "hash": "a00f36da3da7e048"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/detectors/integration.ts",
+      "to": "src/metaflow/metaflow/audit/detectors/integration.ts",
+      "hash": "adff64af9aae5947"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/detectors/metaflow.ts",
+      "to": "src/metaflow/metaflow/audit/detectors/metaflow.ts",
+      "hash": "e78fa6220eaa4a7e"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/detectors/strategy.ts",
+      "to": "src/metaflow/metaflow/audit/detectors/strategy.ts",
+      "hash": "4292582b1ac64799"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/opt-map.ts",
+      "to": "src/metaflow/metaflow/audit/opt-map.ts",
+      "hash": "617fc749399045af"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/receipt.ts",
+      "to": "src/metaflow/metaflow/audit/receipt.ts",
+      "hash": "97c44a0c096e3ee8"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/report.ts",
+      "to": "src/metaflow/metaflow/audit/report.ts",
+      "hash": "64f513fa6f0913f5"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/audit/required-schema.ts",
+      "to": "src/metaflow/metaflow/audit/required-schema.ts",
+      "hash": "615e7a2827d13858"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/authority-schema.ts",
+      "to": "src/metaflow/metaflow/authority-schema.ts",
+      "hash": "454026ccb1d8c58e"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/authority.ts",
+      "to": "src/metaflow/metaflow/authority.ts",
+      "hash": "7247c7d3f4174a6f"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/cli-sovereignty.ts",
+      "to": "src/metaflow/metaflow/cli-sovereignty.ts",
+      "hash": "6c15e55a8273982c"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/command-registry.ts",
+      "to": "src/metaflow/metaflow/command-registry.ts",
+      "hash": "f648ed1ddddfa0c8"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/flow-schema.ts",
+      "to": "src/metaflow/metaflow/flow-schema.ts",
+      "hash": "9b96d8ccd16e2447"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/flows.ts",
+      "to": "src/metaflow/metaflow/flows.ts",
+      "hash": "44249804463b7dd2"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/fs.ts",
+      "to": "src/metaflow/metaflow/fs.ts",
+      "hash": "d127212c3363dc11"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/guards.ts",
+      "to": "src/metaflow/metaflow/guards.ts",
+      "hash": "9f160ff93ea0d28f"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/index.ts",
+      "to": "src/metaflow/metaflow/index.ts",
+      "hash": "d6961a6507319816"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/kernel-bridge.ts",
+      "to": "src/metaflow/metaflow/kernel-bridge.ts",
+      "hash": "ec41bdab8f73f3de"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/mine-run.ts",
+      "to": "src/metaflow/metaflow/mine-run.ts",
+      "hash": "02d904607fec0f83"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/miner.ts",
+      "to": "src/metaflow/metaflow/miner.ts",
+      "hash": "f49cb859aa4a71b1"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/opt-dag.ts",
+      "to": "src/metaflow/metaflow/opt-dag.ts",
+      "hash": "7c0cd963e23a1a13"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/receipt-writer.ts",
+      "to": "src/metaflow/metaflow/receipt-writer.ts",
+      "hash": "f07c9c2efbd45386"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/render-receipt.ts",
+      "to": "src/metaflow/metaflow/render-receipt.ts",
+      "hash": "35bc08b75cac367a"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/run-id.ts",
+      "to": "src/metaflow/metaflow/run-id.ts",
+      "hash": "2f04ec387ba62eea"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/self-insert.ts",
+      "to": "src/metaflow/metaflow/self-insert.ts",
+      "hash": "0342f9993d68a05f"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/session-store.ts",
+      "to": "src/metaflow/metaflow/session-store.ts",
+      "hash": "9dc4ff49031081df"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/types.ts",
+      "to": "src/metaflow/metaflow/types.ts",
+      "hash": "28d7826d5510a93f"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/verify.ts",
+      "to": "src/metaflow/metaflow/verify.ts",
+      "hash": "8d945dc61b1fa915"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/metaflow/wrap.ts",
+      "to": "src/metaflow/metaflow/wrap.ts",
+      "hash": "a42df489e3facaa6"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/perf/perf-schema.ts",
+      "to": "src/perf/perf/perf-schema.ts",
+      "hash": "281844f4d4952422"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/audit.ts",
+      "to": "src/components/sgk/audit.ts",
+      "hash": "432fd0ee6b88f4c1"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/cli/close-gates.ts",
+      "to": "src/components/sgk/cli/close-gates.ts",
+      "hash": "5fb9806bf0124271"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/cli/complete-binding.ts",
+      "to": "src/components/sgk/cli/complete-binding.ts",
+      "hash": "cd4e011f3984b17f"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/cli/dispatch-gates.ts",
+      "to": "src/components/sgk/cli/dispatch-gates.ts",
+      "hash": "c04a85680f59eb4f"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/cli/intent-init.ts",
+      "to": "src/components/sgk/cli/intent-init.ts",
+      "hash": "6d7c923236793c7c"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/cli/intent-term.ts",
+      "to": "src/components/sgk/cli/intent-term.ts",
+      "hash": "7ded5bd42e2e2f7e"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/cli/run-enforce.ts",
+      "to": "src/components/sgk/cli/run-enforce.ts",
+      "hash": "5a1206e1c2794567"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/detectors/chain.ts",
+      "to": "src/components/sgk/detectors/chain.ts",
+      "hash": "693c77e68d4dc405"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/detectors/strategy.ts",
+      "to": "src/components/sgk/detectors/strategy.ts",
+      "hash": "66e0fa24663619cd"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/display.ts",
+      "to": "src/components/sgk/display.ts",
+      "hash": "e9e24f507a5d8ceb"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/intent-binding.ts",
+      "to": "src/components/sgk/intent-binding.ts",
+      "hash": "22e4ceb57c3d7aad"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/kernel-ext.ts",
+      "to": "src/components/sgk/kernel-ext.ts",
+      "hash": "c94c7ab91e9bc8ac"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/mine.ts",
+      "to": "src/components/sgk/mine.ts",
+      "hash": "81290ed8c7feea11"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/receipts/audit.ts",
+      "to": "src/components/sgk/receipts/audit.ts",
+      "hash": "bfcc28904435cf6f"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/receipts/close.ts",
+      "to": "src/components/sgk/receipts/close.ts",
+      "hash": "dbc8e68d65c55bb7"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/receipts/display.ts",
+      "to": "src/components/sgk/receipts/display.ts",
+      "hash": "65e9bc8d715fbbb0"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/receipts/intent.ts",
+      "to": "src/components/sgk/receipts/intent.ts",
+      "hash": "ad9e5775eb0b6efd"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/receipts/mine.ts",
+      "to": "src/components/sgk/receipts/mine.ts",
+      "hash": "43ed0d4c6c1de421"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/receipts/plan.ts",
+      "to": "src/components/sgk/receipts/plan.ts",
+      "hash": "489633515c41f900"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/receipts/strategy.ts",
+      "to": "src/components/sgk/receipts/strategy.ts",
+      "hash": "3fbe5c14541ac016"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/render.ts",
+      "to": "src/components/sgk/render.ts",
+      "hash": "902132017c141147"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/run-manifest.ts",
+      "to": "src/components/sgk/run-manifest.ts",
+      "hash": "90fa864d1dbc6f51"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/strategy-auto.ts",
+      "to": "src/components/sgk/strategy-auto.ts",
+      "hash": "ac423fa863dc86c2"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/strategy-surface.ts",
+      "to": "src/components/sgk/strategy-surface.ts",
+      "hash": "287e39d930638f54"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/sgk/term-display-check.ts",
+      "to": "src/components/sgk/term-display-check.ts",
+      "hash": "f5068fa7863fd75a"
+    },
+    {
+      "type": "move",
+      "from": "src/lib/verify/invariants/cli-compliance.ts",
+      "to": "src/cli/verify/invariants/cli-compliance.ts",
+      "hash": "b54963a40b0fbbef"
+    },
+    {
+      "type": "move",
+      "from": "src/tests/rkg3.test.ts",
+      "to": "tests/tests/rkg3.test.ts",
+      "hash": "77619ac623094691"
+    },
+    {
+      "type": "move",
+      "from": "src/tests/rkg4.test.ts",
+      "to": "tests/tests/rkg4.test.ts",
+      "hash": "b4ef5d1388cb5b3b"
+    },
+    {
+      "type": "move",
+      "from": "src/tests/rkg5.test.ts",
+      "to": "tests/tests/rkg5.test.ts",
+      "hash": "20e015871bf6f719"
+    },
+    {
+      "type": "move",
+      "from": "src/tests/rkg6.test.ts",
+      "to": "tests/tests/rkg6.test.ts",
+      "hash": "c59036bb75ae4c3a"
+    },
+    {
+      "type": "move",
+      "from": "src/tests/token-unify.test.ts",
+      "to": "tests/tests/token-unify.test.ts",
+      "hash": "d8b5594a35dbc12c"
+    }
+  ],
+  "order": [
+    "src/lib/audit-ingest.ts",
+    "src/lib/audit-recommend.ts",
+    "src/lib/audit/audit-engine.ts",
+    "src/lib/audit/audit-schema.ts",
+    "src/lib/audit/layout-plan.ts",
+    "src/lib/cli-envelope.ts",
+    "src/lib/cli-human.ts",
+    "src/lib/cli/audit-metaflow.ts",
+    "src/lib/cli/audit-samples.ts",
+    "src/lib/cli/audit.ts",
+    "src/lib/cli/doctor-cli.ts",
+    "src/lib/cli/inventory.ts",
+    "src/lib/env-audit.ts",
+    "src/lib/import/audit-tail-gate.ts",
+    "src/lib/metaflow/active-run.ts",
+    "src/lib/metaflow/ask.ts",
+    "src/lib/metaflow/audit/audit.ts",
+    "src/lib/metaflow/audit/cli.ts",
+    "src/lib/metaflow/audit/detectors/display.ts",
+    "src/lib/metaflow/audit/detectors/integration.ts",
+    "src/lib/metaflow/audit/detectors/metaflow.ts",
+    "src/lib/metaflow/audit/detectors/strategy.ts",
+    "src/lib/metaflow/audit/opt-map.ts",
+    "src/lib/metaflow/audit/receipt.ts",
+    "src/lib/metaflow/audit/report.ts",
+    "src/lib/metaflow/audit/required-schema.ts",
+    "src/lib/metaflow/authority-schema.ts",
+    "src/lib/metaflow/authority.ts",
+    "src/lib/metaflow/cli-sovereignty.ts",
+    "src/lib/metaflow/command-registry.ts",
+    "src/lib/metaflow/flow-schema.ts",
+    "src/lib/metaflow/flows.ts",
+    "src/lib/metaflow/fs.ts",
+    "src/lib/metaflow/guards.ts",
+    "src/lib/metaflow/index.ts",
+    "src/lib/metaflow/kernel-bridge.ts",
+    "src/lib/metaflow/mine-run.ts",
+    "src/lib/metaflow/miner.ts",
+    "src/lib/metaflow/opt-dag.ts",
+    "src/lib/metaflow/receipt-writer.ts",
+    "src/lib/metaflow/render-receipt.ts",
+    "src/lib/metaflow/run-id.ts",
+    "src/lib/metaflow/self-insert.ts",
+    "src/lib/metaflow/session-store.ts",
+    "src/lib/metaflow/types.ts",
+    "src/lib/metaflow/verify.ts",
+    "src/lib/metaflow/wrap.ts",
+    "src/lib/perf/perf-schema.ts",
+    "src/lib/sgk/audit.ts",
+    "src/lib/sgk/cli/close-gates.ts",
+    "src/lib/sgk/cli/complete-binding.ts",
+    "src/lib/sgk/cli/dispatch-gates.ts",
+    "src/lib/sgk/cli/intent-init.ts",
+    "src/lib/sgk/cli/intent-term.ts",
+    "src/lib/sgk/cli/run-enforce.ts",
+    "src/lib/sgk/detectors/chain.ts",
+    "src/lib/sgk/detectors/strategy.ts",
+    "src/lib/sgk/display.ts",
+    "src/lib/sgk/intent-binding.ts",
+    "src/lib/sgk/kernel-ext.ts",
+    "src/lib/sgk/mine.ts",
+    "src/lib/sgk/receipts/audit.ts",
+    "src/lib/sgk/receipts/close.ts",
+    "src/lib/sgk/receipts/display.ts",
+    "src/lib/sgk/receipts/intent.ts",
+    "src/lib/sgk/receipts/mine.ts",
+    "src/lib/sgk/receipts/plan.ts",
+    "src/lib/sgk/receipts/strategy.ts",
+    "src/lib/sgk/render.ts",
+    "src/lib/sgk/run-manifest.ts",
+    "src/lib/sgk/strategy-auto.ts",
+    "src/lib/sgk/strategy-surface.ts",
+    "src/lib/sgk/term-display-check.ts",
+    "src/lib/verify/invariants/cli-compliance.ts",
+    "src/tests/rkg3.test.ts",
+    "src/tests/rkg4.test.ts",
+    "src/tests/rkg5.test.ts",
+    "src/tests/rkg6.test.ts",
+    "src/tests/token-unify.test.ts"
+  ],
+  "sourceHashes": {
+    "src/lib/audit/audit-engine.ts": "3da25ceab25c0b9c",
+    "src/lib/audit/audit-schema.ts": "6c5aaa70d45aa6d7",
+    "src/lib/audit/layout-plan.ts": "9ea91b9801f4fefd",
+    "src/lib/audit-ingest.ts": "6abd7bc80a1e4433",
+    "src/lib/audit-recommend.ts": "c46c1de5bafe82a3",
+    "src/lib/cli/audit-metaflow.ts": "ff2098f4090eb08e",
+    "src/lib/cli/audit-samples.ts": "22a6abf1c0291cba",
+    "src/lib/cli/audit.ts": "3cad39ac26cb0f16",
+    "src/lib/cli/doctor-cli.ts": "9ffa092d337b7744",
+    "src/lib/cli/inventory.ts": "401f05418f51e89d",
+    "src/lib/cli-envelope.ts": "6b0015b895763420",
+    "src/lib/cli-human.ts": "233dfbce62b4f71c",
+    "src/lib/env-audit.ts": "e7c50999e8710002",
+    "src/lib/import/audit-tail-gate.ts": "57eb0ef70ffff54a",
+    "src/lib/metaflow/active-run.ts": "6601676e5a8cd9e0",
+    "src/lib/metaflow/ask.ts": "9c9ca9a2876ec01d",
+    "src/lib/metaflow/audit/audit.ts": "641e6bc670a2d236",
+    "src/lib/metaflow/audit/cli.ts": "252e858a3c307cca",
+    "src/lib/metaflow/audit/detectors/display.ts": "a00f36da3da7e048",
+    "src/lib/metaflow/audit/detectors/integration.ts": "adff64af9aae5947",
+    "src/lib/metaflow/audit/detectors/metaflow.ts": "e78fa6220eaa4a7e",
+    "src/lib/metaflow/audit/detectors/strategy.ts": "4292582b1ac64799",
+    "src/lib/metaflow/audit/opt-map.ts": "617fc749399045af",
+    "src/lib/metaflow/audit/receipt.ts": "97c44a0c096e3ee8",
+    "src/lib/metaflow/audit/report.ts": "64f513fa6f0913f5",
+    "src/lib/metaflow/audit/required-schema.ts": "615e7a2827d13858",
+    "src/lib/metaflow/authority-schema.ts": "454026ccb1d8c58e",
+    "src/lib/metaflow/authority.ts": "7247c7d3f4174a6f",
+    "src/lib/metaflow/cli-sovereignty.ts": "6c15e55a8273982c",
+    "src/lib/metaflow/command-registry.ts": "f648ed1ddddfa0c8",
+    "src/lib/metaflow/flow-schema.ts": "9b96d8ccd16e2447",
+    "src/lib/metaflow/flows.ts": "44249804463b7dd2",
+    "src/lib/metaflow/fs.ts": "d127212c3363dc11",
+    "src/lib/metaflow/guards.ts": "9f160ff93ea0d28f",
+    "src/lib/metaflow/index.ts": "d6961a6507319816",
+    "src/lib/metaflow/kernel-bridge.ts": "ec41bdab8f73f3de",
+    "src/lib/metaflow/mine-run.ts": "02d904607fec0f83",
+    "src/lib/metaflow/miner.ts": "f49cb859aa4a71b1",
+    "src/lib/metaflow/opt-dag.ts": "7c0cd963e23a1a13",
+    "src/lib/metaflow/receipt-writer.ts": "f07c9c2efbd45386",
+    "src/lib/metaflow/render-receipt.ts": "35bc08b75cac367a",
+    "src/lib/metaflow/run-id.ts": "2f04ec387ba62eea",
+    "src/lib/metaflow/self-insert.ts": "0342f9993d68a05f",
+    "src/lib/metaflow/session-store.ts": "9dc4ff49031081df",
+    "src/lib/metaflow/types.ts": "28d7826d5510a93f",
+    "src/lib/metaflow/verify.ts": "8d945dc61b1fa915",
+    "src/lib/metaflow/wrap.ts": "a42df489e3facaa6",
+    "src/lib/perf/perf-schema.ts": "281844f4d4952422",
+    "src/lib/sgk/audit.ts": "432fd0ee6b88f4c1",
+    "src/lib/sgk/cli/close-gates.ts": "5fb9806bf0124271",
+    "src/lib/sgk/cli/complete-binding.ts": "cd4e011f3984b17f",
+    "src/lib/sgk/cli/dispatch-gates.ts": "c04a85680f59eb4f",
+    "src/lib/sgk/cli/intent-init.ts": "6d7c923236793c7c",
+    "src/lib/sgk/cli/intent-term.ts": "7ded5bd42e2e2f7e",
+    "src/lib/sgk/cli/run-enforce.ts": "5a1206e1c2794567",
+    "src/lib/sgk/detectors/chain.ts": "693c77e68d4dc405",
+    "src/lib/sgk/detectors/strategy.ts": "66e0fa24663619cd",
+    "src/lib/sgk/display.ts": "e9e24f507a5d8ceb",
+    "src/lib/sgk/intent-binding.ts": "22e4ceb57c3d7aad",
+    "src/lib/sgk/kernel-ext.ts": "c94c7ab91e9bc8ac",
+    "src/lib/sgk/mine.ts": "81290ed8c7feea11",
+    "src/lib/sgk/receipts/audit.ts": "bfcc28904435cf6f",
+    "src/lib/sgk/receipts/close.ts": "dbc8e68d65c55bb7",
+    "src/lib/sgk/receipts/display.ts": "65e9bc8d715fbbb0",
+    "src/lib/sgk/receipts/intent.ts": "ad9e5775eb0b6efd",
+    "src/lib/sgk/receipts/mine.ts": "43ed0d4c6c1de421",
+    "src/lib/sgk/receipts/plan.ts": "489633515c41f900",
+    "src/lib/sgk/receipts/strategy.ts": "3fbe5c14541ac016",
+    "src/lib/sgk/render.ts": "902132017c141147",
+    "src/lib/sgk/run-manifest.ts": "90fa864d1dbc6f51",
+    "src/lib/sgk/strategy-auto.ts": "ac423fa863dc86c2",
+    "src/lib/sgk/strategy-surface.ts": "287e39d930638f54",
+    "src/lib/sgk/term-display-check.ts": "f5068fa7863fd75a",
+    "src/lib/verify/invariants/cli-compliance.ts": "b54963a40b0fbbef",
+    "src/tests/rkg3.test.ts": "77619ac623094691",
+    "src/tests/rkg4.test.ts": "b4ef5d1388cb5b3b",
+    "src/tests/rkg5.test.ts": "20e015871bf6f719",
+    "src/tests/rkg6.test.ts": "c59036bb75ae4c3a",
+    "src/tests/token-unify.test.ts": "d8b5594a35dbc12c"
+  }
+}
