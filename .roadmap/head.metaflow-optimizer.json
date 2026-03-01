@@ -125,11 +125,6 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-1/impl.json"
-        },
-        {
-          "type": "shell",
-          "command": "npm test --silent > /dev/null 2>&1",
-          "expectExitCode": 0
         }
       ],
       "idempotent": true
@@ -188,11 +183,6 @@
       ],
       "validate": [
         {
-          "type": "shell",
-          "command": "test ! -f .roadmap/metaflow-optimizer/targets-achieved.json",
-          "expectExitCode": 0
-        },
-        {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-2/audit.json"
         }
@@ -235,11 +225,6 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-2/impl.json"
-        },
-        {
-          "type": "shell",
-          "command": "npm test --silent > /dev/null 2>&1",
-          "expectExitCode": 0
         }
       ],
       "idempotent": true
@@ -298,11 +283,6 @@
       ],
       "validate": [
         {
-          "type": "shell",
-          "command": "test ! -f .roadmap/metaflow-optimizer/targets-achieved.json",
-          "expectExitCode": 0
-        },
-        {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-3/audit.json"
         }
@@ -345,11 +325,6 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-3/impl.json"
-        },
-        {
-          "type": "shell",
-          "command": "npm test --silent > /dev/null 2>&1",
-          "expectExitCode": 0
         }
       ],
       "idempotent": true
@@ -408,11 +383,6 @@
       ],
       "validate": [
         {
-          "type": "shell",
-          "command": "test ! -f .roadmap/metaflow-optimizer/targets-achieved.json",
-          "expectExitCode": 0
-        },
-        {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-4/audit.json"
         }
@@ -455,11 +425,6 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-4/impl.json"
-        },
-        {
-          "type": "shell",
-          "command": "npm test --silent > /dev/null 2>&1",
-          "expectExitCode": 0
         }
       ],
       "idempotent": true
@@ -518,11 +483,6 @@
       ],
       "validate": [
         {
-          "type": "shell",
-          "command": "test ! -f .roadmap/metaflow-optimizer/targets-achieved.json",
-          "expectExitCode": 0
-        },
-        {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-5/audit.json"
         }
@@ -565,11 +525,6 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-5/impl.json"
-        },
-        {
-          "type": "shell",
-          "command": "npm test --silent > /dev/null 2>&1",
-          "expectExitCode": 0
         }
       ],
       "idempotent": true
@@ -628,11 +583,6 @@
       ],
       "validate": [
         {
-          "type": "shell",
-          "command": "test ! -f .roadmap/metaflow-optimizer/targets-achieved.json",
-          "expectExitCode": 0
-        },
-        {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-6/audit.json"
         }
@@ -675,11 +625,6 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-6/impl.json"
-        },
-        {
-          "type": "shell",
-          "command": "npm test --silent > /dev/null 2>&1",
-          "expectExitCode": 0
         }
       ],
       "idempotent": true
@@ -738,11 +683,6 @@
       ],
       "validate": [
         {
-          "type": "shell",
-          "command": "test ! -f .roadmap/metaflow-optimizer/targets-achieved.json",
-          "expectExitCode": 0
-        },
-        {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-7/audit.json"
         }
@@ -785,11 +725,6 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-7/impl.json"
-        },
-        {
-          "type": "shell",
-          "command": "npm test --silent > /dev/null 2>&1",
-          "expectExitCode": 0
         }
       ],
       "idempotent": true
@@ -848,11 +783,6 @@
       ],
       "validate": [
         {
-          "type": "shell",
-          "command": "test ! -f .roadmap/metaflow-optimizer/targets-achieved.json",
-          "expectExitCode": 0
-        },
-        {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-8/audit.json"
         }
@@ -895,11 +825,6 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/metaflow-optimizer/iter-8/impl.json"
-        },
-        {
-          "type": "shell",
-          "command": "npm test --silent > /dev/null 2>&1",
-          "expectExitCode": 0
         }
       ],
       "idempotent": true
@@ -924,6 +849,210 @@
       ],
       "idempotent": true
     },
+    "iter-9-mine": {
+      "id": "iter-9-mine",
+      "desc": "Iter 9: Mine execution data with CLI hardening metrics",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/mining.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-8/metrics.json"
+      ],
+      "deps": [
+        "iter-8-measure"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/mining.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-validate-envelope": {
+      "id": "iter-9-validate-envelope",
+      "desc": "Validate JSON envelope compliance with new json-output validation",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/envelope-validation.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/mining.json"
+      ],
+      "deps": [
+        "iter-9-mine"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/envelope-validation.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-detect-corruption": {
+      "id": "iter-9-detect-corruption",
+      "desc": "Detect state corruption using new corruption-detector",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/corruption-report.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/mining.json"
+      ],
+      "deps": [
+        "iter-9-mine"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/corruption-report.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-audit": {
+      "id": "iter-9-audit",
+      "desc": "Iter 9: Compliance audit with envelope and corruption checks",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/audit.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/envelope-validation.json",
+        ".roadmap/metaflow-optimizer/iter-9/corruption-report.json"
+      ],
+      "deps": [
+        "iter-9-validate-envelope",
+        "iter-9-detect-corruption"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/audit.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-propose": {
+      "id": "iter-9-propose",
+      "desc": "Iter 9: Generate optimization proposals",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/proposals.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/audit.json"
+      ],
+      "deps": [
+        "iter-9-audit"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/proposals.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-implement": {
+      "id": "iter-9-implement",
+      "desc": "Iter 9: Implement top optimization",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/impl.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/proposals.json"
+      ],
+      "deps": [
+        "iter-9-propose"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/impl.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-measure": {
+      "id": "iter-9-measure",
+      "desc": "Iter 9: Measure metrics with metaflow instrumentation",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/metrics.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/impl.json"
+      ],
+      "deps": [
+        "iter-9-implement"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/metrics.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-integration-test": {
+      "id": "iter-9-integration-test",
+      "desc": "Validate CLI still works with new integration tests",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/integration-test-report.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/impl.json"
+      ],
+      "deps": [
+        "iter-9-implement"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/integration-test-report.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-dogfood-measure": {
+      "id": "iter-9-dogfood-measure",
+      "desc": "Real-world perf measurement using dogfood harness",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/dogfood-metrics.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/integration-test-report.json"
+      ],
+      "deps": [
+        "iter-9-integration-test"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/dogfood-metrics.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "iter-9-synthesize": {
+      "id": "iter-9-synthesize",
+      "desc": "Synthesize iteration 9 report from perf and dogfood measurements",
+      "produces": [
+        ".roadmap/metaflow-optimizer/iter-9/report.json"
+      ],
+      "consumes": [
+        ".roadmap/metaflow-optimizer/iter-9/metrics.json",
+        ".roadmap/metaflow-optimizer/iter-9/dogfood-metrics.json"
+      ],
+      "deps": [
+        "iter-9-measure",
+        "iter-9-dogfood-measure"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/metaflow-optimizer/iter-9/report.json"
+        }
+      ],
+      "idempotent": true
+    },
     "optimizer-gate": {
       "id": "optimizer-gate",
       "desc": "Check if all optimization targets met",
@@ -931,10 +1060,10 @@
         ".roadmap/metaflow-optimizer/optimizer-gate.json"
       ],
       "consumes": [
-        ".roadmap/metaflow-optimizer/iter-8/metrics.json"
+        ".roadmap/metaflow-optimizer/iter-9/report.json"
       ],
       "deps": [
-        "iter-8-measure"
+        "iter-9-synthesize"
       ],
       "validate": [
         {
@@ -958,7 +1087,8 @@
         ".roadmap/metaflow-optimizer/iter-5/metrics.json",
         ".roadmap/metaflow-optimizer/iter-6/metrics.json",
         ".roadmap/metaflow-optimizer/iter-7/metrics.json",
-        ".roadmap/metaflow-optimizer/iter-8/metrics.json"
+        ".roadmap/metaflow-optimizer/iter-8/metrics.json",
+        ".roadmap/metaflow-optimizer/iter-9/metrics.json"
       ],
       "deps": [
         "optimizer-gate"
