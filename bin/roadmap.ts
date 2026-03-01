@@ -5699,6 +5699,43 @@ async function cmdMf(note: string) {
       recordTrail({ ts: new Date().toISOString(), cmd: 'mf.audit-tail', note, repo: basename(repoRoot), position: ['mf-audit-tail'], level: 5 });
       break;
     }
+    case 'optimizer-loop': {
+      // Parse options
+      const maxIterIdx = args.indexOf('--max-iters');
+      const maxIters = maxIterIdx !== -1 && args[maxIterIdx + 1]
+        ? parseInt(args[maxIterIdx + 1], 10)
+        : 8;
+
+      // Build flows if needed
+      try {
+        const { writeOptimizationsFlows } = await import('../src/lib/metaflow/optimizer/flow-builder.ts');
+        writeOptimizationsFlows(repoRoot);
+      } catch (e) {
+        console.error('Failed to generate flows:', e);
+        // Continue anyway; flows might already exist
+      }
+
+      // Run the loop
+      const { runOptimizerLoop } = await import('../src/lib/metaflow/optimizer/runner.ts');
+      const result = await runOptimizerLoop(repoRoot, { maxIters, note });
+
+      json({
+        cmd: 'mf.optimizer-loop',
+        completed: result.completed,
+        iterationsRun: result.iterationsRun,
+        report: result.report,
+      });
+
+      recordTrail({
+        ts: new Date().toISOString(),
+        cmd: 'mf.optimizer-loop',
+        note,
+        repo: basename(repoRoot),
+        position: ['optimizer-loop'],
+        level: 0,
+      });
+      break;
+    }
     default:
       json({ error: `Unknown mf subcommand: ${sub}`, fix: 'roadmap mf init --note "..."' });
       process.exit(1);

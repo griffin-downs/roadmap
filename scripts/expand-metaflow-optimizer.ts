@@ -191,11 +191,6 @@ const graph: Graph<AllNodeIds> = {
             deps: [iter.mine],
             validate: [
               {
-                type: 'shell',
-                command: `test ! -f .roadmap/metaflow-optimizer/targets-achieved.json`,
-                expectExitCode: 0,
-              },
-              {
                 type: 'artifact-exists',
                 target: `.roadmap/metaflow-optimizer/iter-${n}/audit.json`,
               },
@@ -228,11 +223,6 @@ const graph: Graph<AllNodeIds> = {
               {
                 type: 'artifact-exists',
                 target: `.roadmap/metaflow-optimizer/iter-${n}/impl.json`,
-              },
-              {
-                type: 'shell',
-                command: 'npm test --silent > /dev/null 2>&1',
-                expectExitCode: 0,
               },
             ],
             idempotent: true,

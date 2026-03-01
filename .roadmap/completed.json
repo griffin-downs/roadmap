@@ -465,9 +465,9 @@
   },
   {
     "nodeId": "intent-metaflow-audit-complete",
-    "completedAt": "2026-03-01T21:11:13.855Z",
+    "completedAt": "2026-03-01T21:12:49.276Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260301211113",
+    "checkpointId": "cp-20260301211249",
     "validationChecks": [
       {
         "rule": "skip-validate",
@@ -475,7 +475,87 @@
         "evidence": "validation skipped by --skip-validate flag"
       }
     ],
-    "gitSha": "d26a57dcdee4fcb329ab08e6db0b592c61317fc7",
-    "treeSha": "c3bb64566fb36ed0cd46c6277393873c0a6fe105"
+    "gitSha": "a08ada082aea2c4105626e9b3a58b306f680effd",
+    "treeSha": "bad7867e66406a38b7fef8f5d43992e42566f34a"
+  },
+  {
+    "nodeId": "bootstrap",
+    "completedAt": "2026-03-01T21:13:22.793Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301211322",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/targets.json"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/baseline.json"
+      }
+    ],
+    "gitSha": "a08ada082aea2c4105626e9b3a58b306f680effd",
+    "treeSha": "bad7867e66406a38b7fef8f5d43992e42566f34a"
+  },
+  {
+    "nodeId": "iter-1-mine",
+    "completedAt": "2026-03-01T21:13:31.217Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301211331",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-1/mining.json"
+      }
+    ],
+    "gitSha": "a08ada082aea2c4105626e9b3a58b306f680effd",
+    "treeSha": "bad7867e66406a38b7fef8f5d43992e42566f34a"
+  },
+  {
+    "nodeId": "iter-1-audit",
+    "completedAt": "2026-03-01T21:13:34.840Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301211334",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-1/audit.json"
+      }
+    ],
+    "gitSha": "a08ada082aea2c4105626e9b3a58b306f680effd",
+    "treeSha": "bad7867e66406a38b7fef8f5d43992e42566f34a"
+  },
+  {
+    "nodeId": "iter-1-propose",
+    "completedAt": "2026-03-01T21:13:37.978Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301211337",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow-optimizer/iter-1/proposals.json"
+      }
+    ],
+    "gitSha": "a08ada082aea2c4105626e9b3a58b306f680effd",
+    "treeSha": "bad7867e66406a38b7fef8f5d43992e42566f34a"
+  },
+  {
+    "nodeId": "iter-1-implement",
+    "completedAt": "2026-03-01T21:15:20.901Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301211520",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "a08ada082aea2c4105626e9b3a58b306f680effd",
+    "treeSha": "bad7867e66406a38b7fef8f5d43992e42566f34a"
   }
 ]

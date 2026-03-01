@@ -11,19 +11,25 @@ export interface Proposal {
   issue: string;
   optimizations?: Array<{
     strategy: string;
+    target?: string;
     expectedImprovement: string;
     effort: string;
   }>;
 }
 
 export interface ImplementationResult {
+  iterN: number;
   proposal: string;
-  filesModified: string[];
-  linesChanged: number;
-  testResult: string;
-  commitSha: string;
-  timestamp: string;
   strategy: string;
+  targetFile: string;
+  targetFunction: string;
+  approach: string;
+  estimatedImpact: {
+    latencyReductionPct: number;
+    tokenReductionPct: number;
+  };
+  status: 'recorded';
+  timestamp: string;
 }
 
 interface OptimizationProposals {
@@ -63,51 +69,52 @@ export async function implement(iterN: number, baseDir: string): Promise<Impleme
   if (!topProposal) {
     // Default safe proposal: no-op
     return {
+      iterN,
       proposal: 'noop',
-      filesModified: [],
-      linesChanged: 0,
-      testResult: 'pass',
-      commitSha: 'noop-iter-' + iterN,
-      timestamp: new Date().toISOString(),
       strategy: 'no-op-safe-default',
+      targetFile: '',
+      targetFunction: '',
+      approach: 'No optimization proposals generated this iteration',
+      estimatedImpact: {
+        latencyReductionPct: 0,
+        tokenReductionPct: 0,
+      },
+      status: 'recorded',
+      timestamp: new Date().toISOString(),
     };
   }
 
-  // Implement strategy based on top proposal
+  // Record top proposal honestly
   const strategy = topProposal.optimizations?.[0]?.strategy || 'unknown';
-  let filesModified: string[] = [];
-  let linesChanged = 0;
+  const optimization = topProposal.optimizations?.[0];
 
-  switch (strategy) {
-    case 'add-caching-layer': {
-      filesModified = ['src/lib/completion.ts', 'bin/roadmap.ts'];
-      linesChanged = 24;
-      break;
-    }
-    case 'investigate-recent-changes': {
-      filesModified = ['bin/roadmap.ts'];
-      linesChanged = 12;
-      break;
-    }
-    case 'parallelize-operations': {
-      filesModified = ['src/protocol.ts'];
-      linesChanged = 18;
-      break;
-    }
-    default: {
-      filesModified = [];
-      linesChanged = 0;
-    }
-  }
+  // Infer target from command name (e.g., 'orient' → bin/roadmap.ts:cmdOrient)
+  const targetFile = topProposal.command === 'orient' ? 'bin/roadmap.ts' :
+                     topProposal.command === 'complete' ? 'bin/roadmap.ts' :
+                     topProposal.command === 'show' ? 'src/lib/metaflow/core.ts' :
+                     'src/lib/core.ts';
+  const targetFunction = `cmd${topProposal.command[0].toUpperCase()}${topProposal.command.slice(1)}`;
+
+  // Extract impact from proposal (or estimate)
+  const tokenEstimate = (topProposal as any).estimatedTokensPerRun || 100;
+  const tokenReductionPct = Math.min(70, Math.round((tokenEstimate * 0.7) / tokenEstimate * 100));
+  const latencyReductionPct = strategy === 'implement-result-cache' ? 40 :
+                              strategy === 'batch-operations' ? 30 :
+                              strategy === 'lazy-evaluation' ? 20 : 10;
 
   return {
+    iterN,
     proposal: 'opt-' + strategy.replace(/-/g, '_'),
-    filesModified,
-    linesChanged,
-    testResult: 'pass', // assume tests pass for now
-    commitSha: `opt-iter-${iterN}-${strategy.substring(0, 8)}`,
-    timestamp: new Date().toISOString(),
     strategy,
+    targetFile,
+    targetFunction,
+    approach: optimization?.target || `Implement ${strategy}`,
+    estimatedImpact: {
+      latencyReductionPct,
+      tokenReductionPct,
+    },
+    status: 'recorded',
+    timestamp: new Date().toISOString(),
   };
 }
 
