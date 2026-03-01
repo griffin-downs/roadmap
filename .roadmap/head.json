@@ -1,132 +1,175 @@
 {
-  "id": "fr-meta-refac-001-gen",
-  "desc": "Refactoring execution: consolidate schemas, wrap CLI, split tests, move IO, perf validation",
-  "init": "init-refactoring",
-  "term": "intent-refactoring-complete",
+  "id": "lib-refactor-001",
+  "desc": "src/lib refactoring: consolidate modules, reduce exports, organize by concern",
+  "init": "init",
+  "term": "intent-lib-refactor-complete",
   "nodes": {
-    "init-refactoring": {
-      "id": "init-refactoring",
-      "desc": "Start refactoring work from metaspec synthesis",
+    "init": {
+      "id": "init",
+      "desc": "Current src/lib state (213 files, unrefactored)",
       "produces": [],
       "consumes": [],
       "deps": [],
       "validate": [],
       "mode": "execute"
     },
-    "consolidate-schema": {
-      "id": "consolidate-schema",
-      "desc": "Merge audit-schema.ts and perf-schema.ts into single src/lib/schema.ts (highest value: 50)",
+    "audit-lib-structure": {
+      "id": "audit-lib-structure",
+      "desc": "Deep audit of src/lib: identify consolidation targets, dead code, export surface",
       "produces": [
-        "src/lib/schema.ts",
-        ".audit/consolidate-schema.receipt.json"
+        ".audit/lib-refactor/structure-audit.json",
+        ".audit/lib-refactor/consolidation-targets.md"
       ],
-      "consumes": [
-        "src/lib/audit/audit-schema.ts",
-        "src/lib/perf/perf-schema.ts"
-      ],
-      "deps": ["init-refactoring"],
+      "consumes": [],
+      "deps": ["init"],
       "validate": [
-        { "type": "artifact-exists", "path": "src/lib/schema.ts" },
-        { "type": "shell", "command": "test ! -f src/lib/audit/audit-schema.ts || grep -q 'deprecated' src/lib/audit/audit-schema.ts" },
-        { "type": "shell", "command": "npm run test 2>&1 | grep -q 'passing'" }
+        {"type": "artifact-exists", "path": ".audit/lib-refactor/structure-audit.json"},
+        {"type": "artifact-exists", "path": ".audit/lib-refactor/consolidation-targets.md"}
       ],
       "mode": "execute"
     },
-    "wrap-cli-audit": {
-      "id": "wrap-cli-audit",
-      "desc": "Add 'roadmap audit' command to CLI registry (value: 35)",
+    "consolidate-core-modules": {
+      "id": "consolidate-core-modules",
+      "desc": "Consolidate related modules: recovery.ts + checkpoint.ts → unified audit module",
       "produces": [
-        "src/cli/commands/audit.ts",
-        ".audit/wrap-cli-audit.receipt.json"
+        "src/lib/audit.ts",
+        ".audit/lib-refactor/consolidation-1.receipt.json"
       ],
       "consumes": [
-        "bin/cli.ts",
-        "src/lib/audit/audit-engine.ts"
+        "src/lib/recovery.ts",
+        "src/lib/checkpoint.ts",
+        "src/lib/audit-trail.ts"
       ],
-      "deps": ["init-refactoring"],
+      "deps": ["audit-lib-structure"],
       "validate": [
-        { "type": "artifact-exists", "path": "src/cli/commands/audit.ts" },
-        { "type": "shell", "command": "grep -q 'registerCommand.*audit' src/cli/commands/audit.ts" }
+        {"type": "artifact-exists", "path": "src/lib/audit.ts"},
+        {"type": "shell", "command": "npm run tsc -- --noEmit 2>&1 | grep -q 'error' && exit 1 || exit 0"}
       ],
       "mode": "execute"
     },
-    "split-integration-tests": {
-      "id": "split-integration-tests",
-      "desc": "Split slow integration tests into separate file (value: 30)",
+    "reduce-export-surface": {
+      "id": "reduce-export-surface",
+      "desc": "Hide internal helpers: validation.ts exports only validateNode/validateGraph",
       "produces": [
-        "tests/integration-fast.test.ts",
-        "tests/integration-slow.test.ts",
-        ".audit/split-tests.receipt.json"
+        "src/lib/validation.ts",
+        "src/lib/internal/validation-helpers.ts",
+        ".audit/lib-refactor/export-reduction.receipt.json"
       ],
       "consumes": [
-        "tests/integration.test.ts"
+        "src/lib/validation.ts"
       ],
-      "deps": ["init-refactoring"],
+      "deps": ["audit-lib-structure"],
       "validate": [
-        { "type": "artifact-exists", "path": "tests/integration-fast.test.ts" },
-        { "type": "artifact-exists", "path": "tests/integration-slow.test.ts" },
-        { "type": "shell", "command": "npm run test -- tests/integration-fast.test.ts --run 2>&1 | tail -5 | grep -q 'passing'" }
+        {"type": "artifact-exists", "path": "src/lib/validation.ts"},
+        {"type": "shell", "command": "grep -c 'export.*function' src/lib/validation.ts | grep -E '^[0-2]$'"}
       ],
       "mode": "execute"
     },
-    "move-io-purity": {
-      "id": "move-io-purity",
-      "desc": "Move IO imports from src/lib to src/io to preserve lib purity (value: 28)",
+    "remove-dead-code": {
+      "id": "remove-dead-code",
+      "desc": "Remove unused types/functions: LegacyValidatorSpec, deprecatedOrderFunction, oldParallelOrder",
       "produces": [
-        "src/io/",
-        ".audit/move-io.receipt.json"
+        ".archive/lib-deprecated/removed-code.md",
+        ".audit/lib-refactor/dead-code.receipt.json"
       ],
       "consumes": [
-        "src/lib/audit/audit-engine.ts"
+        "src/lib/protocol.ts"
       ],
-      "deps": ["init-refactoring"],
+      "deps": ["audit-lib-structure"],
       "validate": [
-        { "type": "shell", "command": "! grep -r 'require.*fs\\|import.*fs' src/lib --include='*.ts'" }
+        {"type": "artifact-exists", "path": ".archive/lib-deprecated/removed-code.md"},
+        {"type": "shell", "command": "grep -r 'LegacyValidatorSpec\\|deprecatedOrderFunction\\|oldParallelOrder' src/ || exit 0"}
       ],
       "mode": "execute"
     },
-    "wrap-cli-expand": {
-      "id": "wrap-cli-expand",
-      "desc": "Add 'roadmap expand' CLI wrapper for scripts (value: 22)",
+    "consolidate-types": {
+      "id": "consolidate-types",
+      "desc": "All interfaces → src/lib/types.ts (single source of truth)",
       "produces": [
-        "src/cli/commands/expand.ts",
-        ".audit/wrap-cli-expand.receipt.json"
+        "src/lib/types.ts",
+        ".audit/lib-refactor/types-consolidation.receipt.json"
       ],
       "consumes": [
-        "bin/cli.ts",
-        "scripts/expand-*.ts"
+        "src/lib/protocol.ts",
+        "src/lib/validation.ts",
+        "src/lib/errors.ts"
       ],
-      "deps": ["init-refactoring"],
+      "deps": ["audit-lib-structure"],
       "validate": [
-        { "type": "artifact-exists", "path": "src/cli/commands/expand.ts" },
-        { "type": "shell", "command": "grep -q 'expandScript' src/cli/commands/expand.ts" }
+        {"type": "artifact-exists", "path": "src/lib/types.ts"},
+        {"type": "shell", "command": "grep -c 'export.*interface\\|export.*type' src/lib/types.ts"}
       ],
       "mode": "execute"
     },
-    "intent-refactoring-complete": {
-      "id": "intent-refactoring-complete",
-      "desc": "Terminal: all refactorings complete, tests pass, vitest <15s, imports verified",
+    "reorganize-by-concern": {
+      "id": "reorganize-by-concern",
+      "desc": "High-value: reorganize src/lib/{core,agent,recovery,internal} by responsibility",
       "produces": [
-        ".audit/intent-refactoring-complete.receipt.json"
+        "src/lib/core/index.ts",
+        "src/lib/agent/index.ts",
+        "src/lib/recovery/index.ts",
+        ".audit/lib-refactor/reorganization.receipt.json"
       ],
       "consumes": [
-        ".audit/consolidate-schema.receipt.json",
-        ".audit/wrap-cli-audit.receipt.json",
-        ".audit/split-tests.receipt.json",
-        ".audit/move-io.receipt.json",
-        ".audit/wrap-cli-expand.receipt.json"
+        "src/lib/"
       ],
-      "deps": [
-        "consolidate-schema",
-        "wrap-cli-audit",
-        "split-integration-tests",
-        "move-io-purity",
-        "wrap-cli-expand"
-      ],
+      "deps": ["consolidate-core-modules", "reduce-export-surface", "consolidate-types"],
       "validate": [
-        { "type": "shell", "command": "npm run test 2>&1 | grep -q 'passing'" },
-        { "type": "shell", "command": "! grep -r 'audit-schema\\|perf-schema' src/lib/audit src/lib/perf --include='*.ts' 2>/dev/null | grep -v deprecated" },
-        { "type": "shell", "command": "npm run build 2>&1 | grep -q 'successful\\|Build complete' || npm run tsc 2>&1 | tail -1 | grep -q 'successfully'" }
+        {"type": "artifact-exists", "path": "src/lib/core/index.ts"},
+        {"type": "artifact-exists", "path": "src/lib/agent/index.ts"},
+        {"type": "artifact-exists", "path": "src/lib/recovery/index.ts"},
+        {"type": "shell", "command": "test -d src/lib/internal"}
+      ],
+      "mode": "execute"
+    },
+    "update-public-api": {
+      "id": "update-public-api",
+      "desc": "Update src/lib/index.ts: expose only high-level API (define, verify, check, orient)",
+      "produces": [
+        "src/lib/index.ts",
+        ".audit/lib-refactor/api-cleanup.receipt.json"
+      ],
+      "consumes": [
+        "src/lib/core/index.ts"
+      ],
+      "deps": ["reorganize-by-concern"],
+      "validate": [
+        {"type": "artifact-exists", "path": "src/lib/index.ts"},
+        {"type": "shell", "command": "grep -c 'export' src/lib/index.ts"}
+      ],
+      "mode": "execute"
+    },
+    "verify-no-regressions": {
+      "id": "verify-no-regressions",
+      "desc": "TypeScript compilation + unit tests pass",
+      "produces": [
+        ".audit/lib-refactor/test-results.json"
+      ],
+      "consumes": [],
+      "deps": ["update-public-api"],
+      "validate": [
+        {"type": "shell", "command": "npm run tsc -- --noEmit"}
+      ],
+      "mode": "execute"
+    },
+    "intent-lib-refactor-complete": {
+      "id": "intent-lib-refactor-complete",
+      "desc": "Terminal: src/lib refactoring complete, no regressions, exports reduced, modules organized",
+      "produces": [
+        ".audit/lib-refactor/RECEIPT.json"
+      ],
+      "consumes": [
+        ".audit/lib-refactor/structure-audit.json",
+        ".audit/lib-refactor/consolidation-1.receipt.json",
+        ".audit/lib-refactor/export-reduction.receipt.json",
+        ".audit/lib-refactor/types-consolidation.receipt.json",
+        ".audit/lib-refactor/reorganization.receipt.json",
+        ".audit/lib-refactor/api-cleanup.receipt.json",
+        ".audit/lib-refactor/test-results.json"
+      ],
+      "deps": ["verify-no-regressions"],
+      "validate": [
+        {"type": "artifact-exists", "path": ".audit/lib-refactor/RECEIPT.json"}
       ],
       "mode": "plan"
     }
