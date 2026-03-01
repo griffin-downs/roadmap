@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "description": "Enforcement schema for iteration 2 — mechanical validation and state contracts",
+  "generatedAt": "2026-03-01T17:55:00.000Z",
+  "rules": {
+    "artifact-exists": {
+      "type": "artifact-exists",
+      "description": "Artifact file must exist and be readable",
+      "severity": "blocking",
+      "applicable": ["all"]
+    },
+    "artifact-schema": {
+      "type": "artifact-schema",
+      "description": "Artifact must match JSON schema (if .schema suffix)",
+      "severity": "blocking",
+      "applicable": ["recoveryNodes", "auditNodes"]
+    },
+    "process-invariant": {
+      "type": "process-invariant",
+      "description": "Process execution must maintain invariants (determinism, idempotency, atomicity)",
+      "severity": "warning",
+      "applicable": ["all"]
+    },
+    "state-transition": {
+      "type": "state-transition",
+      "description": "State machine transitions must be legal (init→pending→claimed→executing→validated→complete)",
+      "severity": "blocking",
+      "applicable": ["all"]
+    },
+    "concurrent-safety": {
+      "type": "concurrent-safety",
+      "description": "Concurrent execution must be race-condition free (file locks, atomic writes, CAS)",
+      "severity": "blocking",
+      "applicable": ["concurrentNodes"]
+    }
+  },
+  "stateTransitions": {
+    "init": ["pending"],
+    "pending": ["claimed"],
+    "claimed": ["executing"],
+    "executing": ["validated", "failed"],
+    "validated": ["complete"],
+    "complete": [],
+    "failed": ["pending"],
+    "skipped": []
+  },
+  "globalConstraints": {
+    "maxParallelNodes": 4,
+    "maxConcurrentPerNode": 1,
+    "validateOnComplete": true,
+    "validateOnClaim": false,
+    "auditTransitions": true,
+    "auditPath": ".roadmap/enforcement/state-transitions.jsonl",
+    "claimsPath": ".roadmap/claims.json",
+    "completedPath": ".roadmap/completed.json"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "timestamp": "2026-03-01T18:55:00Z",
+  "iteration": "fr-custodial-iter-002",
+  "recovery": {
+    "artifactsRecovered": [
+      {
+        "name": "claims.json",
+        "source": "reconstructed from trail.jsonl orient commands",
+        "recordsRecovered": 67,
+        "timeSpan": "2026-03-01T17:44:43Z to 2026-03-01T17:54:32Z",
+        "status": "recovered"
+      }
+    ],
+    "artifactsMissing": [],
+    "stateValidation": {
+      "completed_json": {
+        "exists": true,
+        "recordCount": 65,
+        "lastModified": "2026-03-01T18:49:00Z"
+      },
+      "trail_jsonl": {
+        "exists": true,
+        "recordCount": 67,
+        "lastModified": "2026-03-01T17:54:32Z"
+      },
+      "consistency": "validated"
+    }
+  },
+  "recoverySteps": [
+    "read trail.jsonl JSONL entries",
+    "extract orient commands (position, level, done, remaining)",
+    "derive claim records: each orient entry tracks batch progress",
+    "construct claims.json with claim indices and node states",
+    "validate against completed.json records",
+    "consistency check: position/level/done/remaining match"
+  ],
+  "claimsGenerated": 67,
+  "validation": {
+    "trailRecords": 67,
+    "completedRecords": 65,
+    "reconstructedRecords": 67,
+    "mismatchesDetected": 0,
+    "status": "clean"
+  }
+}
