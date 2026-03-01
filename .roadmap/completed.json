@@ -4100,5 +4100,31 @@
     ],
     "gitSha": "78a280932c4fbe22e7921cf35a88559e0e0cfbf1",
     "treeSha": "8fd45128d4a5e6e282d2431b4b46cdf587206f4c"
+  },
+  {
+    "nodeId": "rm-cli-inventory-cmd",
+    "completedAt": "2026-03-01T01:36:40.029Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301013638",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/cli/inventory.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/cli/inventory.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "09484b9ed0d3933e8503681996132ab56fed485d3c714b52d0d7c3e864369729",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-cli-inventory-cmd/mm72xcnf-md13iz/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "1f3b902d999d84d2b3ea5794a33476fe35bac42b",
+    "treeSha": "4daeb18e81561a2568c36d601f5abf4aba6019f8"
   }
 ]
