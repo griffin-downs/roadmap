@@ -1,10 +1,15 @@
 // @module claims
 // Per-node ownership for parallel batch execution.
-// Store: .roadmap/claims.json (local to repo root).
-// Claims are advisory — expired entries are ignored, not deleted on read.
+// Store: .roadmap/tokens/claim/ (BoundToken format).
+// Migration shim reads legacy .roadmap/claims.json on first load.
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { execSync } from 'node:child_process';
+import {
+  type BoundToken, type TokenType,
+  writeToken, listTokens, isTokenExpired, tokenId, TOKEN_DIR,
+} from './token-store.ts';
 
 export interface NodeClaim {
   owner: string;
@@ -14,20 +19,129 @@ export interface NodeClaim {
 
 export type ClaimStore = Record<string, NodeClaim>;
 
-export function loadClaims(repoRoot: string): ClaimStore {
-  const path = join(repoRoot, '.roadmap', 'claims.json');
-  if (!existsSync(path)) return {};
+// --- headSha helper ---
+
+function currentHeadSha(repoRoot: string): string {
   try {
-    return JSON.parse(readFileSync(path, 'utf-8')) as ClaimStore;
+    return execSync('git rev-parse HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
   } catch {
-    return {};
+    return 'unknown';
   }
 }
 
+// --- migration shim ---
+
+function migrateLegacyClaims(repoRoot: string): void {
+  const legacyPath = join(repoRoot, '.roadmap', 'claims.json');
+  if (!existsSync(legacyPath)) return;
+
+  let legacy: Record<string, NodeClaim>;
+  try {
+    legacy = JSON.parse(readFileSync(legacyPath, 'utf-8'));
+  } catch {
+    // Malformed — rename and bail
+    renameSync(legacyPath, legacyPath + '.migrated');
+    return;
+  }
+
+  const headSha = currentHeadSha(repoRoot);
+
+  for (const [nodeId, claim] of Object.entries(legacy)) {
+    const token: BoundToken = {
+      schema_version: 1,
+      tokenId: tokenId('claim' as TokenType, nodeId, claim.claimedAt),
+      type: 'claim',
+      subject: nodeId,
+      owner: claim.owner,
+      issuedAt: claim.claimedAt,
+      expiresAt: claim.claimExpiry,
+      boundTo: { headSha },
+      payload: { nodeId, claimedAt: claim.claimedAt, claimExpiry: claim.claimExpiry },
+      ok: true,
+    };
+    writeToken(repoRoot, token);
+  }
+
+  renameSync(legacyPath, legacyPath + '.migrated');
+}
+
+// --- token → NodeClaim conversion ---
+
+function tokenToClaim(token: BoundToken): NodeClaim {
+  return {
+    owner: token.owner ?? 'unknown',
+    claimedAt: token.issuedAt,
+    claimExpiry: token.expiresAt ?? token.issuedAt,
+  };
+}
+
+// --- public API (unchanged signatures) ---
+
+export function loadClaims(repoRoot: string): ClaimStore {
+  migrateLegacyClaims(repoRoot);
+
+  const tokens = listTokens(repoRoot, 'claim');
+  const store: ClaimStore = {};
+
+  // Latest token per subject wins (tokens/claim/ may have multiple per node)
+  for (const t of tokens) {
+    if (!t.ok) continue;
+    const existing = store[t.subject];
+    if (!existing || t.issuedAt > existing.claimedAt) {
+      store[t.subject] = tokenToClaim(t);
+    }
+  }
+
+  return store;
+}
+
 export function saveClaims(repoRoot: string, store: ClaimStore): void {
-  const dir = join(repoRoot, '.roadmap');
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'claims.json'), JSON.stringify(store, null, 2) + '\n');
+  const headSha = currentHeadSha(repoRoot);
+  const existing = loadClaimsRaw(repoRoot);
+
+  for (const [nodeId, claim] of Object.entries(store)) {
+    // Only write if new or changed
+    const prev = existing[nodeId];
+    if (prev && prev.claimedAt === claim.claimedAt && prev.owner === claim.owner) continue;
+
+    const token: BoundToken = {
+      schema_version: 1,
+      tokenId: tokenId('claim' as TokenType, nodeId, claim.claimedAt),
+      type: 'claim',
+      subject: nodeId,
+      owner: claim.owner,
+      issuedAt: claim.claimedAt,
+      expiresAt: claim.claimExpiry,
+      boundTo: { headSha },
+      payload: { nodeId, claimedAt: claim.claimedAt, claimExpiry: claim.claimExpiry },
+      ok: true,
+    };
+    writeToken(repoRoot, token);
+  }
+
+  // Revoke removed claims
+  const tokens = listTokens(repoRoot, 'claim');
+  for (const t of tokens) {
+    if (!t.ok) continue;
+    if (!(t.subject in store)) {
+      const revoked: BoundToken = { ...t, ok: false };
+      writeToken(repoRoot, revoked);
+    }
+  }
+}
+
+/** Internal: load without migration (avoids recursion in saveClaims). */
+function loadClaimsRaw(repoRoot: string): ClaimStore {
+  const tokens = listTokens(repoRoot, 'claim');
+  const store: ClaimStore = {};
+  for (const t of tokens) {
+    if (!t.ok) continue;
+    const existing = store[t.subject];
+    if (!existing || t.issuedAt > existing.claimedAt) {
+      store[t.subject] = tokenToClaim(t);
+    }
+  }
+  return store;
 }
 
 export function isExpired(claim: NodeClaim, now = new Date()): boolean {
