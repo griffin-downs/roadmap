@@ -2831,6 +2831,20 @@ async function cmdComplete(note: string) {
   // Save completion with evidence to persistent tracking (receipt-authoritative)
   saveCompletionWithEvidence(repoRoot, nodeId, evidenceChecks, owner, checkpoint.id, validatorResults);
 
+  // Auto-commit completion state unless --no-commit
+  let autoCommitResult: { committed: boolean; reason?: string; receipt?: any } | undefined;
+  const noCommit = args.includes('--no-commit');
+  if (noCommit) {
+    const { writeAuditReceipt } = await import('../src/lib/metaflow/audit/receipt.ts');
+    const receipt = writeAuditReceipt(
+      `autocommit-${nodeId}`, 'unknown', [], { schema_version: 1, runId: `autocommit-${nodeId}`, treeSha: 'unknown', sessionIds: [], computedAt: new Date().toISOString(), passed: false, detectorResults: [] } as any, repoRoot,
+    );
+    autoCommitResult = { committed: false, reason: 'no-commit-flag', receipt };
+  } else {
+    const { autoCommitCompletion } = await import('../src/lib/completion/auto-commit.ts');
+    autoCommitResult = autoCommitCompletion(nodeId, repoRoot);
+  }
+
   recordTrail({
     ts: new Date().toISOString(), cmd: 'complete', note,
     repo: basename(repoRoot), position: finalPos.position, level: finalPos.level, dagId: dag.id,
@@ -2849,6 +2863,7 @@ async function cmdComplete(note: string) {
     ...(posAfter.batchComplete && !advanced && !noAdvance ? { hint: 'roadmap advance --note "batch done"' } : {}),
     ...(intentJudgments ? { evaluated: intentJudgments.length } : {}),
     ...(exploreResults ? { explored: exploreResults.length, exploreResults: exploreResults.map(r => ({ script: r.script, success: r.success, observations: r.result?.observations?.length ?? 0, error: r.error })) } : {}),
+    ...(autoCommitResult ? { autoCommit: autoCommitResult } : {}),
   });
 }
 
