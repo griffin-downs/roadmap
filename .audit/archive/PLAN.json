@@ -1,642 +1,427 @@
 {
   "version": 1,
-  "timestamp": "2026-03-01T10:58:06.625Z",
+  "timestamp": "2026-03-01T10:58:29.936Z",
   "ops": [
     {
       "type": "move",
-      "from": "src/lib/audit/audit-engine.ts",
-      "to": "src/audit/audit/audit-engine.ts",
-      "hash": "3da25ceab25c0b9c"
+      "from": "scripts/test-ledger.json",
+      "to": "archive/scripts/test-ledger.json",
+      "hash": "9037cafcb4836b90"
     },
     {
       "type": "move",
-      "from": "src/lib/audit/audit-schema.ts",
-      "to": "src/audit/audit/audit-schema.ts",
-      "hash": "6c5aaa70d45aa6d7"
+      "from": "scripts/check-explore-exports.ts",
+      "to": "archive/scripts/check-explore-exports.ts",
+      "hash": "bd48a0f23058e11f"
     },
     {
       "type": "move",
-      "from": "src/lib/audit/layout-plan.ts",
-      "to": "src/audit/audit/layout-plan.ts",
-      "hash": "9ea91b9801f4fefd"
+      "from": "scripts/check-explore-surface.ts",
+      "to": "archive/scripts/check-explore-surface.ts",
+      "hash": "157e8146648b937e"
     },
     {
       "type": "move",
-      "from": "src/lib/audit-ingest.ts",
-      "to": "src/audit/audit-ingest.ts",
-      "hash": "6abd7bc80a1e4433"
+      "from": "scripts/ci/roadmap-spec-origin-gate.ts",
+      "to": "archive/scripts/ci/roadmap-spec-origin-gate.ts",
+      "hash": "62b1f18f8a91b4b7"
     },
     {
       "type": "move",
-      "from": "src/lib/audit-recommend.ts",
-      "to": "src/audit/audit-recommend.ts",
-      "hash": "c46c1de5bafe82a3"
+      "from": "scripts/expand-fr-surf-001-validation.ts",
+      "to": "archive/scripts/expand-fr-surf-001-validation.ts",
+      "hash": "6566e5d10490fe19"
     },
     {
       "type": "move",
-      "from": "src/lib/cli/audit-metaflow.ts",
-      "to": "src/cli/cli/audit-metaflow.ts",
-      "hash": "ff2098f4090eb08e"
+      "from": "scripts/explore-template.ts",
+      "to": "archive/scripts/explore-template.ts",
+      "hash": "6e9879533b8ee410"
     },
     {
       "type": "move",
-      "from": "src/lib/cli/audit-samples.ts",
-      "to": "src/cli/cli/audit-samples.ts",
-      "hash": "22a6abf1c0291cba"
+      "from": "scripts/explore-validate-contract.ts",
+      "to": "archive/scripts/explore-validate-contract.ts",
+      "hash": "17383fbbbf53c84d"
     },
     {
       "type": "move",
-      "from": "src/lib/cli/audit.ts",
-      "to": "src/cli/cli/audit.ts",
-      "hash": "3cad39ac26cb0f16"
+      "from": "scripts/generate-promotion-ledger.ts",
+      "to": "archive/scripts/generate-promotion-ledger.ts",
+      "hash": "fa1df8204bfbe010"
     },
     {
       "type": "move",
-      "from": "src/lib/cli/doctor-cli.ts",
-      "to": "src/cli/cli/doctor-cli.ts",
-      "hash": "9ffa092d337b7744"
+      "from": "scripts/test-ledger-prune.ts",
+      "to": "archive/scripts/test-ledger-prune.ts",
+      "hash": "40bd90c617a5c701"
     },
     {
       "type": "move",
-      "from": "src/lib/cli/inventory.ts",
-      "to": "src/cli/cli/inventory.ts",
-      "hash": "401f05418f51e89d"
+      "from": "scripts/test-ledger.schema.json",
+      "to": "archive/scripts/test-ledger.schema.json",
+      "hash": "5b354db7a025a35e"
     },
     {
       "type": "move",
-      "from": "src/lib/cli-envelope.ts",
-      "to": "src/cli/cli-envelope.ts",
-      "hash": "6b0015b895763420"
+      "from": "scripts/expand-fr-gallery.ts",
+      "to": "archive/scripts/expand-fr-gallery.ts",
+      "hash": "0b6cf1e1ecc61571"
     },
     {
       "type": "move",
-      "from": "src/lib/cli-human.ts",
-      "to": "src/cli/cli-human.ts",
-      "hash": "233dfbce62b4f71c"
+      "from": "src/git-state.schema.ts",
+      "to": "archive/src/git-state.schema.ts",
+      "hash": "d9b00e66782bb397"
     },
     {
       "type": "move",
-      "from": "src/lib/env-audit.ts",
-      "to": "src/audit/env-audit.ts",
-      "hash": "e7c50999e8710002"
+      "from": "src/project-metadata.schema.ts",
+      "to": "archive/src/project-metadata.schema.ts",
+      "hash": "7a01f14c1476d437"
     },
     {
       "type": "move",
-      "from": "src/lib/import/audit-tail-gate.ts",
-      "to": "src/audit/import/audit-tail-gate.ts",
-      "hash": "57eb0ef70ffff54a"
+      "from": "src/versioning.schema.ts",
+      "to": "archive/src/versioning.schema.ts",
+      "hash": "43ab35d1fa312c9f"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/active-run.ts",
-      "to": "src/metaflow/metaflow/active-run.ts",
-      "hash": "6601676e5a8cd9e0"
+      "from": "scripts/ci/roadmap-gitsha-gate.ts",
+      "to": "archive/scripts/ci/roadmap-gitsha-gate.ts",
+      "hash": "20c9d9ae10bf4e28"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/ask.ts",
-      "to": "src/metaflow/metaflow/ask.ts",
-      "hash": "9c9ca9a2876ec01d"
+      "from": "scripts/ci/roadmap-plan-gate.ts",
+      "to": "archive/scripts/ci/roadmap-plan-gate.ts",
+      "hash": "c77d36b02d78104b"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/audit.ts",
-      "to": "src/metaflow/metaflow/audit/audit.ts",
-      "hash": "641e6bc670a2d236"
+      "from": "scripts/ci-dag-check.ts",
+      "to": "archive/scripts/ci-dag-check.ts",
+      "hash": "9e0ba1722c3ab7f5"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/cli.ts",
-      "to": "src/metaflow/metaflow/audit/cli.ts",
-      "hash": "252e858a3c307cca"
+      "from": "scripts/ci-intent-check.ts",
+      "to": "archive/scripts/ci-intent-check.ts",
+      "hash": "20097fb935a9b0c8"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/detectors/display.ts",
-      "to": "src/metaflow/metaflow/audit/detectors/display.ts",
-      "hash": "a00f36da3da7e048"
+      "from": "scripts/ci-test-ledger.ts",
+      "to": "archive/scripts/ci-test-ledger.ts",
+      "hash": "585fe516cd2e9167"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/detectors/integration.ts",
-      "to": "src/metaflow/metaflow/audit/detectors/integration.ts",
-      "hash": "adff64af9aae5947"
+      "from": "scripts/expand-cli-output-plan.ts",
+      "to": "archive/scripts/expand-cli-output-plan.ts",
+      "hash": "932092e4137f61b4"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/detectors/metaflow.ts",
-      "to": "src/metaflow/metaflow/audit/detectors/metaflow.ts",
-      "hash": "e78fa6220eaa4a7e"
+      "from": "scripts/expand-dag-candidate-execute.ts",
+      "to": "archive/scripts/expand-dag-candidate-execute.ts",
+      "hash": "4a9597ed99b10896"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/detectors/strategy.ts",
-      "to": "src/metaflow/metaflow/audit/detectors/strategy.ts",
-      "hash": "4292582b1ac64799"
+      "from": "scripts/expand-dag-candidate-flow.ts",
+      "to": "archive/scripts/expand-dag-candidate-flow.ts",
+      "hash": "2e9a27c34e38d54f"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/opt-map.ts",
-      "to": "src/metaflow/metaflow/audit/opt-map.ts",
-      "hash": "617fc749399045af"
+      "from": "scripts/expand-dag-compiler.ts",
+      "to": "archive/scripts/expand-dag-compiler.ts",
+      "hash": "ffe2501a8d4462db"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/receipt.ts",
-      "to": "src/metaflow/metaflow/audit/receipt.ts",
-      "hash": "97c44a0c096e3ee8"
+      "from": "scripts/expand-integration-terminal.ts",
+      "to": "archive/scripts/expand-integration-terminal.ts",
+      "hash": "fa1404eb0593e85f"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/report.ts",
-      "to": "src/metaflow/metaflow/audit/report.ts",
-      "hash": "64f513fa6f0913f5"
+      "from": "scripts/expand-merge-fr-014.ts",
+      "to": "archive/scripts/expand-merge-fr-014.ts",
+      "hash": "cfa907e9fe10dfe3"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/audit/required-schema.ts",
-      "to": "src/metaflow/metaflow/audit/required-schema.ts",
-      "hash": "615e7a2827d13858"
+      "from": "scripts/expand-phase18-20.ts",
+      "to": "archive/scripts/expand-phase18-20.ts",
+      "hash": "8a443f3ab7b46796"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/authority-schema.ts",
-      "to": "src/metaflow/metaflow/authority-schema.ts",
-      "hash": "454026ccb1d8c58e"
+      "from": "scripts/expand-receipt-first-execute.ts",
+      "to": "archive/scripts/expand-receipt-first-execute.ts",
+      "hash": "9119dfa8cf594750"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/authority.ts",
-      "to": "src/metaflow/metaflow/authority.ts",
-      "hash": "7247c7d3f4174a6f"
+      "from": "scripts/expand-receipt-first-plan.ts",
+      "to": "archive/scripts/expand-receipt-first-plan.ts",
+      "hash": "543523b52d52e405"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/cli-sovereignty.ts",
-      "to": "src/metaflow/metaflow/cli-sovereignty.ts",
-      "hash": "6c15e55a8273982c"
+      "from": "scripts/expand-sgk-execute.ts",
+      "to": "archive/scripts/expand-sgk-execute.ts",
+      "hash": "e00f0b89526a26fd"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/command-registry.ts",
-      "to": "src/metaflow/metaflow/command-registry.ts",
-      "hash": "f648ed1ddddfa0c8"
+      "from": "scripts/expand-sgk-plan.ts",
+      "to": "archive/scripts/expand-sgk-plan.ts",
+      "hash": "577f8b83f1fd9a54"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/flow-schema.ts",
-      "to": "src/metaflow/metaflow/flow-schema.ts",
-      "hash": "9b96d8ccd16e2447"
+      "from": "scripts/expand-spawn-plan.ts",
+      "to": "archive/scripts/expand-spawn-plan.ts",
+      "hash": "c39ba19c6f46d6dc"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/flows.ts",
-      "to": "src/metaflow/metaflow/flows.ts",
-      "hash": "44249804463b7dd2"
+      "from": "scripts/expand-spec-threading.ts",
+      "to": "archive/scripts/expand-spec-threading.ts",
+      "hash": "88f6d7a7fc6a12e4"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/fs.ts",
-      "to": "src/metaflow/metaflow/fs.ts",
-      "hash": "d127212c3363dc11"
+      "from": "scripts/expand-token-unify-execute.ts",
+      "to": "archive/scripts/expand-token-unify-execute.ts",
+      "hash": "b1396d3f0f63c80c"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/guards.ts",
-      "to": "src/metaflow/metaflow/guards.ts",
-      "hash": "9f160ff93ea0d28f"
+      "from": "scripts/expand-token-unify-plan.ts",
+      "to": "archive/scripts/expand-token-unify-plan.ts",
+      "hash": "39b3019f5a18e139"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/index.ts",
-      "to": "src/metaflow/metaflow/index.ts",
-      "hash": "d6961a6507319816"
+      "from": "scripts/expand-validate-enforcement.ts",
+      "to": "archive/scripts/expand-validate-enforcement.ts",
+      "hash": "5028e319307577f8"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/kernel-bridge.ts",
-      "to": "src/metaflow/metaflow/kernel-bridge.ts",
-      "hash": "ec41bdab8f73f3de"
+      "from": "scripts/gen-archive-plan.ts",
+      "to": "archive/scripts/gen-archive-plan.ts",
+      "hash": "dacb8241f9988e48"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/mine-run.ts",
-      "to": "src/metaflow/metaflow/mine-run.ts",
-      "hash": "02d904607fec0f83"
+      "from": "scripts/legacy-completion-migration.ts",
+      "to": "archive/scripts/legacy-completion-migration.ts",
+      "hash": "50cd385d27dcff0e"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/miner.ts",
-      "to": "src/metaflow/metaflow/miner.ts",
-      "hash": "f49cb859aa4a71b1"
+      "from": "scripts/test-explore-fail.ts",
+      "to": "archive/scripts/test-explore-fail.ts",
+      "hash": "9edfe0f759bc3373"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/opt-dag.ts",
-      "to": "src/metaflow/metaflow/opt-dag.ts",
-      "hash": "7c0cd963e23a1a13"
+      "from": "scripts/test-explore.ts",
+      "to": "archive/scripts/test-explore.ts",
+      "hash": "a65a9530ae7a632e"
     },
     {
       "type": "move",
-      "from": "src/lib/metaflow/receipt-writer.ts",
-      "to": "src/metaflow/metaflow/receipt-writer.ts",
-      "hash": "f07c9c2efbd45386"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/metaflow/render-receipt.ts",
-      "to": "src/metaflow/metaflow/render-receipt.ts",
-      "hash": "35bc08b75cac367a"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/metaflow/run-id.ts",
-      "to": "src/metaflow/metaflow/run-id.ts",
-      "hash": "2f04ec387ba62eea"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/metaflow/self-insert.ts",
-      "to": "src/metaflow/metaflow/self-insert.ts",
-      "hash": "0342f9993d68a05f"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/metaflow/session-store.ts",
-      "to": "src/metaflow/metaflow/session-store.ts",
-      "hash": "9dc4ff49031081df"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/metaflow/types.ts",
-      "to": "src/metaflow/metaflow/types.ts",
-      "hash": "28d7826d5510a93f"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/metaflow/verify.ts",
-      "to": "src/metaflow/metaflow/verify.ts",
-      "hash": "8d945dc61b1fa915"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/metaflow/wrap.ts",
-      "to": "src/metaflow/metaflow/wrap.ts",
-      "hash": "a42df489e3facaa6"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/perf/perf-schema.ts",
-      "to": "src/perf/perf/perf-schema.ts",
-      "hash": "281844f4d4952422"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/audit.ts",
-      "to": "src/components/sgk/audit.ts",
-      "hash": "432fd0ee6b88f4c1"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/cli/close-gates.ts",
-      "to": "src/components/sgk/cli/close-gates.ts",
-      "hash": "5fb9806bf0124271"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/cli/complete-binding.ts",
-      "to": "src/components/sgk/cli/complete-binding.ts",
-      "hash": "cd4e011f3984b17f"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/cli/dispatch-gates.ts",
-      "to": "src/components/sgk/cli/dispatch-gates.ts",
-      "hash": "c04a85680f59eb4f"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/cli/intent-init.ts",
-      "to": "src/components/sgk/cli/intent-init.ts",
-      "hash": "6d7c923236793c7c"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/cli/intent-term.ts",
-      "to": "src/components/sgk/cli/intent-term.ts",
-      "hash": "7ded5bd42e2e2f7e"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/cli/run-enforce.ts",
-      "to": "src/components/sgk/cli/run-enforce.ts",
-      "hash": "5a1206e1c2794567"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/detectors/chain.ts",
-      "to": "src/components/sgk/detectors/chain.ts",
-      "hash": "693c77e68d4dc405"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/detectors/strategy.ts",
-      "to": "src/components/sgk/detectors/strategy.ts",
-      "hash": "66e0fa24663619cd"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/display.ts",
-      "to": "src/components/sgk/display.ts",
-      "hash": "e9e24f507a5d8ceb"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/intent-binding.ts",
-      "to": "src/components/sgk/intent-binding.ts",
-      "hash": "22e4ceb57c3d7aad"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/kernel-ext.ts",
-      "to": "src/components/sgk/kernel-ext.ts",
-      "hash": "c94c7ab91e9bc8ac"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/mine.ts",
-      "to": "src/components/sgk/mine.ts",
-      "hash": "81290ed8c7feea11"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/receipts/audit.ts",
-      "to": "src/components/sgk/receipts/audit.ts",
-      "hash": "bfcc28904435cf6f"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/receipts/close.ts",
-      "to": "src/components/sgk/receipts/close.ts",
-      "hash": "dbc8e68d65c55bb7"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/receipts/display.ts",
-      "to": "src/components/sgk/receipts/display.ts",
-      "hash": "65e9bc8d715fbbb0"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/receipts/intent.ts",
-      "to": "src/components/sgk/receipts/intent.ts",
-      "hash": "ad9e5775eb0b6efd"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/receipts/mine.ts",
-      "to": "src/components/sgk/receipts/mine.ts",
-      "hash": "43ed0d4c6c1de421"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/receipts/plan.ts",
-      "to": "src/components/sgk/receipts/plan.ts",
-      "hash": "489633515c41f900"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/receipts/strategy.ts",
-      "to": "src/components/sgk/receipts/strategy.ts",
-      "hash": "3fbe5c14541ac016"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/render.ts",
-      "to": "src/components/sgk/render.ts",
-      "hash": "902132017c141147"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/run-manifest.ts",
-      "to": "src/components/sgk/run-manifest.ts",
-      "hash": "90fa864d1dbc6f51"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/strategy-auto.ts",
-      "to": "src/components/sgk/strategy-auto.ts",
-      "hash": "ac423fa863dc86c2"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/strategy-surface.ts",
-      "to": "src/components/sgk/strategy-surface.ts",
-      "hash": "287e39d930638f54"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/sgk/term-display-check.ts",
-      "to": "src/components/sgk/term-display-check.ts",
-      "hash": "f5068fa7863fd75a"
-    },
-    {
-      "type": "move",
-      "from": "src/lib/verify/invariants/cli-compliance.ts",
-      "to": "src/cli/verify/invariants/cli-compliance.ts",
-      "hash": "b54963a40b0fbbef"
-    },
-    {
-      "type": "move",
-      "from": "src/tests/rkg3.test.ts",
-      "to": "tests/tests/rkg3.test.ts",
-      "hash": "77619ac623094691"
-    },
-    {
-      "type": "move",
-      "from": "src/tests/rkg4.test.ts",
-      "to": "tests/tests/rkg4.test.ts",
-      "hash": "b4ef5d1388cb5b3b"
-    },
-    {
-      "type": "move",
-      "from": "src/tests/rkg5.test.ts",
-      "to": "tests/tests/rkg5.test.ts",
-      "hash": "20e015871bf6f719"
-    },
-    {
-      "type": "move",
-      "from": "src/tests/rkg6.test.ts",
-      "to": "tests/tests/rkg6.test.ts",
-      "hash": "c59036bb75ae4c3a"
-    },
-    {
-      "type": "move",
-      "from": "src/tests/token-unify.test.ts",
-      "to": "tests/tests/token-unify.test.ts",
-      "hash": "d8b5594a35dbc12c"
+      "from": "scripts/test-ledger-init.ts",
+      "to": "archive/scripts/test-ledger-init.ts",
+      "hash": "1ffff80b749d53d5"
     }
   ],
   "order": [
-    "src/lib/audit-ingest.ts",
-    "src/lib/audit-recommend.ts",
-    "src/lib/audit/audit-engine.ts",
-    "src/lib/audit/audit-schema.ts",
-    "src/lib/audit/layout-plan.ts",
-    "src/lib/cli-envelope.ts",
-    "src/lib/cli-human.ts",
-    "src/lib/cli/audit-metaflow.ts",
-    "src/lib/cli/audit-samples.ts",
-    "src/lib/cli/audit.ts",
-    "src/lib/cli/doctor-cli.ts",
-    "src/lib/cli/inventory.ts",
-    "src/lib/env-audit.ts",
-    "src/lib/import/audit-tail-gate.ts",
-    "src/lib/metaflow/active-run.ts",
-    "src/lib/metaflow/ask.ts",
-    "src/lib/metaflow/audit/audit.ts",
-    "src/lib/metaflow/audit/cli.ts",
-    "src/lib/metaflow/audit/detectors/display.ts",
-    "src/lib/metaflow/audit/detectors/integration.ts",
-    "src/lib/metaflow/audit/detectors/metaflow.ts",
-    "src/lib/metaflow/audit/detectors/strategy.ts",
-    "src/lib/metaflow/audit/opt-map.ts",
-    "src/lib/metaflow/audit/receipt.ts",
-    "src/lib/metaflow/audit/report.ts",
-    "src/lib/metaflow/audit/required-schema.ts",
-    "src/lib/metaflow/authority-schema.ts",
-    "src/lib/metaflow/authority.ts",
-    "src/lib/metaflow/cli-sovereignty.ts",
-    "src/lib/metaflow/command-registry.ts",
-    "src/lib/metaflow/flow-schema.ts",
-    "src/lib/metaflow/flows.ts",
-    "src/lib/metaflow/fs.ts",
-    "src/lib/metaflow/guards.ts",
-    "src/lib/metaflow/index.ts",
-    "src/lib/metaflow/kernel-bridge.ts",
-    "src/lib/metaflow/mine-run.ts",
-    "src/lib/metaflow/miner.ts",
-    "src/lib/metaflow/opt-dag.ts",
-    "src/lib/metaflow/receipt-writer.ts",
-    "src/lib/metaflow/render-receipt.ts",
-    "src/lib/metaflow/run-id.ts",
-    "src/lib/metaflow/self-insert.ts",
-    "src/lib/metaflow/session-store.ts",
-    "src/lib/metaflow/types.ts",
-    "src/lib/metaflow/verify.ts",
-    "src/lib/metaflow/wrap.ts",
-    "src/lib/perf/perf-schema.ts",
-    "src/lib/sgk/audit.ts",
-    "src/lib/sgk/cli/close-gates.ts",
-    "src/lib/sgk/cli/complete-binding.ts",
-    "src/lib/sgk/cli/dispatch-gates.ts",
-    "src/lib/sgk/cli/intent-init.ts",
-    "src/lib/sgk/cli/intent-term.ts",
-    "src/lib/sgk/cli/run-enforce.ts",
-    "src/lib/sgk/detectors/chain.ts",
-    "src/lib/sgk/detectors/strategy.ts",
-    "src/lib/sgk/display.ts",
-    "src/lib/sgk/intent-binding.ts",
-    "src/lib/sgk/kernel-ext.ts",
-    "src/lib/sgk/mine.ts",
-    "src/lib/sgk/receipts/audit.ts",
-    "src/lib/sgk/receipts/close.ts",
-    "src/lib/sgk/receipts/display.ts",
-    "src/lib/sgk/receipts/intent.ts",
-    "src/lib/sgk/receipts/mine.ts",
-    "src/lib/sgk/receipts/plan.ts",
-    "src/lib/sgk/receipts/strategy.ts",
-    "src/lib/sgk/render.ts",
-    "src/lib/sgk/run-manifest.ts",
-    "src/lib/sgk/strategy-auto.ts",
-    "src/lib/sgk/strategy-surface.ts",
-    "src/lib/sgk/term-display-check.ts",
-    "src/lib/verify/invariants/cli-compliance.ts",
-    "src/tests/rkg3.test.ts",
-    "src/tests/rkg4.test.ts",
-    "src/tests/rkg5.test.ts",
-    "src/tests/rkg6.test.ts",
-    "src/tests/token-unify.test.ts"
+    "scripts/test-ledger.json",
+    "scripts/check-explore-exports.ts",
+    "scripts/check-explore-surface.ts",
+    "scripts/ci/roadmap-spec-origin-gate.ts",
+    "scripts/expand-fr-surf-001-validation.ts",
+    "scripts/explore-template.ts",
+    "scripts/explore-validate-contract.ts",
+    "scripts/generate-promotion-ledger.ts",
+    "scripts/test-ledger-prune.ts",
+    "scripts/test-ledger.schema.json",
+    "scripts/expand-fr-gallery.ts",
+    "src/git-state.schema.ts",
+    "src/project-metadata.schema.ts",
+    "src/versioning.schema.ts",
+    "scripts/ci/roadmap-gitsha-gate.ts",
+    "scripts/ci/roadmap-plan-gate.ts",
+    "scripts/ci-dag-check.ts",
+    "scripts/ci-intent-check.ts",
+    "scripts/ci-test-ledger.ts",
+    "scripts/expand-cli-output-plan.ts",
+    "scripts/expand-dag-candidate-execute.ts",
+    "scripts/expand-dag-candidate-flow.ts",
+    "scripts/expand-dag-compiler.ts",
+    "scripts/expand-integration-terminal.ts",
+    "scripts/expand-merge-fr-014.ts",
+    "scripts/expand-phase18-20.ts",
+    "scripts/expand-receipt-first-execute.ts",
+    "scripts/expand-receipt-first-plan.ts",
+    "scripts/expand-sgk-execute.ts",
+    "scripts/expand-sgk-plan.ts",
+    "scripts/expand-spawn-plan.ts",
+    "scripts/expand-spec-threading.ts",
+    "scripts/expand-token-unify-execute.ts",
+    "scripts/expand-token-unify-plan.ts",
+    "scripts/expand-validate-enforcement.ts",
+    "scripts/gen-archive-plan.ts",
+    "scripts/legacy-completion-migration.ts",
+    "scripts/test-explore-fail.ts",
+    "scripts/test-explore.ts",
+    "scripts/test-ledger-init.ts"
   ],
   "sourceHashes": {
-    "src/lib/audit/audit-engine.ts": "3da25ceab25c0b9c",
-    "src/lib/audit/audit-schema.ts": "6c5aaa70d45aa6d7",
-    "src/lib/audit/layout-plan.ts": "9ea91b9801f4fefd",
-    "src/lib/audit-ingest.ts": "6abd7bc80a1e4433",
-    "src/lib/audit-recommend.ts": "c46c1de5bafe82a3",
-    "src/lib/cli/audit-metaflow.ts": "ff2098f4090eb08e",
-    "src/lib/cli/audit-samples.ts": "22a6abf1c0291cba",
-    "src/lib/cli/audit.ts": "3cad39ac26cb0f16",
-    "src/lib/cli/doctor-cli.ts": "9ffa092d337b7744",
-    "src/lib/cli/inventory.ts": "401f05418f51e89d",
-    "src/lib/cli-envelope.ts": "6b0015b895763420",
-    "src/lib/cli-human.ts": "233dfbce62b4f71c",
-    "src/lib/env-audit.ts": "e7c50999e8710002",
-    "src/lib/import/audit-tail-gate.ts": "57eb0ef70ffff54a",
-    "src/lib/metaflow/active-run.ts": "6601676e5a8cd9e0",
-    "src/lib/metaflow/ask.ts": "9c9ca9a2876ec01d",
-    "src/lib/metaflow/audit/audit.ts": "641e6bc670a2d236",
-    "src/lib/metaflow/audit/cli.ts": "252e858a3c307cca",
-    "src/lib/metaflow/audit/detectors/display.ts": "a00f36da3da7e048",
-    "src/lib/metaflow/audit/detectors/integration.ts": "adff64af9aae5947",
-    "src/lib/metaflow/audit/detectors/metaflow.ts": "e78fa6220eaa4a7e",
-    "src/lib/metaflow/audit/detectors/strategy.ts": "4292582b1ac64799",
-    "src/lib/metaflow/audit/opt-map.ts": "617fc749399045af",
-    "src/lib/metaflow/audit/receipt.ts": "97c44a0c096e3ee8",
-    "src/lib/metaflow/audit/report.ts": "64f513fa6f0913f5",
-    "src/lib/metaflow/audit/required-schema.ts": "615e7a2827d13858",
-    "src/lib/metaflow/authority-schema.ts": "454026ccb1d8c58e",
-    "src/lib/metaflow/authority.ts": "7247c7d3f4174a6f",
-    "src/lib/metaflow/cli-sovereignty.ts": "6c15e55a8273982c",
-    "src/lib/metaflow/command-registry.ts": "f648ed1ddddfa0c8",
-    "src/lib/metaflow/flow-schema.ts": "9b96d8ccd16e2447",
-    "src/lib/metaflow/flows.ts": "44249804463b7dd2",
-    "src/lib/metaflow/fs.ts": "d127212c3363dc11",
-    "src/lib/metaflow/guards.ts": "9f160ff93ea0d28f",
-    "src/lib/metaflow/index.ts": "d6961a6507319816",
-    "src/lib/metaflow/kernel-bridge.ts": "ec41bdab8f73f3de",
-    "src/lib/metaflow/mine-run.ts": "02d904607fec0f83",
-    "src/lib/metaflow/miner.ts": "f49cb859aa4a71b1",
-    "src/lib/metaflow/opt-dag.ts": "7c0cd963e23a1a13",
-    "src/lib/metaflow/receipt-writer.ts": "f07c9c2efbd45386",
-    "src/lib/metaflow/render-receipt.ts": "35bc08b75cac367a",
-    "src/lib/metaflow/run-id.ts": "2f04ec387ba62eea",
-    "src/lib/metaflow/self-insert.ts": "0342f9993d68a05f",
-    "src/lib/metaflow/session-store.ts": "9dc4ff49031081df",
-    "src/lib/metaflow/types.ts": "28d7826d5510a93f",
-    "src/lib/metaflow/verify.ts": "8d945dc61b1fa915",
-    "src/lib/metaflow/wrap.ts": "a42df489e3facaa6",
-    "src/lib/perf/perf-schema.ts": "281844f4d4952422",
-    "src/lib/sgk/audit.ts": "432fd0ee6b88f4c1",
-    "src/lib/sgk/cli/close-gates.ts": "5fb9806bf0124271",
-    "src/lib/sgk/cli/complete-binding.ts": "cd4e011f3984b17f",
-    "src/lib/sgk/cli/dispatch-gates.ts": "c04a85680f59eb4f",
-    "src/lib/sgk/cli/intent-init.ts": "6d7c923236793c7c",
-    "src/lib/sgk/cli/intent-term.ts": "7ded5bd42e2e2f7e",
-    "src/lib/sgk/cli/run-enforce.ts": "5a1206e1c2794567",
-    "src/lib/sgk/detectors/chain.ts": "693c77e68d4dc405",
-    "src/lib/sgk/detectors/strategy.ts": "66e0fa24663619cd",
-    "src/lib/sgk/display.ts": "e9e24f507a5d8ceb",
-    "src/lib/sgk/intent-binding.ts": "22e4ceb57c3d7aad",
-    "src/lib/sgk/kernel-ext.ts": "c94c7ab91e9bc8ac",
-    "src/lib/sgk/mine.ts": "81290ed8c7feea11",
-    "src/lib/sgk/receipts/audit.ts": "bfcc28904435cf6f",
-    "src/lib/sgk/receipts/close.ts": "dbc8e68d65c55bb7",
-    "src/lib/sgk/receipts/display.ts": "65e9bc8d715fbbb0",
-    "src/lib/sgk/receipts/intent.ts": "ad9e5775eb0b6efd",
-    "src/lib/sgk/receipts/mine.ts": "43ed0d4c6c1de421",
-    "src/lib/sgk/receipts/plan.ts": "489633515c41f900",
-    "src/lib/sgk/receipts/strategy.ts": "3fbe5c14541ac016",
-    "src/lib/sgk/render.ts": "902132017c141147",
-    "src/lib/sgk/run-manifest.ts": "90fa864d1dbc6f51",
-    "src/lib/sgk/strategy-auto.ts": "ac423fa863dc86c2",
-    "src/lib/sgk/strategy-surface.ts": "287e39d930638f54",
-    "src/lib/sgk/term-display-check.ts": "f5068fa7863fd75a",
-    "src/lib/verify/invariants/cli-compliance.ts": "b54963a40b0fbbef",
-    "src/tests/rkg3.test.ts": "77619ac623094691",
-    "src/tests/rkg4.test.ts": "b4ef5d1388cb5b3b",
-    "src/tests/rkg5.test.ts": "20e015871bf6f719",
-    "src/tests/rkg6.test.ts": "c59036bb75ae4c3a",
-    "src/tests/token-unify.test.ts": "d8b5594a35dbc12c"
+    "scripts/test-ledger.json": "9037cafcb4836b90",
+    "scripts/check-explore-exports.ts": "bd48a0f23058e11f",
+    "scripts/check-explore-surface.ts": "157e8146648b937e",
+    "scripts/ci/roadmap-spec-origin-gate.ts": "62b1f18f8a91b4b7",
+    "scripts/expand-fr-surf-001-validation.ts": "6566e5d10490fe19",
+    "scripts/explore-template.ts": "6e9879533b8ee410",
+    "scripts/explore-validate-contract.ts": "17383fbbbf53c84d",
+    "scripts/generate-promotion-ledger.ts": "fa1df8204bfbe010",
+    "scripts/test-ledger-prune.ts": "40bd90c617a5c701",
+    "scripts/test-ledger.schema.json": "5b354db7a025a35e",
+    "docs/FIXUP-RUNTIME-EXPLORE-PATTERNS.md": "e428d00df96cc984",
+    "docs/FR-EMIT-GALLERY.md": "4d4768125c763027",
+    "docs/FR-INTENT-EXPANSION.md": "9788d867a95f353b",
+    "docs/FR-SKILL-CATALOG.md": "17ba06ef0719752a",
+    "docs/INIT-INTENT-GATE-DESIGN.md": "3956d8eeeb413a6a",
+    "scripts/expand-fr-gallery.ts": "0b6cf1e1ecc61571",
+    "src/git-state.schema.ts": "d9b00e66782bb397",
+    "src/project-metadata.schema.ts": "7a01f14c1476d437",
+    "src/versioning.schema.ts": "43ab35d1fa312c9f",
+    "CHANGELOG.md": "828328cfffda88d0",
+    "DESIGN-COST-BUDGET.md": "41a658e6b2eb103d",
+    "MEMORY.md": "e3b0c44298fc1c14",
+    "README.md": "7d4fa410912c1a61",
+    "SESSION-PRIMER.md": "810297818cd111f7",
+    "SKILL.md": "73b442fbb48adcd6",
+    "docs/ADOPTER-QUICKSTART.md": "10f452f7cf319942",
+    "docs/ADOPTION-GUIDE.md": "16422292a6ddff7e",
+    "docs/CLAUDE.md": "be6ac4c1d812aaeb",
+    "docs/EXPANSION-ARCHITECTURE.md": "1b4038b043c6b099",
+    "docs/EXPANSION-CONTRACTS.md": "be612eab36c6241d",
+    "docs/EXPANSION-DESIGN-INDEX.md": "cbfc9c9add19bd04",
+    "docs/EXPANSION-FILE-IO-DESIGN.md": "67cc019fe7061bae",
+    "docs/EXPANSION-IO-SUMMARY.md": "50484cfbae6d422d",
+    "docs/EXPANSION-WORKFLOW.md": "3341af0e37b1c52c",
+    "docs/EXPLORE_FACILITIES_FEATURE.md": "b79c9923c950f5c2",
+    "docs/FILE-HEADERS.md": "782e3e5c8b575e82",
+    "docs/FIXUP-INSTALL-SKILLS-PATH.md": "c54fc464b2b912e6",
+    "docs/FIXUP-INTENT-EXPANSION.md": "9f71ae8639a274fc",
+    "docs/FIXUP-WORKFLOW-INTEGRATION.md": "a127832a59863cb7",
+    "docs/FR-CLUSTER-AUTO.md": "a0e7c502d130a20e",
+    "docs/FR-CLUSTER-CONSTRAINT-SOLVER.md": "ab838c96bd311a40",
+    "docs/FR-COMPILE-PROMPTS.md": "853a5bee037fa006",
+    "docs/FR-EXPLORE-API.md": "14d953c94e0c8019",
+    "docs/FR-INSTALL-SKILLS.md": "64886b86c6f7ad0b",
+    "docs/FR-INTENT-CONSTRAINTS.md": "65b1a6abccf908f0",
+    "docs/FR-ORCHESTRATE-SKILL.md": "cc9ddb5b9e020c90",
+    "docs/FR-PLAN-GALLERY.md": "33114017760d588b",
+    "docs/FR-RUNTIME-EXPLORE.md": "8a1d6ade042be467",
+    "docs/FR-SPEC-THREADING.md": "d86c9eaec94b51bd",
+    "docs/FR-VALIDATION-ENFORCEMENT.md": "9c1819bfb4a85911",
+    "docs/FR2-EXAMPLE.md": "fd6f564969f87dae",
+    "docs/GIT-INTEGRATION.md": "3d585035ec014e13",
+    "docs/MODULE-MAP.md": "d8e178a62176704e",
+    "docs/TEMPLATE-INTEGRATION.md": "63c0899b9adc7415",
+    "docs/agent-memory-guide.md": "7aeac5fa9483acf5",
+    "docs/api-surface.explore.json": "4fff5a5a8fd557b4",
+    "docs/api-surface.md": "ff37f63ae49239d6",
+    "docs/api-usage-metrics.md": "286f4ec0b6b4a198",
+    "docs/archive/ADOPTION-AUDIT.md": "d7f41e78f3265ae7",
+    "docs/archive/AUDIT.md": "ae629c6408b00f6d",
+    "docs/archive/PROMPT.md": "e4fc3756b9c01e44",
+    "docs/archive/RELEASE-ROADMAP.md": "4d6887905d1df057",
+    "docs/archive/SPEC.md": "a8e1a0115ebeac47",
+    "docs/archive/orientation.md": "aae6ee1a9a02a3f1",
+    "docs/archive/reorientation-phase5.md": "eefae7f316180ec5",
+    "docs/archive/reorientation.md": "a8074e3c4c2dc973",
+    "docs/cli/JSON_CONTRACT.md": "b845bde6779fe3ab",
+    "docs/consumer-guide.md": "eb28f905410f94f7",
+    "docs/decisions/agent-bootstrap-design.md": "e7700fa5da0cf22c",
+    "docs/decisions/api-audit.md": "acb2405a914e21ba",
+    "docs/decisions/atomic-modify-design.md": "2939860c16b371d7",
+    "docs/decisions/audit-trail-design.md": "e5e2e4d2027d4de9",
+    "docs/decisions/bootstrap-gen-design.md": "625dfd81fc736a3a",
+    "docs/decisions/branch-design.md": "c19788c7b68eb598",
+    "docs/decisions/checkpoint-restore-design.md": "61469b00cf71d487",
+    "docs/decisions/entry-points-design.md": "ec1398e2034a6808",
+    "docs/decisions/error-guidance-design.md": "05224e3217ee3976",
+    "docs/decisions/git-state-spec.md": "b41c99076144f545",
+    "docs/decisions/integrate-generation.md": "51c03dda3ce463a2",
+    "docs/decisions/merge-design.md": "6b1ebe52183cfae9",
+    "docs/decisions/modify-spec.md": "872c22165abd129a",
+    "docs/decisions/orient-empty-produces.md": "94ce8fbbf8e1559e",
+    "docs/decisions/project-metadata-schema.md": "e5f8bd4e6509424b",
+    "docs/decisions/reconcile-gap.md": "e7245de688f408d9",
+    "docs/decisions/version-migration-design.md": "8cc730f12adb7420",
+    "docs/metaflow/AUDIT_REQUIRED.md": "febf204c910ad284",
+    "docs/metaflow/SOVEREIGNTY.md": "7fc2ba9ae60dfb88",
+    "docs/multi-project-patterns.md": "9f37affc00017ffa",
+    "docs/multi-repo-coordination.md": "84431b647a448512",
+    "docs/real-project-adoption.md": "541ed6ae467aaff1",
+    "docs/test-organization.md": "67fff5e8e5263164",
+    "environment.md": "a80f88718c78fbd2",
+    "examples/integration.md": "ad1a97f9cd4621e1",
+    "examples/task-a.md": "933dd82af10b5d7f",
+    "examples/task-b.md": "7f48a88a80dcd0b1",
+    "prompts/prompt-fr-emit-gallery-cli.md": "0eb223a2bf4398b5",
+    "prompts/prompt-fr-emit-gallery-tests.md": "1cc8394e56ca83bd",
+    "prompts/prompt-fr-gallery-tests.md": "7e2108875a391f41",
+    "prompts/prompt-fr-plan-gallery-cli.md": "39bee6c206b2ae7f",
+    "prompts/prompt-template.md": "e1a4134f8f1a48e5",
+    "scripts/ci/roadmap-gitsha-gate.ts": "20c9d9ae10bf4e28",
+    "scripts/ci/roadmap-plan-gate.ts": "c77d36b02d78104b",
+    "scripts/ci-dag-check.ts": "9e0ba1722c3ab7f5",
+    "scripts/ci-intent-check.ts": "20097fb935a9b0c8",
+    "scripts/ci-test-ledger.ts": "585fe516cd2e9167",
+    "scripts/expand-cli-output-plan.ts": "932092e4137f61b4",
+    "scripts/expand-dag-candidate-execute.ts": "4a9597ed99b10896",
+    "scripts/expand-dag-candidate-flow.ts": "2e9a27c34e38d54f",
+    "scripts/expand-dag-compiler.ts": "ffe2501a8d4462db",
+    "scripts/expand-integration-terminal.ts": "fa1404eb0593e85f",
+    "scripts/expand-merge-fr-014.ts": "cfa907e9fe10dfe3",
+    "scripts/expand-phase18-20.ts": "8a443f3ab7b46796",
+    "scripts/expand-receipt-first-execute.ts": "9119dfa8cf594750",
+    "scripts/expand-receipt-first-plan.ts": "543523b52d52e405",
+    "scripts/expand-sgk-execute.ts": "e00f0b89526a26fd",
+    "scripts/expand-sgk-plan.ts": "577f8b83f1fd9a54",
+    "scripts/expand-spawn-plan.ts": "c39ba19c6f46d6dc",
+    "scripts/expand-spec-threading.ts": "88f6d7a7fc6a12e4",
+    "scripts/expand-token-unify-execute.ts": "b1396d3f0f63c80c",
+    "scripts/expand-token-unify-plan.ts": "39b3019f5a18e139",
+    "scripts/expand-validate-enforcement.ts": "5028e319307577f8",
+    "scripts/gen-archive-plan.ts": "dacb8241f9988e48",
+    "scripts/legacy-completion-migration.ts": "50cd385d27dcff0e",
+    "scripts/test-explore-fail.ts": "9edfe0f759bc3373",
+    "scripts/test-explore.ts": "a65a9530ae7a632e",
+    "scripts/test-ledger-init.ts": "1ffff80b749d53d5",
+    "src/skills/roadmap-constraints.md": "1ffedfa7aaffa3bf",
+    "src/skills/roadmap-dispatch.md": "730c73daf6d2d466",
+    "src/skills/roadmap-done.md": "082f22a0075cd7b2",
+    "src/skills/roadmap-explore-run.md": "a6960dbb88c6164b",
+    "src/skills/roadmap-explore-write.md": "689d353100f08ec6",
+    "src/skills/roadmap-review.md": "317ee6f35d3148d9",
+    "src/skills/roadmap-start.md": "367933b382f9620b",
+    "src/skills/roadmap-work.md": "a9e8c8921b8f83a3",
+    "package-lock.json": "2fe3a076a354a365",
+    "src/lib/layout-apply.receipt.json": "22751b6907f2a7f9",
+    "src/lib/verify.ts": "5eda85abf105eb33"
   }
 }

@@ -1,5 +1,6 @@
 /**
  * Audit trail tests: verify logging and querying of operations.
+ * Surface audit tests: schema validation, engine scanning, CLI invocation.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -95,5 +96,142 @@ describe('audit trail', () => {
 
     trail.archive();
     expect(fs.existsSync(trailPath)).toBe(false);
+  });
+});
+
+// --- Surface audit schemas + engine ---
+
+import { validateSurface, validatePlan, validateResult } from '../src/lib/audit/audit-schema.ts';
+import type { SurfaceSchema, PlanSchema, ResultSchema } from '../src/lib/audit/audit-schema.ts';
+import { scanSurface, buildImportGraph, scoreArchival } from '../src/lib/audit/audit-engine.ts';
+
+describe('audit-schema validators', () => {
+  it('validateSurface accepts valid schema', () => {
+    const surface: SurfaceSchema = {
+      version: 1,
+      timestamp: new Date().toISOString(),
+      root: '/tmp/test',
+      files: [
+        { path: 'src/index.ts', role: 'core', hash: 'abc123', sizeBytes: 100 },
+      ],
+      summary: { total: 1, byRole: { core: 1 } as any },
+    };
+    const result = validateSurface(surface);
+    expect(result.ok).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
+  it('validateSurface rejects missing fields', () => {
+    const result = validateSurface({ version: 2 });
+    expect(result.ok).toBe(false);
+    expect(result.errors.length).toBeGreaterThan(0);
+  });
+
+  it('validatePlan accepts valid plan', () => {
+    const plan: PlanSchema = {
+      version: 1,
+      timestamp: new Date().toISOString(),
+      ops: [{ type: 'move', from: 'a.ts', to: 'b.ts', hash: 'abc' }],
+      order: ['a.ts'],
+      sourceHashes: { 'a.ts': 'abc' },
+    };
+    expect(validatePlan(plan).ok).toBe(true);
+  });
+
+  it('validatePlan rejects bad ops', () => {
+    const result = validatePlan({ version: 1, timestamp: 'x', ops: [{ type: 'unknown' }], order: [], sourceHashes: {} });
+    expect(result.ok).toBe(false);
+  });
+
+  it('validateResult accepts valid result', () => {
+    const result: ResultSchema = {
+      version: 1,
+      timestamp: new Date().toISOString(),
+      applied: [],
+      skipped: [],
+      hashes: { before: {}, after: {} },
+      receipt: { ok: true, errors: [], duration_ms: 50 },
+    };
+    expect(validateResult(result).ok).toBe(true);
+  });
+
+  it('validateResult rejects missing receipt', () => {
+    const result = validateResult({ version: 1, timestamp: 'x', applied: [], skipped: [], hashes: { before: {}, after: {} } });
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe('audit-engine', () => {
+  let testDir: string;
+
+  beforeEach(() => {
+    testDir = path.join(tmpdir(), `.roadmap-audit-test-${process.pid}-${Date.now()}`);
+    fs.mkdirSync(path.join(testDir, 'src/lib'), { recursive: true });
+    fs.mkdirSync(path.join(testDir, 'src/cli'), { recursive: true });
+    fs.mkdirSync(path.join(testDir, 'tests'), { recursive: true });
+
+    fs.writeFileSync(path.join(testDir, 'src/lib/core.ts'), `
+export function greet(name: string): string { return 'hi ' + name; }
+`);
+    fs.writeFileSync(path.join(testDir, 'src/lib/util.ts'), `
+import { greet } from './core.ts';
+export const hello = greet('world');
+`);
+    fs.writeFileSync(path.join(testDir, 'src/cli/main.ts'), `
+import { hello } from '../lib/util.ts';
+console.log(hello);
+`);
+    fs.writeFileSync(path.join(testDir, 'tests/core.test.ts'), `
+import { greet } from '../src/lib/core.ts';
+`);
+  });
+
+  afterEach(() => {
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true });
+    }
+  });
+
+  it('scanSurface returns valid SurfaceSchema', () => {
+    const surface = scanSurface(testDir);
+    expect(surface.version).toBe(1);
+    expect(surface.files.length).toBe(4);
+    expect(surface.summary.total).toBe(4);
+    const result = validateSurface(surface);
+    expect(result.ok).toBe(true);
+  });
+
+  it('scanSurface classifies roles correctly', () => {
+    const surface = scanSurface(testDir);
+    const roles = Object.fromEntries(surface.files.map(f => [f.path, f.role]));
+    expect(roles['src/lib/core.ts']).toBe('lib');
+    expect(roles['tests/core.test.ts']).toBe('test');
+  });
+
+  it('buildImportGraph detects edges', () => {
+    const surface = scanSurface(testDir);
+    const graph = buildImportGraph(surface);
+    expect(graph.edges.length).toBeGreaterThan(0);
+    // util imports core
+    const utilToCore = graph.edges.find(e => e.from.includes('util') && e.to.includes('core'));
+    expect(utilToCore).toBeDefined();
+  });
+
+  it('buildImportGraph computes in/out degree', () => {
+    const surface = scanSurface(testDir);
+    const graph = buildImportGraph(surface);
+    // core.ts is imported by util.ts and core.test.ts
+    expect(graph.inDegree['src/lib/core.ts']).toBeGreaterThanOrEqual(1);
+  });
+
+  it('scoreArchival ranks candidates', () => {
+    const surface = scanSurface(testDir);
+    const graph = buildImportGraph(surface);
+    const scores = scoreArchival(surface, graph);
+    expect(scores.length).toBe(surface.files.length);
+    // Sorted descending
+    for (let i = 1; i < scores.length; i++) {
+      expect(scores[i - 1].score).toBeGreaterThanOrEqual(scores[i].score);
+    }
   });
 });
