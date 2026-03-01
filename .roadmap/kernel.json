@@ -4,6 +4,13 @@
   "envPolicy": { "allowedVars": ["SKIP_BATCH_COMMIT", "ROADMAP_VALIDATING"] },
   "intentPolicy": { "minConfidence": 0.7, "escalateOnStall": true, "maxRecursionDepth": 3 },
   "batchConflictPolicy": { "onConflict": "reject" },
+  "strategyAutoSelectRule": { "parallelismThreshold": 2, "defaultStrategy": "hallucinate-rounds-then-validate" },
+  "intentConfidenceDefault": 0.95,
+  "requireRunId": false,
+  "allowDispatchAutoStrategy": true,
+  "allowUnevaluatedInitIntent": true,
+  "allowUnevaluatedTermIntent": true,
+  "breakglassEnabled": true,
   "policies": [
     {
       "id": "no-gate-disable",
