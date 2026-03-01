@@ -3287,5 +3287,28 @@
     ],
     "gitSha": "a4619b55c1d195f5a19d6e478b417ea2ac22dd5d",
     "treeSha": "1f3471617cf6bb8797a730fc5692e18f3cd66c0d"
+  },
+  {
+    "nodeId": "mf-mine-run",
+    "completedAt": "2026-03-01T00:05:36.191Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301000535",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "c626f41eb349f5b1091226d6b12dc62efc863034",
+    "treeSha": "de5a1c84d7894c38e63f44786689495ea9c2fec8"
   }
 ]
