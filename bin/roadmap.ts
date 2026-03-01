@@ -7018,6 +7018,16 @@ function json(obj: unknown, renderModel?: RenderModel, jsonOpts?: JsonOpts) {
     process.stderr.write(`\u2501\u2501 ${_outputOpts.cmd} \u2501\u2501\n${JSON.stringify(obj, null, 2).slice(0, 500)}\n`);
   }
 
+  // Include hints in render even if no renderModel provided (e.g., for claim command)
+  if (!renderV1 && jsonOpts?.hints && jsonOpts.hints.length > 0) {
+    renderV1 = {
+      format: 'plain',
+      mime: 'text/x-roadmap-ui',
+      title: _outputOpts.cmd,
+      hints: jsonOpts.hints,
+    };
+  }
+
   const emitOpts = { ..._outputOpts, render: renderV1 };
 
   if (hasError) {
