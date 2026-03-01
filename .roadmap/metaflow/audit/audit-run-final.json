@@ -1,21 +1,86 @@
 {
-  "timestamp": "2026-03-01T20:15:47.329Z",
-  "status": "passed",
-  "detectors": [
+  "schema_version": 1,
+  "runId": "metaflows-p1",
+  "treeSha": "unknown",
+  "sessionIds": [],
+  "computedAt": "2026-03-01T20:23:08.974Z",
+  "passed": false,
+  "detectorResults": [
     {
-      "detector": "enforcement-schema",
-      "status": "passed",
-      "violations": 0
+      "code": "RD-001",
+      "passed": true,
+      "evidence": [
+        "all user-facing table commands contain table markup"
+      ],
+      "fix": []
     },
     {
-      "detector": "state-recovery",
-      "status": "passed",
-      "violations": 0
+      "code": "RD-002",
+      "passed": true,
+      "evidence": [
+        "all orient/chart outputs contain DAG markers"
+      ],
+      "fix": []
     },
     {
-      "detector": "state-enforcement",
-      "status": "passed",
-      "violations": 0
+      "code": "RD-003",
+      "passed": true,
+      "evidence": [
+        "all complete/chart outputs contain progress bar"
+      ],
+      "fix": []
+    },
+    {
+      "code": "IR-001",
+      "passed": false,
+      "evidence": [
+        "PLAN_SELECTED headSha afdf5874028943b0d94c28ad2c5156b7a793d0c98ca9b2d9bc781c5e8142c432 != HEAD 2722ccb7537212dfe9a98a77de62fdf401732cc6"
+      ],
+      "fix": [
+        "Re-run plan-select after latest commits"
+      ]
+    },
+    {
+      "code": "IR-002",
+      "passed": false,
+      "evidence": [
+        "activePlan is null in git-state.json"
+      ],
+      "fix": [
+        "Set activePlan via roadmap orient"
+      ]
+    },
+    {
+      "code": "IR-003",
+      "passed": true,
+      "evidence": [
+        "no receipt chain gaps detected"
+      ],
+      "fix": []
+    },
+    {
+      "code": "IR-004",
+      "passed": true,
+      "evidence": [
+        "completed.json is clean"
+      ],
+      "fix": []
+    },
+    {
+      "code": "IR-005",
+      "passed": true,
+      "evidence": [
+        "all hotspots within thresholds"
+      ],
+      "fix": []
+    },
+    {
+      "code": "PE-001",
+      "passed": true,
+      "evidence": [
+        "all commands are registered"
+      ],
+      "fix": []
     }
   ]
 }

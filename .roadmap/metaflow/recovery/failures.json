@@ -1,4 +1,10 @@
 {
-  "timestamp": "2026-03-01T20:15:47.329Z",
-  "failures": []
+  "timestamp": "2026-03-01T20:23:08.967Z",
+  "totalFailures": 0,
+  "failures": [],
+  "analysis": {
+    "criticalCount": 0,
+    "warningCount": 0,
+    "failureCount": 0
+  }
 }

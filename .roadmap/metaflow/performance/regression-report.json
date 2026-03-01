@@ -1,5 +1,10 @@
 {
-  "timestamp": "2026-03-01T20:15:47.599Z",
+  "timestamp": "2026-03-01T20:23:09.247Z",
+  "regressionCount": 0,
   "regressions": [],
-  "status": "no-regressions-detected"
+  "status": "no-regressions-detected",
+  "summary": {
+    "critical": 0,
+    "warning": 0
+  }
 }

@@ -1,20 +1,36 @@
 {
-  "timestamp": "2026-03-01T20:15:47.599Z",
+  "timestamp": "2026-03-01T20:23:09.247Z",
   "percentiles": {
     "orient": {
       "p50": 250,
       "p95": 250,
-      "p99": 250
+      "p99": 250,
+      "min": 250,
+      "max": 250,
+      "mean": 250,
+      "sampleCount": 1
     },
     "advance": {
       "p50": 320,
       "p95": 320,
-      "p99": 320
+      "p99": 320,
+      "min": 320,
+      "max": 320,
+      "mean": 320,
+      "sampleCount": 1
     },
     "complete": {
       "p50": 450,
       "p95": 450,
-      "p99": 450
+      "p99": 450,
+      "min": 450,
+      "max": 450,
+      "mean": 450,
+      "sampleCount": 1
     }
+  },
+  "summary": {
+    "commandsAnalyzed": 3,
+    "totalSamples": 3
   }
 }

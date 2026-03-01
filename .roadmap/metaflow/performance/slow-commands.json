@@ -1,4 +1,8 @@
 {
-  "timestamp": "2026-03-01T20:15:47.599Z",
-  "slow": []
+  "timestamp": "2026-03-01T20:23:09.247Z",
+  "threshold": 1000,
+  "slowCommandCount": 0,
+  "uniqueCommands": 0,
+  "slow": [],
+  "analysis": []
 }
