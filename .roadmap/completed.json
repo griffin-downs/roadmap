@@ -1173,5 +1173,36 @@
     ],
     "gitSha": "caeb896fe114e1fdbddc5f3e63c08fe281328cd9",
     "treeSha": "d475e5f068a693bccbd41c3c40e3b324cb57780b"
+  },
+  {
+    "nodeId": "state-corruption-detection",
+    "completedAt": "2026-03-01T21:42:04.684Z",
+    "owner": "state-doctor",
+    "checkpointId": "cp-20260301214204",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "all artifacts exist: src/lib/completion/corruption-detector.ts, tests/cli/completion-doctor.test.ts"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm test -- completion-doctor.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npm test -- completion-doctor.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "ee681d76870252bf5d515c6565fee6567f696b3c32856529b2d97e52f1a867f2",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/state-corruption-detection/mm89zipv-6fx48i/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "b4c320ca33a1c4ceb56b23cf2f81131fa8ec1c92",
+    "treeSha": "2f484bfae78f6ea864b6d913d3a724ea1a2d13d2"
   }
 ]
