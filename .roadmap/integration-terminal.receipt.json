@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "type": "integration-terminal",
+  "pass": true,
+  "verifiedAt": "2026-03-01T09:43:05.689384Z",
+  "checks": {
+    "tsc": "pass",
+    "test_suites": "pass (106 rkg+sgk tests, 15 dag-candidate tests)",
+    "cli_json_output": "pass",
+    "key_artifacts": "pass (sgk/receipts 7 files, receipt-first 5 files, dag-candidate.ts, token-store.ts)"
+  },
+  "ok": true
+}
