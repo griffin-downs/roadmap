@@ -6,7 +6,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
-import { define, check, verify, consumeArtifact, consumeResolvedBy } from '../protocol.ts';
+import { define, check, consumeArtifact, consumeResolvedBy } from '../protocol.ts';
 import type { Graph } from '../protocol.ts';
 
 // --- FR-REACH-001: BFS reachability with witness ---
@@ -263,17 +263,20 @@ function checkStructure(dag: Graph<string>): Violation[] {
   return violations;
 }
 
-// Contract validity: verify()
+// Contract validity: DP ancestor closure with witness (FR-CONTRACT-001)
 function checkContracts(dag: Graph<string>): Violation[] {
   try {
-    const unsatisfied = verify(dag);
-    if (unsatisfied.length === 0) return [];
-    return [{
-      code: 'UNSATISFIED_CONTRACTS',
-      message: `${unsatisfied.length} unsatisfied consume contract(s)`,
-      paths: unsatisfied,
-      fix: ['Ensure every consumed artifact is produced by a predecessor node'],
-    }];
+    const violations = contractClosure(dag);
+    if (violations.length === 0) return [];
+    return violations.map(v => ({
+      code: 'UNSATISFIED_CONTRACT',
+      message: `"${v.nodeId}" consumes "${v.missingArtifact}" — no ancestor produces it`,
+      nodeIds: [v.nodeId],
+      paths: [v.witnessPath.join(' → ')],
+      fix: v.expectedProducer
+        ? [`Add "${v.missingArtifact}" to produces of "${v.expectedProducer}" or add it as a dependency`]
+        : [`Ensure a predecessor of "${v.nodeId}" produces "${v.missingArtifact}"`],
+    }));
   } catch (err) {
     return [{
       code: 'CONTRACT_CHECK_FAILED',
