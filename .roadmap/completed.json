@@ -4204,5 +4204,31 @@
     ],
     "gitSha": "3157457b0c86236d90bea4ca799afee5bea38f72",
     "treeSha": "2ddc66a2e8e9f9e8607467b9d892d3c599b78650"
+  },
+  {
+    "nodeId": "rm-verify-cli-compliance-invariant",
+    "completedAt": "2026-03-01T01:39:43.124Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301013941",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/verify/cli-compliance.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/verify/cli-compliance.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "c81b8a948b5faebe41ba42d3044fabe21d4e71cc0498911c15253044ff497f66",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/rm-verify-cli-compliance-invariant/mm7319xm-y45vqm/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "7a0ff664ae79741acf996d6127858c130e4e34b6",
+    "treeSha": "257168831465826f7bf8f670807b3c33381d2354"
   }
 ]
