@@ -5808,5 +5808,25 @@
     ],
     "gitSha": "15cf5fc4f05d99f277e7910a4f8c1bf5433ac31a",
     "treeSha": "5e6d9c4d9b6156605586052c31a7920719a99881"
+  },
+  {
+    "nodeId": "sgk-intent-cmds",
+    "completedAt": "2026-03-01T09:29:47.677Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260301092947",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/cli/intent-init.ts"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/sgk/intent-binding.ts"
+      }
+    ],
+    "gitSha": "85cf09106319494470b0d28a97c12019041d1dd4",
+    "treeSha": "e84c5f64349061bae3f938f2bca6bea835c2ec20"
   }
 ]
