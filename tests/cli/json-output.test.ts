@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
-import { parseJSON } from '../../src/lib/json-parser.ts';
 
 /**
  * JSON output compliance tests.
