@@ -23,7 +23,7 @@ import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, as
 import { parseTasksMd, tasksToDAG } from '../src/lib/speckit-import.ts';
 import { compileIR, parseIRFile, defaultConfig } from '../src/lib/spec-ir.ts';
 import type { SpecConfig, SpecIR, SpecIRTask, SpecInput } from '../src/lib/spec-ir.ts';
-import { enrichIntentGate } from '../src/lib/intent-gate-enrichment.ts';
+import { enrichIntentGate } from '../src/lib/intent/intent-gate-enrichment.ts';
 import { loadCompletions, getCompletedNodeIds } from '../src/lib/completion-tracker.ts';
 import { saveCompletionWithEvidence, loadCompletionsWithEvidence, hasPassingReceipt } from '../src/lib/evidence/completion-evidence.ts';
 import type { EvidenceRecord } from '../src/lib/evidence/completion-evidence.ts';
@@ -34,7 +34,7 @@ import { buildSchedule } from '../src/lib/schedule.ts';
 import { propagateConstraints } from '../src/lib/propagate.ts';
 import { compilePrompts } from '../src/lib/compile-prompts.ts';
 import { compileBrief } from '../src/lib/compile-brief.ts';
-import { recordEvaluation, judgmentToRecord } from '../src/lib/intent-evaluator.ts';
+import { recordEvaluation, judgmentToRecord } from '../src/lib/intent/intent-evaluator.ts';
 import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } from '../src/lib/validate-dag.ts';
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/spec-origin.ts';
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/spec-origin.ts';

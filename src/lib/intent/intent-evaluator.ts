@@ -14,9 +14,9 @@
 
 import { readFileSync, existsSync, mkdirSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { IntentJudgment } from '../protocol.ts';
-export type { IntentJudgmentReceipt, DiagnosisBlock } from './judgment-receipt.ts';
-export { writeJudgmentReceipt, readJudgmentReceipts } from './judgment-receipt.ts';
+import type { IntentJudgment } from '../../protocol.ts';
+export type { IntentJudgmentReceipt, DiagnosisBlock } from '../judgment-receipt.ts';
+export { writeJudgmentReceipt, readJudgmentReceipts } from '../judgment-receipt.ts';
 
 // Audit record appended on each successful --evaluate run.
 export interface IntentEvaluationRecord {

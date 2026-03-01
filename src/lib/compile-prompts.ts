@@ -5,8 +5,8 @@
 
 import type { Graph, ValidationRule } from '../protocol.ts';
 import { consumeArtifact } from '../protocol.ts';
-import type { ClusterResult } from './cluster.ts';
-import { readEvaluations } from './intent-evaluator.ts';
+import type { ClusterResult } from './utils/cluster/cluster.ts';
+import { readEvaluations } from './intent/intent-evaluator.ts';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

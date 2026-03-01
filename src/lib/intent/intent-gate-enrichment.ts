@@ -4,8 +4,8 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { Graph, ValidationRule } from '../protocol.ts';
-import { godEngineerBrief, type GodEngineerAnalysis } from './god-engineer-prompt.ts';
+import type { Graph, ValidationRule } from '../../protocol.ts';
+import { godEngineerBrief, type GodEngineerAnalysis } from '../god-engineer-prompt.ts';
 
 interface SpecAnalysis {
   hasCRUD: boolean;
