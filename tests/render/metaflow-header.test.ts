@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderMetaflowHeader } from '../../src/lib/render/metaflow-header.ts';
-import type { ActiveRun } from '../../src/lib/metaflow/active-run.ts';
+import type { ActiveRun } from '../../src/lib/metaflow/state/active-run.ts';
 import type { StepId } from '../../src/lib/metaflow/types.ts';
 import type { RenderOpts } from '../../src/lib/render/types.ts';
 

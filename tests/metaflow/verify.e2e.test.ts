@@ -8,8 +8,8 @@ import { tmpdir } from "node:os";
 import { execSync } from "node:child_process";
 import { verifyAll } from "../../src/lib/metaflow/verify.ts";
 import { cmdInit } from "../../src/lib/metaflow/cli-sovereignty.ts";
-import { writeRenderReceipt } from "../../src/lib/metaflow/render-receipt.ts";
-import { BYPASS_ENV_VARS } from "../../src/lib/metaflow/guards.ts";
+import { writeRenderReceipt } from "../../src/lib/metaflow/execution/render-receipt.ts";
+import { BYPASS_ENV_VARS } from "../../src/lib/metaflow/execution/guards.ts";
 
 let tmp: string;
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { InteractionReceiptWriter } from '../src/lib/metaflow/receipt-writer.ts';
+import { InteractionReceiptWriter } from '../src/lib/metaflow/execution/receipt-writer.ts';
 import { readReceipts, plainPath, ansiPath } from '../src/lib/metaflow/fs.ts';
 import type { RunId, StepId } from '../src/lib/metaflow/types.ts';
 import { isReceiptRequired, COMMAND_REGISTRY } from '../src/lib/metaflow/command-registry.ts';

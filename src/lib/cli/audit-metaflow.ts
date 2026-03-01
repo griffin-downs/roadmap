@@ -4,7 +4,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CommandEntry } from './inventory.ts';
-import { ELIGIBLE_COMMANDS } from '../metaflow/self-insert.ts';
+import { ELIGIBLE_COMMANDS } from '../metaflow/execution/self-insert.ts';
 
 export type MetaflowState = 'COMPLIANT' | 'NONCOMPLIANT' | 'EXEMPT';
 

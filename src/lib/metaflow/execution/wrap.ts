@@ -2,9 +2,9 @@
 // @exports wrapSubcommand
 
 import { spawnSync } from 'node:child_process';
-import { SessionStore } from './session-store.ts';
+import { SessionStore } from '../state/session-store.ts';
 import { InteractionReceiptWriter } from './receipt-writer.ts';
-import type { RunId, StepId } from './types.ts';
+import type { RunId, StepId } from '../types.ts';
 
 export interface WrapResult {
   exitCode: number;

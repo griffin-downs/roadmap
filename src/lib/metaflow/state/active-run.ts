@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync, writeFileSync, unlinkSync, mkdirSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import type { RunId } from './types.ts';
+import type { RunId } from '../types.ts';
 
 export interface ActiveRun {
   schema_version: 1;

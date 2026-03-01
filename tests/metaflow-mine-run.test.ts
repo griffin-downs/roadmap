@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, rmSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { mineRun, miningExists } from '../src/lib/metaflow/mine-run.ts';
+import { mineRun, miningExists } from '../src/lib/metaflow/phases/mine-run.ts';
 import { ensureRunDir, runDir, appendReceipt, writeSessions } from '../src/lib/metaflow/fs.ts';
 import type { RunId, InteractionReceipt, StepId, SessionsStore } from '../src/lib/metaflow/types.ts';
 

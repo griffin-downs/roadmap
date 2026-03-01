@@ -13,9 +13,9 @@
 // 5. No env bypass active (SKIP_* vars are inert)
 
 import { readAuthority, verifyTreeSha } from "./authority.ts";
-import { listFlows } from "./flows.ts";
-import { lastRenderReceipt, RenderReceiptError } from "./render-receipt.ts";
-import { checkEnvBypass } from "./guards.ts";
+import { listFlows } from "./phases/flows.ts";
+import { lastRenderReceipt, RenderReceiptError } from "./execution/render-receipt.ts";
+import { checkEnvBypass } from "./execution/guards.ts";
 import { requirePlanSelectReceipt, KernelBridgeError } from "./kernel-bridge.ts";
 
 export interface VerifyCheck {

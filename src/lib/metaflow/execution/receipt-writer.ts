@@ -2,8 +2,8 @@
 // @exports InteractionReceiptWriter
 
 import { writeFileSync } from 'node:fs';
-import type { RunId, StepId, InteractionReceipt } from './types.ts';
-import { ensureRunDir, appendReceipt, plainPath, ansiPath } from './fs.ts';
+import type { RunId, StepId, InteractionReceipt } from '../types.ts';
+import { ensureRunDir, appendReceipt, plainPath, ansiPath } from '../fs.ts';
 
 export class InteractionReceiptWriter {
   private timers = new Map<string, number>();

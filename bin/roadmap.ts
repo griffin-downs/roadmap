@@ -68,12 +68,12 @@ import { renderOrient, renderChart, renderPlanGallery, renderPlanSelect, renderP
 import type { OrientData, ChartData, GalleryData, PlanSelectData, PlanStatusData, DoctorData, ValidateData, TrailData, RemainingData } from '../src/lib/cli-human.ts';
 import { ensureRunDir, readMeta, writeMeta, runDir, type RunId, type RunMeta, generateRunId } from '../src/lib/metaflow/index.ts';
 import { isReceiptRequired } from '../src/lib/metaflow/command-registry.ts';
-import { SessionStore } from '../src/lib/metaflow/session-store.ts';
+import { SessionStore } from '../src/lib/metaflow/state/session-store.ts';
 import { buildQuestionBlock, recordAnswer, getAnswers } from '../src/lib/metaflow/ask.ts';
-import { InteractionReceiptWriter } from '../src/lib/metaflow/receipt-writer.ts';
-import { wrapSubcommand } from '../src/lib/metaflow/wrap.ts';
-import { mineRun, miningExists } from '../src/lib/metaflow/mine-run.ts';
-import { buildOptimizationNodes, readMining, emitOptExpansion } from '../src/lib/metaflow/opt-dag.ts';
+import { InteractionReceiptWriter } from '../src/lib/metaflow/execution/receipt-writer.ts';
+import { wrapSubcommand } from '../src/lib/metaflow/execution/wrap.ts';
+import { mineRun, miningExists } from '../src/lib/metaflow/phases/mine-run.ts';
+import { buildOptimizationNodes, readMining, emitOptExpansion } from '../src/lib/metaflow/phases/opt-dag.ts';
 import { validateAuditTail } from '../src/lib/import/audit-tail-gate.ts';
 import { loadRequired } from '../src/lib/metaflow/audit/audit.ts';
 import { writeAuditReceipt } from '../src/lib/metaflow/audit/receipt.ts';

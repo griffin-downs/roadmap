@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ELIGIBLE_COMMANDS, readActiveRun, isEligible } from '../../src/lib/metaflow/self-insert.ts';
+import { ELIGIBLE_COMMANDS, readActiveRun, isEligible } from '../../src/lib/metaflow/execution/self-insert.ts';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';

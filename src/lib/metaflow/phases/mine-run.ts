@@ -5,8 +5,8 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { mine } from './miner.ts';
-import { readReceipts, readSessions, runDir } from './fs.ts';
-import type { RunId, MiningResult } from './types.ts';
+import { readReceipts, readSessions, runDir } from '../fs.ts';
+import type { RunId, MiningResult } from '../types.ts';
 
 export function mineRun(runId: RunId, base = process.cwd()): MiningResult {
   const receipts = readReceipts(runId, base);

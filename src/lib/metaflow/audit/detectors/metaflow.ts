@@ -4,7 +4,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { DetectorResult } from '../required-schema.ts';
-import { ELIGIBLE_COMMANDS } from '../../self-insert.ts';
+import { ELIGIBLE_COMMANDS } from '../../execution/self-insert.ts';
 
 export interface MetaflowDetectorOpts {
   base?: string;

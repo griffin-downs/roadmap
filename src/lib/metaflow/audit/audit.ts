@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AuditContract, AuditReport, DetectorResult } from './required-schema.ts';
-import { readMining } from '../opt-dag.ts';
+import { readMining } from '../phases/opt-dag.ts';
 import { buildReport } from './report.ts';
 import { writeAuditReceipt } from './receipt.ts';
 

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { writeActiveRun, readActiveRun, clearActiveRun, type ActiveRun } from '../../src/lib/metaflow/active-run.ts';
+import { writeActiveRun, readActiveRun, clearActiveRun, type ActiveRun } from '../../src/lib/metaflow/state/active-run.ts';
 
 function makeRun(runId = 'run-1'): ActiveRun {
   return {

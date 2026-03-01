@@ -5,7 +5,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import type {
   InteractionReceipt, SessionsStore, MiningResult, FrictionFinding,
   ToolHotspot, RunId
-} from './types.ts';
+} from '../types.ts';
 
 // ── Friction detectors ────────────────────────────────────────────────────────
 

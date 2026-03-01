@@ -13,15 +13,15 @@ import {
   verifyTreeSha,
   getTreeSha,
 } from "./authority.ts";
-import { loadFlowIndex, loadFlow, listFlows } from "./flows.ts";
+import { loadFlowIndex, loadFlow, listFlows } from "./phases/flows.ts";
 import {
   writeRenderReceipt,
   lastRenderReceipt,
   requireRenderReceipt,
-} from "./render-receipt.ts";
+} from "./execution/render-receipt.ts";
 import type { AuthorityJson } from "./authority-schema.ts";
-import type { Flow } from "./flow-schema.ts";
-import type { RenderReceipt } from "./render-receipt.ts";
+import type { Flow } from "./phases/flow-schema.ts";
+import type { RenderReceipt } from "./execution/render-receipt.ts";
 
 // --- Error ---
 

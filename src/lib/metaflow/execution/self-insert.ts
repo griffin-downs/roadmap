@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import type { RunId, StepId } from './types.ts';
+import type { RunId, StepId } from '../types.ts';
 import { wrapSubcommand } from './wrap.ts';
 
 // Commands that mutate DAG state, receipts, dispatch agents, complete nodes,

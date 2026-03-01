@@ -8,7 +8,7 @@ import { loadRequired } from './audit.ts';
 import { buildReport, renderReport } from './report.ts';
 import { detectDisplayRegression } from './detectors/display.ts';
 import { detectIntegrationRoughPoints } from './detectors/integration.ts';
-import { readMining } from '../opt-dag.ts';
+import { readMining } from '../phases/opt-dag.ts';
 import type { InteractionReceipt, MiningResult } from '../types.ts';
 
 // Run all detectors directly and collect results

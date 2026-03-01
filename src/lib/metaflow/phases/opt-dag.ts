@@ -3,8 +3,8 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import type { MiningResult, OptimizationNode, RunId, FrictionCategory } from './types.ts';
-import { runDir } from './fs.ts';
+import type { MiningResult, OptimizationNode, RunId, FrictionCategory } from '../types.ts';
+import { runDir } from '../fs.ts';
 
 const FRICTION_TO_NODE: Record<FrictionCategory, { id: string; desc: string }> = {
   'orient-churn':      { id: 'opt-reduce-orient-churn',  desc: 'Cache orient result in run context; skip re-orient if headSha unchanged' },

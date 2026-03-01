@@ -1,7 +1,7 @@
 // @module render/metaflow-header
 // @exports renderMetaflowHeader
 
-import type { ActiveRun } from '../metaflow/active-run.ts';
+import type { ActiveRun } from '../metaflow/state/active-run.ts';
 import type { StepId } from '../metaflow/types.ts';
 import type { RenderOpts } from './types.ts';
 

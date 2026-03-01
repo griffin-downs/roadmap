@@ -13,8 +13,8 @@ import {
   cmdVerify,
   SovereigntyError,
 } from "../../src/lib/metaflow/cli-sovereignty.ts";
-import { writeRenderReceipt } from "../../src/lib/metaflow/render-receipt.ts";
-import type { Flow } from "../../src/lib/metaflow/flow-schema.ts";
+import { writeRenderReceipt } from "../../src/lib/metaflow/execution/render-receipt.ts";
+import type { Flow } from "../../src/lib/metaflow/phases/flow-schema.ts";
 
 let tmp: string;
 

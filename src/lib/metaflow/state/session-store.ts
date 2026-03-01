@@ -1,8 +1,8 @@
 // @module metaflow/session-store
 // @exports SessionStore
 
-import type { RunId, SessionBinding, SessionsStore } from './types.ts';
-import { readSessions, writeSessions } from './fs.ts';
+import type { RunId, SessionBinding, SessionsStore } from '../types.ts';
+import { readSessions, writeSessions } from '../fs.ts';
 
 export class SessionStore {
   private runId: RunId;

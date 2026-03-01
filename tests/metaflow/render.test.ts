@@ -8,7 +8,7 @@ import {
   lastRenderReceipt,
   requireRenderReceipt,
   RenderReceiptError,
-} from "../../src/lib/metaflow/render-receipt.ts";
+} from "../../src/lib/metaflow/execution/render-receipt.ts";
 
 let tmp: string;
 

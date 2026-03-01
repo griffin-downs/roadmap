@@ -7,7 +7,7 @@ import {
   checkEnvBypass,
   writeBypassReceipt,
   BYPASS_ENV_VARS,
-} from "../../src/lib/metaflow/guards.ts";
+} from "../../src/lib/metaflow/execution/guards.ts";
 
 let tmp: string;
 

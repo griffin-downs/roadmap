@@ -3,13 +3,13 @@ import { mkdtempSync, rmSync, mkdirSync, readFileSync, writeFileSync, existsSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { InteractionReceiptWriter } from '../src/lib/metaflow/receipt-writer.ts';
+import { InteractionReceiptWriter } from '../src/lib/metaflow/execution/receipt-writer.ts';
 import { isReceiptRequired } from '../src/lib/metaflow/command-registry.ts';
-import { SessionStore } from '../src/lib/metaflow/session-store.ts';
+import { SessionStore } from '../src/lib/metaflow/state/session-store.ts';
 import { ensureRunDir, readReceipts, readSessions, writeSessions, plainPath, runDir, appendReceipt } from '../src/lib/metaflow/fs.ts';
-import { mine, detectOrientChurn, detectValidateLoop } from '../src/lib/metaflow/miner.ts';
-import { miningExists } from '../src/lib/metaflow/mine-run.ts';
-import { buildOptimizationNodes } from '../src/lib/metaflow/opt-dag.ts';
+import { mine, detectOrientChurn, detectValidateLoop } from '../src/lib/metaflow/phases/miner.ts';
+import { miningExists } from '../src/lib/metaflow/phases/mine-run.ts';
+import { buildOptimizationNodes } from '../src/lib/metaflow/phases/opt-dag.ts';
 import { buildGanttChart, renderGantt } from '../src/lib/render/gantt.ts';
 import { define } from '../src/protocol.ts';
 import type { RunId, StepId, InteractionReceipt, MiningResult, SessionsStore, GanttChart } from '../src/lib/metaflow/types.ts';

@@ -8,8 +8,8 @@ import {
   loadFlow,
   listFlows,
   FlowLoadError,
-} from "../../src/lib/metaflow/flows.ts";
-import type { Flow } from "../../src/lib/metaflow/flows.ts";
+} from "../../src/lib/metaflow/phases/flows.ts";
+import type { Flow } from "../../src/lib/metaflow/phases/flows.ts";
 
 let tmp: string;
 
