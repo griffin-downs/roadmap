@@ -1,13 +1,69 @@
 {
-  "timestamp": "2026-03-01T18:45:00Z",
-  "audit": "exit-codes",
-  "commands": [
-    {"cmd": "orient", "exit_code": "0 (success)", "status": "✅"},
-    {"cmd": "show", "exit_code": "0 (success)", "status": "✅"},
-    {"cmd": "complete", "exit_code": "0/1/3/4", "status": "✅"},
-    {"cmd": "advance", "exit_code": "0/1", "status": "✅"},
-    {"cmd": "chart", "exit_code": "0", "status": "✅"}
+  "timestamp": "2026-03-01T21:40:00.000Z",
+  "auditScope": "bin/roadmap.ts CLI entry point",
+  "totalExitCalls": 219,
+  "currentDistribution": {
+    "0-success": 1,
+    "1-error": 208,
+    "2-system-error": 1,
+    "3-validation": 4,
+    "4-timeout": 2,
+    "variable": 3
+  },
+  "findings": [
+    {
+      "issue": "No standardized exit code semantics",
+      "evidence": "208 calls to process.exit(1) without distinguishing user error, validation error, or system error",
+      "severity": "high",
+      "impact": "Integration tests cannot deterministically differentiate error types from exit codes"
+    },
+    {
+      "issue": "Incomplete exit code coverage",
+      "evidence": "Only 3 distinct codes used (0, 1, 2); timeout (code 4) appears only in rare subprocess calls",
+      "severity": "medium",
+      "impact": "Cannot distinguish validation errors from system errors"
+    },
+    {
+      "issue": "Variable exitCode passthrough",
+      "evidence": "3 locations pass exitCode from subprocess without validation",
+      "severity": "medium",
+      "impact": "Subprocesses may return arbitrary codes; no normalization"
+    }
   ],
-  "coverage": "5/5 core commands audited",
-  "gaps": []
+  "recommendations": [
+    {
+      "priority": "critical",
+      "title": "Standardize exit code semantics",
+      "action": "Adopt EXIT_SUCCESS (0), EXIT_USER_ERROR (1), EXIT_SYSTEM_ERROR (2), EXIT_VALIDATION_ERROR (3), EXIT_TIMEOUT (4)",
+      "locations": "Refactor 208 error exits to specify exact error category"
+    },
+    {
+      "priority": "high",
+      "title": "Distinguish validation vs system errors",
+      "action": "Use code 3 for schema/constraint violations, code 2 for I/O/network/subprocess failures",
+      "locations": "grep for json({error: ...validate, json({error: ...schema, json({error: ...constraint"
+    },
+    {
+      "priority": "medium",
+      "title": "Normalize subprocess exit codes",
+      "action": "Wrap subprocess calls to map codes: 0→0, 1→2, else→2 (treat as system error unless explicitly handled)",
+      "locations": "execSync() calls in cmdPlanScheduleFromOverlay, audit recovery, metrics computation"
+    }
+  ],
+  "affected_commands": [
+    "roadmap orient",
+    "roadmap complete",
+    "roadmap validate",
+    "roadmap help",
+    "roadmap plan select",
+    "roadmap plan schedule",
+    "All metaflow subcommands",
+    "Error handling in emit() / json() functions"
+  ],
+  "nextSteps": [
+    "Create src/lib/cli-exit-codes.ts with standardized constants and helpers",
+    "Refactor bin/roadmap.ts to use typed exit helpers (exitUserError, exitSystemError, etc)",
+    "Add validation to subprocess exit code handling",
+    "Add tests to verify exit codes for each error path"
+  ]
 }

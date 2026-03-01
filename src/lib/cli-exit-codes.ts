@@ -1,16 +1,86 @@
-// CLI exit code definitions — standardized across all commands
-export const EXIT_SUCCESS = 0;          // Command succeeded
-export const EXIT_USER_ERROR = 1;       // User error (invalid args, missing node, etc.)
-export const EXIT_SYSTEM_ERROR = 2;     // System error (file I/O, parsing, etc.)
-export const EXIT_PERMISSION_ERROR = 3; // Permission/state error (claim conflict, DAG corruption, etc.)
-export const EXIT_VALIDATION_ERROR = 4; // Validation rule failed (artifact missing, shell command failed, etc.)
+// @module cli
+// @exports EXIT_SUCCESS, EXIT_USER_ERROR, EXIT_SYSTEM_ERROR, EXIT_VALIDATION_ERROR, EXIT_TIMEOUT
+// @types ExitCode
 
-export function getExitCode(error: any): number {
-  if (!error) return EXIT_SUCCESS;
-  if (error.code === 'ENOENT' || error.code === 'EISDIR') return EXIT_SYSTEM_ERROR;
-  if (error.code === 'EACCES') return EXIT_PERMISSION_ERROR;
-  if (error.message?.includes('not found')) return EXIT_USER_ERROR;
-  if (error.message?.includes('claimed by')) return EXIT_PERMISSION_ERROR;
-  if (error.message?.includes('Validation failed')) return EXIT_VALIDATION_ERROR;
-  return EXIT_SYSTEM_ERROR;
+/**
+ * Standard exit code semantics for CLI commands.
+ * Aligns with Unix conventions and enables deterministic integration testing.
+ */
+
+export const EXIT_SUCCESS = 0;
+export const EXIT_USER_ERROR = 1; // User provided invalid input, wrong flags, bad data
+export const EXIT_SYSTEM_ERROR = 2; // System failure (file I/O, network, git, process)
+export const EXIT_VALIDATION_ERROR = 3; // Validation failure (schema, type, constraint)
+export const EXIT_TIMEOUT = 4; // Command exceeded time limit
+
+export type ExitCode =
+  | typeof EXIT_SUCCESS
+  | typeof EXIT_USER_ERROR
+  | typeof EXIT_SYSTEM_ERROR
+  | typeof EXIT_VALIDATION_ERROR
+  | typeof EXIT_TIMEOUT;
+
+/**
+ * Exit code descriptions for documentation and error messages.
+ */
+export const EXIT_CODE_DESCRIPTIONS: Record<ExitCode, string> = {
+  [EXIT_SUCCESS]: 'Success',
+  [EXIT_USER_ERROR]: 'User error (invalid input, wrong flags)',
+  [EXIT_SYSTEM_ERROR]: 'System error (I/O, network, subprocess)',
+  [EXIT_VALIDATION_ERROR]: 'Validation error (schema, constraint)',
+  [EXIT_TIMEOUT]: 'Timeout (command exceeded limit)',
+};
+
+/**
+ * Categorize an exit code.
+ */
+export function categorizeExitCode(code: number): ExitCode | undefined {
+  if (code === EXIT_SUCCESS) return EXIT_SUCCESS;
+  if (code === EXIT_USER_ERROR) return EXIT_USER_ERROR;
+  if (code === EXIT_SYSTEM_ERROR) return EXIT_SYSTEM_ERROR;
+  if (code === EXIT_VALIDATION_ERROR) return EXIT_VALIDATION_ERROR;
+  if (code === EXIT_TIMEOUT) return EXIT_TIMEOUT;
+  return undefined;
+}
+
+/**
+ * Exit the process with the given code and optional message.
+ */
+export function exit(code: ExitCode, message?: string): never {
+  if (message) {
+    if (code === EXIT_SUCCESS) {
+      console.log(message);
+    } else {
+      console.error(message);
+    }
+  }
+  process.exit(code);
+}
+
+/**
+ * Helper: exit with user error.
+ */
+export function exitUserError(message: string): never {
+  exit(EXIT_USER_ERROR, message);
+}
+
+/**
+ * Helper: exit with system error.
+ */
+export function exitSystemError(message: string): never {
+  exit(EXIT_SYSTEM_ERROR, message);
+}
+
+/**
+ * Helper: exit with validation error.
+ */
+export function exitValidationError(message: string): never {
+  exit(EXIT_VALIDATION_ERROR, message);
+}
+
+/**
+ * Helper: exit with timeout.
+ */
+export function exitTimeout(message: string): never {
+  exit(EXIT_TIMEOUT, message);
 }
