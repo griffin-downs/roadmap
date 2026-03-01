@@ -29,6 +29,8 @@ const CONFIG_KEYS = new Set([
   'CDP_URL', 'CDP_PORT',
   'ROADMAP_EXPANSION_TYPE', 'ROADMAP_SIBLING_ROOT',
   'ROADMAP_VALIDATING', // Recursion guard set by validation system, not external bypass
+  'ROADMAP_RUN_ID', // CLI configuration: runId can be provided via env or --run arg
+  'ROADMAP_HUMAN_MODE', // Render configuration: output formatting (TTY vs JSON)
   'DEBUG',
 ]);
 
