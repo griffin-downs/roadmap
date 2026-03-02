@@ -4,7 +4,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Graph, merge, define } from '../../protocol';
+import { merge, define } from '../../protocol.ts';
+import type { Graph } from '../../protocol.ts';
 
 export interface DAGFile {
   path: string;
@@ -27,13 +28,18 @@ export interface MergeResult {
 }
 
 export class ConsolidationError extends Error {
+  code: string;
+  context: Record<string, any>;
+
   constructor(
-    public code: string,
+    code: string,
     message: string,
-    public context: Record<string, any> = {}
+    context: Record<string, any> = {}
   ) {
     super(message);
     this.name = 'ConsolidationError';
+    this.code = code;
+    this.context = context;
   }
 }
 

@@ -2,8 +2,8 @@
 // @exports extractMetadataIndex, IndexEntry, HeadIndex, MetadataIndexError
 // @types IndexEntry, HeadIndex
 
-import { Graph, NodeSpec } from '../../protocol';
-import { MergeResult } from './dag-consolidator';
+import type { Graph, NodeSpec } from '../../protocol.ts';
+import type { MergeResult } from './dag-consolidator.ts';
 
 export interface IndexEntry {
   id: string;
@@ -30,13 +30,18 @@ export interface HeadIndex {
 }
 
 export class MetadataIndexError extends Error {
+  code: string;
+  context: Record<string, any>;
+
   constructor(
-    public code: string,
+    code: string,
     message: string,
-    public context: Record<string, any> = {}
+    context: Record<string, any> = {}
   ) {
     super(message);
     this.name = 'MetadataIndexError';
+    this.code = code;
+    this.context = context;
   }
 }
 

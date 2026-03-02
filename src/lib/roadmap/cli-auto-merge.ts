@@ -4,9 +4,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Graph } from '../../protocol';
-import { discoverDAGFiles, mergeMultiWay, MergeResult } from './dag-consolidator';
-import { LazyGraphLoader, LoadStrategy } from './lazy-graph-loader.ts';
+import type { Graph } from '../../protocol.ts';
+import { discoverDAGFiles, mergeMultiWay } from './dag-consolidator.ts';
+import type { MergeResult } from './dag-consolidator.ts';
+import { LazyGraphLoader } from './lazy-graph-loader.ts';
+import type { LoadStrategy } from './lazy-graph-loader.ts';
 
 export interface AutoMergeResult {
   graph: Graph<string>;
@@ -161,7 +163,7 @@ export async function ensureIndexExists(
   };
 
   // Build index from merge result
-  const { extractMetadataIndex } = await import('./index-extractor.ts');
+  const { extractMetadataIndex } = (await import('./index-extractor.ts')) as typeof import('./index-extractor.ts');
   const index = extractMetadataIndex(mergeRes);
 
   fs.writeFileSync(indexPath, JSON.stringify(index, null, 2));

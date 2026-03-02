@@ -2,8 +2,9 @@
 // @exports validateCrossDAGDependencies, validatePropagation, CrossDAGValidationError
 // @types CrossDAGIssue, CrossDAGValidationResult
 
-import { Graph, NodeSpec, verify } from '../../protocol';
-import { MergeResult } from './dag-consolidator';
+import { verify } from '../../protocol.ts';
+import type { Graph, NodeSpec } from '../../protocol.ts';
+import type { MergeResult } from './dag-consolidator.ts';
 
 export interface CrossDAGIssue {
   type: 'unresolved-consume' | 'dangling-dep' | 'propagation-broken' | 'phase-barrier-violation';
@@ -21,13 +22,18 @@ export interface CrossDAGValidationResult {
 }
 
 export class CrossDAGValidationError extends Error {
+  code: string;
+  context: Record<string, any>;
+
   constructor(
-    public code: string,
+    code: string,
     message: string,
-    public context: Record<string, any> = {}
+    context: Record<string, any> = {}
   ) {
     super(message);
     this.name = 'CrossDAGValidationError';
+    this.code = code;
+    this.context = context;
   }
 }
 

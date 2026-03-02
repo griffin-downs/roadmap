@@ -4,8 +4,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Graph } from '../../protocol';
-import { HeadIndex } from './index-extractor';
+import type { Graph } from '../../protocol.ts';
+import type { HeadIndex } from './index-extractor.ts';
 
 export type LoadStrategy = 'minimal' | 'current-batch' | 'current-plus-next' | 'full';
 
@@ -27,8 +27,10 @@ export class LazyGraphLoader {
   private cachedIndex: HeadIndex | undefined = undefined;
   private cachedGraph: Graph<string> | undefined = undefined;
   private lastGraphStrategy: LoadStrategy | undefined = undefined;
+  private roadmapRoot: string;
 
-  constructor(private roadmapRoot: string) {
+  constructor(roadmapRoot: string) {
+    this.roadmapRoot = roadmapRoot;
     this.indexPath = path.join(roadmapRoot, '.roadmap', 'head-index.json');
     this.headPath = path.join(roadmapRoot, '.roadmap', 'head.json');
   }
