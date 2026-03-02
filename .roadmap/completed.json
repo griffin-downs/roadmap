@@ -73,5 +73,80 @@
     ],
     "gitSha": "5d8d9b5",
     "treeSha": "5d8d9b5"
+  },
+  {
+    "nodeId": "validate-brief-contracts",
+    "completedAt": "2026-03-02T10:20:43.701Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302102043",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/agent-dispatch/brief-validator.ts"
+      }
+    ],
+    "gitSha": "e3454c9cfc8c53a18d302c0c8c908ac147dc3396",
+    "treeSha": "62c0058ec72221410a0a74aed878bc6e8b88b56e"
+  },
+  {
+    "nodeId": "analyze-performance-data",
+    "completedAt": "2026-03-02T10:20:51.622Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302102051",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: performance-analysis.md"
+      }
+    ],
+    "gitSha": "e3454c9cfc8c53a18d302c0c8c908ac147dc3396",
+    "treeSha": "62c0058ec72221410a0a74aed878bc6e8b88b56e"
+  },
+  {
+    "nodeId": "integrate-metrics-hooks",
+    "completedAt": "2026-03-02T10:20:54.547Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302102054",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: metrics-sample.jsonl"
+      }
+    ],
+    "gitSha": "e3454c9cfc8c53a18d302c0c8c908ac147dc3396",
+    "treeSha": "62c0058ec72221410a0a74aed878bc6e8b88b56e"
+  },
+  {
+    "nodeId": "test-persistence-enforcement",
+    "completedAt": "2026-03-02T10:20:56.936Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302102056",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: tests/persistence-enforcement.test.ts"
+      }
+    ],
+    "gitSha": "e3454c9cfc8c53a18d302c0c8c908ac147dc3396",
+    "treeSha": "62c0058ec72221410a0a74aed878bc6e8b88b56e"
+  },
+  {
+    "nodeId": "synthesis",
+    "completedAt": "2026-03-02T10:22:35.291Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302102235",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: improvement-synthesis.json"
+      }
+    ],
+    "gitSha": "e3454c9cfc8c53a18d302c0c8c908ac147dc3396",
+    "treeSha": "62c0058ec72221410a0a74aed878bc6e8b88b56e"
   }
 ]
