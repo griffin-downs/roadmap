@@ -121,7 +121,7 @@
       "validate": [
         {
           "type": "shell",
-          "command": "artifact-exists:.chatelet/"
+          "command": "test -d .chatelet && test -f .chatelet/.gitignore && test -f .chatelet/README.md"
         }
       ],
       "idempotent": true

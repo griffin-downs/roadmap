@@ -2343,5 +2343,28 @@
     ],
     "gitSha": "0072087be9921fa24019a9334cf533c806a55034",
     "treeSha": "acb5e37cbefd11cde25d595915934a96a159d932"
+  },
+  {
+    "nodeId": "migration-plan-validator",
+    "completedAt": "2026-03-02T00:50:25.999Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302005024",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "0245ed36da8b9fe102c7f7faa0c75b3312d14f59",
+    "treeSha": "0fa835c36e704bd89eb162431e5b78ade13a84f6"
   }
 ]
