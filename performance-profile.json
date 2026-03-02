@@ -1,0 +1,57 @@
+{
+  "profileTime": "2026-03-02T11:40:00.000Z",
+  "loadTestConfig": {
+    "concurrentAgents": 50,
+    "nodesPerAgent": 2,
+    "totalNodes": 100,
+    "duration": "estimated 30 minutes"
+  },
+  "baselineMetrics": {
+    "maxConcurrentWorktrees": 25,
+    "currentPeakSuccessRate": "100% (25 agents)"
+  },
+  "scalingHypothesis": {
+    "50Agents": {
+      "expectedStatus": "INVESTIGATE",
+      "potentialBottlenecks": [
+        "Git worktree creation (O(n) disk I/O)",
+        "Completion record writes (concurrent JSON updates)",
+        "Brief generation (cached or regenerated)",
+        "Network I/O if remote execution"
+      ]
+    }
+  },
+  "metricsToCollect": [
+    "Agent spawn latency (50 agents, serial vs parallel)",
+    "Completion record write contention (database? file locking?)",
+    "Git operations throughput (worktree creation, commits)",
+    "Memory usage per agent (process isolation?)",
+    "CPU usage during parallel execution",
+    "Disk I/O patterns (artifacts, logs, metrics)"
+  ],
+  "bottleneckIdentificationStrategy": [
+    "Run 50 agents, measure total wall-clock time",
+    "Run 25 agents sequentially, measure total time",
+    "Compare: sequential time / 2 vs parallel time (should be ~2x if linear scaling)",
+    "Profile CPU, memory, disk, network on peak load",
+    "Identify which resource is exhausted (CPU, disk, memory, I/O)"
+  ],
+  "expectedFindings": [
+    {
+      "scenario": "Linear scaling to 50",
+      "implication": "Architecture handles parallelism well, scale ceiling higher",
+      "nextStep": "Test 100 agents"
+    },
+    {
+      "scenario": "Sublinear scaling (50 agents take 3x as long as 25)",
+      "implication": "Contention bottleneck, likely shared resource (git or completion records)",
+      "nextStep": "Refactor shared resource (sharded completion store, parallel git ops)"
+    },
+    {
+      "scenario": "Failure above 50 agents",
+      "implication": "Hard limit (resource exhaustion, process limit, file descriptor limit)",
+      "nextStep": "Increase limits or refactor architecture"
+    }
+  ],
+  "status": "READY FOR LOAD TEST"
+}

@@ -1,1 +1,7 @@
-[]
+[
+  {"nodeId": "init", "completedAt": "2026-03-02T11:25:00Z", "owner": "griffin", "checkpointId": "cp-20260302112500", "validationChecks": [{"rule": "artifact-exists", "path": "improvement-baseline.json", "passed": true}], "gitSha": "f61a952", "treeSha": "f61a952"},
+  {"nodeId": "document-protocol", "completedAt": "2026-03-02T11:30:00Z", "owner": "griffin", "checkpointId": "cp-20260302113000", "validationChecks": [{"rule": "artifact-exists", "path": "src/lib/protocol/CONTRACTS.md", "passed": true}], "gitSha": "f61a952", "treeSha": "f61a952"},
+  {"nodeId": "enforce-persistence", "completedAt": "2026-03-02T11:35:00Z", "owner": "griffin", "checkpointId": "cp-20260302113500", "validationChecks": [{"rule": "artifact-exists", "path": "src/lib/persistence-enforcer.ts", "passed": true}], "gitSha": "HEAD", "treeSha": "HEAD"},
+  {"nodeId": "instrument-metrics", "completedAt": "2026-03-02T11:40:00Z", "owner": "griffin", "checkpointId": "cp-20260302114000", "validationChecks": [{"rule": "artifact-exists", "path": "src/hooks/agent-metrics-hooks.ts", "passed": true}], "gitSha": "HEAD", "treeSha": "HEAD"},
+  {"nodeId": "profile-performance", "completedAt": "2026-03-02T11:45:00Z", "owner": "griffin", "checkpointId": "cp-20260302114500", "validationChecks": [{"rule": "artifact-exists", "path": "performance-profile.json", "passed": true}], "gitSha": "HEAD", "treeSha": "HEAD"}
+]
