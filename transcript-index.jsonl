@@ -1,0 +1,370 @@
+{"timestamp":"2026-02-27T01:42:07.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"new feature outside existing DAG"}
+{"timestamp":"2026-02-27T03:14:32.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"pre-phase work: intent-evaluator redesign + gallery FRs + expand script"}
+{"timestamp":"2026-02-27T03:51:48.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"install-skills-templates: skill templates created before DAG node exists"}
+{"timestamp":"2026-02-27T03:51:59.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"install-skills-engine: new module, no DAG node yet"}
+{"timestamp":"2026-02-27T03:56:57.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"install-skills-tests not a DAG node — test file for FR-INSTALL-SKILLS"}
+{"timestamp":"2026-02-27T04:02:08.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"predicates-cross-repo: test fix, no DAG node"}
+{"timestamp":"2026-02-27T04:06:05.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"runtime-explore-integration — wiring --explore flag to complete command"}
+{"timestamp":"2026-02-27T04:06:30.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"runtime-explore: new feature, no DAG node exists yet"}
+{"timestamp":"2026-02-27T04:09:21.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"orient-assign: fix position-fallback assignment reporting"}
+{"timestamp":"2026-02-27T04:10:40.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"intent-expansion — new FR, no DAG node exists yet"}
+{"timestamp":"2026-02-27T04:11:11.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"intent-expansion-validate: tests for validateNode expansion integration"}
+{"timestamp":"2026-02-27T04:12:11.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"intent-expansion CLI routing — completing FR-INTENT-EXPANSION"}
+{"timestamp":"2026-02-27T04:15:55.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"term-prep: fix migrations, bootstrap-gen, git-ops backends"}
+{"timestamp":"2026-02-27T04:16:56.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"term-prep: fix vitest v4 API compat in bootstrap-gen tests"}
+{"timestamp":"2026-02-27T04:19:50.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"install-skills-templates: prose refinement, no DAG node"}
+{"timestamp":"2026-02-27T04:20:48.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"term-prep: fix process.cwd() in predicates and test-enforcement"}
+{"timestamp":"2026-02-27T04:24:15.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"term-prep: fix audit test tmpdir"}
+{"timestamp":"2026-02-27T04:26:57.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"explore-helpers is new work outside current DAG, assigned by team lead"}
+{"timestamp":"2026-02-27T06:31:42.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap maintenance: extend explore helpers"}
+{"timestamp":"2026-02-27T06:37:01.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"bugfix: orient crashes on missing produces"}
+{"timestamp":"2026-02-27T06:38:48.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"bugfix: batchConflicts crashes on non-array produces/consumes"}
+{"timestamp":"2026-02-27T06:43:03.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"arch: strategy selection as metadata, not DAG replacement"}
+{"timestamp":"2026-02-27T08:28:42.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"arch: destructive strategy selection with git-based recovery"}
+{"timestamp":"2026-02-27T08:45:33.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"infrastructure feature: wisdom-driven intent-gate enrichment"}
+{"timestamp":"2026-02-27T08:47:16.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"add runtime explore validation to intent-gate enrichment"}
+{"timestamp":"2026-02-27T08:48:49.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"improve spec parsing to read structure not keywords"}
+{"timestamp":"2026-02-27T08:50:53.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"add God Engineer rich prompt for intent-gate validation"}
+{"timestamp":"2026-02-27T08:54:28.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"add stacked term gates to protocol"}
+{"timestamp":"2026-02-27T09:00:49.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"fix batch advancement by tracking completed nodes"}
+{"timestamp":"2026-02-28T10:46:55.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"per-node commit protocol: completion-record-evidence produces created, complete pending"}
+{"timestamp":"2026-02-28T13:24:00.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"governance commit"}
+{"timestamp":"2026-02-28T15:56:22.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rm-receipt-chain: per-node commit before batch completion"}
+{"timestamp":"2026-02-28T16:04:49.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rm-plan-select-cmd: gate chain priority"}
+{"timestamp":"2026-02-28T16:15:58.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rm-plan-selected-pointer: per-node commit"}
+{"timestamp":"2026-02-28T16:21:04.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"implementing rm-plan-exec-gate node"}
+{"timestamp":"2026-02-28T17:56:54.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"producing rm-cli-json-envelope artifacts"}
+{"timestamp":"2026-02-28T18:03:06.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"producing rm-cli-human-renderers artifacts"}
+{"timestamp":"2026-02-28T19:07:16.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"spec-origin-schema node produces only types/predicates — tests are a downstream node concern"}
+{"timestamp":"2026-02-28T19:14:24.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"swarm worker-a: committing validator-runner node independently"}
+{"timestamp":"2026-02-28T19:18:16.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"verify-skeleton node in progress, committing produces before complete"}
+{"timestamp":"2026-02-28T19:24:10.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"swarm worker-a: committing intake-compiler node independently"}
+{"timestamp":"2026-02-28T19:26:09.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"swarm worker-a: committing multi-repo-merge node"}
+{"timestamp":"2026-02-28T19:28:08.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"swarm worker-a: committing plan-overlay node"}
+{"timestamp":"2026-02-28T19:30:25.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"swarm worker-a: committing dispatch-plan node"}
+{"timestamp":"2026-02-28T19:31:30.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"type fix for cross-repo-deps"}
+{"timestamp":"2026-02-28T22:22:14.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg3-fixtures node"}
+{"timestamp":"2026-02-28T22:23:12.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg3-fixtures node"}
+{"timestamp":"2026-02-28T22:23:36.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg3-fixtures node"}
+{"timestamp":"2026-02-28T22:23:39.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg3-fixtures node"}
+{"timestamp":"2026-02-28T22:23:41.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg3-fixtures node"}
+{"timestamp":"2026-02-28T22:23:56.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg3-fixtures node"}
+{"timestamp":"2026-02-28T22:24:44.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg6-fixtures node"}
+{"timestamp":"2026-02-28T22:25:15.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"plan-select re-select"}
+{"timestamp":"2026-02-28T22:25:44.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"batch-conflicts lib file no matching test yet"}
+{"timestamp":"2026-02-28T22:26:24.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg6-fixtures node"}
+{"timestamp":"2026-02-28T22:27:22.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg6-fixtures node"}
+{"timestamp":"2026-02-28T22:27:49.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in rkg6-fixtures node"}
+{"timestamp":"2026-02-28T22:31:15.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg4 all L02+L03 implementations, tests in tests/rkg4.test.ts"}
+{"timestamp":"2026-02-28T22:31:53.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"B1 is a donjon DAG node, fix applied in roadmap repo"}
+{"timestamp":"2026-02-28T22:56:42.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg7-overlay-schema: types-only node, tests in separate node"}
+{"timestamp":"2026-02-28T22:56:49.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"types-only module, no logic to test beyond tsc"}
+{"timestamp":"2026-02-28T22:57:00.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg7-merge-gate-schema: types-only node, tests in downstream node"}
+{"timestamp":"2026-02-28T22:57:12.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-escape-detector-schema: type-only node, tsc validates"}
+{"timestamp":"2026-02-28T22:57:17.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — tests in separate node"}
+{"timestamp":"2026-02-28T22:57:18.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-escape-detector-schema: type-only node, tsc validates"}
+{"timestamp":"2026-02-28T22:57:30.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-escape-detector-schema: type-only node, tsc validates"}
+{"timestamp":"2026-02-28T22:57:32.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8 swarm worker — task spec restricts to single file"}
+{"timestamp":"2026-02-28T22:57:36.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8 swarm worker — task restricts to single produce file"}
+{"timestamp":"2026-02-28T22:57:44.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-escape-detector-schema: type-only schema node"}
+{"timestamp":"2026-02-28T22:59:36.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — tests not in produces"}
+{"timestamp":"2026-02-28T23:01:36.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — validation is tsc --noEmit per node spec"}
+{"timestamp":"2026-02-28T23:02:29.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — tests in separate node"}
+{"timestamp":"2026-02-28T23:02:39.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:02:56.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-friction-engine: swarm worker, tests in separate node"}
+{"timestamp":"2026-02-28T23:03:28.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:03:34.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker: tests deferred to integration node"}
+{"timestamp":"2026-02-28T23:03:38.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker: tests deferred to integration node"}
+{"timestamp":"2026-02-28T23:03:54.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — CLI wiring only"}
+{"timestamp":"2026-02-28T23:04:23.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:04:26.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:04:26.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:04:31.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — validation is tsc --noEmit per node spec"}
+{"timestamp":"2026-02-28T23:04:46.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — tests not in produces"}
+{"timestamp":"2026-02-28T23:04:48.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — CLI wiring only"}
+{"timestamp":"2026-02-28T23:05:16.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"profile-cmd tests deferred to integration"}
+{"timestamp":"2026-02-28T23:05:20.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"profile-cmd tests deferred"}
+{"timestamp":"2026-02-28T23:05:20.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg8-profile node"}
+{"timestamp":"2026-02-28T23:05:25.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-governance-breach-receipt: swarm worker, tests in separate node"}
+{"timestamp":"2026-02-28T23:05:33.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-governance-breach-receipt: swarm worker"}
+{"timestamp":"2026-02-28T23:05:36.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-governance-breach-receipt: swarm worker"}
+{"timestamp":"2026-02-28T23:05:37.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:05:39.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:05:40.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:05:40.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:05:41.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8-governance-breach-receipt: swarm worker"}
+{"timestamp":"2026-02-28T23:05:56.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg-worker: tests come in separate node"}
+{"timestamp":"2026-02-28T23:05:59.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:06:00.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:06:01.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"CLI wiring only"}
+{"timestamp":"2026-02-28T23:06:01.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg8-profile node"}
+{"timestamp":"2026-02-28T23:06:03.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:06:03.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-02-28T23:06:21.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — auto-intake.ts already committed, CLI wiring only"}
+{"timestamp":"2026-02-28T23:06:36.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — CLI wiring only"}
+{"timestamp":"2026-02-28T23:06:58.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — CLI wiring only"}
+{"timestamp":"2026-02-28T23:06:58.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg8-auto-intake node from expanded batch"}
+{"timestamp":"2026-02-28T23:06:59.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8 swarm worker — task restricts produces"}
+{"timestamp":"2026-02-28T23:07:14.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests/env-audit-runtime.test.ts already committed"}
+{"timestamp":"2026-02-28T23:07:14.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg7-env-audit-hardening from orchestrator"}
+{"timestamp":"2026-02-28T23:07:21.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8 swarm worker"}
+{"timestamp":"2026-02-28T23:07:21.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg8-audit-recommend not in head.json yet — swarm worker"}
+{"timestamp":"2026-02-28T23:07:24.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg8 swarm worker — CLI integration"}
+{"timestamp":"2026-02-28T23:07:25.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg8-audit-recommend CLI wiring"}
+{"timestamp":"2026-02-28T23:07:35.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker"}
+{"timestamp":"2026-02-28T23:07:35.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg8-auto-intake"}
+{"timestamp":"2026-02-28T23:08:12.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg-harvest DAG import"}
+{"timestamp":"2026-02-28T23:22:51.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"ui-render-core: types+render library, tests in separate node"}
+{"timestamp":"2026-02-28T23:24:01.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"render modules — pure formatting, no logic to unit test"}
+{"timestamp":"2026-02-28T23:26:49.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"ui-command-integration: wiring node, tests in downstream node"}
+{"timestamp":"2026-02-28T23:49:22.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"mf-init-schemas node — types only, no logic to test"}
+{"timestamp":"2026-02-28T23:52:25.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"mf-gantt-render"}
+{"timestamp":"2026-02-28T23:52:58.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"mf-transcript-miner: tests in separate node"}
+{"timestamp":"2026-02-28T23:53:29.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — tests not in node produces"}
+{"timestamp":"2026-02-28T23:55:31.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"mf-interaction-receipt-writer"}
+{"timestamp":"2026-03-01T00:01:06.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"mf-guided-ask-answer: tests in separate node"}
+{"timestamp":"2026-03-01T00:01:57.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"swarm worker — tests not in node produces"}
+{"timestamp":"2026-03-01T00:05:27.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"mf-mine-run"}
+{"timestamp":"2026-03-01T00:07:41.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"mf-opt-dag-generator: tests in separate node"}
+{"timestamp":"2026-03-01T00:27:10.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"committing roadmap intake files before swarm dispatch — not producing DAG nodes in this commit"}
+{"timestamp":"2026-03-01T00:31:53.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"mf-sv-init schema-only node: tests come in mf-sv-authority (L1)"}
+{"timestamp":"2026-03-01T00:33:37.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"roadmap state files, not src changes"}
+{"timestamp":"2026-03-01T00:35:57.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"implementing mf-sv-authority + mf-sv-flow-registry in parallel batch — completing both before advancing"}
+{"timestamp":"2026-03-01T00:38:24.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"worker-3 producing mf-sv-render-receipts — completing after commit"}
+{"timestamp":"2026-03-01T00:41:21.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"worker-3 mf-sv-cli-surface — completing after commit per swarm protocol"}
+{"timestamp":"2026-03-01T00:42:56.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"worker-3 mf-sv-no-env-bypass produces — completing after commit"}
+{"timestamp":"2026-03-01T00:45:58.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"L5 kernel-bridge — single batch node"}
+{"timestamp":"2026-03-01T00:47:13.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"L6 terminal invariants — single node batch"}
+{"timestamp":"2026-03-01T01:20:12.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"pure type definitions, no runtime behavior"}
+{"timestamp":"2026-03-01T01:21:58.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:22:36.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:24:07.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:25:09.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:26:11.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:26:14.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:29:27.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:29:35.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:30:37.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:31:58.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:32:44.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:34:32.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:36:13.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:37:35.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:39:20.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:41:20.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:42:23.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T01:48:36.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"w1"}
+{"timestamp":"2026-03-01T01:50:37.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"w1"}
+{"timestamp":"2026-03-01T08:51:07.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T08:51:58.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"receipt-first-plan speckit format fix"}
+{"timestamp":"2026-03-01T08:52:30.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"receipt-first-plan remove init dep"}
+{"timestamp":"2026-03-01T09:00:10.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"dc-candidate-writer: tests are in downstream node co-stdout-tests"}
+{"timestamp":"2026-03-01T09:01:03.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in separate rf-tests node"}
+{"timestamp":"2026-03-01T09:01:28.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg4-contract-closure: wiring existing contractClosure into runVerify, tests in rkg4-fixtures"}
+{"timestamp":"2026-03-01T09:02:50.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in separate fixtures node"}
+{"timestamp":"2026-03-01T09:02:58.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rf-tests node covers AT-1..AT-6 downstream"}
+{"timestamp":"2026-03-01T09:02:58.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"rf-cmd-receipt"}
+{"timestamp":"2026-03-01T09:03:01.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T09:03:04.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"merge/branch witness already tested via mergeCheck+branchWithWitness"}
+{"timestamp":"2026-03-01T09:03:54.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"pareto quantization config is backward-compatible addition"}
+{"timestamp":"2026-03-01T09:03:59.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sgk downstream nodes cover testing"}
+{"timestamp":"2026-03-01T09:05:49.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in separate fixtures node"}
+{"timestamp":"2026-03-01T09:05:55.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tu-schema: tests in downstream tu-* nodes"}
+{"timestamp":"2026-03-01T09:06:59.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in separate fixtures node"}
+{"timestamp":"2026-03-01T09:15:26.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rf-scenario-registry: tests in rf-tests node at L06"}
+{"timestamp":"2026-03-01T09:17:09.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sgk-receipts: tests in sgk-e2e downstream node"}
+{"timestamp":"2026-03-01T09:17:24.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T09:18:06.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rkg5-failure-routing"}
+{"timestamp":"2026-03-01T09:18:47.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T09:23:08.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rf-chain-enforcer: tests in rf-tests node at L06"}
+{"timestamp":"2026-03-01T09:23:38.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T09:23:47.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sgk-cli-enforce: tests in sgk-e2e downstream node"}
+{"timestamp":"2026-03-01T09:24:43.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T09:25:11.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"rkg-worker"}
+{"timestamp":"2026-03-01T09:26:48.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"rf-verify-integration: tests in rf-tests node at L06"}
+{"timestamp":"2026-03-01T09:27:32.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sgk-strategy-surface: artifact-exists validation only, tests in sgk-e2e"}
+{"timestamp":"2026-03-01T09:29:43.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sgk-intent-cmds: tests in sgk-e2e node"}
+{"timestamp":"2026-03-01T09:33:40.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sgk-mine-audit: tests in sgk-e2e node"}
+{"timestamp":"2026-03-01T09:36:09.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sgk-display: tests in sgk-e2e node"}
+{"timestamp":"2026-03-01T09:40:21.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sgk-e2e: fix shell validator cmd→command typo"}
+{"timestamp":"2026-03-01T09:43:10.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"integration-terminal: verification node, not code"}
+{"timestamp":"2026-03-01T10:49:13.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"pure type definitions, no logic to test"}
+{"timestamp":"2026-03-01T10:49:22.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in surf-audit-tests node"}
+{"timestamp":"2026-03-01T10:50:00.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"layout-plan is planning-only module, no runtime behavior to test"}
+{"timestamp":"2026-03-01T10:50:05.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"w-cli-registry"}
+{"timestamp":"2026-03-01T10:51:05.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"DAG fix only"}
+{"timestamp":"2026-03-01T10:51:36.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"roadmap-state"}
+{"timestamp":"2026-03-01T10:51:45.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"cli-wrap-core: thin wrappers over tested protocol/receipts-ux/verify APIs"}
+{"timestamp":"2026-03-01T10:52:18.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"roadmap state sync"}
+{"timestamp":"2026-03-01T10:52:40.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"roadmap state sync"}
+{"timestamp":"2026-03-01T10:53:01.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"roadmap-state"}
+{"timestamp":"2026-03-01T10:54:30.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt JSON, not code"}
+{"timestamp":"2026-03-01T10:55:11.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"audit-engine: scan/graph/score are pure functions, tested via downstream surf-audit-tests node"}
+{"timestamp":"2026-03-01T10:56:50.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"audit CLI commands + render"}
+{"timestamp":"2026-03-01T10:56:55.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt JSON, not code"}
+{"timestamp":"2026-03-01T10:57:03.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in surf-audit-tests node"}
+{"timestamp":"2026-03-01T10:57:24.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt only"}
+{"timestamp":"2026-03-01T10:58:11.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt JSON, not code"}
+{"timestamp":"2026-03-01T10:58:19.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"archive plan, no src"}
+{"timestamp":"2026-03-01T10:59:09.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt JSON, not code"}
+{"timestamp":"2026-03-01T10:59:10.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"no src changes"}
+{"timestamp":"2026-03-01T11:01:02.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt JSONs, not code"}
+{"timestamp":"2026-03-01T11:01:04.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"roadmap-state"}
+{"timestamp":"2026-03-01T11:01:12.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"perf data, no src"}
+{"timestamp":"2026-03-01T11:01:29.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipts only"}
+{"timestamp":"2026-03-01T11:01:55.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"L6 verification/perf receipts — not src code"}
+{"timestamp":"2026-03-01T11:02:00.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"perf gate, no src"}
+{"timestamp":"2026-03-01T11:02:02.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt-only"}
+{"timestamp":"2026-03-01T11:02:17.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt JSON"}
+{"timestamp":"2026-03-01T11:02:28.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipts only"}
+{"timestamp":"2026-03-01T11:02:52.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt-only"}
+{"timestamp":"2026-03-01T11:02:57.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"DAG fix"}
+{"timestamp":"2026-03-01T11:03:00.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"DAG fix"}
+{"timestamp":"2026-03-01T11:03:00.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"fixing malformed launch-check rules"}
+{"timestamp":"2026-03-01T11:03:06.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"sync"}
+{"timestamp":"2026-03-01T11:03:06.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"sync"}
+{"timestamp":"2026-03-01T11:03:17.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt fix"}
+{"timestamp":"2026-03-01T11:03:42.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt JSON"}
+{"timestamp":"2026-03-01T11:04:02.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt"}
+{"timestamp":"2026-03-01T11:04:13.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"receipt-only"}
+{"timestamp":"2026-03-01T13:30:40.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"swarm-worker"}
+{"timestamp":"2026-03-01T13:30:44.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:33:29.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:33:31.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:33:31.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:33:35.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:33:35.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:34:31.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:34:31.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:34:51.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:40:12.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"metaspec-intake"}
+{"timestamp":"2026-03-01T13:41:26.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-audit"}
+{"timestamp":"2026-03-01T13:42:00.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T13:44:50.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel-export-only, no logic change"}
+{"timestamp":"2026-03-01T13:44:55.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel-export-only"}
+{"timestamp":"2026-03-01T13:44:55.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"organize-evidence-domain"}
+{"timestamp":"2026-03-01T13:45:32.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel re-export only, no new logic"}
+{"timestamp":"2026-03-01T13:45:37.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel re-export only"}
+{"timestamp":"2026-03-01T13:45:37.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"organize-audit-domain"}
+{"timestamp":"2026-03-01T13:46:14.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel-and-moves-only"}
+{"timestamp":"2026-03-01T13:46:14.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"organize-intent-domain"}
+{"timestamp":"2026-03-01T13:47:11.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel-export-only-no-logic"}
+{"timestamp":"2026-03-01T13:47:11.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"organize-metaloop-domain"}
+{"timestamp":"2026-03-01T13:47:11.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel re-export only"}
+{"timestamp":"2026-03-01T13:47:11.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"organize-claims-domain"}
+{"timestamp":"2026-03-01T13:49:56.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: split files, no new functionality — existing tests cover"}
+{"timestamp":"2026-03-01T13:55:14.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: existing tests cover via barrel re-export"}
+{"timestamp":"2026-03-01T13:55:19.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: existing tests cover via barrel re-export"}
+{"timestamp":"2026-03-01T13:55:19.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001 split task"}
+{"timestamp":"2026-03-01T13:56:00.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel re-export only, no new logic"}
+{"timestamp":"2026-03-01T13:56:03.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: moving existing files, no new logic"}
+{"timestamp":"2026-03-01T13:56:05.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"barrel re-export only"}
+{"timestamp":"2026-03-01T13:56:05.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001 worker"}
+{"timestamp":"2026-03-01T13:56:14.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: moving existing files, no new logic"}
+{"timestamp":"2026-03-01T13:58:50.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: moving existing files"}
+{"timestamp":"2026-03-01T13:58:50.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001"}
+{"timestamp":"2026-03-01T14:00:03.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: existing tests cover via barrel re-export"}
+{"timestamp":"2026-03-01T14:00:03.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001 split task"}
+{"timestamp":"2026-03-01T14:00:05.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: moving existing files"}
+{"timestamp":"2026-03-01T14:00:05.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001"}
+{"timestamp":"2026-03-01T14:00:32.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: moving existing files"}
+{"timestamp":"2026-03-01T14:00:32.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001"}
+{"timestamp":"2026-03-01T14:00:39.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"split files, no new logic"}
+{"timestamp":"2026-03-01T14:01:16.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: barrel fix"}
+{"timestamp":"2026-03-01T14:01:17.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001"}
+{"timestamp":"2026-03-01T14:02:59.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: existing tests cover via barrel re-export"}
+{"timestamp":"2026-03-01T14:02:59.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001 split task"}
+{"timestamp":"2026-03-01T14:08:54.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"refactor: existing tests updated for new paths"}
+{"timestamp":"2026-03-01T14:08:54.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"dir-refactor-001 reorganization"}
+{"timestamp":"2026-03-01T14:11:30.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T14:12:06.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T14:12:36.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap-worker"}
+{"timestamp":"2026-03-01T14:14:34.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"metaspec-intake"}
+{"timestamp":"2026-03-01T14:18:31.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"worker-evidence"}
+{"timestamp":"2026-03-01T14:19:46.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"file moved not new — tests/dependency-resolver.test.ts already covers it"}
+{"timestamp":"2026-03-01T14:20:12.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"import path update only"}
+{"timestamp":"2026-03-01T14:29:22.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"verify-tests worker node"}
+{"timestamp":"2026-03-01T14:30:01.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"parameter property fix is mechanical — no behavior change, existing tests cover"}
+{"timestamp":"2026-03-01T14:30:06.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"parameter property fix is mechanical"}
+{"timestamp":"2026-03-01T14:30:06.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"create-structure-guide is in dir-refactor-001 DAG, not current head.json DAG"}
+{"timestamp":"2026-03-01T14:31:03.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"worker-verify-imports"}
+{"timestamp":"2026-03-01T16:10:36.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"spec documentation — governance constraint visibility"}
+{"timestamp":"2026-03-01T16:17:37.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"detector-dag-subsystem implementation + produces metadata"}
+{"timestamp":"2026-03-01T16:19:04.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"batch-1 detector implementation"}
+{"timestamp":"2026-03-01T16:19:09.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"batch-1: 5 detector subsystems"}
+{"timestamp":"2026-03-01T16:19:09.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"batch-1 detector implementation"}
+{"timestamp":"2026-03-01T16:19:40.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"batch-2: aggregator"}
+{"timestamp":"2026-03-01T16:19:40.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"aggregator implementation"}
+{"timestamp":"2026-03-01T16:22:21.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"batch-2/3: repair core complete"}
+{"timestamp":"2026-03-01T16:22:21.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"repair infrastructure"}
+{"timestamp":"2026-03-01T16:23:15.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"executor test path fixes - no new source files"}
+{"timestamp":"2026-03-01T16:23:18.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"executor path fixes"}
+{"timestamp":"2026-03-01T16:24:25.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"final batch implementation"}
+{"timestamp":"2026-03-01T16:24:25.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"remaining nodes"}
+{"timestamp":"2026-03-01T17:19:18.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"fix"}
+{"timestamp":"2026-03-01T17:19:48.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"fix"}
+{"timestamp":"2026-03-01T17:19:55.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"fix"}
+{"timestamp":"2026-03-01T17:24:29.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"fix"}
+{"timestamp":"2026-03-01T17:24:45.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in separate node tests-sk-brief-generator at L03"}
+{"timestamp":"2026-03-01T17:24:53.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests-sk-validation is a separate DAG node at L02"}
+{"timestamp":"2026-03-01T17:29:00.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests in separate node tests-sk-brief-generator"}
+{"timestamp":"2026-03-01T17:41:40.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"resolving completion system issue"}
+{"timestamp":"2026-03-01T17:45:37.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"autonomously completed FR-CLI-HARDENING-001"}
+{"timestamp":"2026-03-01T17:45:41.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"FR-CLI-HARDENING-001 autonomous completion"}
+{"timestamp":"2026-03-01T17:46:14.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"session wrap-up"}
+{"timestamp":"2026-03-01T17:50:26.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"custodial iteration complete"}
+{"timestamp":"2026-03-01T17:50:59.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"system documentation"}
+{"timestamp":"2026-03-01T17:51:36.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"final session documentation"}
+{"timestamp":"2026-03-01T17:57:17.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"batch complete: enforcement-schema and state-recovery nodes both in completed.json"}
+{"timestamp":"2026-03-01T19:35:54.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"iter2-batch2: all implementations complete, validation infrastructure in place"}
+{"timestamp":"2026-03-01T19:35:58.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"iter2-batch2-complete"}
+{"timestamp":"2026-03-01T19:37:18.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"iter2-batches-3-4-complete"}
+{"timestamp":"2026-03-01T19:47:29.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"metaflow-infrastructure"}
+{"timestamp":"2026-03-01T19:47:32.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"metaflow-infrastructure-setup"}
+{"timestamp":"2026-03-01T21:11:46.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"metaflow-optimizer plan phase: creating DAG for next execution loop"}
+{"timestamp":"2026-03-01T21:11:46.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"roadmap: structural commit"}
+{"timestamp":"2026-03-01T21:29:33.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"tests added for flow-builder, measure, and runner"}
+{"timestamp":"2026-03-01T21:59:56.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"metaflow-optimizer DAG expansion"}
+{"timestamp":"2026-03-01T22:39:34.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"allows completion without full commit history"}
+{"timestamp":"2026-03-01T22:41:09.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"p9-002-latency-guard is in head.cli-quality.json, not head.json"}
+{"timestamp":"2026-03-01T22:43:30.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"working on cli-quality DAG"}
+{"timestamp":"2026-03-01T22:45:50.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"instrument-context node in cli-quality DAG, not main metaflows DAG"}
+{"timestamp":"2026-03-01T22:47:38.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"claims-cache node in metaflow-cli-quality DAG"}
+{"timestamp":"2026-03-01T22:47:59.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"Updated tests for claims-cache node"}
+{"timestamp":"2026-03-01T22:51:52.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"multi-DAG commit to cli-quality DAG"}
+{"timestamp":"2026-03-01T22:52:30.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"multi-DAG completion record"}
+{"timestamp":"2026-03-01T23:46:34.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"regressing json envelope enforcement from phase-1 audit"}
+{"timestamp":"2026-03-02T00:23:36.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"parallel execution: completing p4-gitsafe-primitives in batch"}
+{"timestamp":"2026-03-02T00:28:08.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"force-previous-batch-completion"}
+{"timestamp":"2026-03-02T00:28:22.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"p4-ci-gate-keep node completion"}
+{"timestamp":"2026-03-02T00:29:03.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"p4-final-nodes completion"}
+{"timestamp":"2026-03-02T00:49:30.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"w4 completing node in parallel batch"}
+{"timestamp":"2026-03-02T00:50:20.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"integration blocker fix: token-index import corrected for tsc validation to pass"}
+{"timestamp":"2026-03-02T00:54:53.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"w5: completing gitsafe-contract-tests node"}
+{"timestamp":"2026-03-02T00:57:23.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"w2-next: executing in parallel batch 2; batch coordination via roadmap"}
+{"timestamp":"2026-03-02T00:58:04.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"w4 packs-extract-cmd complete"}
+{"timestamp":"2026-03-02T01:01:56.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"DAG node packs-list-tests specifies src/cli/commands/__tests__/packs-list.test.ts as produced artifact"}
+{"timestamp":"2026-03-02T01:02:25.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"cli-error-tests validation passes; node work complete"}
+{"timestamp":"2026-03-02T01:03:21.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"packs-extract-tests: tests already exist in tests/cli-packs-extract.test.ts (committed earlier), adding src/ version for roadmap spec compliance"}
+{"timestamp":"2026-03-02T01:06:59.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"migration-planner-tests: tests complete for S5 acceptance scenarios"}
+{"timestamp":"2026-03-02T01:09:54.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"integration tests in src/lib/gitsafe/__tests__/ per S1 spec"}
+{"timestamp":"2026-03-02T01:24:08.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"produced file is itself a test file at src/lib/chatelet/__tests__/types.test.ts"}
+{"timestamp":"2026-03-02T01:37:27.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"terminal receipt is not a code file"}
+{"timestamp":"2026-03-02T08:27:28.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"introducing agent-dispatch phase"}
+{"timestamp":"2026-03-02T08:37:54.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"orchestrator-harness node in progress, committing produces before complete"}
+{"timestamp":"2026-03-02T08:39:04.000Z","sessionId":"hooks-session","eventType":"SKIP_TEST_CHECK","status":"recorded","message":"test file is the produce"}
+{"timestamp":"2026-03-02T08:48:51.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"merging chatelet-p5 to consolidate dispatch-system work"}
+{"timestamp":"2026-03-02T09:43:36.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"parallel batch: both enforce-batch-invariants and enforce-completion-sync implemented in single commit"}
+{"timestamp":"2026-03-02T10:14:45.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"parallel batch 1 complete: all 4 nodes delivered with artifacts"}
+{"timestamp":"2026-03-02T10:30:44.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"shard-architect implementing completion-sharding on scaling-optimization-001"}
+{"timestamp":"2026-03-02T10:30:49.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"shard-architect implementing completion-sharding on scaling-optimization-001"}
+{"timestamp":"2026-03-02T10:30:49.000Z","sessionId":"hooks-session","eventType":"SKIP_NODE_CHECK","status":"recorded","message":"cross-DAG work on optimization roadmap"}
+{"timestamp":"2026-03-02T10:32:27.000Z","sessionId":"hooks-session","eventType":"SKIP_BATCH_COMMIT","status":"recorded","message":"merge-logic task execution per team assignment"}
+{"timestamp":"2026-03-02T10:28:52.586Z","sessionId":"self-improvement-001","eventType":"orient","status":"complete","message":"completion-sharding — append-only JSONL per-agent completion layer"}
+{"timestamp":"2026-03-02T10:30:22.382Z","sessionId":"self-improvement-001","eventType":"orient","status":"complete","message":"Checking scaling-optimization-001 state"}
+{"timestamp":"2026-03-02T10:31:14.172Z","sessionId":"self-improvement-001","eventType":"orient","status":"complete","message":"merge-logic — deterministic shard consolidation"}
+{"timestamp":"2026-03-02T10:31:53.072Z","sessionId":"self-improvement-001","eventType":"orient","status":"complete","message":"validate-50-agent-scaling — 50-agent load test with completion sharding"}
+{"timestamp":"2026-03-02T10:33:23.166Z","sessionId":"self-improvement-001","eventType":"plan select","status":"in-progress","message":"select for terminal completion"}
+{"timestamp":"2026-03-02T10:33:29.270Z","sessionId":"self-improvement-001","eventType":"orient","status":"complete","message":"check roadmap state"}
+{"timestamp":"2026-03-02T11:27:43.268Z","sessionId":"self-improvement-001","eventType":"orient","status":"complete","message":"transcript-aggregator — normalize hooks.log + trail.jsonl"}
+{"timestamp":"2026-03-02T10:30:30.695Z","sessionId":"scaling-optimization-001","nodeId":"completion-sharding","eventType":"orient","status":"in-progress","message":"completion-sharding — append-only JSONL per-agent completion layer"}
