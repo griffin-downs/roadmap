@@ -163,5 +163,25 @@
     ],
     "gitSha": "c5ac7e9def995dcaa87dae859265beef0a16f9db",
     "treeSha": "ded796301e33ed95ee380d33fceeb547554450b1"
+  },
+  {
+    "nodeId": "transcript-aggregator",
+    "completedAt": "2026-03-02T11:31:12.298Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302113112",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/mining/transcript-aggregator.ts"
+      },
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: transcript-index.jsonl"
+      }
+    ],
+    "gitSha": "2a243584436b2fc8620cbfe33f1d57e783c6ce30",
+    "treeSha": "1500e8e21a160eedc6ad9df73e2100a7d7ed06f9"
   }
 ]
