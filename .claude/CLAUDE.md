@@ -88,6 +88,46 @@ Chart legend: `📋` = plan node, `🔍` = pre-gate workable, `👉` = current b
 | `orient(g, exists)` | Batch position from filesystem — which artifacts actually exist | Session start |
 | `validateBatch(g, batch, exists)` | All nodes in batch pass + all artifacts materialized | Batch advancement |
 
+## Worktree Protocol
+
+Unified DAG editing discipline for both human users and LLM agents via feature branch isolation.
+
+### Workflow
+
+1. **Spawn**: `roadmap spawn --task <node-id>` creates worktree and feature branch
+   ```bash
+   git worktree add .claude/worktrees/<task-id> -b feat/<task-id>
+   cd .claude/worktrees/<task-id>
+   ```
+
+2. **Work**: Edit files, commit to feature branch
+   ```bash
+   git add <files>
+   git commit -m "<node-id>: <what>"
+   ```
+
+3. **Merge**: `roadmap merge-batch --from <branches>` consolidates DAGs
+   ```bash
+   roadmap merge-batch --from feat/task-1,feat/task-2
+   ```
+
+4. **Cleanup**: `roadmap cleanup-worktrees` removes stale worktrees
+
+### Pre-Commit Enforcement
+
+The pre-commit hook enforces branch discipline:
+- Reject edits to `head*.json` on main/master
+- Allow edits only on `feat/*`, `wip/*`, `develop` branches
+
+### Merge Semantics
+
+Multiple DAGs are consolidated via:
+1. Discover all `.roadmap/*.json` files from each branch
+2. Merge DAGs in dependency order (topological sort)
+3. Propagate constraints (derive artifact dependencies)
+4. Validate (define, verify, check)
+5. Write unified head.json with consolidatedFrom provenance
+
 ## CLI
 
 ```
