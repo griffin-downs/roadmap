@@ -58,6 +58,7 @@ import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } 
 import { specKitInit, SPEC_KIT_INIT_HELP } from '../src/commands/spec-init.ts';
 import { loadCandidate, computeHeadSha, candidateExists, writeCandidateDAG } from '../src/lib/dag-candidate.ts';
 import { DagSwitcher, type SwitchResult } from '../src/lib/roadmap/dag-switcher.ts';
+import { loadDAGWithAutoMerge, ensureIndexExists } from '../src/lib/roadmap/cli-auto-merge.ts';
 import { writeToken, readToken, listTokens, isTokenExpired, tokenId as deriveTokenId, TOKEN_DIR } from '../src/lib/utils/tokens/token-store.ts';
 import type { TokenType, BoundToken } from '../src/lib/utils/tokens/token-store.ts';
 import { readIndex, gcTokens } from '../src/lib/utils/tokens/token-index.ts';
@@ -456,7 +457,7 @@ async function cmdOrient(note: string | undefined) {
     return;
   }
 
-  const dag = loadDAG();
+  const dag = await loadDAGAsync();
 
   const pos = await crossOrientWithState(dag);
 
@@ -7049,6 +7050,29 @@ function writeConflictOverrideReceipt(conflicts: { level: number; file: string; 
   writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
 }
 
+// Async version: loads and optionally merges multiple DAGs
+async function loadDAGAsync(): Promise<Graph<string>> {
+  const headPath = join(repoRoot, '.roadmap', 'head.json');
+  if (!existsSync(headPath)) {
+    throw new RoadmapError('NODE_NOT_FOUND', {
+      attempted: headPath,
+      fix: 'Initialize roadmap: create .roadmap/head.json. See roadmap help for examples.',
+      entry: 'roadmap orient',
+    }, 'No .roadmap/head.json found. Use "roadmap orient" to initialize, or see "roadmap help" for examples.');
+  }
+
+  try {
+    // Attempt auto-merge: consolidate multiple DAGs if present
+    const result = await loadDAGWithAutoMerge(repoRoot);
+    return result.graph;
+  } catch (err) {
+    // Fallback: load head.json directly
+    return JSON.parse(readFileSync(headPath, 'utf-8'));
+  }
+}
+
+// Sync version: loads from head.json only (used for non-async commands)
+// Auto-merge is handled by async version, so this serves cached result
 function loadDAG(): Graph<string> {
   const headPath = join(repoRoot, '.roadmap', 'head.json');
   if (!existsSync(headPath)) {
