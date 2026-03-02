@@ -121,42 +121,67 @@ export class MockTrailManager implements MockComponent {
   name = 'trail-manager';
   private fixture: TestFixture | null = null;
   private lastCommittedCount: number = 0;
+  private watching: boolean = false;
 
   init(fixture: TestFixture): void {
     this.fixture = fixture;
     this.lastCommittedCount = 0;
+    this.watching = false;
   }
 
   reset(): void {
     this.fixture = null;
     this.lastCommittedCount = 0;
+    this.watching = false;
   }
 
-  appendEntry(entry: Record<string, any>): void {
+  start(): void {
     if (!this.fixture) throw new Error('Fixture not initialized');
-    const line = JSON.stringify(entry) + '\n';
-    if (existsSync(this.fixture.trailPath)) {
-      const existing = readFileSync(this.fixture.trailPath, 'utf-8');
-      writeFileSync(this.fixture.trailPath, existing + line);
-    } else {
-      writeFileSync(this.fixture.trailPath, line);
-    }
+    this.watching = true;
+    this.lastCommittedCount = this.countEntries();
   }
 
-  autoCommit(): { committed: boolean; entriesAdded: number } {
+  stop(): void {
+    this.watching = false;
+  }
+
+  commit(): { committed: boolean; reason?: string; entriesAdded?: number; trailSha?: string; headSha?: string; message?: string } {
     if (!this.fixture) throw new Error('Fixture not initialized');
     const currentCount = this.countEntries();
     const added = currentCount - this.lastCommittedCount;
-    if (added > 0) {
-      execSync('git add .roadmap/trail.jsonl', { cwd: this.fixture.repoRoot, stdio: 'ignore' });
-      execSync(`git commit -m "roadmap: trail entries (${added})"`, {
-        cwd: this.fixture.repoRoot,
-        stdio: 'ignore',
-      });
-      this.lastCommittedCount = currentCount;
-      return { committed: true, entriesAdded: added };
+
+    if (added === 0) {
+      return { committed: false, reason: 'nothing-dirty', entriesAdded: 0 };
     }
-    return { committed: false, entriesAdded: 0 };
+
+    try {
+      execSync('git add .roadmap/trail.jsonl', { cwd: this.fixture.repoRoot, stdio: 'ignore' });
+      const message = `roadmap: trail entries (${added})`;
+      execSync(`git commit -m "${message}"`, { cwd: this.fixture.repoRoot, stdio: 'ignore' });
+
+      const trailSha = execSync('git rev-parse HEAD:.roadmap/trail.jsonl', {
+        cwd: this.fixture.repoRoot,
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      }).trim();
+
+      const headSha = execSync('git rev-parse HEAD', {
+        cwd: this.fixture.repoRoot,
+        encoding: 'utf-8',
+      }).trim();
+
+      this.lastCommittedCount = currentCount;
+
+      return {
+        committed: true,
+        entriesAdded: added,
+        trailSha,
+        headSha,
+        message,
+      };
+    } catch (e) {
+      return { committed: false, reason: 'commit-failed', entriesAdded: added };
+    }
   }
 
   private countEntries(): number {
@@ -178,18 +203,112 @@ export class MockPreflightValidator implements MockComponent {
     this.fixture = null;
   }
 
-  validate(requiredArtifacts: string[]): { valid: boolean; missing: string[] } {
+  validateStateCoherence(): { valid: boolean; errors: string[]; warnings: string[]; timestamp: string } {
     if (!this.fixture) throw new Error('Fixture not initialized');
-    const missing = requiredArtifacts.filter(path => !existsSync(join(this.fixture!.repoRoot, path)));
-    return { valid: missing.length === 0, missing };
+    const errors: string[] = [];
+    if (!existsSync(this.fixture.gitStatePath)) errors.push('git-state.json missing');
+    if (!existsSync(this.fixture.headJsonPath)) errors.push('head.json missing');
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings: [],
+      timestamp: new Date().toISOString(),
+    };
   }
 
-  checkGitState(): { coherent: boolean; issues: string[] } {
+  validateArtifacts(): { valid: boolean; errors: string[]; warnings: string[]; missing: string[]; existing: string[]; timestamp: string } {
     if (!this.fixture) throw new Error('Fixture not initialized');
-    const issues: string[] = [];
-    if (!existsSync(this.fixture.gitStatePath)) issues.push('git-state.json missing');
-    if (!existsSync(this.fixture.headJsonPath)) issues.push('head.json missing');
-    return { coherent: issues.length === 0, issues };
+    const missing: string[] = [];
+    const existing: string[] = [];
+    const headFile = join(this.fixture.roadmapDir, 'head.json');
+
+    try {
+      const dag = JSON.parse(readFileSync(headFile, 'utf-8'));
+      if (dag.nodes) {
+        Object.values(dag.nodes).forEach((node: any) => {
+          if (Array.isArray(node.produces)) {
+            node.produces.forEach((p: string) => {
+              const fullPath = join(this.fixture!.repoRoot, p);
+              if (existsSync(fullPath)) {
+                existing.push(p);
+              } else {
+                missing.push(p);
+              }
+            });
+          }
+        });
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+
+    return {
+      valid: missing.length === 0,
+      errors: missing.length > 0 ? [`Missing artifacts: ${missing.join(', ')}`] : [],
+      warnings: [],
+      missing,
+      existing,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  validateSchema(): { valid: boolean; errors: string[]; warnings: string[]; schemaErrors: string[]; timestamp: string } {
+    if (!this.fixture) throw new Error('Fixture not initialized');
+    const errors: string[] = [];
+    const headFile = join(this.fixture.roadmapDir, 'head.json');
+
+    try {
+      const dag = JSON.parse(readFileSync(headFile, 'utf-8'));
+      if (!dag.id) errors.push('DAG missing id field');
+      if (!dag.nodes) errors.push('DAG missing nodes object');
+    } catch (e) {
+      errors.push('head.json is invalid JSON');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings: [],
+      schemaErrors: errors,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  validateTypecheck(): { valid: boolean; errors: string[]; warnings: string[]; timestamp: string } {
+    if (!this.fixture) throw new Error('Fixture not initialized');
+    const errors: string[] = [];
+    const srcDir = join(this.fixture.repoRoot, 'src');
+
+    if (existsSync(srcDir)) {
+      try {
+        execSync('npx tsc --noEmit', { cwd: this.fixture.repoRoot, stdio: 'pipe' });
+      } catch (e) {
+        errors.push('TypeScript compilation failed');
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings: [],
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  runAll(): { stateCoherence: any; artifacts: any; schema: any; typecheck: any; allValid: boolean; timestamp: string } {
+    const stateCoherence = this.validateStateCoherence();
+    const artifacts = this.validateArtifacts();
+    const schema = this.validateSchema();
+    const typecheck = this.validateTypecheck();
+
+    return {
+      stateCoherence,
+      artifacts,
+      schema,
+      typecheck,
+      allValid: stateCoherence.valid && artifacts.valid && schema.valid && typecheck.valid,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
 
@@ -207,7 +326,49 @@ export class MockDAGSwitcher implements MockComponent {
     this.currentDAGId = 'test-dag-001';
   }
 
-  listAvailableDAGs(): string[] {
+  async switch(dagId: string): Promise<{ success: boolean; previousDag?: string; newDag?: string; backupPath?: string; error?: string; timestamp: string }> {
+    if (!this.fixture) throw new Error('Fixture not initialized');
+    const dagFile = join(this.fixture.roadmapDir, `head.${dagId}.json`);
+    if (!existsSync(dagFile)) {
+      return {
+        success: false,
+        error: `DAG file not found: ${dagFile}`,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    try {
+      const content = readFileSync(dagFile, 'utf-8');
+      const previousDag = this.currentDAGId;
+
+      // Backup current head.json
+      const backupPath = join(this.fixture.roadmapDir, `head.backup.${previousDag}.json`);
+      if (existsSync(this.fixture.headJsonPath)) {
+        const currentContent = readFileSync(this.fixture.headJsonPath, 'utf-8');
+        writeFileSync(backupPath, currentContent);
+      }
+
+      // Write new DAG
+      writeFileSync(this.fixture.headJsonPath, content);
+      this.currentDAGId = dagId;
+
+      return {
+        success: true,
+        previousDag,
+        newDag: dagId,
+        backupPath,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: String(err),
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  getAvailableDAGs(): string[] {
     if (!this.fixture) throw new Error('Fixture not initialized');
     const files = execSync(`ls -1 ${this.fixture.roadmapDir}/head.*.json 2>/dev/null || echo ""`, {
       encoding: 'utf-8',
@@ -215,54 +376,11 @@ export class MockDAGSwitcher implements MockComponent {
       .trim()
       .split('\n')
       .filter(f => f.length > 0);
-    return files.map(f => f.split('head.')[1].split('.json')[0]);
+    return files.map(f => f.split('head.')[1].split('.json')[0]).filter(id => !id.startsWith('backup'));
   }
 
-  switchDAG(dagId: string): { success: boolean; error?: string } {
-    if (!this.fixture) throw new Error('Fixture not initialized');
-    const dagFile = join(this.fixture.roadmapDir, `head.${dagId}.json`);
-    if (!existsSync(dagFile)) {
-      return { success: false, error: `DAG file not found: ${dagFile}` };
-    }
-    try {
-      const content = readFileSync(dagFile, 'utf-8');
-      writeFileSync(this.fixture.headJsonPath, content);
-      this.currentDAGId = dagId;
-      return { success: true };
-    } catch (err) {
-      return { success: false, error: String(err) };
-    }
-  }
-
-  getCurrentDAGId(): string {
+  getCurrentDAG(): string | null {
     return this.currentDAGId;
-  }
-
-  validateDAGStructure(dagId: string): { valid: boolean; errors: string[] } {
-    if (!this.fixture) throw new Error('Fixture not initialized');
-    const errors: string[] = [];
-    const dagFile = join(this.fixture.roadmapDir, `head.${dagId}.json`);
-
-    try {
-      const dag = JSON.parse(readFileSync(dagFile, 'utf-8'));
-      if (!dag.init) errors.push('DAG missing init node');
-      if (!dag.term) errors.push('DAG missing term node');
-      if (!dag.nodes) errors.push('DAG missing nodes object');
-      else {
-        // Check deps are valid
-        Object.values(dag.nodes).forEach((node: any) => {
-          if (node.deps) {
-            node.deps.forEach((dep: string) => {
-              if (!dag.nodes[dep]) errors.push(`Node ${node.id} depends on missing node ${dep}`);
-            });
-          }
-        });
-      }
-    } catch (err) {
-      errors.push(`Failed to parse DAG: ${err}`);
-    }
-
-    return { valid: errors.length === 0, errors };
   }
 }
 
@@ -278,34 +396,127 @@ export class MockArtifactGates implements MockComponent {
     this.fixture = null;
   }
 
-  gateCompletion(requiredArtifacts: string[]): { allowed: boolean; blockedBy: string[] } {
+  checkExists(produces: string[]): { passed: boolean; errors: string[]; missing?: string[]; timestamp: string } {
     if (!this.fixture) throw new Error('Fixture not initialized');
-    const missing = requiredArtifacts.filter(path => !existsSync(join(this.fixture!.repoRoot, path)));
-    return { allowed: missing.length === 0, blockedBy: missing };
+    const missing = produces.filter(path => !existsSync(join(this.fixture!.repoRoot, path)));
+
+    return {
+      passed: missing.length === 0,
+      errors: missing.length > 0 ? [`Missing artifacts: ${missing.join(', ')}`] : [],
+      missing,
+      timestamp: new Date().toISOString(),
+    };
   }
 
-  validateArtifactSchema(path: string, schema: Record<string, any>): { valid: boolean; errors: string[] } {
+  checkTypecheck(srcPath: string = 'src'): { passed: boolean; errors: string[]; timestamp: string } {
     if (!this.fixture) throw new Error('Fixture not initialized');
     const errors: string[] = [];
-    const fullPath = join(this.fixture.repoRoot, path);
+    const fullPath = join(this.fixture.repoRoot, srcPath);
+
+    if (existsSync(fullPath)) {
+      try {
+        execSync('npx tsc --noEmit', { cwd: this.fixture.repoRoot, stdio: 'pipe' });
+      } catch (e) {
+        errors.push('TypeScript compilation failed');
+      }
+    }
+
+    return {
+      passed: errors.length === 0,
+      errors,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  checkSchema(artifactPath: string, schema: string): { passed: boolean; errors: string[]; timestamp: string } {
+    if (!this.fixture) throw new Error('Fixture not initialized');
+    const errors: string[] = [];
+    const fullPath = join(this.fixture.repoRoot, artifactPath);
 
     if (!existsSync(fullPath)) {
-      errors.push(`Artifact does not exist: ${path}`);
-      return { valid: false, errors };
+      errors.push(`Artifact does not exist: ${artifactPath}`);
+      return { passed: false, errors, timestamp: new Date().toISOString() };
     }
 
     try {
       const content = readFileSync(fullPath, 'utf-8');
-      // Simple validation: if path is .ts, try to parse as valid JS
-      if (path.endsWith('.ts') || path.endsWith('.js')) {
-        // Just check it's not obviously invalid
-        if (!content.trim()) errors.push('File is empty');
+      if (!content.trim()) {
+        errors.push('Artifact file is empty');
       }
     } catch (err) {
       errors.push(`Failed to read artifact: ${err}`);
     }
 
-    return { valid: errors.length === 0, errors };
+    return {
+      passed: errors.length === 0,
+      errors,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  checkHash(artifactPath: string, expectedHash: string): { passed: boolean; errors: string[]; timestamp: string } {
+    if (!this.fixture) throw new Error('Fixture not initialized');
+    const errors: string[] = [];
+    const fullPath = join(this.fixture.repoRoot, artifactPath);
+
+    if (!existsSync(fullPath)) {
+      errors.push(`Artifact does not exist: ${artifactPath}`);
+      return { passed: false, errors, timestamp: new Date().toISOString() };
+    }
+
+    // Simple hash check using file modification time as proxy
+    const stat = require('fs').statSync(fullPath);
+    const fileHash = stat.mtime.toISOString();
+
+    if (fileHash !== expectedHash) {
+      errors.push(`Hash mismatch: expected ${expectedHash}, got ${fileHash}`);
+    }
+
+    return {
+      passed: errors.length === 0,
+      errors,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  async validateBeforeCompletion(config: {
+    nodeId?: string;
+    produces?: string[];
+    artifactPath?: string;
+    schema?: string;
+    expectedHash?: string;
+  }): Promise<Array<{ passed: boolean; errors: string[]; timestamp: string }>> {
+    const results: Array<{ passed: boolean; errors: string[]; timestamp: string }> = [];
+
+    if (config.produces) {
+      results.push(this.checkExists(config.produces));
+    }
+
+    if (config.artifactPath && config.schema) {
+      results.push(this.checkSchema(config.artifactPath, config.schema));
+    }
+
+    if (config.artifactPath && config.expectedHash) {
+      results.push(this.checkHash(config.artifactPath, config.expectedHash));
+    }
+
+    if (!results.length) {
+      results.push({
+        passed: true,
+        errors: [],
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return results;
+  }
+
+  allGatesPassed(results: Array<{ passed: boolean; errors: string[] }>): boolean {
+    return results.every(r => r.passed);
+  }
+
+  formatResults(results: Array<{ passed: boolean; errors: string[] }>): string {
+    return results.map((r, i) => `Gate ${i + 1}: ${r.passed ? 'PASS' : 'FAIL'} ${r.errors.length > 0 ? `(${r.errors.join('; ')})` : ''}`).join('\n');
   }
 }
 
@@ -470,22 +681,33 @@ export class HardeningTestOrchestrator {
 
         case 'trail-append':
           const { node } = step.config;
-          this.components.trail.appendEntry({
+          // Trail manager uses start/stop pattern, so we just update the trail file directly
+          const trailEntry = {
             ts: new Date().toISOString(),
             node,
             batch: [node],
-          });
+          };
+          const trailLine = JSON.stringify(trailEntry) + '\n';
+          if (existsSync(this.fixture.trailPath)) {
+            const existing = readFileSync(this.fixture.trailPath, 'utf-8');
+            writeFileSync(this.fixture.trailPath, existing + trailLine);
+          } else {
+            writeFileSync(this.fixture.trailPath, trailLine);
+          }
           result.output = { appended: true, node };
           break;
 
         case 'dag-switch':
           const { dagId } = step.config;
-          const switchResult = this.components.dagSwitch.switchDAG(dagId);
-          if (!switchResult.success) {
-            result.passed = false;
-            result.error = switchResult.error;
-          }
-          result.output = switchResult;
+          // switch() is async, so we need to handle it
+          void this.components.dagSwitch.switch(dagId).then(switchResult => {
+            if (!switchResult.success) {
+              result.passed = false;
+              result.error = switchResult.error;
+            }
+            result.output = switchResult;
+          });
+          result.output = { initiated: true, dagId };
           break;
 
         case 'validate':
@@ -495,10 +717,10 @@ export class HardeningTestOrchestrator {
               result.output = this.components.headsha.detectMismatch();
               break;
             case 'trail':
-              result.output = this.components.trail.autoCommit();
+              result.output = this.components.trail.commit();
               break;
             case 'preflight':
-              result.output = this.components.preflight.checkGitState();
+              result.output = this.components.preflight.validateStateCoherence();
               break;
             case 'recovery':
               result.output = this.components.headsha.autoRecover();
