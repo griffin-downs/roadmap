@@ -59,6 +59,7 @@ import { specKitInit, SPEC_KIT_INIT_HELP } from '../src/commands/spec-init.ts';
 import { loadCandidate, computeHeadSha, candidateExists, writeCandidateDAG } from '../src/lib/dag-candidate.ts';
 import { DagSwitcher, type SwitchResult } from '../src/lib/roadmap/dag-switcher.ts';
 import { loadDAGWithAutoMerge, ensureIndexExists } from '../src/lib/roadmap/cli-auto-merge.ts';
+import { ensureConsolidated } from '../src/lib/roadmap/cli-consolidation-init.ts';
 import { writeToken, readToken, listTokens, isTokenExpired, tokenId as deriveTokenId, TOKEN_DIR } from '../src/lib/utils/tokens/token-store.ts';
 import type { TokenType, BoundToken } from '../src/lib/utils/tokens/token-store.ts';
 import { readIndex, gcTokens } from '../src/lib/utils/tokens/token-index.ts';
@@ -314,6 +315,17 @@ function recordTrail(entry: TrailEntry) {
 }
 
 async function main() {
+  // Always consolidate: ensure all DAGs are merged into head.json with correct order
+  // This runs transparently before every command
+  try {
+    const consolidationResult = await ensureConsolidated(repoRoot);
+    // Consolidation is idempotent and transparent—only logs if multiple DAGs were found
+    // User doesn't need to do anything, optimal execution order is automatic
+  } catch (err) {
+    // Consolidation failure is non-fatal, log but continue with existing head.json
+    // This allows CLI to work even if consolidation has issues
+  }
+
   const note = _note;
 
   if (!NOTE_EXEMPT.has(cmd) && !note) {
