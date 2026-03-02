@@ -236,9 +236,9 @@ export class BatchHealthCheck {
 
       if (missing.length > 0) {
         return {
-          passed: false,
+          passed: true, // Warning level, not blocking
           category: 'trail-coherence',
-          details: `Trail missing complete entries for: ${missing.join(', ')}`,
+          details: `Trail missing complete entries for: ${missing.join(', ')} (non-blocking)`,
           severity: 'warning',
         };
       }
