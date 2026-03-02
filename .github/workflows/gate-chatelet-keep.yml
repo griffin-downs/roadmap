@@ -1,0 +1,24 @@
+name: Gate Chatelet Keep
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  keep-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Load Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run keep audit
+        run: |
+          echo "Running Chatelet keep audit..."
+          npm run keep:audit || exit 1
+          echo "✓ Keep audit passed"
