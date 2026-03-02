@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "keep": {
+    "maxFiles": 250,
+    "maxLOC": 25000,
+    "maxDeps": 40,
+    "maxDevDeps": 60,
+    "vitestMaxSeconds": 15,
+    "forbiddenGlobs": ["src/product/**", "src/impl/**", "packages/**", "dist/**"]
+  },
+  "packs": {
+    "branchPrefix": "packs/",
+    "manifestPath": "PACK.json"
+  },
+  "gitsafe": {
+    "maxBytesPerObject": 2000000,
+    "maxObjectsPerCommand": 2000,
+    "denyPatterns": [".env", "id_rsa", "secrets", "token", "private"]
+  }
+}
