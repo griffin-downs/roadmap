@@ -1,5 +1,5 @@
 {
-  "lastCommit": "e59d90f1a0af0b6721d0e18cc10b8b29736493c4",
-  "timestamp": "2026-03-02T12:06:31Z",
-  "message": "roadmap: tie up loose ends"
+  "lastCommit": "d5a2b49ba6ad1217129e9339ae4b3ea03c3485cb",
+  "timestamp": "2026-03-02T12:07:58Z",
+  "message": "roadmap: treeshake — archive alternate DAGs, clean up build artifacts"
 }
