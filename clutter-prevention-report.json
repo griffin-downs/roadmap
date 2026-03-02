@@ -1,0 +1,160 @@
+{
+  "id": "clutter-prevention-enforcement-001",
+  "title": "Clutter Prevention Enforcement Suite",
+  "description": "Integrated enforcement system to prevent repository clutter through four enforcement gates",
+  "timestamp": "2026-03-02T00:00:00Z",
+  "status": "complete",
+  "enforcement_gates": [
+    {
+      "gate": "dag-documentation",
+      "module": "src/lib/enforcement/dag-manifest.ts",
+      "purpose": "Ensure all DAGs in .roadmap/ are documented with spec/ files",
+      "enforcement": "Scans .roadmap/ for head.json DAG files and verifies corresponding spec/ documentation exists",
+      "validation": "artifact-exists",
+      "severity": "error",
+      "bypass": "SKIP_DAG_CHECK environment variable"
+    },
+    {
+      "gate": "design-doc-commitment",
+      "module": "src/lib/enforcement/design-doc-hook.sh",
+      "purpose": "Enforce design doc commitment during phases, not at end",
+      "enforcement": "Pre-commit hook blocks untracked .md files in .roadmap/ (except spec/)",
+      "validation": "artifact-exists",
+      "severity": "error",
+      "bypass": "SKIP_DESIGN_CHECK environment variable"
+    },
+    {
+      "gate": "task-list-hygiene",
+      "module": "src/lib/enforcement/task-list-validator.ts",
+      "purpose": "Maintain task list quality and prevent stale in-progress tasks",
+      "enforcement": [
+        "Detects invalid task statuses (must be: pending, in_progress, completed)",
+        "Flags in_progress tasks not updated in 48+ hours",
+        "Requires evidence field on completed tasks"
+      ],
+      "validation": "artifact-exists",
+      "severity": "warning/error",
+      "bypass": "SKIP_TEST_CHECK environment variable (in pre-commit hook)"
+    },
+    {
+      "gate": "worktree-cleanup",
+      "module": "src/lib/enforcement/worktree-cleanup.ts",
+      "hook": "src/hooks/post-session-cleanup.sh",
+      "purpose": "Auto-cleanup stale and orphaned git worktrees",
+      "enforcement": [
+        "Removes worktrees not modified in 7+ days",
+        "Removes worktrees with missing branches (orphaned)",
+        "Runs at session end via post-session-cleanup.sh"
+      ],
+      "validation": "shell",
+      "severity": "warning",
+      "bypass": "SKIP_WORKTREE_CLEANUP environment variable"
+    }
+  ],
+  "integration": {
+    "pre-commit_hook": ".git/hooks/pre-commit",
+    "post-session_hook": "src/hooks/post-session-cleanup.sh",
+    "orchestration_class": "EnforcementSuite (src/lib/enforcement/index.ts)",
+    "entry_point": "EnforcementSuite.validate() — runs all four gates"
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": "DAG Documentation Gate",
+      "passed": true,
+      "evidence": "dag-manifest.ts scans .roadmap/ and validates all DAGs have spec files"
+    },
+    {
+      "criterion": "Design Doc Commitment Gate",
+      "passed": true,
+      "evidence": "design-doc-hook.sh blocks untracked .md files in .roadmap/"
+    },
+    {
+      "criterion": "Task List Hygiene Gate",
+      "passed": true,
+      "evidence": "task-list-validator.ts detects invalid statuses, stale tasks, missing evidence"
+    },
+    {
+      "criterion": "Worktree Cleanup Gate",
+      "passed": true,
+      "evidence": "worktree-cleanup.ts + post-session-cleanup.sh auto-removes stale/orphaned worktrees"
+    },
+    {
+      "criterion": "Integration Testing",
+      "passed": true,
+      "evidence": "enforcement-integration.test.ts validates all gates work together"
+    },
+    {
+      "criterion": "Idempotency",
+      "passed": true,
+      "evidence": "All enforcement modules are read-only or safely re-runnable"
+    },
+    {
+      "criterion": "Bypass Mechanisms",
+      "passed": true,
+      "evidence": "Each gate supports environment variable bypass for emergency use"
+    }
+  ],
+  "enforcement_coverage": {
+    "clutter_types_prevented": [
+      "Undocumented DAGs",
+      "Untracked design documents",
+      "Stale in-progress tasks",
+      "Invalid task states",
+      "Stale worktrees",
+      "Orphaned worktrees"
+    ],
+    "module_exports": [
+      "DagManifest",
+      "TaskValidator",
+      "WorktreeCleanup",
+      "EnforcementSuite",
+      "ValidationIssue",
+      "TaskValidationResult",
+      "CleanupReport",
+      "EnforcementReport"
+    ]
+  },
+  "testing": {
+    "dag_manifest_tests": "tests/dag-manifest.test.ts",
+    "design_doc_hook_tests": "tests/design-doc-hook.test.ts",
+    "task_validator_tests": "tests/task-list-validator.test.ts",
+    "integration_tests": "tests/enforcement-integration.test.ts",
+    "coverage": [
+      "Unit tests for each module",
+      "Integration tests for combined enforcement",
+      "Edge cases: malformed JSON, missing files, invalid timestamps",
+      "Bypass flag scenarios"
+    ]
+  },
+  "deployment": {
+    "pre_commit_integration": "Hooks in .git/hooks/pre-commit call enforcement modules",
+    "post_session_integration": "post-session-cleanup.sh invoked at session end",
+    "ci_cd_integration": "EnforcementSuite.validate() can be called in CI pipelines",
+    "idempotent": true,
+    "reversible": true,
+    "dependencies": [
+      "Node.js for TypeScript execution",
+      "git for worktree management",
+      "tsx or node --experimental-strip-types for hook execution"
+    ]
+  },
+  "maintenance": {
+    "stale_task_threshold": "48 hours (in_progress without update)",
+    "stale_worktree_threshold": "7 days (not modified)",
+    "log_location": ".git/hooks.log",
+    "monitoring": "Use 'roadmap chart' to see clutter prevention status in DAG progress"
+  },
+  "rollout_plan": {
+    "phase_1": "Pre-commit hook integration — blocks commits that violate clutter rules",
+    "phase_2": "Post-session cleanup — auto-removes stale worktrees",
+    "phase_3": "CI/CD integration — validate enforcement suite in pipelines",
+    "phase_4": "Monitoring and tuning — adjust thresholds based on team feedback"
+  },
+  "future_enhancements": [
+    "Configurable thresholds via .roadmap/enforcement-config.json",
+    "Slack/email notifications for clutter detection",
+    "Dashboard for enforcement metrics",
+    "Auto-archival of old design docs",
+    "Enforcement audit trail in .roadmap/trail.jsonl"
+  ]
+}
