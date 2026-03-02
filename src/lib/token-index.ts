@@ -4,8 +4,8 @@
 
 import { existsSync, readFileSync, rmSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { listTokens, isTokenExpired } from './token-store.ts';
-import type { TokenType } from './token-store.ts';
+import { listTokens, isTokenExpired } from './utils/tokens/token-store.ts';
+import type { TokenType } from './utils/tokens/token-store.ts';
 
 export interface IndexEntry {
   tokenId: string;
