@@ -115,7 +115,7 @@ export class QueryEngine {
       sessionMap.get(event.sessionId)!.push(event);
     }
 
-    for (const sessionEvents of sessionMap.values()) {
+    sessionMap.forEach(sessionEvents => {
       sessionEvents.sort((a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
@@ -127,7 +127,7 @@ export class QueryEngine {
           new Date(next.timestamp).getTime() - new Date(current.timestamp).getTime();
         latencies.push(latency);
       }
-    }
+    });
 
     const avgLatency =
       latencies.length > 0 ? latencies.reduce((a, b) => a + b) / latencies.length : 0;
@@ -260,7 +260,7 @@ export class QueryEngine {
       }
     }
 
-    for (const [violationType, data] of violationMap) {
+    violationMap.forEach((data, violationType) => {
       violations.push({
         sessionId,
         timestamp: data.first,
@@ -268,7 +268,7 @@ export class QueryEngine {
         details: `Detected ${data.count} instances`,
         count: data.count,
       });
-    }
+    });
 
     return violations;
   }
@@ -302,7 +302,7 @@ export class QueryEngine {
       sessionMap.get(event.sessionId)!.push(event);
     }
 
-    for (const sessionEvents of sessionMap.values()) {
+    sessionMap.forEach(sessionEvents => {
       sessionEvents.sort((a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
@@ -313,7 +313,7 @@ export class QueryEngine {
           new Date(sessionEvents[0].timestamp).getTime();
         latencies.push(latency);
       }
-    }
+    });
 
     latencies.sort((a, b) => a - b);
 

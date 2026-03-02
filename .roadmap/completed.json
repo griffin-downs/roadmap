@@ -186,9 +186,9 @@
   },
   {
     "nodeId": "mining-queries",
-    "completedAt": "2026-03-02T11:31:46.693Z",
+    "completedAt": "2026-03-02T11:36:44.807Z",
     "owner": "griffin",
-    "checkpointId": "cp-20260302113146",
+    "checkpointId": "cp-20260302113644",
     "validationChecks": [
       {
         "rule": "skip-validate",
@@ -196,7 +196,7 @@
         "evidence": "validation skipped by --skip-validate flag"
       }
     ],
-    "gitSha": "1f0e35f7f69d05067d474f6368d5db9ebdfafb5f",
-    "treeSha": "152b35f785c0e7eb844bef0bbd1d4c128f3cd7af"
+    "gitSha": "28a9786b046093720e11d49f89466a73741056e9",
+    "treeSha": "dcdad9f8e5a9ec7f99100fdb665785e647e2771f"
   }
 ]
