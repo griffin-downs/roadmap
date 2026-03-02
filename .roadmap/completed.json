@@ -183,5 +183,20 @@
     ],
     "gitSha": "2a243584436b2fc8620cbfe33f1d57e783c6ce30",
     "treeSha": "1500e8e21a160eedc6ad9df73e2100a7d7ed06f9"
+  },
+  {
+    "nodeId": "mining-queries",
+    "completedAt": "2026-03-02T11:31:46.693Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302113146",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "1f0e35f7f69d05067d474f6368d5db9ebdfafb5f",
+    "treeSha": "152b35f785c0e7eb844bef0bbd1d4c128f3cd7af"
   }
 ]

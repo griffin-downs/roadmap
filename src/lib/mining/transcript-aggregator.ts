@@ -1,9 +1,10 @@
 // @module mining
-// @exports loadTranscripts, normalizeEvents, indexBySession
-// @types TranscriptEvent, NormalizedEvent
+// @exports loadTranscripts, normalizeEvents, indexBySession, loadRegentTranscripts
+// @types TranscriptEvent, RegentTranscriptEntry
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 
 export interface TranscriptEvent {
   timestamp: string;
@@ -14,6 +15,7 @@ export interface TranscriptEvent {
   status: string;
   duration?: number;
   message?: string;
+  source?: 'trail' | 'regent';
 }
 
 interface TrailEntry {
@@ -27,15 +29,103 @@ interface TrailEntry {
   detail?: Record<string, unknown>;
 }
 
-interface HooksEntry {
+export interface RegentTranscriptEntry {
+  sessionId: string;
   timestamp: string;
-  eventType: string;
+  actor: string;
   message: string;
+}
+
+export async function loadRegentTranscripts(
+  regentTranscriptDir?: string
+): Promise<TranscriptEvent[]> {
+  const events: TranscriptEvent[] = [];
+
+  // Use default if not provided
+  const transcriptDir =
+    regentTranscriptDir ||
+    path.join(os.homedir(), '.claude', 'transcripts');
+
+  if (!fs.existsSync(transcriptDir)) {
+    return events;
+  }
+
+  const sessionDirs = fs.readdirSync(transcriptDir);
+
+  for (const sessionDir of sessionDirs) {
+    const transcriptPath = path.join(
+      transcriptDir,
+      sessionDir,
+      'transcript.md'
+    );
+    if (!fs.existsSync(transcriptPath)) {
+      continue;
+    }
+
+    try {
+      const content = fs.readFileSync(transcriptPath, 'utf-8');
+      const entries = parseRegentTranscript(sessionDir, content);
+      events.push(...entries);
+    } catch (e) {
+      console.warn(
+        `Failed to parse regent transcript ${sessionDir}: ${e}`
+      );
+    }
+  }
+
+  return events;
+}
+
+function parseRegentTranscript(
+  sessionId: string,
+  content: string
+): TranscriptEvent[] {
+  const events: TranscriptEvent[] = [];
+
+  // Parse markdown format: ### Actor [HH:MM:SS]\nMessage
+  const lines = content.split('\n');
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Match lines like: ### User [21:24:02] or ### Claude [21:24:05]
+    const match = line.match(/^###\s+(\w+)\s+\[(\d{2}):(\d{2}):(\d{2})\](.*)$/);
+    if (match) {
+      const [, actor, hours, minutes, seconds, restOfLine] = match;
+      const timestamp = `${hours}:${minutes}:${seconds}`;
+
+      // Collect message lines until next ### or end
+      let message = restOfLine.trim();
+      i++;
+      while (i < lines.length && !lines[i].match(/^###\s+/)) {
+        const msgLine = lines[i].trim();
+        if (msgLine) {
+          message += '\n' + msgLine;
+        }
+        i++;
+      }
+
+      events.push({
+        timestamp,
+        sessionId,
+        agentId: actor.toLowerCase(),
+        eventType: 'message',
+        status: 'recorded',
+        message: message.substring(0, 200), // Truncate to first 200 chars
+        source: 'regent',
+      });
+    } else {
+      i++;
+    }
+  }
+
+  return events;
 }
 
 export async function loadTranscripts(
   trailPath: string,
-  hooksPath: string
+  regentTranscriptDir?: string
 ): Promise<TranscriptEvent[]> {
   const events: TranscriptEvent[] = [];
 
@@ -58,25 +148,12 @@ export async function loadTranscripts(
     console.warn(`Failed to load trail.jsonl: ${e}`);
   }
 
-  // Load hooks.log
+  // Load regent transcripts
   try {
-    if (fs.existsSync(hooksPath)) {
-      const hooksData = fs.readFileSync(hooksPath, 'utf-8');
-      const lines = hooksData.split('\n').filter(line => line.trim());
-
-      for (const line of lines) {
-        try {
-          const entry = parseHooksEntry(line);
-          if (entry) {
-            events.push(normalizeHooksEntry(entry));
-          }
-        } catch (e) {
-          console.warn(`Malformed hooks entry: ${line.substring(0, 100)}`);
-        }
-      }
-    }
+    const regentEvents = await loadRegentTranscripts(regentTranscriptDir);
+    events.push(...regentEvents);
   } catch (e) {
-    console.warn(`Failed to load hooks.log: ${e}`);
+    console.warn(`Failed to load regent transcripts: ${e}`);
   }
 
   return events;
@@ -92,38 +169,7 @@ function normalizeTrailEntry(entry: TrailEntry): TranscriptEvent {
     status: entry.detail?.complete ? 'complete' : 'in-progress',
     duration: undefined,
     message: entry.note,
-  };
-}
-
-function parseHooksEntry(line: string): HooksEntry | null {
-  // Format: [YYYY-MM-DD HH:MM:SS] EVENT_TYPE: message
-  const match = line.match(
-    /^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s+([A-Z_]+):\s*(.*)$/
-  );
-  if (!match) {
-    return null;
-  }
-
-  const [, dateTime, eventType, message] = match;
-  const isoTimestamp = new Date(dateTime).toISOString();
-
-  return {
-    timestamp: isoTimestamp,
-    eventType,
-    message,
-  };
-}
-
-function normalizeHooksEntry(entry: HooksEntry): TranscriptEvent {
-  return {
-    timestamp: entry.timestamp,
-    sessionId: 'hooks-session',
-    agentId: undefined,
-    nodeId: undefined,
-    eventType: entry.eventType,
-    status: 'recorded',
-    duration: undefined,
-    message: entry.message,
+    source: 'trail',
   };
 }
 
@@ -166,10 +212,10 @@ export function indexBySession(
 
 export async function generateTranscriptIndex(
   trailPath: string,
-  hooksPath: string,
-  outputPath: string
+  outputPath: string,
+  regentTranscriptDir?: string
 ): Promise<void> {
-  const events = await loadTranscripts(trailPath, hooksPath);
+  const events = await loadTranscripts(trailPath, regentTranscriptDir);
   const normalized = normalizeEvents(events);
   const indexed = indexBySession(normalized);
 

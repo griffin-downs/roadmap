@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as os from 'os';
 import {
   loadTranscripts,
+  loadRegentTranscripts,
   normalizeEvents,
   indexBySession,
   generateTranscriptIndex,
@@ -24,6 +25,9 @@ describe('transcript-aggregator', () => {
 
   it('should parse trail.jsonl entries', async () => {
     const trailPath = path.join(tmpDir, 'trail.jsonl');
+    const regentDir = path.join(tmpDir, 'empty-regent');
+    fs.mkdirSync(regentDir, { recursive: true });
+
     const trailEntry = {
       ts: '2026-03-02T10:28:52.586Z',
       cmd: 'orient',
@@ -37,29 +41,46 @@ describe('transcript-aggregator', () => {
 
     fs.writeFileSync(trailPath, JSON.stringify(trailEntry) + '\n');
 
-    const events = await loadTranscripts(trailPath, '/nonexistent/hooks.log');
+    const events = await loadTranscripts(trailPath, regentDir);
     expect(events).toHaveLength(1);
     expect(events[0].eventType).toBe('orient');
     expect(events[0].sessionId).toBe('test-dag');
     expect(events[0].nodeId).toBe('test-node');
     expect(events[0].message).toBe('test-session');
+    expect(events[0].source).toBe('trail');
   });
 
-  it('should parse hooks.log entries', async () => {
-    const hooksPath = path.join(tmpDir, 'hooks.log');
-    const hookEntry = '[2026-03-02 10:28:52] SKIP_NODE_CHECK: test message';
+  it('should parse regent transcript entries', async () => {
+    const regentDir = path.join(tmpDir, 'regent-transcripts');
+    const sessionId = 'test-session-123';
+    const sessionDir = path.join(regentDir, sessionId);
+    fs.mkdirSync(sessionDir, { recursive: true });
 
-    fs.writeFileSync(hooksPath, hookEntry + '\n');
+    const transcript = `# Session
+**Session:** \`${sessionId}\`
 
-    const events = await loadTranscripts('/nonexistent/trail.jsonl', hooksPath);
-    expect(events).toHaveLength(1);
-    expect(events[0].eventType).toBe('SKIP_NODE_CHECK');
-    expect(events[0].message).toBe('test message');
-    expect(events[0].status).toBe('recorded');
+---
+
+### User [10:28:52]
+What is 2+2?
+
+### Claude [10:28:55]
+2+2 equals 4.
+`;
+
+    fs.writeFileSync(path.join(sessionDir, 'transcript.md'), transcript);
+
+    const events = await loadRegentTranscripts(regentDir);
+    expect(events.length).toBeGreaterThan(0);
+    expect(events.some(e => e.sessionId === sessionId)).toBe(true);
+    expect(events.some(e => e.source === 'regent')).toBe(true);
   });
 
   it('should handle malformed JSON gracefully', async () => {
     const trailPath = path.join(tmpDir, 'bad-trail.jsonl');
+    const regentDir = path.join(tmpDir, 'empty-regent-2');
+    fs.mkdirSync(regentDir, { recursive: true });
+
     fs.writeFileSync(
       trailPath,
       '{"ts":"2026-03-02T10:28:52.586Z","cmd":"orient"}\n' +
@@ -67,7 +88,7 @@ describe('transcript-aggregator', () => {
         '{"ts":"2026-03-02T10:30:00.000Z","cmd":"complete"}\n'
     );
 
-    const events = await loadTranscripts(trailPath, '/nonexistent/hooks.log');
+    const events = await loadTranscripts(trailPath, regentDir);
     expect(events.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -150,11 +171,12 @@ describe('transcript-aggregator', () => {
     expect(session1Events[1].timestamp).toBe('2026-03-02T10:31:00.000Z');
   });
 
-  it('should generate transcript-index.jsonl', async () => {
+  it('should generate transcript-index.jsonl with trail + regent data', async () => {
     const trailPath = path.join(tmpDir, 'trail-gen.jsonl');
-    const hooksPath = path.join(tmpDir, 'hooks-gen.log');
+    const regentDir = path.join(tmpDir, 'regent-gen');
     const indexPath = path.join(tmpDir, 'transcript-index.jsonl');
 
+    // Create trail entry
     fs.writeFileSync(
       trailPath,
       JSON.stringify({
@@ -166,13 +188,25 @@ describe('transcript-aggregator', () => {
       }) + '\n'
     );
 
-    fs.writeFileSync(hooksPath, '[2026-03-02 10:30:00] SKIP_NODE_CHECK: test\n');
+    // Create regent transcript
+    const sessionId = 'regent-session-456';
+    const sessionDir = path.join(regentDir, sessionId);
+    fs.mkdirSync(sessionDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(sessionDir, 'transcript.md'),
+      `### User [10:30:00]\nHello\n\n### Claude [10:30:05]\nHi there\n`
+    );
 
-    await generateTranscriptIndex(trailPath, hooksPath, indexPath);
+    await generateTranscriptIndex(trailPath, indexPath, regentDir);
 
     expect(fs.existsSync(indexPath)).toBe(true);
     const indexData = fs.readFileSync(indexPath, 'utf-8');
     const lines = indexData.split('\n').filter(line => line.trim());
     expect(lines.length).toBeGreaterThanOrEqual(2);
+
+    // Verify both sources present
+    const events = lines.map(l => JSON.parse(l));
+    expect(events.some(e => e.source === 'trail')).toBe(true);
+    expect(events.some(e => e.source === 'regent')).toBe(true);
   });
 });
