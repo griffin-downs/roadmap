@@ -3,10 +3,10 @@
 // @types DispatchPlan, AgentAssignment, DispatchConfig
 // @entry roadmap/agent-dispatch
 
-import type { Graph, Orientation } from '../protocol.ts';
-import type { Brief, FinalHandoff } from '../brief.ts';
-import { getBrief } from '../brief.ts';
-import { BriefGate } from './brief-gate.ts';
+import type { Graph, Orientation } from '../../protocol';
+import type { Brief, FinalHandoff } from '../brief';
+import { getBrief } from '../brief';
+import { BriefGate } from './brief-gate';
 
 /**
  * Agent assignment: maps agent ID to node ID and generated brief
@@ -74,7 +74,7 @@ export class DispatchCoordinator {
         batchLevel: orientation.level || 0,
         assignments: [],
         handoffChain: [],
-        totalNodes: orientation.remaining + 1,
+        totalNodes: orientation.remaining.length + 1,
         completedNodes: this.countCompletedNodes(),
         ready: false,
         validationErrors: ['Empty batch — DAG may be complete'],
@@ -102,7 +102,7 @@ export class DispatchCoordinator {
       batchLevel: orientation.level || 0,
       assignments,
       handoffChain: [], // TODO: collect from prior handoffs
-      totalNodes: orientation.remaining + batch.length,
+      totalNodes: orientation.remaining.length + batch.length,
       completedNodes: this.countCompletedNodes(),
       ready: validationErrors.length === 0 && assignments.length > 0,
       validationErrors,
@@ -133,7 +133,7 @@ export class DispatchCoordinator {
           nodeId,
           brief,
         });
-      } catch (e) {
+      } catch (e: unknown) {
         // Skip nodes with invalid briefs — let validation catch them
         assignments.push({
           agentId,
