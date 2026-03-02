@@ -2,8 +2,8 @@
 // @exports assertContiguousBatch, assertClaimability, assertRetirementConsistency, validateBatchInvariants
 // Batch position invariant enforcement: validate that batch positions are sound
 
-import type { Graph, Orientation } from './types.ts';
-import type { CompletionRecord } from '../evidence/completion-evidence.ts';
+import type { Graph } from './types.ts';
+import type { Orientation } from './operations.ts';
 
 /**
  * Batch invariant: position must be contiguous in topological order.
@@ -151,7 +151,7 @@ export function validateBatchInvariants<T extends string>(
  *
  * Returns human-readable explanation + fix suggestions.
  */
-export function diagnoseBatchInvariantViolation(
+export function diagnoseBatchInvariantViolation<T extends string>(
   g: Graph<T>,
   position: string[],
   completedNodeIds: Set<string>,

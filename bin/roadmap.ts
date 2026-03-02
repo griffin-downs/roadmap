@@ -7121,6 +7121,7 @@ function json(obj: unknown, renderModel?: RenderModel, jsonOpts?: JsonOpts) {
       format: 'plain',
       mime: 'text/x-roadmap-ui',
       title: _outputOpts.cmd,
+      content: '',
       hints: jsonOpts.hints,
     };
   }

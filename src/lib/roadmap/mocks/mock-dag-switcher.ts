@@ -4,7 +4,7 @@
 // @entry roadmap/mocks
 
 import type { SwitchResult } from '../dag-switcher';
-import type { Orientation } from '../../protocol.ts';
+import type { Orientation } from '../../protocol/operations.ts';
 
 /**
  * Mock DagSwitcher for testing without real DAG operations.

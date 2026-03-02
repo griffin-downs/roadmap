@@ -223,7 +223,7 @@ export async function integrateArtifactGates(
  */
 export async function patternExampleCompletionHandler(
   nodeId: string,
-  node: { id: string; produces?: string[]; validate?: Array<{ type: string }> },
+  node: { id: string; desc: string; produces?: string[]; validate?: Array<{ type: string }> },
   repoRoot: string,
 ): Promise<void> {
   console.log(`completing ${nodeId}...`);

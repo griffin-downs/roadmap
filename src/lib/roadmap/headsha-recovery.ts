@@ -118,9 +118,9 @@ export class HeadShaRecovery {
     // Mismatch occurs if:
     // 1. Recorded git state differs from actual git HEAD
     // 2. OR head.json contents have changed (headJsonSha changed)
-    const hasMismatch =
-      (headShaInFile && headShaInFile !== actualGitSha) ||
-      (gitState?.timestamp && /* implicit mismatch flag from previous cycle */ false);
+    const hasMismatch: boolean =
+      !!(headShaInFile && headShaInFile !== actualGitSha) ||
+      !!(gitState?.timestamp && /* implicit mismatch flag from previous cycle */ false);
 
     return {
       hasMismatch,

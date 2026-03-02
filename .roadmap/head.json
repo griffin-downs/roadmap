@@ -1,59 +1,39 @@
 {
-  "id": "roadmap-governance-hardening-001",
-  "desc": "Auto-propagate on every DAG mutation, local CI pre-commit gates, main branch protections. Fail fast, governance enforcement.",
-  "init": "governance-design",
-  "term": "governance-complete",
+  "id": "roadmap-dag-consolidation-001",
+  "desc": "Auto-merge all DAGs on every query. Single source of truth (head.json), unified parallel visibility, token-efficient index-based loading.",
+  "init": "consolidation-discovery",
+  "term": "consolidation-complete",
   "nodes": {
-    "governance-design": {
-      "id": "governance-design",
-      "desc": "Design governance hardening: auto-propagate triggers, pre-commit scope, branch protection rules, rollout strategy",
+    "consolidation-discovery": {
+      "id": "consolidation-discovery",
+      "desc": "Plan consolidation system: outline merge strategy, index format, caching approach, CLI integration points",
       "produces": [
-        "docs/GOVERNANCE-DESIGN.md"
+        "docs/CONSOLIDATION-DESIGN.md"
       ],
       "consumes": [
-        ".specify/specs/roadmap-governance-hardening-001/spec.md"
+        ".specify/specs/roadmap-dag-consolidation-001/spec.md"
       ],
       "deps": [],
       "validate": [
         {
           "type": "artifact-exists",
-          "path": "docs/GOVERNANCE-DESIGN.md"
+          "path": "docs/CONSOLIDATION-DESIGN.md"
         }
       ],
       "idempotent": true,
       "mode": "plan"
     },
-    "auto-propagate-expand": {
-      "id": "auto-propagate-expand",
-      "desc": "Integrate auto-propagate into expand command: after expansion, automatically run propagate on candidate DAG",
-      "produces": [
-        "bin/roadmap.ts"
-      ],
-      "consumes": [
-        "src/lib/roadmap/propagate.ts"
-      ],
-      "deps": [
-        "governance-design"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "auto-propagate-merge": {
-      "id": "auto-propagate-merge",
-      "desc": "Integrate auto-propagate into consolidate/merge: when combining DAGs, auto-run propagate on result",
+    "merge-multi-way": {
+      "id": "merge-multi-way",
+      "desc": "Implement multi-DAG merge: discover all .roadmap/*.json, link at boundaries, validate merged graph",
       "produces": [
         "src/lib/roadmap/dag-consolidator.ts"
       ],
       "consumes": [
-        "src/lib/roadmap/propagate.ts"
+        "src/roadmap/protocol.ts"
       ],
       "deps": [
-        "governance-design"
+        "consolidation-discovery"
       ],
       "validate": [
         {
@@ -63,75 +43,100 @@
       ],
       "idempotent": true
     },
-    "precommit-hook-impl": {
-      "id": "precommit-hook-impl",
-      "desc": "Implement pre-commit hook: run npm run check (tsc) + npm run check:dag:define, block commit on failure",
+    "index-extraction": {
+      "id": "index-extraction",
+      "desc": "Extract metadata index from merged DAG: id, deps, produces, consumes, phase → head-index.json format",
       "produces": [
-        "scripts/hooks/pre-commit"
-      ],
-      "consumes": [],
-      "deps": [],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "scripts/hooks/pre-commit"
-        }
-      ],
-      "idempotent": true
-    },
-    "git-hook-config": {
-      "id": "git-hook-config",
-      "desc": "Configure git to use scripts/hooks as hooksPath, install pre-commit hook",
-      "produces": [
-        ".git/config"
+        "src/lib/roadmap/index-extractor.ts"
       ],
       "consumes": [
-        "scripts/hooks/pre-commit"
+        "src/lib/roadmap/dag-consolidator.ts"
       ],
       "deps": [
-        "precommit-hook-impl"
+        "merge-multi-way"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "git config --local core.hooksPath | grep -q scripts/hooks"
+          "command": "npx tsc --noEmit"
         }
       ],
       "idempotent": true
     },
-    "branch-protection-rules": {
-      "id": "branch-protection-rules",
-      "desc": "Set up GitHub branch protection on main: require CI passing, promotion ledger, 1 approval, block force push",
+    "lazy-load-logic": {
+      "id": "lazy-load-logic",
+      "desc": "Implement intelligent lazy loading: load index always, full specs only for current batch + 1 level ahead",
       "produces": [
-        "governance/branch-protection.json"
+        "src/lib/roadmap/lazy-graph-loader.ts"
       ],
-      "consumes": [],
+      "consumes": [
+        "src/lib/roadmap/index-extractor.ts"
+      ],
       "deps": [
-        "auto-propagate-expand",
-        "auto-propagate-merge"
+        "index-extraction"
       ],
       "validate": [
         {
-          "type": "artifact-exists",
-          "path": "governance/branch-protection.json"
+          "type": "shell",
+          "command": "npx tsc --noEmit"
         }
       ],
       "idempotent": true
     },
-    "governance-tests": {
-      "id": "governance-tests",
-      "desc": "Unit + integration tests: auto-propagate on expand/merge, pre-commit hook behavior, branch protection rules",
+    "cli-auto-merge": {
+      "id": "cli-auto-merge",
+      "desc": "Integrate consolidation into CLI: orient, chart, show, complete use auto-merge transparently",
       "produces": [
-        "tests/governance/auto-propagate.test.ts",
-        "tests/governance/precommit-hook.test.ts"
+        "bin/roadmap.ts"
       ],
       "consumes": [
-        "scripts/hooks/pre-commit"
+        "src/lib/roadmap/lazy-graph-loader.ts"
       ],
       "deps": [
-        "auto-propagate-expand",
-        "auto-propagate-merge",
-        "git-hook-config"
+        "lazy-load-logic"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "cross-dag-validation": {
+      "id": "cross-dag-validation",
+      "desc": "Validate inter-DAG dependencies: ensure produces/consumes work across DAG boundaries, validate propagation",
+      "produces": [
+        "src/lib/roadmap/cross-dag-validator.ts"
+      ],
+      "consumes": [
+        "src/lib/roadmap/dag-consolidator.ts"
+      ],
+      "deps": [
+        "merge-multi-way"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "consolidation-tests": {
+      "id": "consolidation-tests",
+      "desc": "Unit + integration tests: merge logic, index extraction, lazy loading, cross-DAG validation, CLI transparent behavior",
+      "produces": [
+        "tests/roadmap/consolidation.test.ts"
+      ],
+      "consumes": [
+        "src/lib/roadmap/dag-consolidator.ts",
+        "src/lib/roadmap/lazy-graph-loader.ts",
+        "src/lib/roadmap/cross-dag-validator.ts"
+      ],
+      "deps": [
+        "cli-auto-merge",
+        "cross-dag-validation"
       ],
       "validate": [
         {
@@ -140,22 +145,24 @@
         },
         {
           "type": "shell",
-          "command": "npx vitest run tests/governance/ 2>&1 | grep -q 'passed'"
+          "command": "npx vitest run tests/roadmap/consolidation.test.ts 2>&1 | grep -q 'passed'"
         }
       ],
       "idempotent": true
     },
-    "ci-integration": {
-      "id": "ci-integration",
-      "desc": "Verify CI gates work with auto-propagate changes, update ci.yml if needed for new artifacts",
+    "migration-script": {
+      "id": "migration-script",
+      "desc": "Script to consolidate existing separate DAGs into single head.json, preserve baseSha, validate result",
       "produces": [
-        ".github/workflows/ci.yml"
+        "scripts/consolidate-existing-dags.ts"
       ],
       "consumes": [
-        "bin/roadmap.ts"
+        ".roadmap/head.json",
+        ".roadmap/typescript-cleanup-001.json",
+        ".roadmap/dispatch-system-001.json"
       ],
       "deps": [
-        "governance-tests"
+        "consolidation-tests"
       ],
       "validate": [
         {
@@ -165,45 +172,65 @@
       ],
       "idempotent": true
     },
-    "governance-documentation": {
-      "id": "governance-documentation",
-      "desc": "Document auto-propagate behavior, pre-commit hook usage, branch protection rules, rollout instructions",
+    "git-hook-invalidation": {
+      "id": "git-hook-invalidation",
+      "desc": "Add pre-commit hook: detect .roadmap/ changes, regenerate index, ensure merged DAG is valid, prevent stale state commits",
       "produces": [
-        "docs/GOVERNANCE.md",
-        "docs/DEVELOPMENT.md"
+        ".git/hooks/pre-commit",
+        "scripts/validate-roadmap-state.ts"
       ],
       "consumes": [
-        "docs/GOVERNANCE-DESIGN.md"
+        ".roadmap/head.json"
       ],
       "deps": [
-        "ci-integration"
+        "migration-script"
       ],
       "validate": [
         {
           "type": "artifact-exists",
-          "path": "docs/GOVERNANCE.md"
+          "path": ".git/hooks/pre-commit"
         }
       ],
       "idempotent": true
     },
-    "governance-complete": {
-      "id": "governance-complete",
-      "desc": "Governance hardening complete: auto-propagate default, pre-commit gates active, main protected, all tests passing",
+    "consolidation-documentation": {
+      "id": "consolidation-documentation",
+      "desc": "Update docs: explain auto-merge behavior, index format, lazy loading, how to add new DAGs, troubleshooting",
       "produces": [
-        ".governance/hardening-ready.json"
+        "docs/CONSOLIDATION.md"
       ],
-      "consumes": [],
+      "consumes": [
+        "docs/CONSOLIDATION-DESIGN.md"
+      ],
       "deps": [
-        "governance-documentation"
+        "git-hook-invalidation"
       ],
       "validate": [
         {
           "type": "artifact-exists",
-          "path": ".governance/hardening-ready.json"
+          "path": "docs/CONSOLIDATION.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "consolidation-complete": {
+      "id": "consolidation-complete",
+      "desc": "Consolidation system complete: all tests pass, docs updated, existing DAGs migrated, single source of truth operational",
+      "produces": [
+        ".consolidation/system-ready.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "consolidation-documentation"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": ".consolidation/system-ready.json"
         }
       ],
       "idempotent": false
     }
   },
-  "baseSha": "c2db6a602f4c325b3b3a55ea43428d9c45794d02"
+  "baseSha": "1ee3e2f619703cace96be7b62bb458f54d177a9a"
 }

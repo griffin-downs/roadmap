@@ -603,5 +603,20 @@
     ],
     "gitSha": "5fa97e857cc0700ede8b9f5d1dea6399f2cf9623",
     "treeSha": "7aa1d32cd84124dabb389c6cf62da51e52b29114"
+  },
+  {
+    "nodeId": "consolidation-discovery",
+    "completedAt": "2026-03-02T13:40:23.782Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302134023",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: docs/CONSOLIDATION-DESIGN.md"
+      }
+    ],
+    "gitSha": "1ee3e2f619703cace96be7b62bb458f54d177a9a",
+    "treeSha": "34fde1ae07c96376291ca2c00625d89f963c05a7"
   }
 ]

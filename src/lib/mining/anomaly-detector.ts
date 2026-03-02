@@ -371,7 +371,7 @@ export class AnomalyDetector {
 
     // Track batches and their re-sync count
     const batches: Array<{ startIdx: number; resyncCount: number; endIdx?: number }> = [];
-    let currentBatch = { startIdx: 0, resyncCount: 0 };
+    let currentBatch: { startIdx: number; resyncCount: number; endIdx?: number } = { startIdx: 0, resyncCount: 0 };
 
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
