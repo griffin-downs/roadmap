@@ -1,62 +1,127 @@
 {
-  "id": "artifact-gates-001",
-  "desc": "Validation gates for roadmap completion: artifact existence, TypeScript compilation, schema validation, hash verification. Task #5 implementation.",
-  "init": "implement-artifact-gates",
-  "term": "validate-gates-integration",
+  "id": "hardening-001",
+  "desc": "Module hardening: validate HeadShaRecovery, PreflightValidator, TrailManager, DagSwitcher, ArtifactGates real APIs. Verify mock alignment. Integration tests. Ready for parallel dispatch.",
+  "init": "align-headsha-recovery",
+  "term": "integration-hardening-suite",
   "nodes": {
-    "implement-artifact-gates": {
-      "id": "implement-artifact-gates",
-      "desc": "Implement ArtifactGates class: checkExists(), checkTypecheck(), checkSchema() (stub), checkHash() (stub), validateBeforeCompletion()",
+    "align-headsha-recovery": {
+      "id": "align-headsha-recovery",
+      "desc": "Verify HeadShaRecovery API: detectMismatch(), autoRecover(), validateConsistency(). Align mock adapter to real signatures.",
       "produces": [
-        "src/lib/roadmap/artifact-gates.ts"
+        "src/lib/roadmap/mocks/mock-headsha-recovery.ts"
       ],
       "consumes": [
-        ".roadmap/task-5-artifact-gates-design.md",
-        "src/lib/roadmap/protocol/types.ts"
+        "src/lib/roadmap/headsha-recovery.ts",
+        ".roadmap/REAL-MODULE-API-AUDIT.md"
       ],
       "deps": [],
       "validate": [
-        {"type": "artifact-exists", "path": "src/lib/roadmap/artifact-gates.ts"}
+        {"type": "artifact-exists", "path": "src/lib/roadmap/mocks/mock-headsha-recovery.ts"}
       ],
       "idempotent": true,
       "mode": "execute",
       "level": 1
     },
-    "test-artifact-gates": {
-      "id": "test-artifact-gates",
-      "desc": "Write comprehensive test suite: artifact-exists (6 tests), artifact-typecheck (5 tests), integration (4 tests), error handling (3 tests). ~18 total tests, 90%+ coverage.",
+    "align-preflight-validator": {
+      "id": "align-preflight-validator",
+      "desc": "Verify PreflightValidator API: validateStateCoherence(), validateArtifacts(), validateSchema(), validateTypecheck(). Align mock adapter.",
       "produces": [
-        "tests/artifact-gates.test.ts"
+        "src/lib/roadmap/mocks/mock-preflight-validator.ts"
       ],
       "consumes": [
-        "src/lib/roadmap/artifact-gates.ts",
-        ".roadmap/task-5-test-spec.md"
+        "src/lib/roadmap/preflight-validator.ts",
+        ".roadmap/REAL-MODULE-API-AUDIT.md"
       ],
-      "deps": ["implement-artifact-gates"],
+      "deps": [],
       "validate": [
-        {"type": "artifact-exists", "path": "tests/artifact-gates.test.ts"}
+        {"type": "artifact-exists", "path": "src/lib/roadmap/mocks/mock-preflight-validator.ts"}
       ],
       "idempotent": true,
       "mode": "execute",
-      "level": 2
+      "level": 1
     },
-    "validate-gates-integration": {
-      "id": "validate-gates-integration",
-      "desc": "Run artifact-gates test suite, verify all tests pass, validate 90%+ coverage. Ensure gates are deterministic and error messages are actionable.",
+    "align-trail-manager": {
+      "id": "align-trail-manager",
+      "desc": "Verify TrailManager API: appendEntry(), autoCommit(), syncTrail(). Align mock adapter to real implementation.",
       "produces": [
-        "gates-validation-report.json"
+        "src/lib/roadmap/mocks/mock-trail-manager.ts"
       ],
       "consumes": [
-        "tests/artifact-gates.test.ts",
-        "src/lib/roadmap/artifact-gates.ts"
+        "src/lib/roadmap/trail-manager.ts",
+        ".roadmap/REAL-MODULE-API-AUDIT.md"
       ],
-      "deps": ["test-artifact-gates"],
+      "deps": [],
       "validate": [
-        {"type": "artifact-exists", "path": "gates-validation-report.json"}
+        {"type": "artifact-exists", "path": "src/lib/roadmap/mocks/mock-trail-manager.ts"}
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "level": 1
+    },
+    "align-dag-switcher": {
+      "id": "align-dag-switcher",
+      "desc": "Verify DagSwitcher API: switchToDAG(), getCurrentDAG(), validateDAGExists(), listAvailableDAGs(). Align mock adapter.",
+      "produces": [
+        "src/lib/roadmap/mocks/mock-dag-switcher.ts"
+      ],
+      "consumes": [
+        "src/lib/roadmap/dag-switcher.ts",
+        ".roadmap/REAL-MODULE-API-AUDIT.md"
+      ],
+      "deps": [],
+      "validate": [
+        {"type": "artifact-exists", "path": "src/lib/roadmap/mocks/mock-dag-switcher.ts"}
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "level": 1
+    },
+    "harden-artifact-gates": {
+      "id": "harden-artifact-gates",
+      "desc": "Integrate ArtifactGates into validation stack. Verify it's used by validateNode() in protocol/validation.ts. No mock needed — it's already real.",
+      "produces": [
+        "src/lib/roadmap/artifact-gates-integration.ts"
+      ],
+      "consumes": [
+        "src/lib/roadmap/artifact-gates.ts",
+        "src/lib/roadmap/protocol/validation.ts"
+      ],
+      "deps": [],
+      "validate": [
+        {"type": "artifact-exists", "path": "src/lib/roadmap/artifact-gates-integration.ts"}
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "level": 1
+    },
+    "integration-hardening-suite": {
+      "id": "integration-hardening-suite",
+      "desc": "Run integration tests for all hardening modules. Verify mocks + real implementations work together. Validate state consistency under parallel execution.",
+      "produces": [
+        "hardening-integration-report.json",
+        "tests/hardening-integration.test.ts"
+      ],
+      "consumes": [
+        "src/lib/roadmap/mocks/mock-headsha-recovery.ts",
+        "src/lib/roadmap/mocks/mock-preflight-validator.ts",
+        "src/lib/roadmap/mocks/mock-trail-manager.ts",
+        "src/lib/roadmap/mocks/mock-dag-switcher.ts",
+        "src/lib/roadmap/artifact-gates-integration.ts"
+      ],
+      "deps": [
+        "align-headsha-recovery",
+        "align-preflight-validator",
+        "align-trail-manager",
+        "align-dag-switcher",
+        "harden-artifact-gates"
+      ],
+      "validate": [
+        {"type": "artifact-exists", "path": "hardening-integration-report.json"},
+        {"type": "artifact-exists", "path": "tests/hardening-integration.test.ts"}
       ],
       "idempotent": false,
       "mode": "execute",
-      "level": 3
+      "level": 2
     }
   }
 }
