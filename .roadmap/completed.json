@@ -3163,5 +3163,39 @@
     ],
     "gitSha": "c74243ac55d49777afc4e50ce1dd365333b27125",
     "treeSha": "f7e43e5044774a818935959a15a1ac44406e226e"
+  },
+  {
+    "nodeId": "dispatch-system-tests",
+    "completedAt": "2026-03-02T08:39:00.149Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302083857",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest run tests/dispatch-system 2>&1 | grep -q 'passed'"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      },
+      {
+        "id": "shell:npx vitest run tests/dispatch-system 2>&1 | grep -q 'passed'",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "067d1652621b39c48626a8179890b9108adaa9a3",
+    "treeSha": "3f0a9b42d234ba0c4d953b834732d9efe06dd0ba"
   }
 ]
