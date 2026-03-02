@@ -1,284 +1,381 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { DAGManifest, validateManifest, scanDAGManifestForViolations } from '../src/lib/enforcement/dag-manifest';
+import { tmpdir } from 'node:os';
+import {
+  DAGManifest,
+  validateManifest,
+  scanDAGManifestForViolations,
+  ManifestViolation,
+} from '../src/lib/enforcement/dag-manifest.ts';
 
-describe('DAGManifest', () => {
-  let tmpDir: string;
+function tmpDir(): string {
+  const dir = join(tmpdir(), `dag-manifest-test-${Math.random().toString(36).slice(2)}`);
+  mkdirSync(dir, { recursive: true });
+  return dir;
+}
 
-  beforeEach(() => {
-    tmpDir = mkdtempSync('test-dag-');
-    mkdirSync(join(tmpDir, '.roadmap'), { recursive: true });
-  });
+function createDAGFile(path: string, id: string, desc?: string, withNodes = true): void {
+  const dag: any = {
+    id,
+    desc: desc || `DAG ${id}`,
+    init: 'init',
+    term: 'term',
+    nodes: {},
+  };
 
-  afterEach(() => {
-    rmSync(tmpDir, { recursive: true });
-  });
-
-  it('scans .roadmap/head.*.json files', () => {
-    const validDAG = {
-      id: 'test-dag-001',
-      desc: 'Test DAG',
-      init: 'node-a',
-      term: 'node-z',
-      nodes: {
-        'node-a': { id: 'node-a', desc: 'Start' },
-        'node-z': { id: 'node-z', desc: 'End' },
+  if (withNodes) {
+    dag.nodes = {
+      init: {
+        id: 'init',
+        desc: 'Initialize',
+        produces: ['init.marker'],
+        consumes: [],
+        deps: [],
+        validate: [{ type: 'artifact-exists' }],
+      },
+      term: {
+        id: 'term',
+        desc: 'Finalize',
+        produces: [],
+        consumes: [],
+        deps: ['init'],
+        validate: [{ type: 'artifact-exists' }],
       },
     };
+  }
 
-    writeFileSync(join(tmpDir, '.roadmap', 'head.test.json'), JSON.stringify(validDAG));
+  writeFileSync(path, JSON.stringify(dag, null, 2));
+}
 
-    const manifest = new DAGManifest(tmpDir);
-    const report = manifest.scan();
-
-    expect(report.scannedFiles.length).toBe(1);
-    expect(report.entries[0].dagId).toBe('test-dag-001');
-    expect(report.entries[0].valid).toBe(true);
-  });
-
-  it('validates required DAG fields', () => {
-    const missingId = { desc: 'No ID', init: 'a', term: 'z', nodes: {} };
-    writeFileSync(join(tmpDir, '.roadmap', 'head.invalid.json'), JSON.stringify(missingId));
-
-    const manifest = new DAGManifest(tmpDir);
-    const report = manifest.scan();
-
-    expect(report.entries[0].valid).toBe(false);
-    expect(report.invalidCount).toBe(1);
-  });
-
-  it('detects orphaned DAGs', () => {
-    const activeDAG = {
-      id: 'active-dag',
-      desc: 'Active',
-      init: 'a',
-      term: 'z',
-      nodes: { a: { id: 'a', desc: 'A' }, z: { id: 'z', desc: 'Z' } },
-    };
-
-    const orphanedDAG = {
-      id: 'orphaned-dag',
-      desc: 'Orphaned',
-      init: 'a',
-      term: 'z',
-      nodes: { a: { id: 'a', desc: 'A' }, z: { id: 'z', desc: 'Z' } },
-    };
-
-    writeFileSync(join(tmpDir, '.roadmap', 'head.json'), JSON.stringify(activeDAG));
-    writeFileSync(join(tmpDir, '.roadmap', 'head.old.json'), JSON.stringify(orphanedDAG));
-
-    const manifest = new DAGManifest(tmpDir);
-    const report = manifest.scan();
-
-    const orphanedEntry = report.entries.find((e) => e.dagId === 'orphaned-dag');
-    expect(orphanedEntry?.orphaned).toBe(true);
-    expect(report.orphanedCount).toBe(1);
-  });
-
-  it('validates node structure', () => {
-    const badNodes = {
-      id: 'bad-dag',
-      desc: 'Bad nodes',
-      init: 'a',
-      term: 'z',
-      nodes: { a: 'not-an-object', z: { id: 'z', desc: 'Z' } },
-    };
-
-    writeFileSync(join(tmpDir, '.roadmap', 'head.bad.json'), JSON.stringify(badNodes));
-
-    const manifest = new DAGManifest(tmpDir);
-    const report = manifest.scan();
-
-    expect(report.entries[0].valid).toBe(false);
-    expect(report.invalidCount).toBe(1);
-  });
-
-  it('validates init/term node existence', () => {
-    const missingInit = {
-      id: 'missing-init',
-      desc: 'No init',
-      init: 'missing-node',
-      term: 'z',
-      nodes: { z: { id: 'z', desc: 'Z' } },
-    };
-
-    writeFileSync(join(tmpDir, '.roadmap', 'head.noninit.json'), JSON.stringify(missingInit));
-
-    const manifest = new DAGManifest(tmpDir);
-    const report = manifest.scan();
-
-    expect(report.entries[0].valid).toBe(false);
-  });
-
-  it('detects missing node fields', () => {
-    const missingDesc = {
-      id: 'bad-dag',
-      desc: 'Bad node structure',
-      init: 'a',
-      term: 'z',
-      nodes: { a: { id: 'a' }, z: { id: 'z', desc: 'Z' } },
-    };
-
-    writeFileSync(join(tmpDir, '.roadmap', 'head.nodesc.json'), JSON.stringify(missingDesc));
-
-    const manifest = new DAGManifest(tmpDir);
-    const report = manifest.scan();
-
-    expect(report.entries[0].valid).toBe(false);
-    expect(report.entries[0].error).toContain('missing id or desc');
-  });
-
-  it('handles nonexistent .roadmap directory', () => {
-    const emptyDir = mkdtempSync('test-empty-');
-    const manifest = new DAGManifest(emptyDir);
-    const report = manifest.scan();
-
-    expect(report.scannedFiles.length).toBe(0);
-    expect(report.entries.length).toBe(0);
-    expect(report.summary).toContain('does not exist');
-
-    rmSync(emptyDir, { recursive: true });
-  });
-
-  it('handles JSON parse errors', () => {
-    writeFileSync(join(tmpDir, '.roadmap', 'head.corrupt.json'), 'not valid json {');
-
-    const manifest = new DAGManifest(tmpDir);
-    const report = manifest.scan();
-
-    expect(report.entries[0].valid).toBe(false);
-    expect(report.entries[0].error).toContain('Parse error');
-  });
-});
-
-describe('validateManifest', () => {
-  it('passes for valid report', () => {
-    const report = {
-      timestamp: '2026-03-02T00:00:00Z',
-      repoRoot: '/test',
-      scannedFiles: ['head.test.json'],
-      entries: [
-        {
-          path: 'head.test.json',
-          dagId: 'test-dag',
-          found: true,
-          valid: true,
-          nodeCount: 2,
-          hasDesignDocs: true,
-          orphaned: false,
-          mtime: 1,
-        },
-      ],
-      orphanedCount: 0,
-      invalidCount: 0,
-      designDocGaps: [],
-      summary: 'all valid',
-    };
-
-    const result = validateManifest(report);
-    expect(result.passed).toBe(true);
-  });
-
-  it('fails for invalid DAGs', () => {
-    const report = {
-      timestamp: '2026-03-02T00:00:00Z',
-      repoRoot: '/test',
-      scannedFiles: ['head.test.json'],
-      entries: [],
-      orphanedCount: 0,
-      invalidCount: 1,
-      designDocGaps: [],
-      summary: 'invalid',
-    };
-
-    const result = validateManifest(report);
-    expect(result.passed).toBe(false);
-    expect(result.evidence).toContain('invalid structure');
-  });
-
-  it('fails for missing design docs', () => {
-    const report = {
-      timestamp: '2026-03-02T00:00:00Z',
-      repoRoot: '/test',
-      scannedFiles: ['head.test.json'],
-      entries: [],
-      orphanedCount: 0,
-      invalidCount: 0,
-      designDocGaps: ['missing-dag'],
-      summary: 'missing docs',
-    };
-
-    const result = validateManifest(report);
-    expect(result.passed).toBe(false);
-    expect(result.evidence).toContain('design documentation');
-  });
-});
-
-describe('scanDAGManifestForViolations', () => {
-  let tmpDir: string;
+describe('DAGManifest — dag-manifest.ts', () => {
+  let tmpRoot: string;
 
   beforeEach(() => {
-    tmpDir = mkdtempSync('test-dag-');
-    mkdirSync(join(tmpDir, '.roadmap'), { recursive: true });
+    tmpRoot = tmpDir();
+    mkdirSync(join(tmpRoot, '.roadmap'), { recursive: true });
   });
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true });
+    if (existsSync(tmpRoot)) {
+      rmSync(tmpRoot, { recursive: true });
+    }
   });
 
-  it('returns empty for healthy manifest', () => {
-    const violations = scanDAGManifestForViolations(tmpDir);
-    expect(violations.length).toBe(0);
+  describe('scan()', () => {
+    it('returns empty report when .roadmap dir does not exist', () => {
+      const missingRoot = join(tmpdir(), 'nonexistent');
+      const manifest = new DAGManifest(missingRoot);
+      const report = manifest.scan();
+      expect(report.entries).toEqual([]);
+      expect(report.scannedFiles).toEqual([]);
+    });
+
+    it('finds and validates head.*.json files', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'my-dag', 'My DAG');
+      createDAGFile(join(roadmapDir, 'head.candidate.json'), 'candidate-dag', 'Candidate');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.scannedFiles).toContain('head.backup.json');
+      expect(report.scannedFiles).toContain('head.candidate.json');
+      expect(report.entries.length).toBe(2);
+    });
+
+    it('skips head.json (main head, not a variant)', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.json'), 'main-dag', 'Main');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'backup-dag', 'Backup');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      // Should only find head.backup.json, not head.json
+      expect(report.scannedFiles).not.toContain('head.json');
+      expect(report.scannedFiles).toContain('head.backup.json');
+    });
+
+    it('validates DAG structure in each file', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'valid-dag', 'Valid');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.entries[0].valid).toBe(true);
+      expect(report.entries[0].dagId).toBe('valid-dag');
+      expect(report.entries[0].nodeCount).toBe(2); // init + term
+    });
+
+    it('reports invalid JSON with parse error', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      writeFileSync(join(roadmapDir, 'head.bad.json'), '{invalid json}');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.entries[0].valid).toBe(false);
+      expect(report.entries[0].error).toContain('Parse error');
+    });
+
+    it('reports missing required DAG fields', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      // Missing 'desc' field
+      writeFileSync(
+        join(roadmapDir, 'head.incomplete.json'),
+        JSON.stringify({
+          id: 'incomplete',
+          init: 'init',
+          term: 'term',
+          nodes: { init: {}, term: {} },
+        })
+      );
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.entries[0].valid).toBe(false);
+      expect(report.entries[0].error).toContain('Missing required field: desc');
+    });
+
+    it('reports when init/term nodes do not exist', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      writeFileSync(
+        join(roadmapDir, 'head.badnodes.json'),
+        JSON.stringify({
+          id: 'bad',
+          desc: 'Bad DAG',
+          init: 'missing-init',
+          term: 'term',
+          nodes: { term: { id: 'term', desc: 'End' } },
+        })
+      );
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.entries[0].valid).toBe(false);
+      expect(report.entries[0].error).toContain('Init node');
+    });
   });
 
-  it('reports invalid-structure violations', () => {
-    const invalidDAG = {
-      id: 'broken-dag',
-      init: 'a',
-      term: 'z',
-      nodes: {},
-    };
+  describe('orphan detection', () => {
+    it('marks DAGs with different ID as orphaned', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.json'), 'active-dag', 'Active');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'old-dag', 'Old');
 
-    writeFileSync(join(tmpDir, '.roadmap', 'head.invalid.json'), JSON.stringify(invalidDAG));
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
 
-    const violations = scanDAGManifestForViolations(tmpDir);
-    expect(violations.length).toBe(1);
-    expect(violations[0].type).toBe('invalid-structure');
-    expect(violations[0].dagId).toBe('broken-dag');
-    expect(violations[0].remediation).toContain('.roadmap/');
+      const orphaned = report.entries.filter(e => e.orphaned);
+      expect(orphaned.length).toBeGreaterThan(0);
+      expect(orphaned[0].dagId).toBe('old-dag');
+    });
+
+    it('does not mark valid DAGs as orphaned when they match active head', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.json'), 'same-dag', 'Same');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'same-dag', 'Same backup');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      const orphaned = report.entries.filter(e => e.orphaned);
+      expect(orphaned.length).toBe(0);
+    });
+
+    it('includes orphan count in report', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.json'), 'main', 'Main');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'orphan1', 'Orphan 1');
+      createDAGFile(join(roadmapDir, 'head.candidate.json'), 'orphan2', 'Orphan 2');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.orphanedCount).toBe(2);
+    });
   });
 
-  it('reports orphaned violations', () => {
-    const orphanedDAG = {
-      id: 'orphan-dag',
-      desc: 'Orphaned DAG',
-      init: 'a',
-      term: 'z',
-      nodes: { a: { id: 'a', desc: 'A' }, z: { id: 'z', desc: 'Z' } },
-    };
+  describe('documentation validation', () => {
+    it('detects missing design documentation', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'nodoc-dag', 'No docs');
 
-    writeFileSync(join(tmpDir, '.roadmap', 'head.old.json'), JSON.stringify(orphanedDAG));
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
 
-    const violations = scanDAGManifestForViolations(tmpDir);
-    const orphanViolations = violations.filter((v) => v.type === 'orphaned');
-    expect(orphanViolations.length).toBeGreaterThan(0);
-    expect(orphanViolations[0].dagId).toBe('orphan-dag');
+      expect(report.designDocGaps.length).toBeGreaterThan(0);
+    });
+
+    it('finds design documentation if present', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'documented-dag', 'With docs');
+      writeFileSync(join(roadmapDir, 'task-5-documented-dag-design.md'), '# Design');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.designDocGaps.length).toBe(0);
+    });
   });
 
-  it('includes remediation guidance in violations', () => {
-    const invalidDAG = {
-      id: 'bad-dag',
-      init: 'a',
-      term: 'z',
-      nodes: { a: { id: 'a', desc: 'A' }, z: { id: 'z', desc: 'Z' } },
-    };
+  describe('validateManifest()', () => {
+    it('returns passed=true when no violations', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'good-dag', 'Good');
+      writeFileSync(join(roadmapDir, 'task-5-good-dag-design.md'), '# Design');
 
-    writeFileSync(join(tmpDir, '.roadmap', 'head.broken.json'), JSON.stringify(invalidDAG));
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+      const result = validateManifest(report);
 
-    const violations = scanDAGManifestForViolations(tmpDir);
-    const violation = violations.find((v) => v.dagId === 'bad-dag');
-    expect(violation).toBeDefined();
-    expect(violation?.remediation).toBeTruthy();
+      expect(result.passed).toBe(true);
+      expect(result.evidence).toContain('valid');
+    });
+
+    it('returns passed=false when DAGs are invalid', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      writeFileSync(join(roadmapDir, 'head.bad.json'), '{ bad }');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+      const result = validateManifest(report);
+
+      expect(result.passed).toBe(false);
+      expect(result.evidence).toContain('invalid structure');
+    });
+
+    it('reports design doc gaps in evidence', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'undoc-dag', 'Undocumented');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+      const result = validateManifest(report);
+
+      expect(result.passed).toBe(false);
+      expect(result.evidence).toContain('design documentation');
+    });
+  });
+
+  describe('scanDAGManifestForViolations()', () => {
+    it('returns violations for invalid DAGs', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      writeFileSync(join(roadmapDir, 'head.bad.json'), '{ bad }');
+
+      const violations = scanDAGManifestForViolations(tmpRoot);
+
+      expect(violations.length).toBeGreaterThan(0);
+      expect(violations[0].type).toBe('invalid-structure');
+      expect(violations[0].message).toContain('structure invalid');
+    });
+
+    it('returns violations for orphaned DAGs', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.json'), 'main', 'Main');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'orphan', 'Orphan');
+
+      const violations = scanDAGManifestForViolations(tmpRoot);
+
+      const orphanViolations = violations.filter(v => v.type === 'orphaned');
+      expect(orphanViolations.length).toBeGreaterThan(0);
+    });
+
+    it('returns violations for missing design docs', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'nodoc', 'No docs');
+
+      const violations = scanDAGManifestForViolations(tmpRoot);
+
+      const docViolations = violations.filter(v => v.type === 'missing-documentation');
+      expect(docViolations.length).toBeGreaterThan(0);
+      expect(docViolations[0].message).toContain('design documentation');
+    });
+
+    it('includes remediation suggestions in violations', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      writeFileSync(join(roadmapDir, 'head.bad.json'), '{ bad }');
+
+      const violations = scanDAGManifestForViolations(tmpRoot);
+
+      expect(violations[0].remediation).toBeDefined();
+      expect(violations[0].remediation).toContain('.roadmap');
+    });
+  });
+
+  describe('archiveOrphaned()', () => {
+    it('returns list of orphaned DAG files', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      mkdirSync(join(roadmapDir, 'archived'), { recursive: true });
+      createDAGFile(join(roadmapDir, 'head.json'), 'main', 'Main');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'orphan', 'Orphan');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const archived = manifest.archiveOrphaned();
+
+      expect(archived).toContain('head.backup.json');
+    });
+  });
+
+  describe('error handling', () => {
+    it('handles missing files gracefully', () => {
+      const manifest = new DAGManifest(tmpRoot);
+      expect(() => {
+        manifest.scan();
+      }).not.toThrow();
+    });
+
+    it('handles non-JSON files gracefully', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      writeFileSync(join(roadmapDir, 'head.txt.json'), 'not json');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.entries.length).toBeGreaterThan(0);
+      expect(report.entries[0].valid).toBe(false);
+    });
+
+    it('handles malformed DAG structure gracefully', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      writeFileSync(
+        join(roadmapDir, 'head.malformed.json'),
+        JSON.stringify({ id: 'bad', desc: 'bad', init: null, term: null, nodes: null })
+      );
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.entries[0].valid).toBe(false);
+    });
+  });
+
+  describe('summary building', () => {
+    it('builds correct summary for valid files', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'test', 'Test');
+      writeFileSync(join(roadmapDir, 'task-5-test-design.md'), '# Design');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.summary).toContain('Scanned');
+      expect(report.summary).toContain('valid');
+    });
+
+    it('includes orphan count in summary', () => {
+      const roadmapDir = join(tmpRoot, '.roadmap');
+      createDAGFile(join(roadmapDir, 'head.json'), 'main', 'Main');
+      createDAGFile(join(roadmapDir, 'head.backup.json'), 'old', 'Old');
+
+      const manifest = new DAGManifest(tmpRoot);
+      const report = manifest.scan();
+
+      expect(report.summary).toContain('orphaned');
+    });
   });
 });
