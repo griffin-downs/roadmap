@@ -1,22 +1,22 @@
 // @module consolidation
-// @exports extractMetadataIndex, IndexEntry, HeadIndex, MetadataIndexError
+// @exports extractMetadataIndex, IndexEntry, HeadIndex, MetadataIndexError, hashIndex
 // @types IndexEntry, HeadIndex
 
-import type { Graph, NodeSpec } from '../../protocol.ts';
+import * as crypto from 'crypto';
+import type { Graph, NodeSpec, ValidationRule } from '../../protocol.ts';
 import type { MergeResult } from './dag-consolidator.ts';
 
 export interface IndexEntry {
   id: string;
   phase: string;
-  produces: string[];
-  consumes: string[];
-  deps: string[];
+  produces: readonly string[];
+  consumes: readonly string[];
+  deps: readonly string[];
   desc: string;
   mode?: 'execute' | 'plan';
-  validate: Array<{
-    type: string;
-    [key: string]: any;
-  }>;
+  validate: readonly ValidationRule[];
+  expandedFrom?: string;
+  ambient?: readonly string[];
 }
 
 export interface HeadIndex {
@@ -27,6 +27,7 @@ export interface HeadIndex {
   entries: IndexEntry[];
   phaseMap: { [phaseId: string]: string[] }; // phase -> [nodeIds]
   nodeToPhase: { [nodeId: string]: string }; // node -> phase
+  hash?: string; // content hash for change detection
 }
 
 export class MetadataIndexError extends Error {
@@ -46,6 +47,14 @@ export class MetadataIndexError extends Error {
 }
 
 /**
+ * Compute content hash of index for change detection
+ */
+export function hashIndex(index: Omit<HeadIndex, 'hash'>): string {
+  const content = JSON.stringify(index, null, 2);
+  return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+/**
  * Extract metadata index from merged DAG
  * Creates a searchable index of all nodes with their phase, produces, consumes, deps
  * Enables fast lookups without full DAG traversal
@@ -53,7 +62,8 @@ export class MetadataIndexError extends Error {
  * Output format: HeadIndex (compatible with head-index.json)
  */
 export function extractMetadataIndex(
-  mergeResult: MergeResult
+  mergeResult: MergeResult,
+  includeHash: boolean = false
 ): HeadIndex {
   const { merged, phases, sourceFiles, timestamp } = mergeResult;
 
@@ -68,28 +78,33 @@ export function extractMetadataIndex(
   for (const [nodeId, nodeSpec] of Object.entries(merged.nodes)) {
     const phase = nodeToPhase.get(nodeId) || 'unknown';
 
-    entries.push({
+    const entry: IndexEntry = {
       id: nodeId,
       phase,
-      produces: Array.from(nodeSpec.produces || []),
-      consumes: (nodeSpec.consumes || []).map((c) => {
-        return typeof c === 'string' ? c : c.artifact;
-      }),
-      deps: Array.from(nodeSpec.deps || []),
+      produces: nodeSpec.produces,
+      consumes: normalizeConsumes(nodeSpec.consumes),
+      deps: nodeSpec.deps,
       desc: nodeSpec.desc,
-      mode: nodeSpec.mode,
-      validate: nodeSpec.validate.map((rule) => {
-        // Normalize rule to plain object
-        const ruleObj = { type: rule.type };
-        for (const [key, value] of Object.entries(rule)) {
-          (ruleObj as any)[key] = value;
-        }
-        return ruleObj;
-      }),
-    });
+      validate: nodeSpec.validate,
+    };
+
+    // Include optional fields only if present
+    if (nodeSpec.mode) {
+      entry.mode = nodeSpec.mode;
+    }
+
+    if (nodeSpec.expandedFrom) {
+      entry.expandedFrom = nodeSpec.expandedFrom;
+    }
+
+    if (nodeSpec.ambient && nodeSpec.ambient.length > 0) {
+      entry.ambient = nodeSpec.ambient;
+    }
+
+    entries.push(entry);
   }
 
-  return {
+  const index: HeadIndex = {
     id: merged.id,
     desc: merged.desc,
     sourceDAGs: sourceFiles,
@@ -98,6 +113,25 @@ export function extractMetadataIndex(
     phaseMap: phases as { [phaseId: string]: string[] },
     nodeToPhase: Object.fromEntries(nodeToPhase),
   };
+
+  if (includeHash) {
+    index.hash = hashIndex(index);
+  }
+
+  return index;
+}
+
+/**
+ * Normalize consumes array: convert ConsumeSpec to artifact strings
+ */
+function normalizeConsumes(consumes: readonly any[]): readonly string[] {
+  return consumes.map((c) => {
+    if (typeof c === 'string') {
+      return c;
+    }
+    // Handle { artifact: string; resolvedBy: string } case
+    return (c.artifact as string) || '';
+  });
 }
 
 /**
