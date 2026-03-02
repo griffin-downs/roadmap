@@ -60,6 +60,11 @@ export function validateBrief(
     // No prior handoffs is OK for first node
   }
 
+  // Rule 7: warn when produces exist but no consumes context (building in isolation)
+  if (brief.produces.length > 0 && consumes.length === 0 && (!brief.consumes || brief.consumes.length === 0)) {
+    warnings.push('no consumed inputs — agent builds without predecessor context');
+  }
+
   return {
     valid: errors.length === 0,
     errors,
