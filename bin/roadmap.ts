@@ -3454,9 +3454,9 @@ function cmdInstallSkills(binPath: string, noClaudeMd: boolean, constraintsPath?
     console.log(`  (constraints extracted from ${constraintsPath})`);
   }
 
-  // Update CLAUDE.md with slim protocol pointer table
-  if (!noClaudeMd) {
-    const claudeMdPath = join(repoRoot, '.claude', 'CLAUDE.md');
+      if (checkResult.orphans.length > 0) {
+        validationErrors.push(`Connectivity: ${checkResult.orphans.join(', ')}`);
+      }
     writeSlimProtocol(claudeMdPath);
   }
 
