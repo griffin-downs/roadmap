@@ -967,5 +967,51 @@
     ],
     "gitSha": "3d2b407cd539fa882341415ca97d50971c00ff71",
     "treeSha": "1e5c6c80d4058fb549020f6f514eb963b687ec39"
+  },
+  {
+    "nodeId": "cross-dag-validation",
+    "completedAt": "2026-03-02T15:02:04.150Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302150202",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "0151a293143404cb3c9091122c83fb69d5b600c5",
+    "treeSha": "5b6c6d1126ab4dd50c45e53f077b6430867265f0"
+  },
+  {
+    "nodeId": "index-extraction",
+    "completedAt": "2026-03-02T15:02:05.056Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302150203",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "0151a293143404cb3c9091122c83fb69d5b600c5",
+    "treeSha": "5b6c6d1126ab4dd50c45e53f077b6430867265f0"
   }
 ]

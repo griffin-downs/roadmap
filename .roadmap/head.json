@@ -1,177 +1,109 @@
 {
-  "id": "roadmap-worktree-protocol-001",
-  "desc": "Implement worktree-based DAG editing protocol with enforced consolidation. Single unified discipline for all users (human + LLM).",
-  "init": "protocol-design",
-  "term": "protocol-complete",
+  "id": "roadmap-dag-consolidation-001",
+  "desc": "Auto-merge all DAGs on every query. Single source of truth (head.json), unified parallel visibility, token-efficient index-based loading.",
+  "init": "consolidation-discovery",
+  "term": "consolidation-complete",
+  "baseSha": "0151a293",
   "nodes": {
-    "protocol-design": {
-      "id": "protocol-design",
-      "desc": "Formalize worktree protocol: feature branches, head.json consolidation, merge orchestration",
-      "produces": [
-        "docs/WORKTREE-PROTOCOL.md"
-      ],
-      "consumes": [],
+    "consolidation-discovery": {
+      "id": "consolidation-discovery",
+      "desc": "Plan consolidation system: outline merge strategy, index format, caching approach, CLI integration points",
+      "produces": ["docs/CONSOLIDATION-DESIGN.md"],
+      "consumes": [".specify/specs/roadmap-dag-consolidation-001/spec.md"],
       "deps": [],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "docs/WORKTREE-PROTOCOL.md"
-        }
-      ],
-      "idempotent": true,
-      "mode": "plan"
+      "mode": "plan",
+      "validate": [{"type": "artifact-exists", "path": "docs/CONSOLIDATION-DESIGN.md"}],
+      "idempotent": true
     },
-    "precommit-hook-enforcement": {
-      "id": "precommit-hook-enforcement",
-      "desc": "Update pre-commit hook to enforce worktree protocol: reject head.json edits on main, allow on feat/* branches",
-      "produces": [
-        "scripts/hooks/pre-commit"
-      ],
+    "merge-multi-way": {
+      "id": "merge-multi-way",
+      "desc": "Implement multi-DAG merge: discover all .roadmap/*.json, link at boundaries, validate merged graph",
+      "produces": ["src/lib/roadmap/dag-consolidator.ts"],
+      "consumes": ["src/roadmap/protocol.ts"],
+      "deps": ["consolidation-discovery"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "index-extraction": {
+      "id": "index-extraction",
+      "desc": "Extract metadata index from merged DAG: id, deps, produces, consumes, phase → head-index.json format",
+      "produces": ["src/lib/roadmap/index-extractor.ts"],
+      "consumes": ["src/lib/roadmap/dag-consolidator.ts"],
+      "deps": ["merge-multi-way"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "lazy-load-logic": {
+      "id": "lazy-load-logic",
+      "desc": "Implement intelligent lazy loading: load index always, full specs only for current batch + 1 level ahead",
+      "produces": ["src/lib/roadmap/lazy-graph-loader.ts"],
+      "consumes": ["src/lib/roadmap/index-extractor.ts"],
+      "deps": ["index-extraction"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "cli-auto-merge": {
+      "id": "cli-auto-merge",
+      "desc": "Integrate consolidation into CLI: orient, chart, show, complete use auto-merge transparently",
+      "produces": ["bin/roadmap.ts"],
+      "consumes": ["src/lib/roadmap/lazy-graph-loader.ts"],
+      "deps": ["lazy-load-logic"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "cross-dag-validation": {
+      "id": "cross-dag-validation",
+      "desc": "Validate inter-DAG dependencies: ensure produces/consumes work across DAG boundaries, validate propagation",
+      "produces": ["src/lib/roadmap/cross-dag-validator.ts"],
+      "consumes": ["src/lib/roadmap/dag-consolidator.ts"],
+      "deps": ["merge-multi-way"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "consolidation-tests": {
+      "id": "consolidation-tests",
+      "desc": "Unit + integration tests: merge logic, index extraction, lazy loading, cross-DAG validation, CLI transparent behavior",
+      "produces": ["tests/roadmap/consolidation.test.ts"],
+      "consumes": ["src/lib/roadmap/dag-consolidator.ts", "src/lib/roadmap/lazy-graph-loader.ts", "src/lib/roadmap/cross-dag-validator.ts"],
+      "deps": ["cli-auto-merge", "cross-dag-validation"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}, {"type": "shell", "command": "npx vitest run tests/roadmap/consolidation.test.ts 2>&1 | grep -q 'passed'"}],
+      "idempotent": true
+    },
+    "migration-script": {
+      "id": "migration-script",
+      "desc": "Script to consolidate existing separate DAGs into single head.json, preserve baseSha, validate result",
+      "produces": ["scripts/consolidate-existing-dags.ts"],
+      "consumes": [".roadmap/head.json", ".roadmap/head-dispatch-system.json", ".roadmap/head-artifact-gates-001.json"],
+      "deps": ["consolidation-tests"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "git-hook-invalidation": {
+      "id": "git-hook-invalidation",
+      "desc": "Add pre-commit hook: detect .roadmap/ changes, regenerate index, ensure merged DAG is valid, prevent stale state commits",
+      "produces": [".git/hooks/pre-commit", "scripts/validate-roadmap-state.ts"],
+      "consumes": [".roadmap/head.json"],
+      "deps": ["migration-script"],
+      "validate": [{"type": "artifact-exists", "path": ".git/hooks/pre-commit"}],
+      "idempotent": true
+    },
+    "consolidation-documentation": {
+      "id": "consolidation-documentation",
+      "desc": "Update docs: explain auto-merge behavior, index format, lazy loading, how to add new DAGs, troubleshooting",
+      "produces": ["docs/CONSOLIDATION.md"],
+      "consumes": ["docs/CONSOLIDATION-DESIGN.md"],
+      "deps": ["git-hook-invalidation"],
+      "validate": [{"type": "artifact-exists", "path": "docs/CONSOLIDATION.md"}],
+      "idempotent": true
+    },
+    "consolidation-complete": {
+      "id": "consolidation-complete",
+      "desc": "Consolidation system complete: all tests pass, docs updated, existing DAGs migrated, single source of truth operational",
+      "produces": [".consolidation/system-ready.json"],
       "consumes": [],
-      "deps": [
-        "protocol-design"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "grep -q 'feat/' scripts/hooks/pre-commit && grep -q 'main' scripts/hooks/pre-commit"
-        }
-      ],
+      "deps": ["consolidation-documentation"],
+      "validate": [{"type": "artifact-exists", "path": ".consolidation/system-ready.json"}],
       "idempotent": true
-    },
-    "worktree-spawn-command": {
-      "id": "worktree-spawn-command",
-      "desc": "Add CLI command: roadmap spawn --task <id> creates worktree + feature branch, ready for agent/user",
-      "produces": [
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "protocol-design"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "merge-orchestrator-command": {
-      "id": "merge-orchestrator-command",
-      "desc": "Add CLI command: roadmap merge-batch --from <branches> validates and merges feature branches to main",
-      "produces": [
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "precommit-hook-enforcement"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "consolidation-at-merge": {
-      "id": "consolidation-at-merge",
-      "desc": "Integrate auto-consolidation into merge orchestrator: validate merged DAG, run consolidation, write unified head.json",
-      "produces": [
-        "src/lib/roadmap/merge-orchestrator.ts"
-      ],
-      "consumes": [
-        "src/lib/roadmap/dag-consolidator.ts"
-      ],
-      "deps": [
-        "merge-orchestrator-command"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "worktree-cleanup": {
-      "id": "worktree-cleanup",
-      "desc": "Add cleanup: roadmap cleanup-worktrees removes stale worktrees, verifies branches merged",
-      "produces": [
-        "bin/roadmap.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "consolidation-at-merge"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "onboarding-documentation": {
-      "id": "onboarding-documentation",
-      "desc": "Update CLAUDE.md with worktree workflow: spawn, edit, commit, merge orchestration, cleanup",
-      "produces": [
-        ".claude/CLAUDE.md"
-      ],
-      "consumes": [
-        "docs/WORKTREE-PROTOCOL.md"
-      ],
-      "deps": [
-        "worktree-cleanup"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "grep -q 'git worktree add' .claude/CLAUDE.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "protocol-tests": {
-      "id": "protocol-tests",
-      "desc": "Unit + integration tests: worktree spawning, feature branch enforcement, consolidation on merge, cleanup",
-      "produces": [
-        "tests/protocol/worktree-protocol.test.ts"
-      ],
-      "consumes": [
-        "scripts/hooks/pre-commit",
-        "src/lib/roadmap/merge-orchestrator.ts"
-      ],
-      "deps": [
-        "onboarding-documentation"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit && npx vitest run tests/protocol/worktree-protocol.test.ts 2>&1 | grep -q 'passed'"
-        }
-      ],
-      "idempotent": true
-    },
-    "protocol-complete": {
-      "id": "protocol-complete",
-      "desc": "Worktree protocol fully enforced: single discipline for all users, transparent consolidation, merge orchestration",
-      "produces": [
-        ".protocol/system-ready.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "protocol-tests"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": ".protocol/system-ready.json"
-        }
-      ],
-      "idempotent": false
     }
-  },
-  "baseSha": "492366a5c78475fdffa91e651aa3be7563d67266"
+  }
 }
