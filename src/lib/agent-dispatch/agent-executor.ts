@@ -6,8 +6,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { writeInterimHandoff, writeFinalHandoff } from './handoff-journal.ts';
-import type { Brief } from './brief-gate.ts';
-import type { FinalHandoff, InterimHandoff } from '../brief.ts';
+import type { Brief, FinalHandoff, InterimHandoff } from '../brief.ts';
 
 /**
  * Execution context: sealed brief + environment
