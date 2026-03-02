@@ -53,5 +53,115 @@
     ],
     "gitSha": "564e70f4a2872f51e01a19f3d862ad38ecc6af2a",
     "treeSha": "7e3b45c9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3"
+  },
+  {
+    "nodeId": "dispatch-coordinator-impl",
+    "completedAt": "2026-03-02T09:19:49.277Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302091947",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "2cc8ea26afa903b7be35fc611238c0f18fa94211",
+    "treeSha": "c75b66bae825e2a141c67c752dfb4babad967932"
+  },
+  {
+    "nodeId": "agent-executor-impl",
+    "completedAt": "2026-03-02T09:23:30.791Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302092328",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "2cc8ea26afa903b7be35fc611238c0f18fa94211",
+    "treeSha": "c75b66bae825e2a141c67c752dfb4babad967932"
+  },
+  {
+    "nodeId": "orchestrator-harness",
+    "completedAt": "2026-03-02T09:23:39.126Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302092337",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "2cc8ea26afa903b7be35fc611238c0f18fa94211",
+    "treeSha": "c75b66bae825e2a141c67c752dfb4babad967932"
+  },
+  {
+    "nodeId": "dispatch-system-tests",
+    "completedAt": "2026-03-02T09:23:57.728Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302092357",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "2cc8ea26afa903b7be35fc611238c0f18fa94211",
+    "treeSha": "c75b66bae825e2a141c67c752dfb4babad967932"
+  },
+  {
+    "nodeId": "dispatch-system-tests",
+    "completedAt": "2026-03-02T09:23:57.737Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302092357",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "tests/dispatch-system.integration.test.ts"
+      }
+    ]
+  },
+  {
+    "nodeId": "dispatch-system-complete",
+    "completedAt": "2026-03-02T09:24:00.000Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302092400",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": ".dispatch/system-ready.json"
+      }
+    ]
   }
 ]
