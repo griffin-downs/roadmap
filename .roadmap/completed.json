@@ -929,5 +929,28 @@
     ],
     "gitSha": "1f70c7101cb803a8c0046914938909c5bc235b2a",
     "treeSha": "59022501f036c7f8d531bb83bad2b6d90dc55967"
+  },
+  {
+    "nodeId": "protocol-tests",
+    "completedAt": "2026-03-02T14:35:34.724Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302143532",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit && npx vitest run tests/protocol/worktree-protocol.test.ts 2>&1 | grep -q 'passed'"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit && npx vitest run tests/protocol/worktree-protocol.test.ts 2>&1 | grep -q 'passed'",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "1b51f6599bcc138afa16d0edada67415d8e84b95",
+    "treeSha": "db7626bce6324653ceeca9949614d4cfcd1d0a2d"
   }
 ]
