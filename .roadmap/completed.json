@@ -2404,5 +2404,31 @@
     ],
     "gitSha": "f2f5ed375e9b1fa59e2508816a0fd921ad2cf055",
     "treeSha": "62aa38cf284bbc02afddf12410ab327eae6fd3a7"
+  },
+  {
+    "nodeId": "gitsafe-contract-tests",
+    "completedAt": "2026-03-02T01:23:34.823Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302012334",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest src/lib/gitsafe/__tests__/contract.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx vitest src/lib/gitsafe/__tests__/contract.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "c4fa0a80dcdcf645c74dcfe9024b305afda734e2644bfbfbde3a0f6bd5e70b4c",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/gitsafe-contract-tests/mm8hwdg9-14qvgu/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "69ae63892fff5d927f45165731fc4f067ebd3bc5",
+    "treeSha": "e2f1fef57f3d074dec3b0fceeab73b75847d5bc8"
   }
 ]
