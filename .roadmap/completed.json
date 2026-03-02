@@ -1900,5 +1900,20 @@
     ],
     "gitSha": "bade118df42022dd727b8598d99f153e38454554",
     "treeSha": "ce5a7209c6794780e313aabc43c349167ad06943"
+  },
+  {
+    "nodeId": "p2-integration",
+    "completedAt": "2026-03-02T00:00:40.782Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302000040",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/p2-integration-check.json"
+      }
+    ],
+    "gitSha": "e6f431b44827fc246def511e45513e60f8524b67",
+    "treeSha": "5d5dd2fff297d56910cfb097d216c42a6af087e6"
   }
 ]
