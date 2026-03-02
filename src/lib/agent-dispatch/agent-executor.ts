@@ -174,8 +174,8 @@ export class AgentExecutor {
       currentFile: brief.produces[verified.length] || '',
       summary: brief.description.slice(0, 100),
       keyDecisions: [
-        `Idempotent: ${brief.idempotent}`,
-        `Validation rules: ${brief.validate.length}`,
+        `Pattern: ${brief.pattern}`,
+        `Mode: ${brief.mode}`,
         `Consumed ${brief.consumes.length} files`,
       ],
       gotchas: [],
