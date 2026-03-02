@@ -2050,5 +2050,20 @@
     ],
     "gitSha": "697f03445aa7a44888e5653ff822625c44e7d6f4",
     "treeSha": "2bf60cbc1acac6f436334b0b620ffe5c5aec1616"
+  },
+  {
+    "nodeId": "p4-init-chatelet",
+    "completedAt": "2026-03-02T00:23:19.135Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002319",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: security/CHATELET.json"
+      }
+    ],
+    "gitSha": "e1a2eed4d66ad3f733b40155bd3b89879e25b783",
+    "treeSha": "c72493a340f90a369e085eeb47c15aa173ca03fb"
   }
 ]
