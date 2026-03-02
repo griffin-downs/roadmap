@@ -57,6 +57,7 @@ import { runPatchStack } from '../src/lib/recipes/patch/patch-stack-cmd.ts';
 import { installAll, extractVersionHash, readPackageVersion, computeSkillHash } from '../src/lib/install-skills.ts';
 import { specKitInit, SPEC_KIT_INIT_HELP } from '../src/commands/spec-init.ts';
 import { loadCandidate, computeHeadSha, candidateExists, writeCandidateDAG } from '../src/lib/dag-candidate.ts';
+import { DagSwitcher, type SwitchResult } from '../src/lib/roadmap/dag-switcher.ts';
 import { writeToken, readToken, listTokens, isTokenExpired, tokenId as deriveTokenId, TOKEN_DIR } from '../src/lib/utils/tokens/token-store.ts';
 import type { TokenType, BoundToken } from '../src/lib/utils/tokens/token-store.ts';
 import { readIndex, gcTokens } from '../src/lib/utils/tokens/token-index.ts';
@@ -341,6 +342,7 @@ async function main() {
       case 'retire':    return cmdRetire(note!);
       case 'claim':     return cmdClaim();
       case 'dag':       return cmdDag(note!);
+      case 'switch':    return await cmdSwitch(note!);
       case 'token':     return await cmdToken(note!);
       case 'import':    return cmdImport(note!);
       case 'intake':    return cmdIntake(note!);
@@ -4005,6 +4007,48 @@ function cmdDagReject(note: string) {
   });
 
   json({ rejected: true, baseSha: envelope.baseSha, source: envelope.source, receiptPath, headJsonUnchanged: true });
+}
+
+// --- switch: switch between multiple DAGs ---
+
+async function cmdSwitch(note: string) {
+  const dagId = args[1];
+  if (!dagId) {
+    json({ error: 'Missing DAG ID', fix: 'roadmap switch <dag-id> --note "reason"' });
+    process.exit(1);
+  }
+
+  try {
+    const switcher = new DagSwitcher(repoRoot);
+    const result = await switcher.switch(dagId);
+
+    recordTrail({
+      ts: new Date().toISOString(),
+      cmd: 'switch',
+      note,
+      repo: basename(repoRoot),
+      position: [result.dagId],
+    });
+
+    json({
+      ok: true,
+      dagId: result.dagId,
+      switched: result.switched,
+      previousDagId: result.previousDagId,
+      newOrientation: {
+        position: result.newOrientation.position,
+        level: result.newOrientation.level,
+        produces: result.newOrientation.produces,
+        consumes: result.newOrientation.consumes,
+      },
+    });
+  } catch (err) {
+    json({
+      ok: false,
+      error: err instanceof Error ? err.message : 'Failed to switch DAG',
+    });
+    process.exit(1);
+  }
 }
 
 // --- token: issue, list, inspect, revoke, gc ---

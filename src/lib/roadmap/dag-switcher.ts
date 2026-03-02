@@ -1,287 +1,199 @@
 // @module dag-switcher
-// @exports DagSwitcher, switchDag, listDags, currentDag
-// @types DagSwitchResult, DagListResult, DagInfo
-// @entry roadmap
+// @exports DagSwitcher, switchDAG, validateDAGExists
+// @types SwitchResult
+// @entry roadmap/dag-management
 
-import { readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { execSync } from 'node:child_process';
+import {
+  readFileSync,
+  existsSync,
+  writeFileSync,
+  lstatSync,
+  unlinkSync,
+  readdirSync,
+  renameSync,
+} from 'node:fs';
+import { resolve } from 'node:path';
+import type { Graph } from '../../protocol.ts';
+import { orient, type Orientation, CompletionStore } from '../../protocol.ts';
 
-export interface DagInfo {
-  id: string;
-  dagId: string;
-  path: string;
-  isCurrent: boolean;
-  nodes: number;
-  desc?: string;
+export interface SwitchResult {
+  readonly dagId: string;
+  readonly dagPath: string;
+  readonly headPath: string;
+  readonly switched: boolean;
+  readonly previousDagId: string | null;
+  readonly newOrientation: Orientation;
 }
 
-export interface DagSwitchResult {
-  success: boolean;
-  timestamp: string;
-  prevDagId: string;
-  newDagId: string;
-  message: string;
-  error?: string;
+/**
+ * Validates that a DAG file exists at .roadmap/head.{dagId}.json
+ * Returns the full path if valid, throws if missing
+ */
+export function validateDAGExists(repoRoot: string, dagId: string): string {
+  const dagPath = resolve(repoRoot, '.roadmap', `head.${dagId}.json`);
+
+  if (!existsSync(dagPath)) {
+    throw new Error(`DAG not found: ${dagPath}`);
+  }
+
+  // Verify it's a valid JSON file
+  try {
+    const content = readFileSync(dagPath, 'utf8');
+    JSON.parse(content);
+  } catch (err) {
+    throw new Error(`Invalid DAG file: ${dagPath} — ${err instanceof Error ? err.message : 'unknown error'}`);
+  }
+
+  return dagPath;
 }
 
-export interface DagListResult {
-  success: boolean;
-  timestamp: string;
-  current: string;
-  available: DagInfo[];
-  count: number;
+/**
+ * Reads the current DAG ID from head.json
+ * Returns null if head.json doesn't exist or can't be read
+ */
+export function getCurrentDAGId(repoRoot: string): string | null {
+  const headPath = resolve(repoRoot, '.roadmap', 'head.json');
+
+  if (!existsSync(headPath)) {
+    return null;
+  }
+
+  try {
+    const content = readFileSync(headPath, 'utf8');
+    const parsed = JSON.parse(content) as { id?: string };
+    return parsed.id || null;
+  } catch {
+    return null;
+  }
 }
 
+/**
+ * Copies DAG from source to head.json atomically
+ * Writes to temp file first, then renames
+ */
+function updateHeadDAG(headPath: string, dagPath: string): void {
+  const dagContent = readFileSync(dagPath, 'utf8');
+  const tempPath = `${headPath}.tmp`;
+
+  try {
+    // Write to temp file first
+    writeFileSync(tempPath, dagContent, 'utf8');
+
+    // Remove old head.json if it exists and is a regular file
+    if (existsSync(headPath)) {
+      const stats = lstatSync(headPath);
+      if (stats.isSymbolicLink() || stats.isFile()) {
+        unlinkSync(headPath);
+      }
+    }
+
+    // Atomically rename temp to head
+    renameSync(tempPath, headPath);
+  } catch (err) {
+    // Clean up temp file on error
+    if (existsSync(tempPath)) {
+      unlinkSync(tempPath);
+    }
+    throw err;
+  }
+}
+
+/**
+ * Load a DAG from disk by ID
+ */
+export function loadDAGById(repoRoot: string, dagId: string): Graph<string> {
+  const dagPath = validateDAGExists(repoRoot, dagId);
+  const content = readFileSync(dagPath, 'utf8');
+  const dag = JSON.parse(content) as Graph<string>;
+  return dag;
+}
+
+/**
+ * DagSwitcher: manage switching between multiple DAGs in a repo
+ * Uses head.{dagId}.json convention for storing DAG versions
+ * Updates head.json to point to the active DAG
+ */
 export class DagSwitcher {
   private repoRoot: string;
-  private headJsonPath: string;
-  private headJsonBackupPath: string;
 
   constructor(repoRoot: string) {
     this.repoRoot = repoRoot;
-    this.headJsonPath = join(repoRoot, '.roadmap', 'head.json');
-    this.headJsonBackupPath = join(repoRoot, '.roadmap', 'head.json.backup');
   }
 
   /**
-   * Get the ID of the currently active DAG from head.json
+   * Switch to a different DAG by ID
+   * - Validates DAG exists
+   * - Loads and copies DAG to head.json
+   * - Re-orients to new DAG
+   * - Returns switch result with new orientation
    */
-  getCurrentDagId(): string {
-    try {
-      if (!existsSync(this.headJsonPath)) {
-        throw new Error('head.json not found');
-      }
-      const content = readFileSync(this.headJsonPath, 'utf-8');
-      const json = JSON.parse(content);
-      return json.id || 'unknown';
-    } catch (err) {
-      throw new Error(`Failed to get current DAG ID: ${err instanceof Error ? err.message : 'unknown'}`);
+  async switch(dagId: string): Promise<SwitchResult> {
+    // Get current DAG ID before switching
+    const previousDagId = getCurrentDAGId(this.repoRoot);
+
+    // Validate new DAG exists
+    const dagPath = validateDAGExists(this.repoRoot, dagId);
+
+    // Load the DAG
+    const newDAG = loadDAGById(this.repoRoot, dagId);
+
+    // Update head.json
+    const headPath = resolve(this.repoRoot, '.roadmap', 'head.json');
+    updateHeadDAG(headPath, dagPath);
+
+    // Re-orient to the new DAG
+    // Use empty CompletionStore for fresh orientation on new DAG
+    const newOrientation = orient(newDAG, CompletionStore.from([]));
+
+    return {
+      dagId,
+      dagPath,
+      headPath,
+      switched: true,
+      previousDagId,
+      newOrientation,
+    };
+  }
+
+  /**
+   * Get list of available DAGs in the repo
+   * Returns array of DAG IDs found as head.{dagId}.json files
+   */
+  getAvailableDAGs(): string[] {
+    const dotRoadmapPath = resolve(this.repoRoot, '.roadmap');
+
+    if (!existsSync(dotRoadmapPath)) {
+      return [];
     }
-  }
 
-  /**
-   * List all available DAGs in .roadmap directory
-   */
-  listAvailableDags(): DagInfo[] {
-    const dags: DagInfo[] = [];
-    const roadmapDir = join(this.repoRoot, '.roadmap');
+    const files = readdirSync(dotRoadmapPath, { withFileTypes: true });
+    const dagIds: string[] = [];
 
-    try {
-      // Get current DAG ID if head.json exists
-      let currentId: string | null = null;
-      try {
-        currentId = this.getCurrentDagId();
-      } catch {
-        // head.json doesn't exist, that's ok
-      }
-
-      const files = require('fs').readdirSync(roadmapDir);
-
-      files.forEach((file: string) => {
-        // Match head.{dag-id}.json pattern (but not head.json itself)
-        const match = file.match(/^head\.(.+)\.json$/);
-        if (!match || file === 'head.json') return;
-
-        const dagId = match[1];
-        const path = join(roadmapDir, file);
-
-        try {
-          const content = readFileSync(path, 'utf-8');
-          const json = JSON.parse(content);
-          const nodeCount = json.nodes ? Object.keys(json.nodes).length : 0;
-
-          dags.push({
-            id: json.id || dagId,
-            dagId: dagId,
-            path: path,
-            isCurrent: currentId !== null && json.id === currentId,
-            nodes: nodeCount,
-            desc: json.desc,
-          });
-        } catch {
-          // Skip unparseable files
+    for (const file of files) {
+      if (file.isFile() && file.name.startsWith('head.') && file.name.endsWith('.json')) {
+        // Extract dagId from 'head.{dagId}.json'
+        const match = file.name.match(/^head\.(.+)\.json$/);
+        if (match) {
+          dagIds.push(match[1]);
         }
-      });
-    } catch (err) {
-      throw new Error(`Failed to list DAGs: ${err instanceof Error ? err.message : 'unknown'}`);
-    }
-
-    // Sort by ID for consistent ordering
-    return dags.sort((a, b) => a.id.localeCompare(b.id));
-  }
-
-  /**
-   * Validate that a DAG exists and is readable
-   */
-  private validateDagExists(dagId: string): string {
-    const dagPath = join(this.repoRoot, '.roadmap', `head.${dagId}.json`);
-
-    if (!existsSync(dagPath)) {
-      throw new Error(`DAG not found: head.${dagId}.json`);
-    }
-
-    try {
-      const content = readFileSync(dagPath, 'utf-8');
-      JSON.parse(content);
-      return dagPath;
-    } catch (err) {
-      throw new Error(`Invalid DAG file: ${err instanceof Error ? err.message : 'unknown'}`);
-    }
-  }
-
-  /**
-   * Switch to a different DAG
-   * Creates backup of current head.json before switching
-   */
-  switchToDag(dagId: string): DagSwitchResult {
-    const timestamp = new Date().toISOString();
-
-    try {
-      // Get current DAG ID before switch
-      const prevDagId = this.getCurrentDagId();
-
-      // Validate target DAG exists
-      const targetDagPath = this.validateDagExists(dagId);
-
-      // Create backup of current head.json
-      if (existsSync(this.headJsonPath)) {
-        copyFileSync(this.headJsonPath, this.headJsonBackupPath);
       }
-
-      // Read target DAG
-      const targetContent = readFileSync(targetDagPath, 'utf-8');
-      const targetJson = JSON.parse(targetContent);
-
-      // Update head.json to point to target DAG
-      writeFileSync(this.headJsonPath, targetContent);
-
-      // Update git-state.json to reflect the switch
-      const gitStatePath = join(this.repoRoot, '.roadmap', 'git-state.json');
-      try {
-        const currentSha = execSync('git rev-parse HEAD', {
-          cwd: this.repoRoot,
-          encoding: 'utf-8',
-        }).trim();
-
-        const gitState = {
-          lastCommit: currentSha,
-          timestamp: timestamp,
-          message: `DAG switched from ${prevDagId} to ${dagId}`,
-        };
-
-        writeFileSync(gitStatePath, JSON.stringify(gitState, null, 2) + '\n');
-      } catch (err) {
-        // Git may not be available, but that's ok — switch still succeeds
-      }
-
-      return {
-        success: true,
-        timestamp,
-        prevDagId,
-        newDagId: dagId,
-        message: `Switched from ${prevDagId} to ${dagId}`,
-      };
-    } catch (err) {
-      return {
-        success: false,
-        timestamp,
-        prevDagId: 'unknown',
-        newDagId: dagId,
-        message: `Failed to switch DAG`,
-        error: err instanceof Error ? err.message : 'unknown error',
-      };
     }
+
+    return dagIds.sort();
   }
 
   /**
-   * Restore previous DAG from backup
+   * Get current DAG ID
    */
-  restorePreviousDag(): DagSwitchResult {
-    const timestamp = new Date().toISOString();
-
-    try {
-      if (!existsSync(this.headJsonBackupPath)) {
-        throw new Error('No backup found');
-      }
-
-      const prevDagId = this.getCurrentDagId();
-
-      // Restore from backup
-      copyFileSync(this.headJsonBackupPath, this.headJsonPath);
-
-      const content = readFileSync(this.headJsonPath, 'utf-8');
-      const json = JSON.parse(content);
-      const restoredDagId = json.id || 'unknown';
-
-      return {
-        success: true,
-        timestamp,
-        prevDagId: prevDagId,
-        newDagId: restoredDagId,
-        message: `Restored to ${restoredDagId}`,
-      };
-    } catch (err) {
-      return {
-        success: false,
-        timestamp,
-        prevDagId: 'unknown',
-        newDagId: 'unknown',
-        message: 'Failed to restore previous DAG',
-        error: err instanceof Error ? err.message : 'unknown error',
-      };
-    }
-  }
-
-  /**
-   * Get detailed info about a specific DAG
-   */
-  getDagInfo(dagId: string): DagInfo | null {
-    const dags = this.listAvailableDags();
-    const dag = dags.find((d) => d.dagId === dagId || d.id === dagId);
-    return dag || null;
+  getCurrentDAG(): string | null {
+    return getCurrentDAGId(this.repoRoot);
   }
 }
 
 /**
- * Standalone utility: switch to a DAG
+ * Convenience function: switch DAG and return result
  */
-export function switchDag(repoRoot: string, dagId: string): DagSwitchResult {
-  return new DagSwitcher(repoRoot).switchToDag(dagId);
-}
-
-/**
- * Standalone utility: list available DAGs
- */
-export function listDags(repoRoot: string): DagListResult {
-  const timestamp = new Date().toISOString();
-
-  try {
-    const switcher = new DagSwitcher(repoRoot);
-    const current = switcher.getCurrentDagId();
-    const available = switcher.listAvailableDags();
-
-    return {
-      success: true,
-      timestamp,
-      current,
-      available,
-      count: available.length,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      timestamp,
-      current: 'unknown',
-      available: [],
-      count: 0,
-    };
-  }
-}
-
-/**
- * Standalone utility: get current DAG ID
- */
-export function currentDag(repoRoot: string): string {
-  return new DagSwitcher(repoRoot).getCurrentDagId();
+export async function switchDAG(repoRoot: string, dagId: string): Promise<SwitchResult> {
+  const switcher = new DagSwitcher(repoRoot);
+  return switcher.switch(dagId);
 }

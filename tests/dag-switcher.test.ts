@@ -1,427 +1,214 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { writeFileSync, mkdirSync, rmSync, readFileSync, existsSync } from 'node:fs';
-import { execSync } from 'node:child_process';
 import {
   DagSwitcher,
-  switchDag,
-  listDags,
-  currentDag,
-  DagInfo,
-  DagListResult,
+  switchDAG,
+  validateDAGExists,
+  getCurrentDAGId,
+  loadDAGById,
 } from '../src/lib/roadmap/dag-switcher.ts';
+import type { Graph } from '../src/protocol.ts';
+
+const createTestDAG = (id: string, desc: string): Graph<string> => ({
+  id,
+  desc,
+  init: 'node-a',
+  term: 'node-b',
+  nodes: {
+    'node-a': {
+      id: 'node-a',
+      desc: `First node of ${id}`,
+      produces: [],
+      consumes: [],
+      deps: [],
+      validate: [],
+      idempotent: true,
+    },
+    'node-b': {
+      id: 'node-b',
+      desc: `Second node of ${id}`,
+      produces: [],
+      consumes: [],
+      deps: ['node-a'],
+      validate: [],
+      idempotent: true,
+    },
+  },
+});
 
 describe('DagSwitcher', () => {
-  let testDir: string;
-  let switcher: DagSwitcher;
+  let tmpDir: string;
 
   beforeEach(() => {
-    // Create test directory with roadmap structure
-    testDir = join(process.cwd(), '.test-dag-switch-' + Date.now());
-    mkdirSync(testDir, { recursive: true });
-    mkdirSync(join(testDir, '.roadmap'), { recursive: true });
-
-    switcher = new DagSwitcher(testDir);
-
-    // Initialize git repo
-    try {
-      execSync('git init', { cwd: testDir, stdio: 'pipe' });
-      execSync('git config user.email "test@test.com"', { cwd: testDir, stdio: 'pipe' });
-      execSync('git config user.name "Test User"', { cwd: testDir, stdio: 'pipe' });
-    } catch {
-      // Git may fail, that's ok
-    }
+    tmpDir = mkdtempSync(join('/tmp', 'dag-switcher-test-'));
+    const roadmapDir = join(tmpDir, '.roadmap');
+    require('node:fs').mkdirSync(roadmapDir, { recursive: true });
   });
 
   afterEach(() => {
-    try {
-      rmSync(testDir, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
+    if (existsSync(tmpDir)) {
+      rmSync(tmpDir, { recursive: true, force: true });
     }
   });
 
-  describe('getCurrentDagId', () => {
-    it('fails when head.json is missing', () => {
-      expect(() => switcher.getCurrentDagId()).toThrow('head.json not found');
-    });
+  it('should validate existing DAG', () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
+    const dagId = 'test-dag-001';
+    const dag = createTestDAG(dagId, 'Test DAG');
+    const dagPath = join(roadmapDir, `head.${dagId}.json`);
+    writeFileSync(dagPath, JSON.stringify(dag, null, 2));
 
-    it('extracts dag ID from head.json', () => {
-      const dagId = 'test-dag-001';
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: dagId, nodes: {} })
-      );
-
-      expect(switcher.getCurrentDagId()).toBe(dagId);
-    });
-
-    it('returns "unknown" when id field is missing', () => {
-      writeFileSync(join(testDir, '.roadmap', 'head.json'), JSON.stringify({ nodes: {} }));
-
-      expect(switcher.getCurrentDagId()).toBe('unknown');
-    });
-
-    it('handles invalid JSON gracefully', () => {
-      writeFileSync(join(testDir, '.roadmap', 'head.json'), 'not valid json');
-
-      expect(() => switcher.getCurrentDagId()).toThrow();
-    });
+    const result = validateDAGExists(tmpDir, dagId);
+    expect(result).toBe(dagPath);
   });
 
-  describe('listAvailableDags', () => {
-    it('returns empty list when no DAG files exist', () => {
-      const dags = switcher.listAvailableDags();
-      expect(dags).toEqual([]);
-    });
-
-    it('discovers head.{dag-id}.json files', () => {
-      // Create current head.json
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current-dag', nodes: { a: { id: 'a' } } })
-      );
-
-      // Create available DAGs
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.dag-alpha.json'),
-        JSON.stringify({
-          id: 'dag-alpha',
-          desc: 'Alpha DAG',
-          nodes: { n1: { id: 'n1' }, n2: { id: 'n2' } },
-        })
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.dag-beta.json'),
-        JSON.stringify({
-          id: 'dag-beta',
-          desc: 'Beta DAG',
-          nodes: { n1: { id: 'n1' } },
-        })
-      );
-
-      const dags = switcher.listAvailableDags();
-
-      expect(dags).toHaveLength(2);
-      expect(dags.map((d) => d.id)).toContain('dag-alpha');
-      expect(dags.map((d) => d.id)).toContain('dag-beta');
-    });
-
-    it('marks current DAG in the list', () => {
-      // Create head.json and head.{dagId}.json with same content
-      const currentContent = JSON.stringify({ id: 'current-dag', nodes: {} });
-      writeFileSync(join(testDir, '.roadmap', 'head.json'), currentContent);
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.current-dag.json'),
-        currentContent
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.other.json'),
-        JSON.stringify({ id: 'other-dag', nodes: {} })
-      );
-
-      const dags = switcher.listAvailableDags();
-      const current = dags.find((d) => d.id === 'current-dag');
-      expect(current?.isCurrent).toBe(true);
-    });
-
-    it('counts nodes in each DAG', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.test.json'),
-        JSON.stringify({
-          id: 'test-dag',
-          nodes: {
-            init: { id: 'init' },
-            work: { id: 'work' },
-            term: { id: 'term' },
-          },
-        })
-      );
-
-      const dags = switcher.listAvailableDags();
-      const testDag = dags.find((d) => d.id === 'test-dag');
-      expect(testDag?.nodes).toBe(3);
-    });
-
-    it('skips invalid JSON files', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.invalid.json'),
-        'not valid json'
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.valid.json'),
-        JSON.stringify({ id: 'valid-dag', nodes: {} })
-      );
-
-      const dags = switcher.listAvailableDags();
-      expect(dags.map((d) => d.id)).toContain('valid-dag');
-      expect(dags.map((d) => d.id)).not.toContain('invalid');
-    });
-
-    it('returns sorted list by DAG ID', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
-
-      for (const name of ['zebra', 'alpha', 'charlie', 'bravo']) {
-        writeFileSync(
-          join(testDir, '.roadmap', `head.${name}.json`),
-          JSON.stringify({ id: name, nodes: {} })
-        );
-      }
-
-      const dags = switcher.listAvailableDags();
-      const ids = dags.map((d) => d.id);
-      expect(ids).toEqual(['alpha', 'bravo', 'charlie', 'zebra']);
-    });
+  it('should throw for missing DAG', () => {
+    expect(() => validateDAGExists(tmpDir, 'nonexistent')).toThrow(/DAG not found/);
   });
 
-  describe('switchToDag', () => {
-    it('fails when target DAG does not exist', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
+  it('should throw for invalid JSON DAG', () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
+    const dagId = 'invalid-dag';
+    const dagPath = join(roadmapDir, `head.${dagId}.json`);
+    writeFileSync(dagPath, 'not valid json');
 
-      const result = switcher.switchToDag('nonexistent');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('not found');
-    });
-
-    it('fails when target DAG is invalid JSON', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.invalid.json'),
-        'not valid json'
-      );
-
-      const result = switcher.switchToDag('invalid');
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Invalid');
-    });
-
-    it('successfully switches to a valid DAG', () => {
-      // Create current DAG
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({
-          id: 'current-dag',
-          desc: 'Current',
-          nodes: { a: { id: 'a' } },
-        })
-      );
-
-      // Create target DAG
-      const targetContent = JSON.stringify({
-        id: 'target-dag',
-        desc: 'Target',
-        nodes: { x: { id: 'x' }, y: { id: 'y' } },
-      });
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.target.json'),
-        targetContent
-      );
-
-      const result = switcher.switchToDag('target');
-
-      expect(result.success).toBe(true);
-      expect(result.prevDagId).toBe('current-dag');
-      expect(result.newDagId).toBe('target');
-
-      // Verify head.json was updated
-      const updatedHead = JSON.parse(
-        readFileSync(join(testDir, '.roadmap', 'head.json'), 'utf-8')
-      );
-      expect(updatedHead.id).toBe('target-dag');
-    });
-
-    it('creates backup of current head.json before switch', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.target.json'),
-        JSON.stringify({ id: 'target', nodes: {} })
-      );
-
-      switcher.switchToDag('target');
-
-      const backup = readFileSync(
-        join(testDir, '.roadmap', 'head.json.backup'),
-        'utf-8'
-      );
-      expect(JSON.parse(backup).id).toBe('current');
-    });
-
-    it('updates git-state.json on successful switch', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.target.json'),
-        JSON.stringify({ id: 'target', nodes: {} })
-      );
-
-      switcher.switchToDag('target');
-
-      if (existsSync(join(testDir, '.roadmap', 'git-state.json'))) {
-        const gitState = JSON.parse(
-          readFileSync(join(testDir, '.roadmap', 'git-state.json'), 'utf-8')
-        );
-        expect(gitState.message).toContain('switched');
-        expect(gitState.message).toContain('target');
-      }
-    });
+    expect(() => validateDAGExists(tmpDir, dagId)).toThrow(/Invalid DAG file/);
   });
 
-  describe('restorePreviousDag', () => {
-    it('fails when no backup exists', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
+  it('should get current DAG ID', () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
+    const dag = createTestDAG('current-dag', 'Current DAG');
+    const headPath = join(roadmapDir, 'head.json');
+    writeFileSync(headPath, JSON.stringify(dag, null, 2));
 
-      const result = switcher.restorePreviousDag();
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('No backup');
-    });
-
-    it('restores from backup after switch', () => {
-      const currentContent = JSON.stringify({ id: 'dag-a', nodes: {} });
-      const targetContent = JSON.stringify({ id: 'dag-b', nodes: {} });
-
-      writeFileSync(join(testDir, '.roadmap', 'head.json'), currentContent);
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.target.json'),
-        targetContent
-      );
-
-      // Switch to target
-      switcher.switchToDag('target');
-
-      // Verify we're on target
-      let current = JSON.parse(
-        readFileSync(join(testDir, '.roadmap', 'head.json'), 'utf-8')
-      );
-      expect(current.id).toBe('dag-b');
-
-      // Restore
-      const result = switcher.restorePreviousDag();
-
-      expect(result.success).toBe(true);
-      expect(result.newDagId).toBe('dag-a');
-
-      // Verify we're back on original
-      current = JSON.parse(
-        readFileSync(join(testDir, '.roadmap', 'head.json'), 'utf-8')
-      );
-      expect(current.id).toBe('dag-a');
-    });
+    const currentId = getCurrentDAGId(tmpDir);
+    expect(currentId).toBe('current-dag');
   });
 
-  describe('getDagInfo', () => {
-    it('returns null for non-existent DAG', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
-
-      const info = switcher.getDagInfo('nonexistent');
-      expect(info).toBeNull();
-    });
-
-    it('returns DAG info by dagId or id', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
-
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.my-dag.json'),
-        JSON.stringify({
-          id: 'my-dag-id',
-          desc: 'My DAG',
-          nodes: { a: { id: 'a' } },
-        })
-      );
-
-      // Find by dagId
-      const byDagId = switcher.getDagInfo('my-dag');
-      expect(byDagId?.id).toBe('my-dag-id');
-
-      // Find by id
-      const byId = switcher.getDagInfo('my-dag-id');
-      expect(byId?.id).toBe('my-dag-id');
-    });
+  it('should return null when head.json does not exist', () => {
+    const currentId = getCurrentDAGId(tmpDir);
+    expect(currentId).toBeNull();
   });
 
-  describe('standalone utilities', () => {
-    it('switchDag works as standalone', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
+  it('should load DAG by ID', () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
+    const dagId = 'load-test';
+    const dag = createTestDAG(dagId, 'Load Test DAG');
+    const dagPath = join(roadmapDir, `head.${dagId}.json`);
+    writeFileSync(dagPath, JSON.stringify(dag, null, 2));
 
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.target.json'),
-        JSON.stringify({ id: 'target', nodes: {} })
-      );
+    const loaded = loadDAGById(tmpDir, dagId);
+    expect(loaded.id).toBe(dagId);
+    expect(loaded.desc).toBe('Load Test DAG');
+  });
 
-      const result = switchDag(testDir, 'target');
-      expect(result.success).toBe(true);
-    });
+  it('should switch between DAGs', async () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
 
-    it('listDags works as standalone', () => {
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: 'current', nodes: {} })
-      );
+    // Create two DAGs
+    const dag1 = createTestDAG('dag-1', 'First DAG');
+    const dag2 = createTestDAG('dag-2', 'Second DAG');
 
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.other.json'),
-        JSON.stringify({ id: 'other', nodes: {} })
-      );
+    const dag1Path = join(roadmapDir, 'head.dag-1.json');
+    const dag2Path = join(roadmapDir, 'head.dag-2.json');
+    const headPath = join(roadmapDir, 'head.json');
 
-      const result: DagListResult = listDags(testDir);
-      expect(result.success).toBe(true);
-      expect(result.count).toBe(1);
-    });
+    writeFileSync(dag1Path, JSON.stringify(dag1, null, 2));
+    writeFileSync(dag2Path, JSON.stringify(dag2, null, 2));
 
-    it('currentDag works as standalone', () => {
-      const dagId = 'my-dag';
-      writeFileSync(
-        join(testDir, '.roadmap', 'head.json'),
-        JSON.stringify({ id: dagId, nodes: {} })
-      );
+    // Initially set to dag-1
+    writeFileSync(headPath, JSON.stringify(dag1, null, 2));
 
-      const result = currentDag(testDir);
-      expect(result).toBe(dagId);
-    });
+    // Switch to dag-2
+    const switcher = new DagSwitcher(tmpDir);
+    const result = await switcher.switch('dag-2');
+
+    expect(result.dagId).toBe('dag-2');
+    expect(result.switched).toBe(true);
+    expect(result.previousDagId).toBe('dag-1');
+
+    // Verify head.json was updated
+    const newHead = JSON.parse(readFileSync(headPath, 'utf8')) as Graph<string>;
+    expect(newHead.id).toBe('dag-2');
+  });
+
+  it('should list available DAGs', () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
+
+    // Create multiple DAGs
+    const dag1 = createTestDAG('dag-alpha', 'Alpha DAG');
+    const dag2 = createTestDAG('dag-beta', 'Beta DAG');
+    const dag3 = createTestDAG('dag-gamma', 'Gamma DAG');
+
+    writeFileSync(join(roadmapDir, 'head.dag-alpha.json'), JSON.stringify(dag1));
+    writeFileSync(join(roadmapDir, 'head.dag-beta.json'), JSON.stringify(dag2));
+    writeFileSync(join(roadmapDir, 'head.dag-gamma.json'), JSON.stringify(dag3));
+
+    const switcher = new DagSwitcher(tmpDir);
+    const available = switcher.getAvailableDAGs();
+
+    expect(available).toEqual(['dag-alpha', 'dag-beta', 'dag-gamma']);
+  });
+
+  it('should handle atomic updates on switch failure', async () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
+    const dag1 = createTestDAG('dag-1', 'First DAG');
+    const headPath = join(roadmapDir, 'head.json');
+
+    writeFileSync(headPath, JSON.stringify(dag1, null, 2));
+
+    // Try to switch to non-existent DAG
+    const switcher = new DagSwitcher(tmpDir);
+
+    try {
+      await switcher.switch('nonexistent');
+    } catch (err) {
+      // Expected to fail
+    }
+
+    // Verify head.json is unchanged
+    const stillHead = JSON.parse(readFileSync(headPath, 'utf8')) as Graph<string>;
+    expect(stillHead.id).toBe('dag-1');
+  });
+
+  it('should use switchDAG convenience function', async () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
+    const dag1 = createTestDAG('dag-1', 'First DAG');
+    const dag2 = createTestDAG('dag-2', 'Second DAG');
+
+    const dag1Path = join(roadmapDir, 'head.dag-1.json');
+    const dag2Path = join(roadmapDir, 'head.dag-2.json');
+    const headPath = join(roadmapDir, 'head.json');
+
+    writeFileSync(dag1Path, JSON.stringify(dag1, null, 2));
+    writeFileSync(dag2Path, JSON.stringify(dag2, null, 2));
+    writeFileSync(headPath, JSON.stringify(dag1, null, 2));
+
+    const result = await switchDAG(tmpDir, 'dag-2');
+    expect(result.dagId).toBe('dag-2');
+    expect(result.switched).toBe(true);
+  });
+
+  it('should get current DAG after switch', async () => {
+    const roadmapDir = join(tmpDir, '.roadmap');
+    const dag1 = createTestDAG('dag-1', 'First DAG');
+    const dag2 = createTestDAG('dag-2', 'Second DAG');
+
+    const dag1Path = join(roadmapDir, 'head.dag-1.json');
+    const dag2Path = join(roadmapDir, 'head.dag-2.json');
+    const headPath = join(roadmapDir, 'head.json');
+
+    writeFileSync(dag1Path, JSON.stringify(dag1, null, 2));
+    writeFileSync(dag2Path, JSON.stringify(dag2, null, 2));
+    writeFileSync(headPath, JSON.stringify(dag1, null, 2));
+
+    const switcher = new DagSwitcher(tmpDir);
+
+    expect(switcher.getCurrentDAG()).toBe('dag-1');
+
+    await switcher.switch('dag-2');
+
+    expect(switcher.getCurrentDAG()).toBe('dag-2');
   });
 });
