@@ -5,7 +5,7 @@
 // @entry bin/roadmap
 
 import { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync, readdirSync, statSync, unlinkSync } from 'node:fs';
-import { join, resolve, basename } from 'node:path';
+import { join, resolve, basename, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -347,7 +347,7 @@ async function main() {
       case 'federation': return cmdFederation(note!);
       case 'dispatch':  return await cmdDispatch(note!);
       case 'spec':      return cmdSpec(note!);
-      case 'spec-kit':  return cmdSpecKit(note);
+      case 'spec-kit':  return cmdSpecKit(note!);
       case 'init':      return cmdInit(note!);
       case 'report':    return await cmdReport(note!);
       case 'scaffold':  return await cmdScaffold(note!);
@@ -2234,7 +2234,7 @@ function cmdPatch(note: string) {
     return;
   }
   const record = runPatchStack({ nodeIds, baseSha, repoRoot });
-  recordTrail({ ts: new Date().toISOString(), cmd: 'patch', note, position: '', level: 0 });
+  recordTrail({ ts: new Date().toISOString(), cmd: 'patch', note, repo: basename(repoRoot), position: '', level: 0 });
   json(record);
 }
 function cmdEnvAudit() {
@@ -2260,7 +2260,7 @@ function cmdProfile(note: string) {
     );
   }
 
-  recordTrail({ command: "profile", note, position: [], level: -1 });
+  recordTrail({ ts: new Date().toISOString(), cmd: "profile", note, repo: basename(repoRoot), position: [], level: -1 });
   json(report);
 }
 
@@ -3038,7 +3038,7 @@ async function cmdComplete(note: string) {
   // Suppress with --no-advance for orchestrators that want to gate manually.
   let advanced: { previousBatch: string[]; nextBatch: string[]; nextLevel: number } | undefined;
   const noAdvance = args.includes('--no-advance');
-  if (posAfter.batchComplete && !noAdvance && !posAfter.complete) {
+  if (posAfter.batchComplete && !noAdvance && posAfter.remaining.length > 0) {
     try {
       const { advanceBatch } = await import('../src/protocol.ts');
       const next = await advanceBatch(dag, loadStore(), retiredSet());
@@ -3059,7 +3059,7 @@ async function cmdComplete(note: string) {
   // Run shell validators through validator-runner for artifact capture
   const nodeValidators = ((dag.nodes as Record<string, any>)[nodeId]?.validate ?? []) as any[];
   const shellRules = nodeValidators.filter((r: any) => r.type === 'shell');
-  let validatorResults: import('../src/lib/completion-store.ts').ValidatorResult[] | undefined;
+  let validatorResults: import('../src/lib/completion/completion-store.ts').ValidatorResult[] | undefined;
   if (shellRules.length > 0 && !skipValidate) {
     const { runValidator } = await import('../src/lib/validator-runner.ts');
     validatorResults = [];
@@ -4393,7 +4393,7 @@ function cmdImport(note: string) {
   const resolvedPath = resolve(filePath);
   const content = readFileSync(resolvedPath, 'utf-8');
   const inputHash = createHash('sha256').update(content).digest('hex');
-  const specInputs = [{ path: filePath, sha256: inputHash }];
+  const specInputs = [{ path: filePath, sha256: inputHash, role: 'tasks' as const }];
 
   const tasks = parseTasksMd(content);
   if (tasks.length === 0) {
@@ -6007,7 +6007,7 @@ async function cmdInternalImplementProposal(note: string) {
     json({ ok: true, impl: result });
     recordTrail({
       ts: new Date().toISOString(), cmd: 'internal.implement-proposal', note, repo: basename(repoRoot),
-      detail: { iterN, strategy: result.strategy, filesModified: result.filesModified.length },
+      detail: { iterN, strategy: result.strategy, targetFile: result.targetFile },
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

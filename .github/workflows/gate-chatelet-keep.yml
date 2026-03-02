@@ -7,18 +7,20 @@ on:
       - master
 
 jobs:
-  keep-audit:
+  keep-budget:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Load Node
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
+          cache: npm
+
       - name: Install dependencies
         run: npm ci
-      - name: Run keep audit
-        run: |
-          echo "Running Chatelet keep audit..."
-          npm run keep:audit || exit 1
-          echo "✓ Keep audit passed"
+
+      - name: Run KeepBudget check
+        run: npm run gate:chatelet-keep
+        timeout-minutes: 1

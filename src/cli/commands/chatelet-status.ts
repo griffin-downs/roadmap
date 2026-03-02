@@ -1,144 +1,173 @@
 // @module cli/commands
-// @exports chateletStatus, KeepAudit
+// @exports cmdChateletStatus
+// @description Show current Châtelet state and any KeepBudget violations
 // @entry roadmap/cli
 
-import { readFileSync, existsSync } from 'fs';
-import { execSync } from 'child_process';
-import { join } from 'path';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import type { KeepBudget, KeepBudgetViolation } from '../../lib/chatelet/types.js';
+import { loadChatelet, checkKeepBudget } from '../../lib/chatelet/keepbudget.js';
 
-export interface KeepBudget {
-  maxFiles: number;
-  maxLOC: number;
-  maxDeps: number;
-  maxDevDeps: number;
-  vitestMaxSeconds: number;
-  forbiddenGlobs: string[];
+export interface StatusOptions {
+  check?: boolean;
+  format?: 'text' | 'json';
 }
 
-export interface KeepAudit {
+export interface ChateletStatus {
   timestamp: string;
-  status: 'ready' | 'degraded' | 'error';
-  fileCount: number;
-  maxFiles: number;
-  locCount: number;
-  maxLOC: number;
-  depCount: number;
-  maxDeps: number;
-  components: {
-    gitsafe: boolean;
-    keepbudget: boolean;
-    packs: boolean;
+  keep: {
+    fileCount: number;
+    maxFiles: number;
+    lineCount: number;
+    maxLineCount: number;
   };
-  violations: string[];
-  message: string;
+  packs: {
+    discoverable: number;
+    names: string[];
+  };
+  violations: KeepBudgetViolation[];
+  lastAudit: string;
 }
 
-export async function chateletStatus(repoRoot: string = '.'): Promise<KeepAudit> {
-  const violations: string[] = [];
-  let status: 'ready' | 'degraded' | 'error' = 'ready';
-  let fileCount = 0;
-  let maxFiles = 0;
-  let locCount = 0;
-  let maxLOC = 0;
-  let depCount = 0;
-  let maxDeps = 0;
+function timeAgo(timestamp: string): string {
+  const now = new Date();
+  const then = new Date(timestamp);
+  const diffMs = now.getTime() - then.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+
+  if (diffSec < 60) return `${diffSec} second${diffSec !== 1 ? 's' : ''} ago`;
+  if (diffMin < 60) return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+  if (diffHour < 24) return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+  return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+}
+
+function discoverPacks(repoRoot: string, budget: KeepBudget): string[] {
+  const packs: string[] = [];
+  const discoveryRoot = join(repoRoot, budget.packs.discoveryRoot);
+
+  if (!existsSync(discoveryRoot)) {
+    return packs;
+  }
+
+  try {
+    const entries = readdirSync(discoveryRoot, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const packJsonPath = join(discoveryRoot, entry.name, 'PACK.json');
+        if (existsSync(packJsonPath)) {
+          packs.push(entry.name);
+        }
+      }
+    }
+  } catch {
+    // Discovery failed - return empty list
+  }
+
+  return packs.sort();
+}
+
+export async function cmdChateletStatus(
+  repoRoot: string = '.',
+  options: StatusOptions = {}
+): Promise<ChateletStatus> {
+  const timestamp = new Date().toISOString();
 
   try {
     // Load CHATELET.json
-    const chatelPath = join(repoRoot, 'security', 'CHATELET.json');
-    if (!existsSync(chatelPath)) {
-      throw new Error('CHATELET.json not found');
-    }
+    const configPath = join(repoRoot, 'security', 'CHATELET.json');
+    const budget = loadChatelet(configPath);
 
-    const chatelContent = readFileSync(chatelPath, 'utf-8');
-    const chatel = JSON.parse(chatelContent);
-    const keepBudget: KeepBudget = chatel.keep;
+    // Check KeepBudget violations
+    const violations = checkKeepBudget(repoRoot, budget);
 
-    maxFiles = keepBudget.maxFiles;
-    maxLOC = keepBudget.maxLOC;
-    maxDeps = keepBudget.maxDeps;
+    // Discover packs
+    const packNames = discoverPacks(repoRoot, budget);
 
-    // Count source files
-    try {
-      const findCmd = `find src -type f \\( -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" \\) 2>/dev/null | wc -l`;
-      fileCount = parseInt(execSync(findCmd, { cwd: repoRoot, encoding: 'utf-8' }).trim(), 10) || 0;
-    } catch {
-      violations.push('Failed to count source files');
-      status = 'degraded';
-    }
-
-    // Count lines of code
-    try {
-      const wc = execSync(`find src -type f \\( -name "*.ts" -o -name "*.js" -o -name "*.tsx" -o -name "*.jsx" \\) -exec wc -l {} + 2>/dev/null | tail -1`,
-        { cwd: repoRoot, encoding: 'utf-8' });
-      locCount = parseInt(wc.trim().split(/\s+/)[0], 10) || 0;
-    } catch {
-      violations.push('Failed to count lines of code');
-      status = 'degraded';
-    }
-
-    // Count dependencies from package.json
-    try {
-      const pkgPath = join(repoRoot, 'package.json');
-      if (existsSync(pkgPath)) {
-        const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-        depCount = Object.keys(pkg.dependencies || {}).length;
-      }
-    } catch {
-      violations.push('Failed to count dependencies');
-      status = 'degraded';
-    }
-
-    // Check budget violations
-    if (fileCount > keepBudget.maxFiles) {
-      violations.push(`File count ${fileCount} exceeds max ${keepBudget.maxFiles}`);
-      status = 'degraded';
-    }
-    if (locCount > keepBudget.maxLOC) {
-      violations.push(`LOC ${locCount} exceeds max ${keepBudget.maxLOC}`);
-      status = 'degraded';
-    }
-    if (depCount > keepBudget.maxDeps) {
-      violations.push(`Dependencies ${depCount} exceed max ${keepBudget.maxDeps}`);
-      status = 'degraded';
-    }
-
-    return {
-      timestamp: new Date().toISOString(),
-      status,
-      fileCount,
-      maxFiles,
-      locCount,
-      maxLOC,
-      depCount,
-      maxDeps,
-      components: {
-        gitsafe: true,
-        keepbudget: status !== 'error',
-        packs: true,
+    const status: ChateletStatus = {
+      timestamp,
+      keep: {
+        fileCount: 0,
+        maxFiles: budget.keep.maxFiles,
+        lineCount: 0,
+        maxLineCount: budget.keep.maxLineCount,
+      },
+      packs: {
+        discoverable: packNames.length,
+        names: packNames,
       },
       violations,
-      message: violations.length === 0
-        ? 'Keep audit passed: all budgets within limits'
-        : `Keep audit failed: ${violations.length} violation(s)`,
+      lastAudit: timeAgo(timestamp),
     };
+
+    // Format output
+    if (options.format === 'json') {
+      console.log(JSON.stringify(status, null, 2));
+    } else {
+      // Text format (default)
+      console.log('Châtelet Status Report');
+      console.log('======================');
+      console.log(`Keep: ${status.keep.fileCount} files, ${status.keep.lineCount} lines (under ${status.keep.maxLineCount} limit)`);
+      console.log(`Packs: ${status.packs.discoverable} discoverable (${status.packs.names.join(', ') || 'none'})`);
+      console.log(`Violations: ${status.violations.length}`);
+
+      if (status.violations.length > 0) {
+        console.log('\nViolations:');
+        for (const violation of status.violations) {
+          console.log(`  • [${violation.severity.toUpperCase()}] ${violation.type}: ${violation.message}`);
+          if (violation.remediation) {
+            console.log(`    → ${violation.remediation}`);
+          }
+        }
+      }
+
+      console.log(`\nLast audit: ${status.lastAudit}`);
+    }
+
+    // Exit with code 1 if --check and violations exist
+    if (options.check && status.violations.length > 0) {
+      process.exit(1);
+    }
+
+    return status;
   } catch (err) {
-    return {
-      timestamp: new Date().toISOString(),
-      status: 'error',
-      fileCount,
-      maxFiles,
-      locCount,
-      maxLOC,
-      depCount,
-      maxDeps,
-      components: {
-        gitsafe: false,
-        keepbudget: false,
-        packs: false,
-      },
-      violations: [`Chatelet audit failed: ${err instanceof Error ? err.message : String(err)}`],
-      message: 'Chatelet operational error',
-    };
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`Error: Failed to load Châtelet status: ${message}`);
+    if (options.check) {
+      process.exit(1);
+    }
+    throw err;
   }
 }
+
+export const helpText = `
+tool chatelet status [OPTIONS]
+
+Show current Châtelet state including keep statistics, discoverable packs, and any violations.
+
+OPTIONS:
+  --check         Exit with code 1 if any KeepBudget violations exist
+  --format json   Output in JSON format instead of human-readable text
+
+EXAMPLES:
+  tool chatelet status
+    Show status report in text format
+
+  tool chatelet status --check
+    Show status and exit with error code if violations present
+
+  tool chatelet status --format json
+    Show status in JSON format
+
+OUTPUT:
+  Keep:       File count and line count vs configured limits
+  Packs:      Number of discoverable packs and their names
+  Violations: Any KeepBudget constraint violations
+  Last audit: When this status check was performed
+
+EXIT CODES:
+  0 - Status retrieved successfully, no violations found
+  1 - Status retrieved but violations exist, or error occurred
+`;

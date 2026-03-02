@@ -1,0 +1,35 @@
+{
+  "dagId": "fr-chatelet-001",
+  "completedAt": "2026-03-02T01:37:21.240504Z",
+  "phase": "chatelet-p5",
+  "totalNodes": 36,
+  "completedNodes": 35,
+  "status": "complete",
+  "keyArtifacts": {
+    "types": "src/lib/chatelet/types.ts",
+    "keepbudget": "src/lib/chatelet/keepbudget.ts",
+    "migrationValidator": "src/lib/chatelet/migration-validator.ts",
+    "gitsafe": "src/lib/gitsafe/index.ts",
+    "commands": [
+      "src/cli/commands/chatelet-status.ts",
+      "src/cli/commands/chatelet-migrate.ts",
+      "src/cli/commands/packs-list.ts",
+      "src/cli/commands/packs-show.ts",
+      "src/cli/commands/packs-extract.ts"
+    ],
+    "docs": [
+      "docs/CHATELET.md",
+      "docs/API.md",
+      "docs/MIGRATION.md",
+      "docs/TROUBLESHOOTING.md"
+    ],
+    "ciGates": [
+      ".github/workflows/gate-chatelet-keep.yml",
+      ".github/workflows/gate-pack-manifests.yml"
+    ],
+    "securityAudit": ".chatelet/security-audit.json",
+    "coverageReport": ".chatelet/coverage-report.json",
+    "performanceGate": ".chatelet/performance-gate.json",
+    "acceptanceResults": ".chatelet/acceptance-results.json"
+  }
+}

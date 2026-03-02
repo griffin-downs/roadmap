@@ -1,20 +1,16 @@
 {
-  "schema_version": 1,
+  "version": "1.0",
   "keep": {
     "maxFiles": 250,
-    "maxLOC": 25000,
-    "maxDeps": 40,
-    "maxDevDeps": 60,
-    "vitestMaxSeconds": 15,
-    "forbiddenGlobs": ["src/product/**", "src/impl/**", "packages/**", "dist/**"]
+    "maxLineCount": 25000,
+    "allowedDirs": ["src", "bin", "tests", "docs", "scripts"]
   },
   "packs": {
-    "branchPrefix": "packs/",
-    "manifestPath": "PACK.json"
+    "discoveryRoot": "packs",
+    "maxSize": 5000000
   },
   "gitsafe": {
-    "maxBytesPerObject": 2000000,
-    "maxObjectsPerCommand": 2000,
-    "denyPatterns": [".env", "id_rsa", "secrets", "token", "private"]
+    "denylist": [".env", "id_rsa", "secrets", "token", "private", "credentials"],
+    "maxBytes": 2000000
   }
 }

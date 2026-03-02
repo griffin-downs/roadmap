@@ -1,7 +1,7 @@
 // CLI repair commands — interactive and automated repair operations
 
-import { DisconnectAggregator } from '../src/lib/disconnect-detector/aggregator';
-import { RepairExecutor } from '../src/lib/disconnect-repair/executor';
+import { DisconnectAggregator } from '../src/lib/disconnect-detector/aggregator.js';
+import { RepairExecutor } from '../src/lib/disconnect-repair/executor.js';
 
 export async function cmdRepairInteractive(disconnectId: string, optionIdx: number): Promise<void> {
   // `roadmap repair <disconnect-id> <option-idx>`

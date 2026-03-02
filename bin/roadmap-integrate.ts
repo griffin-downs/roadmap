@@ -29,12 +29,12 @@ async function main() {
 
     // Step 2: Generate DAG
     console.log('\n2️⃣  Generating roadmap...');
-    const generatedDAG = generateRoadmapDAG(plan.metadata);
-    console.log(`   ✓ Nodes: ${Object.keys(generatedDAG.nodes).length}`);
+    const generatedDAG = generateRoadmapDAG(repoRoot, plan.metadata, plan.buildProcess);
+    console.log(`   ✓ Nodes: ${Object.keys(generatedDAG.dag.nodes).length}`);
 
     // Step 3: Validate
     console.log('\n3️⃣  Validating...');
-    const validation = validateGeneratedDAG(generatedDAG);
+    const validation = validateGeneratedDAG(generatedDAG.dag);
     if (!validation.valid) {
       console.error('   ✗ Validation failed:');
       validation.errors.forEach(e => console.error(`     - ${e}`));

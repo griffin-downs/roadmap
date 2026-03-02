@@ -1,0 +1,15 @@
+# Chatelet intake artifacts — temporary, not version controlled
+*.intake
+*.spec
+*.yaml
+*.yml
+
+# Derived schemas
+*.schema.json
+
+# Build artifacts
+*.d.ts
+*.d.ts.map
+
+# Test outputs
+*.test-out
