@@ -1,9 +1,1 @@
-[
-  {"nodeId": "init", "completedAt": "2026-03-02T11:05:00Z", "owner": "griffin", "checkpointId": "cp-20260302110500", "validationChecks": [{"rule": "artifact-exists", "path": "mining-baseline.json", "passed": true}], "gitSha": "64af6dd", "treeSha": "64af6dd"},
-  {"nodeId": "analyze-agent-metrics", "completedAt": "2026-03-02T11:12:00Z", "owner": "griffin", "checkpointId": "cp-20260302111200", "validationChecks": [{"rule": "artifact-exists", "path": "mining-agent-metrics.json", "passed": true}], "gitSha": "341a809", "treeSha": "341a809"},
-  {"nodeId": "mine-roadmap-persistence", "completedAt": "2026-03-02T11:12:30Z", "owner": "griffin", "checkpointId": "cp-20260302111230", "validationChecks": [{"rule": "artifact-exists", "path": "mining-persistence-gap.json", "passed": true}], "gitSha": "341a809", "treeSha": "341a809"},
-  {"nodeId": "analyze-brief-effectiveness", "completedAt": "2026-03-02T11:15:00Z", "owner": "griffin", "checkpointId": "cp-20260302111500", "validationChecks": [{"rule": "artifact-exists", "path": "mining-impact-summary.json", "passed": true}], "gitSha": "8febd96", "treeSha": "8febd96"},
-  {"nodeId": "enforce-roadmap-sync", "completedAt": "2026-03-02T11:15:30Z", "owner": "griffin", "checkpointId": "cp-20260302111530", "validationChecks": [{"rule": "artifact-exists", "path": "enforcement-roadmap-sync.md", "passed": true}], "gitSha": "8febd96", "treeSha": "8febd96"},
-  {"nodeId": "quantify-impact", "completedAt": "2026-03-02T11:16:00Z", "owner": "griffin", "checkpointId": "cp-20260302111600", "validationChecks": [{"rule": "artifact-exists", "path": "mining-impact-summary.json", "passed": true}], "gitSha": "8febd96", "treeSha": "8febd96"},
-  {"nodeId": "synthesis", "completedAt": "2026-03-02T11:20:00Z", "owner": "griffin", "checkpointId": "cp-20260302112000", "validationChecks": [{"rule": "artifact-exists", "path": "mining-synthesis-report.json", "passed": true}], "gitSha": "8febd96", "treeSha": "8febd96"}
-]
+[]

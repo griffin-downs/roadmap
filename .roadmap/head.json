@@ -1,79 +1,106 @@
 {
-  "id": "mining-latency-briefs-001",
-  "desc": "Mine agent execution metrics, brief effectiveness, roadmap persistence gap. Quantify token/latency savings + identify drift between prospective and committed DAGs.",
+  "id": "self-improvement-001",
+  "desc": "Comprehensive self-improvement run: instrument metrics, enforce persistence, profile performance, document protocol. Close gaps from mining-latency-briefs-001.",
   "init": "init",
   "term": "term",
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Establish mining baseline: gather transcripts, logs, agent execution records",
-      "produces": ["mining-baseline.json"],
+      "desc": "Establish improvement baseline from mining findings",
+      "produces": ["improvement-baseline.json"],
       "consumes": [],
       "deps": [],
-      "validate": [{"type": "artifact-exists", "path": "mining-baseline.json"}],
+      "validate": [{"type": "artifact-exists", "path": "improvement-baseline.json"}],
       "idempotent": true
     },
-    "analyze-agent-metrics": {
-      "id": "analyze-agent-metrics",
-      "desc": "Extract latency, token count, tool calls from agent execution logs (produces: mining-agent-metrics.json)",
-      "produces": ["mining-agent-metrics.json"],
-      "consumes": ["mining-baseline.json"],
+    "instrument-metrics": {
+      "id": "instrument-metrics",
+      "desc": "Add @pre-agent and @post-agent hooks to capture token count, latency, tool calls (produces: src/hooks/agent-metrics-hooks.ts)",
+      "produces": ["src/hooks/agent-metrics-hooks.ts", "metrics-collection-plan.md"],
+      "consumes": ["improvement-baseline.json"],
       "deps": ["init"],
-      "validate": [{"type": "artifact-exists", "path": "mining-agent-metrics.json"}],
+      "validate": [{"type": "artifact-exists", "path": "src/hooks/agent-metrics-hooks.ts"}],
       "idempotent": true
     },
-    "analyze-brief-effectiveness": {
-      "id": "analyze-brief-effectiveness",
-      "desc": "Compare briefed agents vs full-context agents: execution time, token efficiency, tool precision (produces: mining-brief-effectiveness.json)",
-      "produces": ["mining-brief-effectiveness.json"],
-      "consumes": ["mining-agent-metrics.json"],
-      "deps": ["analyze-agent-metrics"],
-      "validate": [{"type": "artifact-exists", "path": "mining-brief-effectiveness.json"}],
-      "idempotent": true
-    },
-    "mine-roadmap-persistence": {
-      "id": "mine-roadmap-persistence",
-      "desc": "Scan transcripts for 'orient-then-forget' pattern: prospective DAG edits not committed to head.json (produces: mining-persistence-gap.json)",
-      "produces": ["mining-persistence-gap.json"],
-      "consumes": ["mining-baseline.json"],
+    "enforce-persistence": {
+      "id": "enforce-persistence",
+      "desc": "Implement git hooks: pre-exit warning, post-commit sync check, drift detection (produces: .git/hooks/*, persistence-enforcement.ts)",
+      "produces": [".git/hooks/pre-exit-roadmap-check", ".git/hooks/post-commit-roadmap-sync", "src/lib/persistence-enforcer.ts"],
+      "consumes": ["improvement-baseline.json"],
       "deps": ["init"],
-      "validate": [{"type": "artifact-exists", "path": "mining-persistence-gap.json"}],
+      "validate": [{"type": "artifact-exists", "path": ".git/hooks/pre-exit-roadmap-check"}],
       "idempotent": true
     },
-    "quantify-impact": {
-      "id": "quantify-impact",
-      "desc": "Impact analysis: token savings from briefs, latency reduction, persistence gap frequency/cost (produces: mining-impact-summary.json)",
-      "produces": ["mining-impact-summary.json"],
-      "consumes": ["mining-brief-effectiveness.json", "mining-persistence-gap.json"],
-      "deps": ["analyze-brief-effectiveness", "mine-roadmap-persistence"],
-      "validate": [{"type": "artifact-exists", "path": "mining-impact-summary.json"}],
+    "profile-performance": {
+      "id": "profile-performance",
+      "desc": "Load test: spin up 50+ concurrent agents, measure latency, identify bottlenecks (produces: performance-profile.json)",
+      "produces": ["performance-profile.json", "performance-bottlenecks.md"],
+      "consumes": ["improvement-baseline.json"],
+      "deps": ["init"],
+      "validate": [{"type": "artifact-exists", "path": "performance-profile.json"}],
       "idempotent": true
     },
-    "enforce-roadmap-sync": {
-      "id": "enforce-roadmap-sync",
-      "desc": "Design enforcement pattern: detect head.json divergence, prevent context-clear drift, recommend git hooks (produces: enforcement-roadmap-sync.md)",
-      "produces": ["enforcement-roadmap-sync.md"],
-      "consumes": ["mining-persistence-gap.json"],
-      "deps": ["mine-roadmap-persistence"],
-      "validate": [{"type": "artifact-exists", "path": "enforcement-roadmap-sync.md"}],
+    "document-protocol": {
+      "id": "document-protocol",
+      "desc": "Catalog all implicit contracts, document preconditions, create agent execution checklist (produces: src/lib/protocol/CONTRACTS.md)",
+      "produces": ["src/lib/protocol/CONTRACTS.md", "agent-execution-manifest.md"],
+      "consumes": ["improvement-baseline.json"],
+      "deps": ["init"],
+      "validate": [{"type": "artifact-exists", "path": "src/lib/protocol/CONTRACTS.md"}],
+      "idempotent": true
+    },
+    "validate-brief-contracts": {
+      "id": "validate-brief-contracts",
+      "desc": "Add schema validation for agent briefs at spawn time (produces: src/lib/agent-dispatch/brief-validator.ts)",
+      "produces": ["src/lib/agent-dispatch/brief-validator.ts", "tests/brief-validator.test.ts"],
+      "consumes": ["src/lib/protocol/CONTRACTS.md"],
+      "deps": ["document-protocol"],
+      "validate": [{"type": "artifact-exists", "path": "src/lib/agent-dispatch/brief-validator.ts"}],
+      "idempotent": true
+    },
+    "integrate-metrics-hooks": {
+      "id": "integrate-metrics-hooks",
+      "desc": "Wire @pre/@post agent hooks into orchestrator, validate metrics collection works (produces: integration tests, metrics.jsonl sample)",
+      "produces": ["tests/agent-metrics-integration.test.ts", "metrics-sample.jsonl"],
+      "consumes": ["src/hooks/agent-metrics-hooks.ts"],
+      "deps": ["instrument-metrics"],
+      "validate": [{"type": "artifact-exists", "path": "metrics-sample.jsonl"}],
+      "idempotent": true
+    },
+    "test-persistence-enforcement": {
+      "id": "test-persistence-enforcement",
+      "desc": "Write integration tests for git hooks, simulate context-clear scenarios, verify no data loss (produces: tests/persistence-enforcement.test.ts)",
+      "produces": ["tests/persistence-enforcement.test.ts"],
+      "consumes": [".git/hooks/pre-exit-roadmap-check"],
+      "deps": ["enforce-persistence"],
+      "validate": [{"type": "artifact-exists", "path": "tests/persistence-enforcement.test.ts"}],
+      "idempotent": true
+    },
+    "analyze-performance-data": {
+      "id": "analyze-performance-data",
+      "desc": "Parse performance profile, identify bottlenecks, recommend optimizations (produces: performance-analysis.md, optimization-roadmap.json)",
+      "produces": ["performance-analysis.md", "optimization-roadmap.json"],
+      "consumes": ["performance-profile.json"],
+      "deps": ["profile-performance"],
+      "validate": [{"type": "artifact-exists", "path": "performance-analysis.md"}],
       "idempotent": true
     },
     "synthesis": {
       "id": "synthesis",
-      "desc": "Final synthesis: metrics report, brief ROI, persistence enforcement recommendations (produces: mining-synthesis-report.json)",
-      "produces": ["mining-synthesis-report.json"],
-      "consumes": ["mining-impact-summary.json", "enforcement-roadmap-sync.md"],
-      "deps": ["quantify-impact", "enforce-roadmap-sync"],
-      "validate": [{"type": "artifact-exists", "path": "mining-synthesis-report.json"}],
+      "desc": "Aggregate all improvements: metrics validated, persistence enforced, performance baseline, protocol documented (produces: improvement-synthesis.json)",
+      "produces": ["improvement-synthesis.json"],
+      "consumes": ["metrics-sample.jsonl", "tests/persistence-enforcement.test.ts", "optimization-roadmap.json", "src/lib/protocol/CONTRACTS.md"],
+      "deps": ["integrate-metrics-hooks", "test-persistence-enforcement", "analyze-performance-data", "validate-brief-contracts"],
+      "validate": [{"type": "artifact-exists", "path": "improvement-synthesis.json"}],
       "idempotent": true
     },
     "term": {
       "id": "term",
-      "desc": "Mining complete: latency metrics analyzed, brief effectiveness measured, persistence gap quantified",
+      "desc": "Self-improvement complete: metrics instrumented, persistence enforced, performance profiled, protocol documented",
       "produces": [],
       "consumes": [],
       "deps": ["synthesis"],
-      "validate": [{"type": "artifact-exists", "path": "mining-synthesis-report.json"}],
+      "validate": [{"type": "artifact-exists", "path": "improvement-synthesis.json"}],
       "idempotent": false
     }
   }
