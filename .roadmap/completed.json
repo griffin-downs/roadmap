@@ -378,5 +378,65 @@
     ],
     "gitSha": "c7a5547ea9043e9efcd53066339a08f5ec3a6203",
     "treeSha": "9fde1fe62ab015bb040490b9beea9f6b3d1b4e5f"
+  },
+  {
+    "nodeId": "audit-git-topology",
+    "completedAt": "2026-03-02T12:18:56.608Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302121856",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: git-topology-audit.json"
+      }
+    ],
+    "gitSha": "de7886dea7320f90c9bc2dd655fea5e47ff0d611",
+    "treeSha": "ee9ea87dded29a920c63e3f8343843202611f5c1"
+  },
+  {
+    "nodeId": "audit-workflow-enforcement",
+    "completedAt": "2026-03-02T12:18:56.795Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302121856",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: workflow-enforcement-audit.json"
+      }
+    ],
+    "gitSha": "de7886dea7320f90c9bc2dd655fea5e47ff0d611",
+    "treeSha": "ee9ea87dded29a920c63e3f8343843202611f5c1"
+  },
+  {
+    "nodeId": "audit-system-linkage",
+    "completedAt": "2026-03-02T12:18:56.988Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302121856",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: system-linkage-audit.json"
+      }
+    ],
+    "gitSha": "de7886dea7320f90c9bc2dd655fea5e47ff0d611",
+    "treeSha": "ee9ea87dded29a920c63e3f8343843202611f5c1"
+  },
+  {
+    "nodeId": "custodial-synthesis",
+    "completedAt": "2026-03-02T12:18:57.190Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302121857",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: custodial-coherence-report.json"
+      }
+    ],
+    "gitSha": "de7886dea7320f90c9bc2dd655fea5e47ff0d611",
+    "treeSha": "ee9ea87dded29a920c63e3f8343843202611f5c1"
   }
 ]
