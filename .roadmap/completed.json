@@ -1945,5 +1945,20 @@
     ],
     "gitSha": "798ffc81e542ba75028d24371815e031c9447692",
     "treeSha": "0806c0c6526075d09611d9773d5f3daed48f1ea1"
+  },
+  {
+    "nodeId": "p3-validate-performance",
+    "completedAt": "2026-03-02T00:03:05.130Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302000305",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/validation/p3-performance-validation.json"
+      }
+    ],
+    "gitSha": "9d4e0763085e76592467b665b6c6b4f0be1c7dcd",
+    "treeSha": "da134acb1c81d7c576f4cda0dbdc550b2967eb0d"
   }
 ]
