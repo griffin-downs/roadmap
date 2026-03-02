@@ -3197,5 +3197,20 @@
     ],
     "gitSha": "067d1652621b39c48626a8179890b9108adaa9a3",
     "treeSha": "3f0a9b42d234ba0c4d953b834732d9efe06dd0ba"
+  },
+  {
+    "nodeId": "dispatch-system-complete",
+    "completedAt": "2026-03-02T08:39:08.400Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302083908",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .dispatch/system-ready.json"
+      }
+    ],
+    "gitSha": "a70c0acf5e717a790f6d42e024b5cc223f7e37c2",
+    "treeSha": "6878f913e431337ecbda2ed7c863d3622049dd01"
   }
 ]
