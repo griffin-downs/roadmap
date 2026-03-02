@@ -1,5 +1,5 @@
 // @module agent-dispatch
-// @exports DispatchCoordinator, generateDispatchPlan, assignAgentsToBatch
+// @exports DispatchCoordinator, generateDispatchPlan, assignAgentsToBatch, computeDispatch
 // @types DispatchPlan, AgentAssignment, DispatchConfig
 // @entry roadmap/agent-dispatch
 
@@ -222,3 +222,6 @@ export function assignAgentsToBatch(
   const timestamp = Date.now();
   return batch.map((_, i) => `agent-${timestamp}-${i}`);
 }
+
+// Re-export as computeDispatch for compatibility with index.ts
+export const computeDispatch = generateDispatchPlan;
