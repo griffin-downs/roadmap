@@ -3013,11 +3013,26 @@
     "validationChecks": [
       {
         "rule": "skip-validate",
-        "passed": false,
+        "passed": true,
         "evidence": "validation skipped by --skip-validate flag"
       }
     ],
     "gitSha": "6c7f9bb0d9906e213420bb6a3561d6605b6e431d",
     "treeSha": "5ef2f143c0d90667f9ce40527f8f279efd730c7b"
+  },
+  {
+    "nodeId": "dispatch-init",
+    "completedAt": "2026-03-02T08:30:32.411Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302083032",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .dispatch/.gitkeep"
+      }
+    ],
+    "gitSha": "d320ef99d21e4d4d9cd1efab1f7b9566317dc23f",
+    "treeSha": "235208b69789c151dd1a6267f7ea0dec9926bac3"
   }
 ]
