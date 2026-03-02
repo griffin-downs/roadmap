@@ -453,5 +453,20 @@
     ],
     "gitSha": "bcaa0d36c178d8a0ce06452046f98b4e0244b0f8",
     "treeSha": "be05a780fbe19a76d99cd7b1b44ccabc32243846"
+  },
+  {
+    "nodeId": "dag-manifest-impl",
+    "completedAt": "2026-03-02T12:38:05.711Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302123805",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/enforcement/dag-manifest.ts"
+      }
+    ],
+    "gitSha": "bcaa0d36c178d8a0ce06452046f98b4e0244b0f8",
+    "treeSha": "be05a780fbe19a76d99cd7b1b44ccabc32243846"
   }
 ]
