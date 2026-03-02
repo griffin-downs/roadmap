@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "engine": "spec-kit",
   "version": "0.0.0",
-  "compile_hash": "0395aa9a6aa29b40934dfc6f97de0909c6e99a811447e6aa6e7d710fe6788778",
-  "spec_sha": "5baea3b09577409d8a14d0d4a3f5fd81caf433ada44b5adf5e17084b0f8a76e5",
-  "importedAt": "2026-03-02T09:02:34.670Z",
-  "dagId": "metadata-cleanup-001"
+  "compile_hash": "c2e36f681be3abe658ae3f3ebf9b6681984b0878e03cab4637035fa0adaa28f4",
+  "spec_sha": "7a0986adf71b26094d3c923bbd27061bf85ffd0e7b0f70203560d298c9c8ee69",
+  "importedAt": "2026-03-02T09:28:16.011Z",
+  "dagId": "roadmap-audit-enforcement-001"
 }

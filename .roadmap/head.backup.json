@@ -1,0 +1,201 @@
+{
+  "id": "dispatch-system-001",
+  "desc": "Sealed brief orchestration: agents receive only consumes/produces slice, no DAG introspection. Phase 1 of next mining run.",
+  "init": "dispatch-init",
+  "term": "dispatch-system-complete",
+  "nodes": {
+    "dispatch-init": {
+      "id": "dispatch-init",
+      "desc": "Initialize dispatch-system phase: directory structure, type definitions, contracts",
+      "produces": [
+        ".dispatch/.gitkeep",
+        "src/lib/agent-dispatch/README.md"
+      ],
+      "consumes": [],
+      "deps": [],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": ".dispatch/.gitkeep"
+        }
+      ],
+      "idempotent": true
+    },
+    "brief-gate-impl": {
+      "id": "brief-gate-impl",
+      "desc": "Implement and test brief gate: validates brief contract before dispatch",
+      "produces": [
+        "src/lib/agent-dispatch/brief-gate.ts"
+      ],
+      "consumes": [
+        "src/lib/brief.ts",
+        "src/protocol.ts"
+      ],
+      "deps": [
+        "dispatch-init",
+        "plan-clarity"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/agent-dispatch.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "dispatch-coordinator-impl": {
+      "id": "dispatch-coordinator-impl",
+      "desc": "Implement dispatch coordinator: compute batch → assign agents → generate sealed briefs",
+      "produces": [
+        "src/lib/agent-dispatch/dispatch-coordinator.ts"
+      ],
+      "consumes": [
+        "src/lib/brief.ts",
+        "src/lib/agent-dispatch/brief-gate.ts",
+        ".dispatch/plan.json"
+      ],
+      "deps": [
+        "brief-gate-impl"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "agent-executor-impl": {
+      "id": "agent-executor-impl",
+      "desc": "Implement sealed agent executor: read brief (no DAG), execute, checkpoint progress, final handoff",
+      "produces": [
+        "src/lib/agent-dispatch/agent-executor.ts"
+      ],
+      "consumes": [
+        "src/lib/brief.ts",
+        "src/lib/handoff.ts",
+        "src/lib/agent-dispatch/handoff-journal.ts"
+      ],
+      "deps": [
+        "dispatch-coordinator-impl"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "handoff-journal-impl": {
+      "id": "handoff-journal-impl",
+      "desc": "Implement handoff journal: store interim checkpoints, final handoffs, load chain for next agent",
+      "produces": [
+        "src/lib/agent-dispatch/handoff-journal.ts"
+      ],
+      "consumes": [
+        "src/lib/brief.ts"
+      ],
+      "deps": [
+        "dispatch-init"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "orchestrator-harness": {
+      "id": "orchestrator-harness",
+      "desc": "Implement orchestrator harness: read dispatch plan, spawn sealed agents per brief, coordinate completions",
+      "produces": [
+        "src/lib/agent-dispatch/orchestrator.ts"
+      ],
+      "consumes": [
+        "src/lib/agent-dispatch/dispatch-coordinator.ts",
+        "src/lib/agent-dispatch/agent-executor.ts"
+      ],
+      "deps": [
+        "agent-executor-impl",
+        "handoff-journal-impl"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "dispatch-system-tests": {
+      "id": "dispatch-system-tests",
+      "desc": "Integration tests: orchestrator → dispatch → sealed agents → handoffs → batch advance",
+      "produces": [
+        "tests/dispatch-system.integration.test.ts"
+      ],
+      "consumes": [
+        "tests/agent-dispatch.test.ts",
+        "src/lib/agent-dispatch/index.ts"
+      ],
+      "deps": [
+        "orchestrator-harness"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/dispatch-system 2>&1 | grep -q 'passed'"
+        }
+      ],
+      "idempotent": true
+    },
+    "dispatch-system-complete": {
+      "id": "dispatch-system-complete",
+      "desc": "Dispatch system complete: sealed briefs, orchestration, handoff flow validated",
+      "produces": [
+        ".dispatch/system-ready.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "dispatch-system-tests"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": ".dispatch/system-ready.json"
+        }
+      ],
+      "idempotent": false
+    },
+    "plan-clarity": {
+      "id": "plan-clarity",
+      "desc": "Plan clarity gate: verify that the roadmap intent is unambiguous",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "dispatch-init"
+      ],
+      "validate": [
+        {
+          "type": "intent",
+          "statement": "Plan is unambiguous and ready to execute",
+          "confidence": 0,
+          "evaluator": "self",
+          "expandOnFail": true,
+          "maxExpansionDepth": 2
+        }
+      ],
+      "idempotent": true,
+      "mode": "plan"
+    }
+  }
+}

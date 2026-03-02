@@ -1,11 +1,11 @@
 {
   "engine": "spec-kit",
-  "dag_id": "metadata-cleanup-001",
+  "dag_id": "roadmap-audit-enforcement-001",
   "inputs": {
     "pre_spec": ".specify/pre-spec.md",
-    "spec": ".specify/specs/metadata-cleanup-001/spec.md",
-    "plan": ".specify/specs/metadata-cleanup-001/plan.md",
-    "tasks": ".specify/specs/metadata-cleanup-001/tasks.md",
-    "data_model": ".specify/specs/metadata-cleanup-001/data-model.md"
+    "spec": ".specify/specs/roadmap-audit-enforcement-001/spec.md",
+    "plan": ".specify/specs/roadmap-audit-enforcement-001/plan.md",
+    "tasks": ".specify/specs/roadmap-audit-enforcement-001/tasks.md",
+    "data_model": ".specify/specs/roadmap-audit-enforcement-001/data-model.md"
   }
 }

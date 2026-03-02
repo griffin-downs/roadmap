@@ -1,0 +1,198 @@
+{
+  "dispatchId": "audit-enforcement-001-dispatch",
+  "timestamp": "2026-03-02T10:00:00Z",
+  "title": "roadmap-audit-enforcement-001: Autonomous dispatch system test",
+  "purpose": "Full test of dispatch-system-001 with real artifacts: enforcement code + tests + audit reports",
+  "status": "READY",
+  "completion": {
+    "candidateDagFixed": true,
+    "producesArtifactsAdded": true,
+    "dependenciesEstablished": true,
+    "agentBriefsGenerated": true,
+    "orchestratorReady": true,
+    "dispatchManifestComplete": true
+  },
+  "files": {
+    "candidate_dag": ".roadmap/head.candidate.json",
+    "dispatch_config": ".dispatch/audit-enforcement-dispatch.json",
+    "dispatch_manifest": ".dispatch/audit-enforcement-001-ready.json",
+    "orchestrator": ".dispatch/audit-enforcement-orchestrator.sh",
+    "summary": ".dispatch/DISPATCH-SUMMARY-audit-enforcement-001.md",
+    "agent_briefs": [
+      ".dispatch/brief-audit-protocol.json",
+      ".dispatch/brief-audit-validation.json",
+      ".dispatch/brief-synthesis-audit.json",
+      ".dispatch/brief-enforce-batch-invariants.json",
+      ".dispatch/brief-enforce-completion-sync.json",
+      ".dispatch/brief-test-enforcement.json",
+      ".dispatch/brief-final-synthesis.json"
+    ]
+  },
+  "dag": {
+    "id": "roadmap-audit-enforcement-001",
+    "schemaVersion": "0.3.0",
+    "nodes": 9,
+    "taskNodes": 7,
+    "batches": 5,
+    "init": "init",
+    "term": "term"
+  },
+  "batches": [
+    {
+      "number": 1,
+      "phase": "Parallel Audits",
+      "nodes": ["audit-protocol", "audit-validation"],
+      "workers": 2,
+      "estimatedDuration": "2h"
+    },
+    {
+      "number": 2,
+      "phase": "Synthesis",
+      "nodes": ["synthesis-audit"],
+      "workers": 1,
+      "estimatedDuration": "1h"
+    },
+    {
+      "number": 3,
+      "phase": "Parallel Enforcement",
+      "nodes": ["enforce-batch-invariants", "enforce-completion-sync"],
+      "workers": 2,
+      "estimatedDuration": "3h"
+    },
+    {
+      "number": 4,
+      "phase": "Testing",
+      "nodes": ["test-enforcement"],
+      "workers": 1,
+      "estimatedDuration": "2h"
+    },
+    {
+      "number": 5,
+      "phase": "Final Synthesis",
+      "nodes": ["final-synthesis"],
+      "workers": 1,
+      "estimatedDuration": "1h"
+    }
+  ],
+  "artifacts": {
+    "audit": [
+      "docs/PROTOCOL-AUDIT.md",
+      "docs/VALIDATION-GAPS.md"
+    ],
+    "synthesis": [
+      ".roadmap/audit-synthesis.json"
+    ],
+    "enforcement": [
+      "src/lib/protocol/batch-invariants.ts",
+      "src/lib/evidence/completion-enforcer.ts"
+    ],
+    "tests": [
+      "tests/enforce-audit.test.ts"
+    ],
+    "receipt": [
+      ".roadmap/enforcement-receipt.json"
+    ],
+    "total": 7
+  },
+  "nodes": {
+    "audit-protocol": {
+      "batch": 1,
+      "produces": "docs/PROTOCOL-AUDIT.md",
+      "consumes": "init.marker",
+      "deps": ["init"],
+      "validators": 1
+    },
+    "audit-validation": {
+      "batch": 1,
+      "produces": "docs/VALIDATION-GAPS.md",
+      "consumes": "init.marker",
+      "deps": ["init"],
+      "validators": 1
+    },
+    "synthesis-audit": {
+      "batch": 2,
+      "produces": ".roadmap/audit-synthesis.json",
+      "consumes": ["docs/PROTOCOL-AUDIT.md", "docs/VALIDATION-GAPS.md"],
+      "deps": ["audit-protocol", "audit-validation"],
+      "validators": 1
+    },
+    "enforce-batch-invariants": {
+      "batch": 3,
+      "produces": "src/lib/protocol/batch-invariants.ts",
+      "consumes": ".roadmap/audit-synthesis.json",
+      "deps": ["synthesis-audit"],
+      "validators": 2
+    },
+    "enforce-completion-sync": {
+      "batch": 3,
+      "produces": "src/lib/evidence/completion-enforcer.ts",
+      "consumes": ".roadmap/audit-synthesis.json",
+      "deps": ["synthesis-audit"],
+      "validators": 2
+    },
+    "test-enforcement": {
+      "batch": 4,
+      "produces": "tests/enforce-audit.test.ts",
+      "consumes": ["src/lib/protocol/batch-invariants.ts", "src/lib/evidence/completion-enforcer.ts"],
+      "deps": ["enforce-batch-invariants", "enforce-completion-sync"],
+      "validators": 2
+    },
+    "final-synthesis": {
+      "batch": 5,
+      "produces": ".roadmap/enforcement-receipt.json",
+      "consumes": "tests/enforce-audit.test.ts",
+      "deps": ["test-enforcement"],
+      "validators": 1
+    }
+  },
+  "validation": {
+    "dagStructureValid": true,
+    "dependenciesAcyclic": true,
+    "producesComplete": true,
+    "consumersHaveProducers": true,
+    "validationRulesTotal": 11,
+    "rules": {
+      "artifact-exists": 7,
+      "shell-tsc": 2,
+      "shell-test": 1,
+      "shell-build": 1
+    }
+  },
+  "successCriteria": [
+    "All 7 artifacts produced",
+    "All validation rules pass",
+    "npm run test -- tests/enforce-audit.test.ts passes (18+ tests)",
+    ".roadmap/enforcement-receipt.json exists with passing status",
+    "Zero violations detected",
+    "7 atomic git commits (one per task node)"
+  ],
+  "launchCommand": "bash .dispatch/audit-enforcement-orchestrator.sh",
+  "monitoringPoints": [
+    ".dispatch/dispatch.log",
+    ".dispatch/claimed-*.json (per-node claims)",
+    ".dispatch/complete-*.json (per-node completion)",
+    ".dispatch/manifest-batch-*.json (batch progress)"
+  ],
+  "expectedOutputs": {
+    "documents": 2,
+    "synthesisJson": 1,
+    "enforceTypeScript": 2,
+    "testSuite": 1,
+    "receipt": 1,
+    "gitCommits": 7
+  },
+  "timing": {
+    "sequentialEstimate": "9h",
+    "parallelEstimate": "6h (with batch 1 & 3 parallelism)",
+    "optimization": "33% wall-time reduction"
+  },
+  "dispatchSystemTest": {
+    "testId": "dispatch-system-001",
+    "testingAutonomousExecution": true,
+    "testingParallelization": true,
+    "testingAgentIsolation": true,
+    "testingValidationChain": true,
+    "producingRealArtifacts": true,
+    "verdict": "READY_FOR_PRODUCTION"
+  }
+}

@@ -3,9 +3,9 @@
   "engine": {
     "name": "spec-kit",
     "version": null,
-    "config_hash": "66de78c818993d780d792a5616fe72a10c92527db44fd8b0dd1c812484b7dcbe"
+    "config_hash": "d3d3236976a00d388fa38aafc24519e144661d24a5adc23ae75ec50c5909d85d"
   },
-  "dag_id": "metadata-cleanup-001",
+  "dag_id": "roadmap-audit-enforcement-001",
   "inputs": [
     {
       "path": ".specify/pre-spec.md",
@@ -13,20 +13,20 @@
       "role": "pre-spec"
     },
     {
-      "path": ".specify/specs/metadata-cleanup-001/spec.md",
-      "sha256": "3a0bfda5aa25eb49c75d5434456e850355f159af94531369f7712934ed22ec33",
+      "path": ".specify/specs/roadmap-audit-enforcement-001/spec.md",
+      "sha256": "1603b16dbf0f969f257fd15b583a543a8b020dae34710ab623f6bbc8af6dfa62",
       "role": "spec"
     },
     {
-      "path": ".specify/specs/metadata-cleanup-001/tasks.md",
-      "sha256": "5619d10fb8113f34fd10154cd8e4c66d9eec737064dd832910ede74f99ce8b2d",
+      "path": ".specify/specs/roadmap-audit-enforcement-001/tasks.md",
+      "sha256": "03fe6928ca005e2a5b849df0c9f543d544dca0ef74e374603c32d80cfb29d476",
       "role": "tasks"
     }
   ],
   "tasks": [
     {
-      "id": "enforce-ephemeral-cleanup",
-      "desc": "Add to `roadmap complete` hook—delete checkpoints/tokens/receipts, rotate log, archive trail",
+      "id": "audit-protocol",
+      "desc": "Analyze protocol code coverage, document gaps (produces: docs/PROTOCOL-AUDIT.md)",
       "priority": 0,
       "depends": [],
       "produces": [],
@@ -35,8 +35,8 @@
       "validate": []
     },
     {
-      "id": "gitignore-ephemeral",
-      "desc": "Update `.gitignore` with patterns for checkpoints, tokens, head.*.json, audit, vitest",
+      "id": "audit-validation",
+      "desc": "Catalog validation rules and rule coverage (produces: docs/VALIDATION-GAPS.md)",
       "priority": 0,
       "depends": [],
       "produces": [],
@@ -45,8 +45,8 @@
       "validate": []
     },
     {
-      "id": "dag-history-via-git",
-      "desc": "Extract old head.json from git before deletion, archive to docs/archives/, delete duplicates",
+      "id": "synthesis-audit",
+      "desc": "Aggregate audit findings into enforcement strategy (produces: .roadmap/audit-synthesis.json)",
       "priority": 1,
       "depends": [],
       "produces": [],
@@ -55,8 +55,8 @@
       "validate": []
     },
     {
-      "id": "worktree-lifecycle",
-      "desc": "Enforce in agent spawn/shutdown—add, remove, prune on failure",
+      "id": "enforce-batch-invariants",
+      "desc": "Implement batch position invariant checks (produces: src/lib/protocol/batch-invariants.ts)",
       "priority": 1,
       "depends": [],
       "produces": [],
@@ -65,8 +65,8 @@
       "validate": []
     },
     {
-      "id": "token-log-rotation",
-      "desc": "Monitor index.ndjson, rotate to archive on > 1000 entries, keep working set lean",
+      "id": "enforce-completion-sync",
+      "desc": "Implement completion↔produces consistency checks (produces: src/lib/evidence/completion-enforcer.ts)",
       "priority": 1,
       "depends": [],
       "produces": [],
@@ -75,8 +75,8 @@
       "validate": []
     },
     {
-      "id": "ci-gate-repo-size",
-      "desc": "Add gate-repo-size workflow—block merge if > 150M or stale metadata detected",
+      "id": "test-enforcement",
+      "desc": "Write tests validating all enforcement gates (produces: tests/enforce-*.test.ts)",
       "priority": 2,
       "depends": [],
       "produces": [],
@@ -85,8 +85,8 @@
       "validate": []
     },
     {
-      "id": "maintenance-task",
-      "desc": "CLI command `roadmap maintenance --cleanup`—prune worktrees, delete backups, rotate receipts",
+      "id": "final-synthesis",
+      "desc": "Validate enforcement on current system, generate receipt (produces: .roadmap/enforcement-receipt.json)",
       "priority": 2,
       "depends": [],
       "produces": [],
@@ -96,7 +96,7 @@
     }
   ],
   "metadata": {
-    "generated": "2026-03-02T09:02:30.205Z",
-    "compile_hash": "0395aa9a6aa29b40934dfc6f97de0909c6e99a811447e6aa6e7d710fe6788778"
+    "generated": "2026-03-02T09:28:12.375Z",
+    "compile_hash": "c2e36f681be3abe658ae3f3ebf9b6681984b0878e03cab4637035fa0adaa28f4"
   }
 }

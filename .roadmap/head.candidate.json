@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "baseSha": "9b6ea260ed69e56f75cac5bfca69002f7f99973d7923384e9aefee26c8fca466",
+  "source": "import",
+  "sourceDetail": ".roadmap/spec/spec-compiled.json",
+  "createdAt": "2026-03-02T09:28:16.010Z",
+  "dag": {
+    "id": "roadmap-audit-enforcement-001",
+    "desc": "Imported from spec-kit",
+    "init": "init",
+    "term": "term",
+    "nodes": {
+      "init": {
+        "id": "init",
+        "desc": "Synthetic init — roots all P0 tasks",
+        "produces": [
+          "init.marker"
+        ],
+        "consumes": [],
+        "deps": [],
+        "validate": [
+          {
+            "type": "spec-conformance",
+            "spec": ".specify/specs/roadmap-audit-enforcement-001/spec.md",
+            "scenario": "Plan clarity validated against feature spec",
+            "section": "Specification"
+          }
+        ],
+        "idempotent": true,
+        "ambient": [
+          ".specify/pre-spec.md",
+          ".specify/specs/roadmap-audit-enforcement-001/spec.md",
+          ".specify/specs/roadmap-audit-enforcement-001/tasks.md"
+        ]
+      },
+      "term": {
+        "id": "term",
+        "desc": "Synthetic term — gates on all leaf tasks",
+        "produces": [],
+        "consumes": [],
+        "deps": [
+          "audit-protocol",
+          "audit-validation",
+          "synthesis-audit",
+          "enforce-batch-invariants",
+          "enforce-completion-sync",
+          "test-enforcement",
+          "final-synthesis"
+        ],
+        "validate": [
+          {
+            "type": "spec-conformance",
+            "spec": ".specify/specs/roadmap-audit-enforcement-001/spec.md",
+            "scenario": "All acceptance scenarios pass (User Stories 1-6)",
+            "section": "Feature Specification"
+          },
+          {
+            "type": "shell",
+            "command": "test -f package.json && npm run test 2>&1 | grep -q 'test'",
+            "expectExitCode": 0
+          },
+          {
+            "type": "shell",
+            "command": "npm run build 2>&1 | grep -q \"built\"",
+            "expectExitCode": 0
+          }
+        ],
+        "idempotent": false,
+        "ambient": [
+          ".specify/specs/roadmap-audit-enforcement-001/spec.md"
+        ]
+      },
+      "audit-protocol": {
+        "id": "audit-protocol",
+        "desc": "Analyze protocol code coverage, document gaps (produces: docs/PROTOCOL-AUDIT.md)",
+        "produces": [
+          "docs/PROTOCOL-AUDIT.md"
+        ],
+        "consumes": [
+          "init.marker"
+        ],
+        "deps": [
+          "init"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "path": "docs/PROTOCOL-AUDIT.md"
+          }
+        ],
+        "idempotent": true
+      },
+      "audit-validation": {
+        "id": "audit-validation",
+        "desc": "Catalog validation rules and rule coverage (produces: docs/VALIDATION-GAPS.md)",
+        "produces": [
+          "docs/VALIDATION-GAPS.md"
+        ],
+        "consumes": [
+          "init.marker"
+        ],
+        "deps": [
+          "init"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "path": "docs/VALIDATION-GAPS.md"
+          }
+        ],
+        "idempotent": true
+      },
+      "synthesis-audit": {
+        "id": "synthesis-audit",
+        "desc": "Aggregate audit findings into enforcement strategy (produces: .roadmap/audit-synthesis.json)",
+        "produces": [
+          ".roadmap/audit-synthesis.json"
+        ],
+        "consumes": [
+          "docs/PROTOCOL-AUDIT.md",
+          "docs/VALIDATION-GAPS.md"
+        ],
+        "deps": [
+          "audit-protocol",
+          "audit-validation"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "path": ".roadmap/audit-synthesis.json"
+          }
+        ],
+        "idempotent": true
+      },
+      "enforce-batch-invariants": {
+        "id": "enforce-batch-invariants",
+        "desc": "Implement batch position invariant checks (produces: src/lib/protocol/batch-invariants.ts)",
+        "produces": [
+          "src/lib/protocol/batch-invariants.ts"
+        ],
+        "consumes": [
+          ".roadmap/audit-synthesis.json"
+        ],
+        "deps": [
+          "synthesis-audit"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "path": "src/lib/protocol/batch-invariants.ts"
+          },
+          {
+            "type": "shell",
+            "command": "npx tsc --noEmit src/lib/protocol/batch-invariants.ts 2>&1 | head -20",
+            "expectExitCode": 0
+          }
+        ],
+        "idempotent": true
+      },
+      "enforce-completion-sync": {
+        "id": "enforce-completion-sync",
+        "desc": "Implement completion↔produces consistency checks (produces: src/lib/evidence/completion-enforcer.ts)",
+        "produces": [
+          "src/lib/evidence/completion-enforcer.ts"
+        ],
+        "consumes": [
+          ".roadmap/audit-synthesis.json"
+        ],
+        "deps": [
+          "synthesis-audit"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "path": "src/lib/evidence/completion-enforcer.ts"
+          },
+          {
+            "type": "shell",
+            "command": "npx tsc --noEmit src/lib/evidence/completion-enforcer.ts 2>&1 | head -20",
+            "expectExitCode": 0
+          }
+        ],
+        "idempotent": true
+      },
+      "test-enforcement": {
+        "id": "test-enforcement",
+        "desc": "Write tests validating all enforcement gates (produces: tests/enforce-audit.test.ts)",
+        "produces": [
+          "tests/enforce-audit.test.ts"
+        ],
+        "consumes": [
+          "src/lib/protocol/batch-invariants.ts",
+          "src/lib/evidence/completion-enforcer.ts"
+        ],
+        "deps": [
+          "enforce-batch-invariants",
+          "enforce-completion-sync"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "path": "tests/enforce-audit.test.ts"
+          },
+          {
+            "type": "shell",
+            "command": "npm run test -- tests/enforce-audit.test.ts 2>&1 | tail -10",
+            "expectExitCode": 0
+          }
+        ],
+        "idempotent": true
+      },
+      "final-synthesis": {
+        "id": "final-synthesis",
+        "desc": "Validate enforcement on current system, generate receipt (produces: .roadmap/enforcement-receipt.json)",
+        "produces": [
+          ".roadmap/enforcement-receipt.json"
+        ],
+        "consumes": [
+          "tests/enforce-audit.test.ts"
+        ],
+        "deps": [
+          "test-enforcement"
+        ],
+        "validate": [
+          {
+            "type": "artifact-exists",
+            "path": ".roadmap/enforcement-receipt.json"
+          }
+        ],
+        "idempotent": true
+      }
+    },
+    "version": "0.3.0",
+    "protocolVersion": "0.3.0"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "agentId": "final-synthesis-agent",
+  "nodeId": "final-synthesis",
+  "dagId": "roadmap-audit-enforcement-001",
+  "dagPath": ".roadmap/head.candidate.json",
+  "position": {
+    "nodeId": "final-synthesis",
+    "batch": 5,
+    "level": 5
+  },
+  "mode": "execute",
+  "description": "Validate enforcement on current system, generate receipt",
+  "produces": [".roadmap/enforcement-receipt.json"],
+  "consumes": ["tests/enforce-audit.test.ts"],
+  "dependencies": ["test-enforcement"],
+  "validate": [
+    {
+      "type": "artifact-exists",
+      "path": ".roadmap/enforcement-receipt.json"
+    }
+  ],
+  "instructions": {
+    "intent": "Run the full enforcement suite against the current roadmap system. Validate that all enforcement gates work correctly on the active DAG (dispatch-system-001). Generate a receipt documenting: test results, enforcement coverage, any violations detected, recommendations for hardening.",
+    "acceptance_criteria": [
+      ".roadmap/enforcement-receipt.json exists",
+      "JSON structure: { timestamp, dagId, results, coverage, violations, recommendations }",
+      "All enforcement tests pass (npm run test -- tests/enforce-audit.test.ts)",
+      "Enforcement coverage report: % of batches covered, % of nodes validated",
+      "Any violations flagged with severity and remediation guidance"
+    ],
+    "context": {
+      "repoRoot": "/home/griffin/src/roadmap",
+      "testCommand": "npm run test -- tests/enforce-audit.test.ts",
+      "targetDag": "dispatch-system-001",
+      "receiptSchema": {
+        "timestamp": "ISO8601",
+        "dagId": "string",
+        "enforcer": {
+          "version": "string",
+          "modules": ["batch-invariants", "completion-sync"]
+        },
+        "results": {
+          "testsRun": "number",
+          "testsPassed": "number",
+          "testsFailed": "number"
+        },
+        "coverage": {
+          "batchesCovered": "number",
+          "nodesCovered": "number",
+          "invariantsValidated": ["string"]
+        },
+        "violations": [
+          {
+            "nodeId": "string",
+            "type": "string",
+            "severity": "critical | high | medium | low",
+            "description": "string"
+          }
+        ],
+        "recommendations": ["string"]
+      }
+    }
+  }
+}

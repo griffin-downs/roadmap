@@ -1,0 +1,51 @@
+{
+  "agentId": "enforce-batch-invariants-agent",
+  "nodeId": "enforce-batch-invariants",
+  "dagId": "roadmap-audit-enforcement-001",
+  "dagPath": ".roadmap/head.candidate.json",
+  "position": {
+    "nodeId": "enforce-batch-invariants",
+    "batch": 3,
+    "level": 3
+  },
+  "mode": "execute",
+  "description": "Implement batch position invariant checks",
+  "produces": ["src/lib/protocol/batch-invariants.ts"],
+  "consumes": [".roadmap/audit-synthesis.json"],
+  "dependencies": ["synthesis-audit"],
+  "validate": [
+    {
+      "type": "artifact-exists",
+      "path": "src/lib/protocol/batch-invariants.ts"
+    },
+    {
+      "type": "shell",
+      "command": "npx tsc --noEmit src/lib/protocol/batch-invariants.ts 2>&1 | head -20",
+      "expectExitCode": 0
+    }
+  ],
+  "instructions": {
+    "intent": "Implement runtime guards that enforce batch position invariants identified in the audit synthesis. Batch position is the current set of nodes executable in parallel. Invariants include: nodes in a batch must have all dependencies satisfied, no node can be claimed by multiple workers, batch advancement must be atomic.",
+    "acceptance_criteria": [
+      "src/lib/protocol/batch-invariants.ts exists",
+      "Export: validateBatchInvariants(batch, graph, exists) → Result",
+      "Checks: (1) all nodes in batch have completed dependencies, (2) no duplicate claims, (3) batch is topologically valid",
+      "TypeScript compiles without errors",
+      "At least 10 unit tests (in enforce-audit.test.ts downstream)"
+    ],
+    "context": {
+      "repoRoot": "/home/griffin/src/roadmap",
+      "relatedFiles": [
+        "src/lib/protocol/index.ts",
+        "src/lib/validation/index.ts",
+        ".roadmap/audit-synthesis.json"
+      ],
+      "invariantsToEnforce": [
+        "No node in batch can have unsatisfied dependencies",
+        "No node can be in multiple concurrent batch executions",
+        "Batch order must respect topological sort",
+        "All artifacts from previous batch must exist before batch starts"
+      ]
+    }
+  }
+}

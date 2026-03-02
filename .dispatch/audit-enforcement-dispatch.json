@@ -1,0 +1,42 @@
+{
+  "dispatchId": "audit-enforcement-001-dispatch",
+  "timestamp": "2026-03-02T10:00:00Z",
+  "dagId": "roadmap-audit-enforcement-001",
+  "dagPath": ".roadmap/head.candidate.json",
+  "batches": [
+    {
+      "batchNumber": 1,
+      "nodes": ["audit-protocol", "audit-validation"],
+      "workers": 2,
+      "description": "Parallel audit of protocol + validation rules"
+    },
+    {
+      "batchNumber": 2,
+      "nodes": ["synthesis-audit"],
+      "workers": 1,
+      "description": "Synthesis of audit findings"
+    },
+    {
+      "batchNumber": 3,
+      "nodes": ["enforce-batch-invariants", "enforce-completion-sync"],
+      "workers": 2,
+      "description": "Parallel enforcement implementation"
+    },
+    {
+      "batchNumber": 4,
+      "nodes": ["test-enforcement"],
+      "workers": 1,
+      "description": "Testing enforcement gates"
+    },
+    {
+      "batchNumber": 5,
+      "nodes": ["final-synthesis"],
+      "workers": 1,
+      "description": "Final synthesis and receipt generation"
+    }
+  ],
+  "briefTemplate": {
+    "dagPath": ".roadmap/head.candidate.json",
+    "repoRoot": "/home/griffin/src/roadmap"
+  }
+}

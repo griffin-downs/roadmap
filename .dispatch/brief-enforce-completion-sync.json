@@ -1,0 +1,51 @@
+{
+  "agentId": "enforce-completion-sync-agent",
+  "nodeId": "enforce-completion-sync",
+  "dagId": "roadmap-audit-enforcement-001",
+  "dagPath": ".roadmap/head.candidate.json",
+  "position": {
+    "nodeId": "enforce-completion-sync",
+    "batch": 3,
+    "level": 3
+  },
+  "mode": "execute",
+  "description": "Implement completion↔produces consistency checks",
+  "produces": ["src/lib/evidence/completion-enforcer.ts"],
+  "consumes": [".roadmap/audit-synthesis.json"],
+  "dependencies": ["synthesis-audit"],
+  "validate": [
+    {
+      "type": "artifact-exists",
+      "path": "src/lib/evidence/completion-enforcer.ts"
+    },
+    {
+      "type": "shell",
+      "command": "npx tsc --noEmit src/lib/evidence/completion-enforcer.ts 2>&1 | head -20",
+      "expectExitCode": 0
+    }
+  ],
+  "instructions": {
+    "intent": "Implement enforcement that produces (files created by a node) and completion (roadmap.complete() call) must stay in sync. A node is not truly done until all declared produces exist AND complete() has been called atomically. Prevents silent failures where a node claims completion but artifacts are missing.",
+    "acceptance_criteria": [
+      "src/lib/evidence/completion-enforcer.ts exists",
+      "Export: enforceCompletionSync(nodeId, produces, graphState) → Result",
+      "Checks: (1) all files in produces exist on filesystem, (2) completion record in .roadmap/git-state.json matches produces, (3) git commit contains all produces",
+      "TypeScript compiles without errors",
+      "At least 8 unit tests (in enforce-audit.test.ts downstream)"
+    ],
+    "context": {
+      "repoRoot": "/home/griffin/src/roadmap",
+      "relatedFiles": [
+        "src/lib/evidence/index.ts",
+        "src/lib/recovery/checkpoint.ts",
+        ".roadmap/audit-synthesis.json"
+      ],
+      "enforcementRules": [
+        "Node.complete() requires all produces files to exist",
+        "Git commit must be atomic over all produces",
+        "Completion event timestamp must match artifacts mtime (within 1s)",
+        "No partial completion (all-or-nothing)"
+      ]
+    }
+  }
+}

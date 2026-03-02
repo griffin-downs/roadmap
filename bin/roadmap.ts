@@ -7040,6 +7040,7 @@ function json(obj: unknown, renderModel?: RenderModel, jsonOpts?: JsonOpts) {
       format: _renderOpts.tty ? 'ansi' : 'plain',
       mime: 'text/x-roadmap-ui',
       title: renderModel.title,
+      content: renderOutput.plain,
     };
     if (jsonOpts?.hints && jsonOpts.hints.length > 0) {
       renderV1.hints = jsonOpts.hints;
