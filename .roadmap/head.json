@@ -1,235 +1,90 @@
 {
-  "id": "self-improvement-001",
-  "desc": "Comprehensive self-improvement run: instrument metrics, enforce persistence, profile performance, document protocol. Close gaps from mining-latency-briefs-001.",
-  "init": "init",
-  "term": "term",
+  "id": "transcript-mining-001",
+  "desc": "Cross-session transcript mining: aggregate hooks.log + trail.jsonl, extract patterns, detect anomalies, analyze trends",
+  "init": "transcript-aggregator",
+  "term": "trend-analysis",
   "nodes": {
-    "init": {
-      "id": "init",
-      "desc": "Establish improvement baseline from mining findings",
+    "transcript-aggregator": {
+      "id": "transcript-aggregator",
+      "desc": "Aggregate and normalize hooks.log + trail.jsonl across all sessions into queryable format",
       "produces": [
-        "improvement-baseline.json"
+        "src/lib/mining/transcript-aggregator.ts",
+        "tests/transcript-aggregator.test.ts",
+        "transcript-index.jsonl"
       ],
-      "consumes": [],
+      "consumes": [
+        ".roadmap/trail.jsonl",
+        "hooks.log"
+      ],
       "deps": [],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "improvement-baseline.json"
-        }
+        {"type": "artifact-exists", "path": "src/lib/mining/transcript-aggregator.ts"},
+        {"type": "artifact-exists", "path": "transcript-index.jsonl"}
       ],
-      "idempotent": true
+      "idempotent": true,
+      "mode": "execute",
+      "level": 1
     },
-    "instrument-metrics": {
-      "id": "instrument-metrics",
-      "desc": "Add @pre-agent and @post-agent hooks to capture token count, latency, tool calls (produces: src/hooks/agent-metrics-hooks.ts)",
+    "mining-queries": {
+      "id": "mining-queries",
+      "desc": "Query interface for transcript analysis: agent latency trends, batch health, drift patterns, protocol violations",
       "produces": [
-        "src/hooks/agent-metrics-hooks.ts",
-        "metrics-collection-plan.md"
+        "src/lib/mining/query-engine.ts",
+        "tests/query-engine.test.ts"
       ],
       "consumes": [
-        "improvement-baseline.json"
+        "transcript-index.jsonl",
+        "src/lib/mining/transcript-aggregator.ts"
       ],
-      "deps": [
-        "init"
-      ],
+      "deps": ["transcript-aggregator"],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "src/hooks/agent-metrics-hooks.ts"
-        }
+        {"type": "artifact-exists", "path": "src/lib/mining/query-engine.ts"},
+        {"type": "artifact-exists", "path": "tests/query-engine.test.ts"}
       ],
-      "idempotent": true
+      "idempotent": true,
+      "mode": "execute",
+      "level": 2
     },
-    "enforce-persistence": {
-      "id": "enforce-persistence",
-      "desc": "Implement git hooks: pre-exit warning, post-commit sync check, drift detection (produces: .git/hooks/*, persistence-enforcement.ts)",
+    "anomaly-detection": {
+      "id": "anomaly-detection",
+      "desc": "Detect anomalies: unusual latencies, persistence violations, stalled work, protocol mismatches",
       "produces": [
-        ".git/hooks/pre-exit-roadmap-check",
-        ".git/hooks/post-commit-roadmap-sync",
-        "src/lib/persistence-enforcer.ts"
+        "src/lib/mining/anomaly-detector.ts",
+        "tests/anomaly-detector.test.ts"
       ],
       "consumes": [
-        "improvement-baseline.json"
+        "transcript-index.jsonl",
+        "src/lib/mining/query-engine.ts"
       ],
-      "deps": [
-        "init"
-      ],
+      "deps": ["mining-queries"],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "path": ".git/hooks/pre-exit-roadmap-check"
-        }
+        {"type": "artifact-exists", "path": "src/lib/mining/anomaly-detector.ts"}
       ],
-      "idempotent": true
+      "idempotent": true,
+      "mode": "execute",
+      "level": 2
     },
-    "profile-performance": {
-      "id": "profile-performance",
-      "desc": "Load test: spin up 50+ concurrent agents, measure latency, identify bottlenecks (produces: performance-profile.json)",
+    "trend-analysis": {
+      "id": "trend-analysis",
+      "desc": "Trend analysis: measure improvement over time, identify regressions, forecast scaling limits",
       "produces": [
-        "performance-profile.json",
-        "performance-bottlenecks.md"
+        "src/lib/mining/trend-analyzer.ts",
+        "tests/trend-analyzer.test.ts",
+        "trend-report-latest.json"
       ],
       "consumes": [
-        "improvement-baseline.json"
+        "transcript-index.jsonl",
+        "src/lib/mining/query-engine.ts",
+        "src/lib/mining/anomaly-detector.ts"
       ],
-      "deps": [
-        "init"
-      ],
+      "deps": ["anomaly-detection"],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "performance-profile.json"
-        }
+        {"type": "artifact-exists", "path": "src/lib/mining/trend-analyzer.ts"},
+        {"type": "artifact-exists", "path": "trend-report-latest.json"}
       ],
-      "idempotent": true
-    },
-    "document-protocol": {
-      "id": "document-protocol",
-      "desc": "Catalog all implicit contracts, document preconditions, create agent execution checklist (produces: src/lib/protocol/CONTRACTS.md)",
-      "produces": [
-        "src/lib/protocol/CONTRACTS.md",
-        "agent-execution-manifest.md"
-      ],
-      "consumes": [
-        "improvement-baseline.json"
-      ],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "src/lib/protocol/CONTRACTS.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "validate-brief-contracts": {
-      "id": "validate-brief-contracts",
-      "desc": "Add schema validation for agent briefs at spawn time (produces: src/lib/agent-dispatch/brief-validator.ts)",
-      "produces": [
-        "src/lib/agent-dispatch/brief-validator.ts",
-        "tests/brief-validator.test.ts"
-      ],
-      "consumes": [
-        "src/lib/protocol/CONTRACTS.md"
-      ],
-      "deps": [
-        "document-protocol"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "src/lib/agent-dispatch/brief-validator.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "integrate-metrics-hooks": {
-      "id": "integrate-metrics-hooks",
-      "desc": "Wire @pre/@post agent hooks into orchestrator, validate metrics collection works (produces: integration tests, metrics.jsonl sample)",
-      "produces": [
-        "tests/agent-metrics-integration.test.ts",
-        "metrics-sample.jsonl"
-      ],
-      "consumes": [
-        "src/hooks/agent-metrics-hooks.ts"
-      ],
-      "deps": [
-        "instrument-metrics"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "metrics-sample.jsonl"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-persistence-enforcement": {
-      "id": "test-persistence-enforcement",
-      "desc": "Write integration tests for git hooks, simulate context-clear scenarios, verify no data loss (produces: tests/persistence-enforcement.test.ts)",
-      "produces": [
-        "tests/persistence-enforcement.test.ts"
-      ],
-      "consumes": [
-        ".git/hooks/pre-exit-roadmap-check"
-      ],
-      "deps": [
-        "enforce-persistence"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "tests/persistence-enforcement.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "analyze-performance-data": {
-      "id": "analyze-performance-data",
-      "desc": "Parse performance profile, identify bottlenecks, recommend optimizations (produces: performance-analysis.md, optimization-roadmap.json)",
-      "produces": [
-        "performance-analysis.md",
-        "optimization-roadmap.json"
-      ],
-      "consumes": [
-        "performance-profile.json"
-      ],
-      "deps": [
-        "profile-performance"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "performance-analysis.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "synthesis": {
-      "id": "synthesis",
-      "desc": "Aggregate all improvements: metrics validated, persistence enforced, performance baseline, protocol documented (produces: improvement-synthesis.json)",
-      "produces": [
-        "improvement-synthesis.json"
-      ],
-      "consumes": [
-        "metrics-sample.jsonl",
-        "tests/persistence-enforcement.test.ts",
-        "optimization-roadmap.json",
-        "src/lib/protocol/CONTRACTS.md"
-      ],
-      "deps": [
-        "integrate-metrics-hooks",
-        "test-persistence-enforcement",
-        "analyze-performance-data",
-        "validate-brief-contracts"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "improvement-synthesis.json"
-        }
-      ],
-      "idempotent": true
-    },
-    "term": {
-      "id": "term",
-      "desc": "Self-improvement complete: metrics instrumented, persistence enforced, performance profiled, protocol documented",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "synthesis"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "improvement-synthesis.json"
-        }
-      ],
-      "idempotent": false
+      "idempotent": false,
+      "mode": "execute",
+      "level": 3
     }
-  },
-  "headSha": "fb0ca48e95c977625113ee5c3e56dc5886264418"
+  }
 }
