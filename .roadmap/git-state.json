@@ -1,5 +1,5 @@
 {
-  "lastCommit": "425072dc0f0f746967416f7b2678d5bced693508",
-  "timestamp": "2026-03-02T09:07:21Z",
-  "message": "brief-gate-impl: implement brief gate validation module"
+  "lastCommit": "564e70ffd2b06dacfbc65b2fc4d77081219e9893",
+  "timestamp": "2026-03-02T09:10:11Z",
+  "message": "brief-gate-impl + handoff-journal-impl: sealed agent protocol modules with handoff journal"
 }
