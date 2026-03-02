@@ -3,8 +3,8 @@
 // @types DispatchPlan, AgentAssignment, DispatchConfig
 // @entry roadmap/agent-dispatch
 
-import type { Graph } from '../protocol/types.ts';
-import type { Orientation } from '../protocol/operations.ts';
+import type { Graph } from '../protocol/types';
+import type { Orientation } from '../protocol/operations';
 import type { Brief, FinalHandoff } from '../brief';
 import { getBrief } from '../brief';
 import { BriefGate } from './brief-gate';

@@ -76,8 +76,8 @@ export function enforceClutterPrevention(repoRoot: string): ClutterPreventionRep
         severity: 'error',
         message: `${dagReport.invalidCount} DAG file(s) have invalid structure`,
         remediation: dagReport.entries
-          .filter((e) => !e.valid)
-          .map((e) => `  ${e.path}: ${e.error}`)
+          .filter((e: any) => !e.valid)
+          .map((e: any) => `  ${e.path}: ${e.error}`)
           .join('\n'),
       });
     }
@@ -88,8 +88,8 @@ export function enforceClutterPrevention(repoRoot: string): ClutterPreventionRep
         severity: 'warning',
         message: `${dagReport.orphanedCount} orphaned DAG file(s) detected`,
         remediation: dagReport.entries
-          .filter((e) => e.orphaned)
-          .map((e) => `  Archive: .roadmap/${e.path}`)
+          .filter((e: any) => e.orphaned)
+          .map((e: any) => `  Archive: .roadmap/${e.path}`)
           .join('\n'),
       });
     }
@@ -100,7 +100,7 @@ export function enforceClutterPrevention(repoRoot: string): ClutterPreventionRep
         severity: 'warning',
         message: `${dagReport.designDocGaps.length} DAG(s) missing design documentation`,
         remediation: dagReport.designDocGaps
-          .map((id) => `  Create design doc for: ${id}`)
+          .map((id: any) => `  Create design doc for: ${id}`)
           .join('\n'),
       });
     }
@@ -155,8 +155,8 @@ export function enforceClutterPrevention(repoRoot: string): ClutterPreventionRep
   const worktreeCleanup = new WorktreeCleanup();
   const worktreeEntries = worktreeCleanup.scan();
 
-  const staleCount = worktreeEntries.filter((e) => e.stale).length;
-  const orphanedCount = worktreeEntries.filter((e) => e.orphaned).length;
+  const staleCount = worktreeEntries.filter((e: any) => e.stale).length;
+  const orphanedCount = worktreeEntries.filter((e: any) => e.orphaned).length;
 
   const worktreeViolations: EnforcementViolation[] = [];
   if (staleCount > 0 || orphanedCount > 0) {
@@ -166,8 +166,8 @@ export function enforceClutterPrevention(repoRoot: string): ClutterPreventionRep
         severity: 'warning',
         message: `${staleCount} stale worktree(s) (not modified in 7+ days)`,
         remediation: worktreeEntries
-          .filter((e) => e.stale)
-          .map((e) => `  git worktree remove ${e.path}`)
+          .filter((e: any) => e.stale)
+          .map((e: any) => `  git worktree remove ${e.path}`)
           .join('\n'),
       });
     }
@@ -178,8 +178,8 @@ export function enforceClutterPrevention(repoRoot: string): ClutterPreventionRep
         severity: 'warning',
         message: `${orphanedCount} orphaned worktree(s) (branch deleted)`,
         remediation: worktreeEntries
-          .filter((e) => e.orphaned)
-          .map((e) => `  git worktree remove ${e.path}`)
+          .filter((e: any) => e.orphaned)
+          .map((e: any) => `  git worktree remove ${e.path}`)
           .join('\n'),
       });
     }

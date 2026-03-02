@@ -24,6 +24,7 @@ export interface RenderV1 {
   format: 'ansi' | 'plain';
   mime: 'text/x-roadmap-ui';
   title: string;
+  content: string;
   hints?: Hint[];
 }
 

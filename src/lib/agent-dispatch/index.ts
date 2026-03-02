@@ -3,12 +3,12 @@
 // @types DispatchAssignment, HandoffInput, ExecutionResult, BriefValidation, JournalEntry
 // @entry agent-dispatch
 
-export { computeDispatch } from './dispatch-coordinator.ts';
-export { executeSealed } from './agent-executor.ts';
-export { validateBrief } from './brief-gate.ts';
-export { saveInterim, saveFinal, loadJournal, loadFinal, journalDir } from './handoff-journal.ts';
+export { computeDispatch } from './dispatch-coordinator';
+export { executeSealed } from './agent-executor';
+export { validateBrief, BriefGate } from './brief-gate';
+export { saveInterim, saveFinal, loadJournal, loadFinal, journalDir, HandoffJournal } from './handoff-journal';
 
-export type { DispatchAssignment } from './dispatch-coordinator.ts';
-export type { HandoffInput, ExecutionResult } from './agent-executor.ts';
-export type { BriefValidation } from './brief-gate.ts';
-export type { JournalEntry } from './handoff-journal.ts';
+export type { DispatchPlan, AgentAssignment } from './dispatch-coordinator';
+export type { HandoffInput, ExecutionResult, AgentExecutor } from './agent-executor';
+export type { BriefValidationResult, BriefValidationError } from './brief-gate';
+export type { HandoffChain, InterimHandoff } from './handoff-journal';

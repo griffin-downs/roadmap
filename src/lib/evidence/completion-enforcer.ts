@@ -2,8 +2,8 @@
 // @exports syncCompletionWithProduces, validateCompletionSignature, repairMissingCompletions, enforceCompletionConsistency
 // Completion record ↔ produces file consistency enforcement
 
-import type { Graph } from '../protocol/types.ts';
-import type { CompletionRecord } from './completion-evidence.ts';
+import type { Graph } from '../protocol/types';
+import type { CompletionRecordWithEvidence } from './completion-evidence';
 
 /**
  * Validation gate: completion record exists and has passing checks if produces files exist.
@@ -42,7 +42,7 @@ export function syncCompletionWithProduces(
           issue: 'missing-record',
           detail: `Produces exist (${Array.from(produces_set).join(', ')}) but no completion record`,
         });
-      } else if (!completion.validationChecks || !completion.validationChecks.every(c => c.passed)) {
+      } else if (!completion.validationChecks || !completion.validationChecks.every((c: any) => c.passed)) {
         misalignments.push({
           nodeId: node.id,
           issue: 'incomplete-checks',
@@ -52,8 +52,8 @@ export function syncCompletionWithProduces(
     }
 
     // If completion record exists with passing checks, produces should exist
-    if (completion && completion.validationChecks && completion.validationChecks.every(c => c.passed)) {
-      const missingProduces = nodeProduces.filter(p => !produces_set || !produces_set.has(p));
+    if (completion && completion.validationChecks && completion.validationChecks.every((c: any) => c.passed)) {
+      const missingProduces = nodeProduces.filter((p: any) => !produces_set || !produces_set.has(p));
       if (missingProduces.length > 0) {
         misalignments.push({
           nodeId: node.id,

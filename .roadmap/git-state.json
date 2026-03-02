@@ -1,5 +1,5 @@
 {
-  "lastCommit": "32a4fb54746d8c374dfc2adfe7353ff56c4d5489",
-  "timestamp": "2026-03-02T12:42:34Z",
-  "message": "roadmap: update git-state and trail after dispatch-system phase start"
+  "lastCommit": "a182a6e17c1e9df609bc11a86684d46c515d02bb",
+  "timestamp": "2026-03-02T13:06:48Z",
+  "message": "dispatch-coordinator-impl: Add computeDispatch re-export for index.ts compatibility"
 }
