@@ -1960,5 +1960,35 @@
     ],
     "gitSha": "9d4e0763085e76592467b665b6c6b4f0be1c7dcd",
     "treeSha": "da134acb1c81d7c576f4cda0dbdc550b2967eb0d"
+  },
+  {
+    "nodeId": "p3-prod-deployment",
+    "completedAt": "2026-03-02T00:03:19.741Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302000319",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/deployment/p3-deployment-log.json"
+      }
+    ],
+    "gitSha": "4f4e1b922fc90da9a301f34e599ab364a9ea58ff",
+    "treeSha": "55b8431cfaa7def4d138cbb3890a75a6a291d0f7"
+  },
+  {
+    "nodeId": "p3-post-deploy-metrics",
+    "completedAt": "2026-03-02T00:03:20.489Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302000320",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/metaflow/metrics/p3-post-deploy-metrics.json"
+      }
+    ],
+    "gitSha": "4f4e1b922fc90da9a301f34e599ab364a9ea58ff",
+    "treeSha": "55b8431cfaa7def4d138cbb3890a75a6a291d0f7"
   }
 ]
