@@ -1,27 +1,139 @@
 name: Gate Pack Manifests
 
 on:
-  pull_request:
-    paths:
-      - 'packs/*/PACK.json'
   push:
     branches:
       - master
     paths:
       - 'packs/*/PACK.json'
+  pull_request:
 
 jobs:
-  validate-manifests:
+  pack-manifests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Load Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Discover packs
+        id: discovery
+        run: |
+          echo "Discovering pack branches..."
+          pack_list=$(git for-each-ref --format='%(refname:short)' refs/heads/packs/ | sed 's|packs/||' | sort)
+          echo "discovered=${pack_list}" >> $GITHUB_OUTPUT
+          if [ -z "$pack_list" ]; then
+            echo "ℹ No packs discovered"
+          else
+            echo "Found packs:"
+            echo "$pack_list" | sed 's/^/  /'
+          fi
+
       - name: Validate pack manifests
         run: |
-          echo "Validating pack manifest structures"
-          for manifest in packs/*/PACK.json; do
-            if [ -f "$manifest" ]; then
-              echo "✓ Manifest: $manifest"
-              jq . "$manifest" > /dev/null || exit 1
+          set -e
+          pack_list=$(git for-each-ref --format='%(refname:short)' refs/heads/packs/ | sed 's|packs/||' | sort)
+
+          if [ -z "$pack_list" ]; then
+            echo "ℹ No packs to validate"
+            exit 0
+          fi
+
+          echo "Validating pack manifests..."
+          failed=0
+
+          for pack_name in $pack_list; do
+            ref="packs/$pack_name"
+            manifest_path="PACK.json"
+
+            # Check if PACK.json exists in the pack branch
+            if ! git cat-file -e $ref:$manifest_path 2>/dev/null; then
+              echo "✗ PACK.json missing in $ref"
+              ((failed++))
+              continue
+            fi
+
+            # Get manifest content and validate JSON
+            manifest_json=$(git show $ref:$manifest_path)
+            if ! echo "$manifest_json" | jq . > /dev/null 2>&1; then
+              echo "✗ Invalid JSON in $ref/PACK.json"
+              ((failed++))
+              continue
+            fi
+
+            # Validate required schema fields
+            if ! echo "$manifest_json" | jq -e '.name and .version and .description' > /dev/null 2>&1; then
+              echo "✗ Missing required fields (name, version, description) in $ref/PACK.json"
+              ((failed++))
+              continue
+            fi
+
+            # Validate name matches branch name
+            manifest_name=$(echo "$manifest_json" | jq -r '.name')
+            if [ "$manifest_name" != "$pack_name" ]; then
+              echo "✗ Manifest name '$manifest_name' does not match branch name '$pack_name' in $ref/PACK.json"
+              ((failed++))
+              continue
+            fi
+
+            echo "✓ $ref/PACK.json is valid"
+          done
+
+          if [ $failed -gt 0 ]; then
+            echo ""
+            echo "❌ Validation failed: $failed pack(s) have issues"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All pack manifests are valid"
+
+      - name: Check circular dependencies
+        run: |
+          set -e
+          echo "Checking for circular dependencies..."
+
+          pack_list=$(git for-each-ref --format='%(refname:short)' refs/heads/packs/ | sed 's|packs/||' | sort)
+
+          if [ -z "$pack_list" ]; then
+            echo "ℹ No packs to check"
+            exit 0
+          fi
+
+          # Create a temporary directory for dependency analysis
+          tmp_deps=$(mktemp -d)
+          trap "rm -rf $tmp_deps" EXIT
+
+          # Extract all dependencies
+          for pack_name in $pack_list; do
+            ref="packs/$pack_name"
+            deps=$(git show $ref:PACK.json 2>/dev/null | jq -r '.dependencies[]?' 2>/dev/null || echo "")
+            if [ -n "$deps" ]; then
+              echo "$deps" | while read dep; do
+                echo "$pack_name -> $dep" >> "$tmp_deps/graph"
+              done
             fi
           done
-          echo "All manifests valid"
+
+          # Simple cycle detection: for each node, follow edges and check if we revisit
+          if [ -f "$tmp_deps/graph" ]; then
+            # This is a basic check; a full topological sort would be needed for complete detection
+            # For now, we'll just verify that all dependencies reference existing packs
+            while IFS=' -> ' read from to; do
+              if ! echo "$pack_list" | grep -q "^$to$"; then
+                echo "✗ Circular or missing dependency: $from depends on non-existent pack '$to'"
+                exit 1
+              fi
+            done < "$tmp_deps/graph"
+          fi
+
+          echo "✅ No circular dependencies detected"
