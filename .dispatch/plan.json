@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-03-02T00:00:00.000Z",
+  "batch": ["brief-gate-impl", "handoff-journal-impl"],
+  "batchLevel": 1,
+  "assignments": [
+    {
+      "agentId": "agent-dispatch-1",
+      "nodeId": "brief-gate-impl",
+      "brief": {
+        "position": "brief-gate-impl",
+        "mode": "execute",
+        "produces": ["src/lib/agent-dispatch/brief-gate.ts"],
+        "consumes": ["src/lib/brief.ts", "src/protocol.ts"],
+        "description": "Implement and test brief gate: validates brief contract before dispatch",
+        "pattern": "Implement from spec. Keep it minimal, no extra features.",
+        "handoffJournal": [],
+        "remaining": 5
+      }
+    },
+    {
+      "agentId": "agent-dispatch-2",
+      "nodeId": "handoff-journal-impl",
+      "brief": {
+        "position": "handoff-journal-impl",
+        "mode": "execute",
+        "produces": ["src/lib/agent-dispatch/handoff-journal.ts"],
+        "consumes": ["src/lib/brief.ts"],
+        "description": "Implement handoff journal: store interim checkpoints, final handoffs, load chain for next agent",
+        "pattern": "Implement from spec. Keep it minimal, no extra features.",
+        "handoffJournal": [],
+        "remaining": 4
+      }
+    }
+  ],
+  "handoffChain": [],
+  "totalNodes": 8,
+  "completedNodes": 1,
+  "ready": false,
+  "validationErrors": []
+}
