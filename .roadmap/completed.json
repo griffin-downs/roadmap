@@ -3094,5 +3094,51 @@
     ],
     "gitSha": "3257a4328cc0c1a61bc351d37cca597e84dbe4a0",
     "treeSha": "739af0155f179e797d33f3c7d3c4c573ac9cf090"
+  },
+  {
+    "nodeId": "dispatch-coordinator-impl",
+    "completedAt": "2026-03-02T08:36:21.322Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302083619",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "54ce492b7f23fc32ef53f227dab690c68cd99ad3",
+    "treeSha": "09b41c3e73fae2ea9365751a8599fb259f6d5eec"
+  },
+  {
+    "nodeId": "agent-executor-impl",
+    "completedAt": "2026-03-02T08:36:57.209Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302083655",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "54ce492b7f23fc32ef53f227dab690c68cd99ad3",
+    "treeSha": "09b41c3e73fae2ea9365751a8599fb259f6d5eec"
   }
 ]
