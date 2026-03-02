@@ -3,6 +3,7 @@
   "desc": "Cross-session transcript mining: aggregate hooks.log + trail.jsonl, extract patterns, detect anomalies, analyze trends",
   "init": "transcript-aggregator",
   "term": "trend-analysis",
+  "headSha": "ae924250fb0fd310a9f9a6e9a71d1e2a994293b1",
   "nodes": {
     "transcript-aggregator": {
       "id": "transcript-aggregator",
