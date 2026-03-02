@@ -31,10 +31,9 @@ export interface ExecutionResult {
 export async function executeSealed(input: HandoffInput): Promise<ExecutionResult> {
   const { brief, repoRoot } = input;
   const nodeId = brief.position;
-  const jDir = join(repoRoot, '.dispatch', nodeId);
 
   try {
-    await writeInterimHandoff(nodeId, {
+    await writeInterimHandoff(repoRoot, nodeId, {
       timestamp: new Date().toISOString(),
       progress: 0.15,
       discovered: [
@@ -45,7 +44,7 @@ export async function executeSealed(input: HandoffInput): Promise<ExecutionResul
       ],
       blockers: [],
       currentFile: '',
-    }, jDir);
+    });
 
     // Read consumes (contract boundary)
     const consumedData: Record<string, string> = {};
@@ -58,21 +57,21 @@ export async function executeSealed(input: HandoffInput): Promise<ExecutionResul
       }
     }
 
-    await writeInterimHandoff(nodeId, {
+    await writeInterimHandoff(repoRoot, nodeId, {
       timestamp: new Date().toISOString(),
       progress: 0.3,
       discovered: [`Read ${Object.keys(consumedData).length} consumed files`],
       blockers: [],
       currentFile: '',
-    }, jDir);
+    });
 
-    await writeInterimHandoff(nodeId, {
+    await writeInterimHandoff(repoRoot, nodeId, {
       timestamp: new Date().toISOString(),
       progress: 0.7,
       discovered: [`Implemented ${brief.produces.length} produce files`],
       blockers: [],
       currentFile: brief.produces[0] || '',
-    }, jDir);
+    });
 
     // Validate produces exist
     const produced: string[] = [];
@@ -86,13 +85,13 @@ export async function executeSealed(input: HandoffInput): Promise<ExecutionResul
       }
     }
 
-    await writeInterimHandoff(nodeId, {
+    await writeInterimHandoff(repoRoot, nodeId, {
       timestamp: new Date().toISOString(),
       progress: 0.85,
       discovered: [`Validated ${produced.length}/${brief.produces.length} files`],
       blockers: produced.length === brief.produces.length ? [] : ['Missing produced files'],
       currentFile: '',
-    }, jDir);
+    });
 
     // Final handoff
     const handoff: FinalHandoff = {
@@ -117,7 +116,7 @@ export async function executeSealed(input: HandoffInput): Promise<ExecutionResul
       },
     };
 
-    await writeFinalHandoff(nodeId, handoff, jDir);
+    await writeFinalHandoff(repoRoot, nodeId, handoff);
 
     return { nodeId, success: true, handoff };
   } catch (error) {
