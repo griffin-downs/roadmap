@@ -2,7 +2,7 @@
 // @purpose Unit tests for deny-list + bounds enforcement (S1)
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GitSafeConfig, GitSafeError } from '../index';
+import { GitSafeConfig, GitSafeError } from '../index.js';
 
 // Mock implementations for testing deny-list and bounds logic
 function isDenied(path: string, denylist: string[]): boolean {

@@ -9,8 +9,8 @@ import type {
   KeepBudget,
   KeepBudgetViolation,
   ValidationResult,
-} from './types.ts';
-import { ChateletError } from './types.ts';
+} from './types.js';
+import { ChateletError } from './types.js';
 
 export type { KeepBudget, KeepBudgetViolation, ValidationResult };
 export { ChateletError };
