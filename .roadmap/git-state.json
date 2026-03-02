@@ -1,5 +1,5 @@
 {
-  "lastCommit": "d5a2b49ba6ad1217129e9339ae4b3ea03c3485cb",
-  "timestamp": "2026-03-02T12:07:58Z",
-  "message": "roadmap: treeshake — archive alternate DAGs, clean up build artifacts"
+  "lastCommit": "beaab17dddac8f1e1a8003364f13c72952cc85d7",
+  "timestamp": "2026-03-02T12:08:15Z",
+  "message": "roadmap: cleanup — remove stale worktrees from dispatch-system phase"
 }
