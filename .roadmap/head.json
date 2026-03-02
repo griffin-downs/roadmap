@@ -1,229 +1,80 @@
 {
-  "id": "roadmap-audit-enforcement-001",
-  "desc": "Imported from spec-kit",
+  "id": "mining-latency-briefs-001",
+  "desc": "Mine agent execution metrics, brief effectiveness, roadmap persistence gap. Quantify token/latency savings + identify drift between prospective and committed DAGs.",
   "init": "init",
   "term": "term",
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Synthetic init — roots all P0 tasks",
-      "produces": [
-        "init.marker"
-      ],
+      "desc": "Establish mining baseline: gather transcripts, logs, agent execution records",
+      "produces": ["mining-baseline.json"],
       "consumes": [],
       "deps": [],
-      "validate": [
-        {
-          "type": "spec-conformance",
-          "spec": ".specify/specs/roadmap-audit-enforcement-001/spec.md",
-          "scenario": "Plan clarity validated against feature spec",
-          "section": "Specification"
-        }
-      ],
-      "idempotent": true,
-      "ambient": [
-        ".specify/pre-spec.md",
-        ".specify/specs/roadmap-audit-enforcement-001/spec.md",
-        ".specify/specs/roadmap-audit-enforcement-001/tasks.md"
-      ]
+      "validate": [{"type": "artifact-exists", "path": "mining-baseline.json"}],
+      "idempotent": true
+    },
+    "analyze-agent-metrics": {
+      "id": "analyze-agent-metrics",
+      "desc": "Extract latency, token count, tool calls from agent execution logs (produces: mining-agent-metrics.json)",
+      "produces": ["mining-agent-metrics.json"],
+      "consumes": ["mining-baseline.json"],
+      "deps": ["init"],
+      "validate": [{"type": "artifact-exists", "path": "mining-agent-metrics.json"}],
+      "idempotent": true
+    },
+    "analyze-brief-effectiveness": {
+      "id": "analyze-brief-effectiveness",
+      "desc": "Compare briefed agents vs full-context agents: execution time, token efficiency, tool precision (produces: mining-brief-effectiveness.json)",
+      "produces": ["mining-brief-effectiveness.json"],
+      "consumes": ["mining-agent-metrics.json"],
+      "deps": ["analyze-agent-metrics"],
+      "validate": [{"type": "artifact-exists", "path": "mining-brief-effectiveness.json"}],
+      "idempotent": true
+    },
+    "mine-roadmap-persistence": {
+      "id": "mine-roadmap-persistence",
+      "desc": "Scan transcripts for 'orient-then-forget' pattern: prospective DAG edits not committed to head.json (produces: mining-persistence-gap.json)",
+      "produces": ["mining-persistence-gap.json"],
+      "consumes": ["mining-baseline.json"],
+      "deps": ["init"],
+      "validate": [{"type": "artifact-exists", "path": "mining-persistence-gap.json"}],
+      "idempotent": true
+    },
+    "quantify-impact": {
+      "id": "quantify-impact",
+      "desc": "Impact analysis: token savings from briefs, latency reduction, persistence gap frequency/cost (produces: mining-impact-summary.json)",
+      "produces": ["mining-impact-summary.json"],
+      "consumes": ["mining-brief-effectiveness.json", "mining-persistence-gap.json"],
+      "deps": ["analyze-brief-effectiveness", "mine-roadmap-persistence"],
+      "validate": [{"type": "artifact-exists", "path": "mining-impact-summary.json"}],
+      "idempotent": true
+    },
+    "enforce-roadmap-sync": {
+      "id": "enforce-roadmap-sync",
+      "desc": "Design enforcement pattern: detect head.json divergence, prevent context-clear drift, recommend git hooks (produces: enforcement-roadmap-sync.md)",
+      "produces": ["enforcement-roadmap-sync.md"],
+      "consumes": ["mining-persistence-gap.json"],
+      "deps": ["mine-roadmap-persistence"],
+      "validate": [{"type": "artifact-exists", "path": "enforcement-roadmap-sync.md"}],
+      "idempotent": true
+    },
+    "synthesis": {
+      "id": "synthesis",
+      "desc": "Final synthesis: metrics report, brief ROI, persistence enforcement recommendations (produces: mining-synthesis-report.json)",
+      "produces": ["mining-synthesis-report.json"],
+      "consumes": ["mining-impact-summary.json", "enforcement-roadmap-sync.md"],
+      "deps": ["quantify-impact", "enforce-roadmap-sync"],
+      "validate": [{"type": "artifact-exists", "path": "mining-synthesis-report.json"}],
+      "idempotent": true
     },
     "term": {
       "id": "term",
-      "desc": "Synthetic term — gates on all leaf tasks",
+      "desc": "Mining complete: latency metrics analyzed, brief effectiveness measured, persistence gap quantified",
       "produces": [],
       "consumes": [],
-      "deps": [
-        "audit-protocol",
-        "audit-validation",
-        "synthesis-audit",
-        "enforce-batch-invariants",
-        "enforce-completion-sync",
-        "test-enforcement",
-        "final-synthesis"
-      ],
-      "validate": [
-        {
-          "type": "spec-conformance",
-          "spec": ".specify/specs/roadmap-audit-enforcement-001/spec.md",
-          "scenario": "All acceptance scenarios pass (User Stories 1-6)",
-          "section": "Feature Specification"
-        },
-        {
-          "type": "shell",
-          "command": "test -f package.json && npm run test 2>&1 | grep -q 'test'",
-          "expectExitCode": 0
-        },
-        {
-          "type": "shell",
-          "command": "npm run build 2>&1 | grep -q \"built\"",
-          "expectExitCode": 0
-        }
-      ],
-      "idempotent": false,
-      "ambient": [
-        ".specify/specs/roadmap-audit-enforcement-001/spec.md"
-      ]
-    },
-    "audit-protocol": {
-      "id": "audit-protocol",
-      "desc": "Analyze protocol code coverage, document gaps (produces: docs/PROTOCOL-AUDIT.md)",
-      "produces": [
-        "docs/PROTOCOL-AUDIT.md"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "docs/PROTOCOL-AUDIT.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "audit-validation": {
-      "id": "audit-validation",
-      "desc": "Catalog validation rules and rule coverage (produces: docs/VALIDATION-GAPS.md)",
-      "produces": [
-        "docs/VALIDATION-GAPS.md"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "docs/VALIDATION-GAPS.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "synthesis-audit": {
-      "id": "synthesis-audit",
-      "desc": "Aggregate audit findings into enforcement strategy (produces: .roadmap/audit-synthesis.json)",
-      "produces": [
-        ".roadmap/audit-synthesis.json"
-      ],
-      "consumes": [
-        "docs/PROTOCOL-AUDIT.md",
-        "docs/VALIDATION-GAPS.md"
-      ],
-      "deps": [
-        "audit-protocol",
-        "audit-validation"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": ".roadmap/audit-synthesis.json"
-        }
-      ],
-      "idempotent": true
-    },
-    "enforce-batch-invariants": {
-      "id": "enforce-batch-invariants",
-      "desc": "Implement batch position invariant checks (produces: src/lib/protocol/batch-invariants.ts)",
-      "produces": [
-        "src/lib/protocol/batch-invariants.ts"
-      ],
-      "consumes": [
-        ".roadmap/audit-synthesis.json"
-      ],
-      "deps": [
-        "synthesis-audit"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "src/lib/protocol/batch-invariants.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit src/lib/protocol/batch-invariants.ts 2>&1 | head -20",
-          "expectExitCode": 0
-        }
-      ],
-      "idempotent": true
-    },
-    "enforce-completion-sync": {
-      "id": "enforce-completion-sync",
-      "desc": "Implement completion↔produces consistency checks (produces: src/lib/evidence/completion-enforcer.ts)",
-      "produces": [
-        "src/lib/evidence/completion-enforcer.ts"
-      ],
-      "consumes": [
-        ".roadmap/audit-synthesis.json"
-      ],
-      "deps": [
-        "synthesis-audit"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "src/lib/evidence/completion-enforcer.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit src/lib/evidence/completion-enforcer.ts 2>&1 | head -20",
-          "expectExitCode": 0
-        }
-      ],
-      "idempotent": true
-    },
-    "test-enforcement": {
-      "id": "test-enforcement",
-      "desc": "Write tests validating all enforcement gates (produces: tests/enforce-audit.test.ts)",
-      "produces": [
-        "tests/enforce-audit.test.ts"
-      ],
-      "consumes": [
-        "src/lib/protocol/batch-invariants.ts",
-        "src/lib/evidence/completion-enforcer.ts"
-      ],
-      "deps": [
-        "enforce-batch-invariants",
-        "enforce-completion-sync"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": "tests/enforce-audit.test.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npm run test -- tests/enforce-audit.test.ts 2>&1 | tail -10",
-          "expectExitCode": 0
-        }
-      ],
-      "idempotent": true
-    },
-    "final-synthesis": {
-      "id": "final-synthesis",
-      "desc": "Validate enforcement on current system, generate receipt (produces: .roadmap/enforcement-receipt.json)",
-      "produces": [
-        ".roadmap/enforcement-receipt.json"
-      ],
-      "consumes": [
-        "tests/enforce-audit.test.ts"
-      ],
-      "deps": [
-        "test-enforcement"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "path": ".roadmap/enforcement-receipt.json"
-        }
-      ],
-      "idempotent": true
+      "deps": ["synthesis"],
+      "validate": [{"type": "artifact-exists", "path": "mining-synthesis-report.json"}],
+      "idempotent": false
     }
-  },
-  "version": "0.3.0",
-  "protocolVersion": "0.3.0"
+  }
 }
