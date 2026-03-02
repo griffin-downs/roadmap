@@ -203,5 +203,20 @@
     ],
     "gitSha": "a006379af7ed1d6ae2aada9bacf31991db374c83",
     "treeSha": "05e6300e77ff94f7a38f624386a562165436ea02"
+  },
+  {
+    "nodeId": "anomaly-detection",
+    "completedAt": "2026-03-02T12:06:01.939Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302120601",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/mining/anomaly-detector.ts"
+      }
+    ],
+    "gitSha": "08283bf85b5d7b78319454c9b8a764aefcac3676",
+    "treeSha": "fcb38f8b2ce21a1f0d6d711143bc6d72fc38f024"
   }
 ]

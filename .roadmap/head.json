@@ -58,7 +58,8 @@
       ],
       "deps": ["mining-queries"],
       "validate": [
-        {"type": "artifact-exists", "path": "src/lib/mining/anomaly-detector.ts"}
+        {"type": "artifact-exists", "path": "src/lib/mining/anomaly-detector.ts"},
+        {"type": "artifact-exists", "path": "tests/anomaly-detector.test.ts"}
       ],
       "idempotent": true,
       "mode": "execute",
