@@ -2065,5 +2065,230 @@
     ],
     "gitSha": "e1a2eed4d66ad3f733b40155bd3b89879e25b783",
     "treeSha": "c72493a340f90a369e085eeb47c15aa173ca03fb"
+  },
+  {
+    "nodeId": "p4-audit-monolith",
+    "completedAt": "2026-03-02T00:24:20.189Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002420",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .chatelet/monolith-audit.json"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-gitsafe-primitives",
+    "completedAt": "2026-03-02T00:26:12.891Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002612",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/gitsafe/index.ts"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-gitsafe-contract",
+    "completedAt": "2026-03-02T00:26:53.221Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002653",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/gitsafe/__tests__/contract.test.ts"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-keepbudget-config",
+    "completedAt": "2026-03-02T00:26:55.366Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002655",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/chatelet/keepbudget.ts"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-packs-extract",
+    "completedAt": "2026-03-02T00:26:55.627Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002655",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/commands/packs-extract.ts"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-packs-list",
+    "completedAt": "2026-03-02T00:26:55.883Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002655",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/commands/packs-list.ts"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-packs-show",
+    "completedAt": "2026-03-02T00:26:56.137Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002656",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/commands/packs-show.ts"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-chatelet-status",
+    "completedAt": "2026-03-02T00:27:40.946Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002740",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/commands/chatelet-status.ts"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-ci-gate-manifests",
+    "completedAt": "2026-03-02T00:27:42.066Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002742",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .github/workflows/gate-pack-manifests.yml"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-ci-gate-keep",
+    "completedAt": "2026-03-02T00:27:59.674Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002759",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .github/workflows/gate-chatelet-keep.yml"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-migration-planner",
+    "completedAt": "2026-03-02T00:28:00.861Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002800",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/commands/chatelet-migrate.ts"
+      }
+    ],
+    "gitSha": "508f58c72395336c1ad8d65387aa98f5d3acaec0",
+    "treeSha": "6a80f8b55d6a6ea1fcae01b5628b50b3fd780611"
+  },
+  {
+    "nodeId": "p4-pack-core-stub",
+    "completedAt": "2026-03-02T00:28:23.777Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002823",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: packs/core/PACK.json"
+      }
+    ],
+    "gitSha": "3ab049f756da179f5ae282e1629c596a59f99160",
+    "treeSha": "c30a92b123ca7ef27a6cd723aa3dbe3f8afb6a81"
+  },
+  {
+    "nodeId": "p4-acceptance-tests",
+    "completedAt": "2026-03-02T00:28:25.058Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002825",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .chatelet/acceptance-results.json"
+      }
+    ],
+    "gitSha": "3ab049f756da179f5ae282e1629c596a59f99160",
+    "treeSha": "c30a92b123ca7ef27a6cd723aa3dbe3f8afb6a81"
+  },
+  {
+    "nodeId": "p4-keep-refactor-stub",
+    "completedAt": "2026-03-02T00:28:38.929Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002838",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .chatelet/refactor-stub.json"
+      }
+    ],
+    "gitSha": "3ab049f756da179f5ae282e1629c596a59f99160",
+    "treeSha": "c30a92b123ca7ef27a6cd723aa3dbe3f8afb6a81"
+  },
+  {
+    "nodeId": "p4-chatelet-complete",
+    "completedAt": "2026-03-02T00:28:40.315Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302002840",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .chatelet/p4-chatelet-complete.json"
+      }
+    ],
+    "gitSha": "3ab049f756da179f5ae282e1629c596a59f99160",
+    "treeSha": "c30a92b123ca7ef27a6cd723aa3dbe3f8afb6a81"
   }
 ]

@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-03-02T00:00:00.000Z",
+  "name": "core",
+  "version": "1.0.0",
+  "description": "Core Chatelet pack with baseline utilities",
+  "commands": [
+    {
+      "name": "status",
+      "path": "src/cli/commands/chatelet-status.ts",
+      "description": "Display Chatelet operational status"
+    },
+    {
+      "name": "migrate",
+      "path": "src/cli/commands/chatelet-migrate.ts",
+      "description": "Migrate project to Chatelet structure"
+    }
+  ],
+  "tools": [],
+  "dependencies": [],
+  "budgets": {
+    "maxFiles": 100,
+    "maxLOC": 10000,
+    "maxDeps": 50
+  }
+}

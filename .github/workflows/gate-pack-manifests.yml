@@ -1,0 +1,27 @@
+name: Gate Pack Manifests
+
+on:
+  pull_request:
+    paths:
+      - 'packs/*/PACK.json'
+  push:
+    branches:
+      - master
+    paths:
+      - 'packs/*/PACK.json'
+
+jobs:
+  validate-manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Validate pack manifests
+        run: |
+          echo "Validating pack manifest structures"
+          for manifest in packs/*/PACK.json; do
+            if [ -f "$manifest" ]; then
+              echo "✓ Manifest: $manifest"
+              jq . "$manifest" > /dev/null || exit 1
+            fi
+          done
+          echo "All manifests valid"

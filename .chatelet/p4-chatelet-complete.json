@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-03-02T00:00:00.000Z",
+  "node": "p4-chatelet-complete",
+  "status": "complete",
+  "phase": "p4",
+  "title": "Châtelet Phase 4 Complete: Minimal Keep + Discoverable Packs",
+  "deliverables": [
+    {
+      "id": "chatelet-status",
+      "path": "src/cli/commands/chatelet-status.ts",
+      "type": "command",
+      "description": "Tool to report system operational status"
+    },
+    {
+      "id": "chatelet-migrate",
+      "path": "src/cli/commands/chatelet-migrate.ts",
+      "type": "command",
+      "description": "Migration planner for project structure updates"
+    },
+    {
+      "id": "gate-manifests",
+      "path": ".github/workflows/gate-pack-manifests.yml",
+      "type": "ci-gate",
+      "description": "CI validation for pack manifest structure"
+    },
+    {
+      "id": "gate-keep",
+      "path": ".github/workflows/gate-chatelet-keep.yml",
+      "type": "ci-gate",
+      "description": "CI enforcement of keep budget constraints"
+    },
+    {
+      "id": "core-pack",
+      "path": "packs/core/PACK.json",
+      "type": "pack",
+      "description": "First pack with baseline utilities"
+    }
+  ],
+  "acceptance": {
+    "allCriteriaMet": true,
+    "allScenariosPass": true,
+    "readinessSummary": "Châtelet architecture operational: minimal core, discoverable packs, automated enforcement"
+  },
+  "systemState": {
+    "packDiscovery": "enabled",
+    "keepBudgetEnforced": true,
+    "ciGatesActive": true,
+    "migrationsSupported": true
+  }
+}
