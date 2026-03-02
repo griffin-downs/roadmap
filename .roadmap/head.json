@@ -1,83 +1,104 @@
 {
-  "id": "custodial-audit-001",
-  "desc": "Custodial governance audit: verify git topology (chatalet + main), enforce workflows, validate system linkage, assess coherence.",
-  "init": "audit-git-topology",
-  "term": "custodial-synthesis",
+  "id": "enforcement-hardening-001",
+  "desc": "Enforce invariants to prevent clutter: task list hygiene, design doc commitment, worktree cleanup, DAG documentation.",
+  "init": "task-list-enforcement",
+  "term": "clutter-prevention-gates",
   "nodes": {
-    "audit-git-topology": {
-      "id": "audit-git-topology",
-      "desc": "Audit git structure: branch topology (main, chatalet), HEAD positions, commit history alignment with roadmap trail, push/pull consistency.",
+    "task-list-enforcement": {
+      "id": "task-list-enforcement",
+      "desc": "Enforce task list invariants: no in_progress > 48h without update, no undefined in_progress, completion requires evidence. Auto-flag stale items.",
       "produces": [
-        "git-topology-audit.json"
+        "src/lib/enforcement/task-list-validator.ts",
+        "tests/task-list-validator.test.ts"
       ],
       "consumes": [
-        ".roadmap/trail.jsonl",
-        ".git/HEAD"
+        ".claude/CLAUDE.md",
+        "tasks/"
       ],
       "deps": [],
       "validate": [
-        {"type": "artifact-exists", "path": "git-topology-audit.json"}
+        {"type": "artifact-exists", "path": "src/lib/enforcement/task-list-validator.ts"}
       ],
       "idempotent": true,
       "mode": "execute",
       "level": 1
     },
-    "audit-workflow-enforcement": {
-      "id": "audit-workflow-enforcement",
-      "desc": "Audit enforcement: pre-commit hooks active, commit message validation, test enforcement, linter checks. Verify hooks are not bypassed.",
+    "design-doc-commitment": {
+      "id": "design-doc-commitment",
+      "desc": "Enforce design docs committed during phase, not end. Pre-commit hook blocks untracked .md files in .roadmap/. Spec/ is version-controlled.",
       "produces": [
-        "workflow-enforcement-audit.json"
+        "src/lib/enforcement/design-doc-hook.sh",
+        "tests/design-doc-hook.test.ts"
       ],
       "consumes": [
-        ".git/hooks",
-        "package.json"
+        ".roadmap/task-5-artifact-gates-design.md"
       ],
       "deps": [],
       "validate": [
-        {"type": "artifact-exists", "path": "workflow-enforcement-audit.json"}
+        {"type": "artifact-exists", "path": "src/lib/enforcement/design-doc-hook.sh"}
       ],
       "idempotent": true,
       "mode": "execute",
       "level": 1
     },
-    "audit-system-linkage": {
-      "id": "audit-system-linkage",
-      "desc": "Audit module linkage: verify all imported modules exist, API contracts match, type safety, no circular deps, mocks aligned to real APIs.",
+    "worktree-cleanup-automation": {
+      "id": "worktree-cleanup-automation",
+      "desc": "Auto-cleanup stale worktrees. Post-session hook: git worktree prune. Dead agent branches auto-deleted. Orphan detection in git-ops.",
       "produces": [
-        "system-linkage-audit.json"
+        "src/lib/enforcement/worktree-cleanup.ts",
+        "src/hooks/post-session-cleanup.sh"
       ],
       "consumes": [
-        "src/lib/roadmap/artifact-gates.ts",
-        "src/lib/roadmap/mocks/mock-headsha-recovery.ts",
-        "src/lib/roadmap/headsha-recovery.ts",
-        ".roadmap/REAL-MODULE-API-AUDIT.md"
+        ".claude/worktrees/"
       ],
       "deps": [],
       "validate": [
-        {"type": "artifact-exists", "path": "system-linkage-audit.json"}
+        {"type": "artifact-exists", "path": "src/lib/enforcement/worktree-cleanup.ts"}
       ],
       "idempotent": true,
       "mode": "execute",
       "level": 1
     },
-    "custodial-synthesis": {
-      "id": "custodial-synthesis",
-      "desc": "Synthesize audit findings: aggregate topology, enforcement, linkage reports. Identify gaps, unenforced workflows, unlinked systems. Generate governance health scorecard.",
+    "dag-documentation-requirement": {
+      "id": "dag-documentation-requirement",
+      "desc": "Every DAG head.*.json must have documented intent/status. Orphaned DAGs (no head.json in current use) auto-archived to .roadmap/archived/. Pre-commit hook enforces.",
       "produces": [
-        "custodial-coherence-report.json"
+        "src/lib/enforcement/dag-manifest.ts",
+        "tests/dag-manifest.test.ts"
       ],
       "consumes": [
-        "git-topology-audit.json",
-        "workflow-enforcement-audit.json",
-        "system-linkage-audit.json"
+        ".roadmap/head.json"
+      ],
+      "deps": [],
+      "validate": [
+        {"type": "artifact-exists", "path": "src/lib/enforcement/dag-manifest.ts"}
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "level": 1
+    },
+    "clutter-prevention-gates": {
+      "id": "clutter-prevention-gates",
+      "desc": "Integrate all 4 enforcement rules into pre-commit + post-session hooks. Validate: no stale tasks, no untracked design docs, no orphaned worktrees, no undocumented DAGs.",
+      "produces": [
+        "src/lib/enforcement/index.ts",
+        "tests/enforcement-integration.test.ts",
+        "clutter-prevention-report.json"
+      ],
+      "consumes": [
+        "src/lib/enforcement/task-list-validator.ts",
+        "src/lib/enforcement/design-doc-hook.sh",
+        "src/lib/enforcement/worktree-cleanup.ts",
+        "src/lib/enforcement/dag-manifest.ts"
       ],
       "deps": [
-        "audit-git-topology",
-        "audit-workflow-enforcement",
-        "audit-system-linkage"
+        "task-list-enforcement",
+        "design-doc-commitment",
+        "worktree-cleanup-automation",
+        "dag-documentation-requirement"
       ],
       "validate": [
-        {"type": "artifact-exists", "path": "custodial-coherence-report.json"}
+        {"type": "artifact-exists", "path": "clutter-prevention-report.json"}
       ],
       "idempotent": true,
       "mode": "execute",
