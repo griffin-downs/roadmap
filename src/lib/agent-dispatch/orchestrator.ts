@@ -4,6 +4,7 @@
 
 import { computeDispatch, type DispatchAssignment } from './dispatch-coordinator.ts';
 import { executeSealed, type ExecutionResult } from './agent-executor.ts';
+import { saveCompletionWithEvidence } from '../evidence/completion-evidence.ts';
 import type { Graph } from '../../protocol.ts';
 
 export interface OrchestratorOptions {
@@ -60,10 +61,32 @@ export async function runOrchestrator(opts: OrchestratorOptions): Promise<Orches
     }
   }
 
-  // Step 3: Collect results
+  // Step 3: Collect results and write completion records
   const failedNodes = results
     .filter(r => !r.success)
     .map(r => r.nodeId);
+
+  // Write completion records for successful nodes
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+    if (result.success) {
+      const assignment = plan.assignments[i];
+      const checks = [
+        {
+          rule: 'artifact-exists' as const,
+          passed: true,
+          evidence: `sealed agent execution completed: ${result.nodeId}`,
+        },
+      ];
+      saveCompletionWithEvidence(
+        repoRoot,
+        result.nodeId,
+        checks,
+        assignment.agentId,
+        `${result.nodeId}-${Date.now()}`,
+      );
+    }
+  }
 
   return {
     batchLevel: level,
