@@ -2944,5 +2944,65 @@
     ],
     "gitSha": "bc087b42c6c41f310aafc60376e3ec6179e54efb",
     "treeSha": "75d7395d0fb9dda7455cd11817879d85fdeb8742"
+  },
+  {
+    "nodeId": "acceptance-validation",
+    "completedAt": "2026-03-02T01:32:23.942Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013223",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .chatelet/acceptance-results.json"
+      }
+    ],
+    "gitSha": "1c2f12fc091287ccc7138514f64a79fee07360bd",
+    "treeSha": "f4142a43d1635d5fda2ef879a2c0564871c88ca4"
+  },
+  {
+    "nodeId": "docs-migration",
+    "completedAt": "2026-03-02T01:33:47.551Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013347",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: docs/MIGRATION.md"
+      }
+    ],
+    "gitSha": "1c2f12fc091287ccc7138514f64a79fee07360bd",
+    "treeSha": "f4142a43d1635d5fda2ef879a2c0564871c88ca4"
+  },
+  {
+    "nodeId": "performance-gate",
+    "completedAt": "2026-03-02T01:33:48.340Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013348",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: .chatelet/performance-gate.json"
+      }
+    ],
+    "gitSha": "1c2f12fc091287ccc7138514f64a79fee07360bd",
+    "treeSha": "f4142a43d1635d5fda2ef879a2c0564871c88ca4"
+  },
+  {
+    "nodeId": "coverage-report",
+    "completedAt": "2026-03-02T01:36:51.325Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013651",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "1c2f12fc091287ccc7138514f64a79fee07360bd",
+    "treeSha": "f4142a43d1635d5fda2ef879a2c0564871c88ca4"
   }
 ]
