@@ -328,5 +328,20 @@
     ],
     "gitSha": "f4ffeae3c21d45e5fafaf7d2e87360db8d08e490",
     "treeSha": "80a575c65b79b1aa4cb582ef384a08ca69711d40"
+  },
+  {
+    "nodeId": "align-trail-manager",
+    "completedAt": "2026-03-02T12:15:05.815Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302121505",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/roadmap/mocks/mock-trail-manager.ts"
+      }
+    ],
+    "gitSha": "c8888d56d518b96bd0bbf039a21a8010c928837e",
+    "treeSha": "2be890ca45935fdbb3d8bc2c55a9f27160294b1c"
   }
 ]
