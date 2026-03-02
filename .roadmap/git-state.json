@@ -1,5 +1,5 @@
 {
-  "lastCommit": "a8d1effeb71ff4052d0d535e596f5fc20fba1dd5",
-  "timestamp": "2026-03-02T00:38:57Z",
-  "message": "roadmap: merge chatelet-p4 into master — unify branch topology"
+  "lastCommit": "e3078ca4b249febe84ddadc6d90f8047f9c7dbd3",
+  "timestamp": "2026-03-02T00:39:11Z",
+  "message": "roadmap: add token-index module (readIndex, gcTokens)"
 }

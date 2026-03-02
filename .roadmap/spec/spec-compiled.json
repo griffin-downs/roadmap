@@ -3,9 +3,9 @@
   "engine": {
     "name": "spec-kit",
     "version": null,
-    "config_hash": "db34c6876beb663b34db194066d0d7029973e59c2c3c333b0dc85be126597529"
+    "config_hash": "785da44695dce202d28403b5043168071f5030c2534c74acb1265c831416439c"
   },
-  "dag_id": "cli-quality-improvements",
+  "dag_id": "fr-chatelet-001",
   "inputs": [
     {
       "path": ".specify/pre-spec.md",
@@ -13,390 +13,752 @@
       "role": "pre-spec"
     },
     {
-      "path": ".specify/specs/cli-quality-improvements/spec.md",
-      "sha256": "667caae3146f60857e2c8691612743ba99e2cad0a699640647bf97d536615531",
+      "path": ".specify/specs/fr-chatelet-001/spec.md",
+      "sha256": "8f411643edee38294f04634865cce8761dc9da2880e98297474cebc9c3b66e1e",
       "role": "spec"
     },
     {
-      "path": ".specify/specs/cli-quality-improvements/tasks.md",
-      "sha256": "be031ebb1789488322cd1c2e6223358addd27c62b7e06a0b0f1262d81c57a194",
+      "path": ".specify/specs/fr-chatelet-001/plan.md",
+      "sha256": "80e1a8c0f6738df7b3b8cb158ae2ac8c61323082e52d11cf6ea592c6347f5eb2",
+      "role": "plan"
+    },
+    {
+      "path": ".specify/specs/fr-chatelet-001/tasks.md",
+      "sha256": "2647f8514000f74ee8a6519207f0d1cd4df8e77183af441e2dd85106ce70c969",
       "role": "tasks"
     }
   ],
   "tasks": [
     {
-      "id": "design-hints-rendering",
-      "desc": "Design workflow hints strategy for orient output",
+      "id": "init",
+      "desc": "Phase 4 complete — gitsafe skeleton, keepbudget config, CLI commands drafted, pack stub, acceptance test framework",
       "priority": 0,
       "depends": [],
-      "produces": [],
+      "produces": [
+        "src/lib/gitsafe/",
+        "src/lib/chatelet/",
+        "src/cli/commands/"
+      ],
       "consumes": [],
       "mode": "execute",
       "validate": []
     },
     {
-      "id": "design-error-classifier",
-      "desc": "Classify errors (permission|invalid-args|logic|system)",
-      "priority": 0,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "update-help-assign-next-ready",
-      "desc": "Add help examples for --assign, --next, --ready",
-      "priority": 0,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "implement-orient-next-step",
-      "desc": "Add \"Next step: roadmap show <nodeId>\" block to orient",
+      "id": "gitsafe-primitives-impl",
+      "desc": "Implement listRefs, readBlob, readJson, lsTree, diffPaths in src/lib/gitsafe/index.ts with bounds + deny-list enforcement",
       "priority": 1,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/lib/gitsafe/index.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
     },
     {
-      "id": "implement-error-recovery",
-      "desc": "Add recovery hints to claim/orient/validate errors",
+      "id": "keepbudget-schema",
+      "desc": "Define KeepBudget schema + loader in src/lib/chatelet/keepbudget.ts (schema types, loader function, validation)",
       "priority": 1,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/lib/chatelet/keepbudget.ts",
+        "src/lib/chatelet/types.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
     },
     {
-      "id": "implement-help-examples",
-      "desc": "Add swarm dispatch examples to help text",
+      "id": "chatelet-init-marker",
+      "desc": "Create .chatelet/ directory structure, .gitignore, README.md",
       "priority": 1,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        ".chatelet/.gitignore",
+        ".chatelet/README.md"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:.chatelet/"
+        }
+      ]
     },
     {
-      "id": "test-workflow-hints",
-      "desc": "Test hint-follow rate >= 80% in workflows",
+      "id": "gitsafe-contract-tests",
+      "desc": "Unit tests for deny-list + bounds enforcement in src/lib/gitsafe/__tests__/contract.test.ts (S1)",
       "priority": 2,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "gitsafe-primitives-impl"
+      ],
+      "produces": [
+        "src/lib/gitsafe/__tests__/contract.test.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest src/lib/gitsafe/__tests__/contract.test.ts"
+        }
+      ]
     },
     {
-      "id": "test-error-recovery",
-      "desc": "Test all error classes handled with recovery hints",
+      "id": "keepbudget-validator-tests",
+      "desc": "Unit tests for schema validation + violation detection in src/lib/chatelet/__tests__/keepbudget.test.ts (S2)",
       "priority": 2,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "keepbudget-schema"
+      ],
+      "produces": [
+        "src/lib/chatelet/__tests__/keepbudget.test.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest src/lib/chatelet/__tests__/keepbudget.test.ts"
+        }
+      ]
     },
     {
-      "id": "test-swarm-dispatch",
-      "desc": "Test 3-agent swarm dispatch with --assign claims",
+      "id": "chatelet-types-tests",
+      "desc": "Type definition tests in src/lib/chatelet/__tests__/types.test.ts",
       "priority": 2,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "keepbudget-schema"
+      ],
+      "produces": [
+        "src/lib/chatelet/__tests__/types.test.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
     },
     {
-      "id": "mining-abandon-rate",
-      "desc": "Mine 50+ workflows, verify abandon-rate < 60%",
+      "id": "packs-list-cmd",
+      "desc": "Implement tool packs list [--format json|text] in src/cli/commands/packs-list.ts",
       "priority": 3,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "gitsafe-primitives-impl",
+        "keepbudget-schema"
+      ],
+      "produces": [
+        "src/cli/commands/packs-list.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
     },
     {
-      "id": "mining-error-recovery",
-      "desc": "Mine 50 error scenarios, verify retry-rate >= 80%",
+      "id": "packs-show-cmd",
+      "desc": "Implement tool packs show <name> in src/cli/commands/packs-show.ts",
       "priority": 3,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "gitsafe-primitives-impl"
+      ],
+      "produces": [
+        "src/cli/commands/packs-show.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
     },
     {
-      "id": "mining-parallel-adoption",
-      "desc": "Mine 20+ swarms, verify --assign adoption >= 20%",
+      "id": "packs-extract-cmd",
+      "desc": "Implement tool packs extract <name> [paths...] in src/cli/commands/packs-extract.ts with bounds enforcement",
       "priority": 3,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "gitsafe-primitives-impl",
+        "keepbudget-schema"
+      ],
+      "produces": [
+        "src/cli/commands/packs-extract.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
     },
     {
-      "id": "design-pattern-classifier",
-      "desc": "Design success/failure pattern classifier",
-      "priority": 0,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "design-latency-profile",
-      "desc": "Profile validate command to identify slowest path",
-      "priority": 0,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "design-scripting-examples",
-      "desc": "Design scripting examples for -j, -q flags",
-      "priority": 0,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "implement-pattern-analyzer",
-      "desc": "Implement pattern ranking by success-rate",
-      "priority": 1,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "implement-cache-layer",
-      "desc": "Add 30s TTL cache to validate results",
-      "priority": 1,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "implement-scripting-help",
-      "desc": "Add scripting examples to help text",
-      "priority": 1,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "test-pattern-analysis",
-      "desc": "Test 100+ sequences classified correctly",
-      "priority": 2,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "test-latency-optimization",
-      "desc": "Test validate P50 < 250ms with cache + parallel",
-      "priority": 2,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "test-scripting-adoption",
-      "desc": "Test CI scenario with shell loop calling orient -j",
-      "priority": 2,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "mining-pattern-success-rates",
-      "desc": "Generate pattern-success-rate.json from 100+ sequences",
+      "id": "chatelet-status-cmd",
+      "desc": "Implement tool chatelet status in src/cli/commands/chatelet-status.ts",
       "priority": 3,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "gitsafe-primitives-impl",
+        "keepbudget-schema"
+      ],
+      "produces": [
+        "src/cli/commands/chatelet-status.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
     },
     {
-      "id": "mining-latency-benchmarks",
-      "desc": "Benchmark latency with/without cache, report 3× improvement",
-      "priority": 3,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "mining-scripting-adoption",
-      "desc": "Mine 30+ scripting scenarios, verify adoption >= 30%",
-      "priority": 3,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "instrument-cache-metrics",
-      "desc": "Add hit/miss rate instrumentation to token cache",
-      "priority": 0,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "design-negative-tests",
-      "desc": "Design negative test scenarios (edge cases, errors)",
-      "priority": 0,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "document-cross-repo-flags",
-      "desc": "Document --repo, --global, --deps, --depth with examples",
-      "priority": 0,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "benchmark-cache-io",
-      "desc": "Measure cache hit rate, verify >= 95%",
-      "priority": 1,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "implement-negative-tests",
-      "desc": "Implement 16+ negative test cases",
-      "priority": 1,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "test-cross-repo-visibility",
-      "desc": "Test cross-repo chart, trail with filters",
-      "priority": 1,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "report-cache-metrics",
-      "desc": "Generate cache performance report",
-      "priority": 2,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "measure-test-coverage",
-      "desc": "Measure code coverage, target 80%+ error handlers",
-      "priority": 2,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "validate-docs-examples",
-      "desc": "Verify all cross-repo examples work end-to-end",
-      "priority": 2,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "mining-cache-validation",
-      "desc": "Verify 396→1 file scan reduction in real usage",
-      "priority": 3,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "mining-test-effectiveness",
-      "desc": "Test that negative tests catch 80%+ of edge cases",
-      "priority": 3,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "mining-cross-repo-adoption",
-      "desc": "Measure cross-repo flag adoption in real workflows",
-      "priority": 3,
-      "depends": [],
-      "produces": [],
-      "consumes": [],
-      "mode": "execute",
-      "validate": []
-    },
-    {
-      "id": "synthesis-report",
-      "desc": "Aggregate all metrics, verify all gates pass",
+      "id": "packs-list-tests",
+      "desc": "Test packs list command (S3) in src/cli/commands/__tests__/packs-list.test.ts",
       "priority": 4,
-      "depends": [],
-      "produces": [],
+      "depends": [
+        "packs-list-cmd"
+      ],
+      "produces": [
+        "src/cli/commands/__tests__/packs-list.test.ts"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": []
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest src/cli/commands/__tests__/packs-list.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "packs-show-tests",
+      "desc": "Test packs show command (S3) in src/cli/commands/__tests__/packs-show.test.ts",
+      "priority": 4,
+      "depends": [
+        "packs-show-cmd"
+      ],
+      "produces": [
+        "src/cli/commands/__tests__/packs-show.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest src/cli/commands/__tests__/packs-show.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "packs-extract-tests",
+      "desc": "Test packs extract command (S4) in src/cli/commands/__tests__/packs-extract.test.ts",
+      "priority": 4,
+      "depends": [
+        "packs-extract-cmd"
+      ],
+      "produces": [
+        "src/cli/commands/__tests__/packs-extract.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest src/cli/commands/__tests__/packs-extract.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "chatelet-status-tests",
+      "desc": "Test chatelet status command (S2/S7) in src/cli/commands/__tests__/chatelet-status.test.ts",
+      "priority": 4,
+      "depends": [
+        "chatelet-status-cmd"
+      ],
+      "produces": [
+        "src/cli/commands/__tests__/chatelet-status.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest src/cli/commands/__tests__/chatelet-status.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "cli-error-tests",
+      "desc": "Test CLI error paths + help rendering (S6) in src/cli/commands/__tests__/cli-errors.test.ts",
+      "priority": 4,
+      "depends": [
+        "packs-list-cmd",
+        "packs-show-cmd",
+        "packs-extract-cmd",
+        "chatelet-status-cmd"
+      ],
+      "produces": [
+        "src/cli/commands/__tests__/cli-errors.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest src/cli/commands/__tests__/cli-errors.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "ci-gate-keep",
+      "desc": "Implement gate-chatelet-keep workflow in .github/workflows/gate-chatelet-keep.yml (S2)",
+      "priority": 5,
+      "depends": [
+        "keepbudget-schema",
+        "chatelet-status-cmd",
+        "keepbudget-validator-tests"
+      ],
+      "produces": [
+        ".github/workflows/gate-chatelet-keep.yml"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:.github/workflows/gate-chatelet-keep.yml"
+        }
+      ]
+    },
+    {
+      "id": "ci-gate-manifests",
+      "desc": "Implement gate-pack-manifests workflow in .github/workflows/gate-pack-manifests.yml (S3)",
+      "priority": 5,
+      "depends": [
+        "packs-list-cmd"
+      ],
+      "produces": [
+        ".github/workflows/gate-pack-manifests.yml"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:.github/workflows/gate-pack-manifests.yml"
+        }
+      ]
+    },
+    {
+      "id": "gate-tests",
+      "desc": "Test CI gate logic in tests/ci-gates.test.ts",
+      "priority": 5,
+      "depends": [
+        "ci-gate-keep",
+        "ci-gate-manifests"
+      ],
+      "produces": [
+        "tests/ci-gates.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest tests/ci-gates.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "migration-planner-impl",
+      "desc": "Implement tool chatelet migrate --plan-only in src/cli/commands/chatelet-migrate.ts",
+      "priority": 6,
+      "depends": [
+        "gitsafe-primitives-impl",
+        "chatelet-status-cmd"
+      ],
+      "produces": [
+        "src/cli/commands/chatelet-migrate.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
+    },
+    {
+      "id": "migration-planner-tests",
+      "desc": "Test migration plan generation (S5) in tests/migration.test.ts",
+      "priority": 6,
+      "depends": [
+        "migration-planner-impl"
+      ],
+      "produces": [
+        "tests/migration.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest tests/migration.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "migration-plan-validator",
+      "desc": "Utility module src/lib/chatelet/migration-validator.ts for plan validation",
+      "priority": 6,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/lib/chatelet/migration-validator.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ]
+    },
+    {
+      "id": "gitsafe-integration-tests",
+      "desc": "Integration tests for gitsafe on real repos (S1) in src/lib/gitsafe/__tests__/integration.test.ts",
+      "priority": 7,
+      "depends": [
+        "gitsafe-primitives-impl",
+        "gitsafe-contract-tests"
+      ],
+      "produces": [
+        "src/lib/gitsafe/__tests__/integration.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest src/lib/gitsafe/__tests__/integration.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "gitsafe-perf-tests",
+      "desc": "Performance benchmarks for gitsafe (P50 < 100ms) in tests/perf-gitsafe.test.ts",
+      "priority": 7,
+      "depends": [
+        "gitsafe-primitives-impl",
+        "gitsafe-integration-tests"
+      ],
+      "produces": [
+        "tests/perf-gitsafe.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest tests/perf-gitsafe.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "cli-perf-tests",
+      "desc": "Performance benchmarks for CLI commands (P50 < 500ms) in tests/perf-cli.test.ts",
+      "priority": 7,
+      "depends": [
+        "packs-list-cmd",
+        "packs-show-cmd",
+        "packs-extract-cmd",
+        "chatelet-status-cmd",
+        "migration-planner-impl"
+      ],
+      "produces": [
+        "tests/perf-cli.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest tests/perf-cli.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "e2e-integration-tests",
+      "desc": "End-to-end workflow tests (S8) in tests/e2e-chatelet.test.ts",
+      "priority": 7,
+      "depends": [
+        "packs-list-cmd",
+        "packs-show-cmd",
+        "packs-extract-cmd",
+        "chatelet-status-cmd",
+        "migration-planner-impl",
+        "ci-gate-keep",
+        "ci-gate-manifests"
+      ],
+      "produces": [
+        "tests/e2e-chatelet.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest tests/e2e-chatelet.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "docs-chatelet",
+      "desc": "Write docs/CHATELET.md (architecture guide)",
+      "priority": 8,
+      "depends": [
+        "packs-list-cmd",
+        "packs-show-cmd",
+        "packs-extract-cmd",
+        "chatelet-status-cmd",
+        "keepbudget-schema"
+      ],
+      "produces": [
+        "docs/CHATELET.md"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:docs/CHATELET.md"
+        }
+      ]
+    },
+    {
+      "id": "docs-migration",
+      "desc": "Write docs/MIGRATION.md (step-by-step playbook)",
+      "priority": 8,
+      "depends": [
+        "migration-planner-impl",
+        "migration-planner-tests"
+      ],
+      "produces": [
+        "docs/MIGRATION.md"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:docs/MIGRATION.md"
+        }
+      ]
+    },
+    {
+      "id": "docs-api",
+      "desc": "Write docs/API.md (command reference)",
+      "priority": 8,
+      "depends": [
+        "packs-list-cmd",
+        "packs-show-cmd",
+        "packs-extract-cmd",
+        "chatelet-status-cmd",
+        "migration-planner-impl"
+      ],
+      "produces": [
+        "docs/API.md"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:docs/API.md"
+        }
+      ]
+    },
+    {
+      "id": "docs-troubleshooting",
+      "desc": "Write docs/TROUBLESHOOTING.md (common violations + fixes)",
+      "priority": 8,
+      "depends": [
+        "cli-error-tests",
+        "keepbudget-validator-tests"
+      ],
+      "produces": [
+        "docs/TROUBLESHOOTING.md"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:docs/TROUBLESHOOTING.md"
+        }
+      ]
+    },
+    {
+      "id": "coverage-report",
+      "desc": "Generate coverage report (target ≥90%) in .chatelet/coverage-report.json",
+      "priority": 8,
+      "depends": [
+        "gitsafe-contract-tests",
+        "keepbudget-validator-tests",
+        "packs-list-tests",
+        "packs-show-tests",
+        "packs-extract-tests",
+        "chatelet-status-tests",
+        "cli-error-tests",
+        "gate-tests",
+        "gitsafe-integration-tests",
+        "cli-perf-tests",
+        "e2e-integration-tests"
+      ],
+      "produces": [
+        ".chatelet/coverage-report.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx vitest --coverage"
+        }
+      ]
+    },
+    {
+      "id": "security-audit",
+      "desc": "Security audit of gitsafe + audit trail design in .chatelet/security-audit.json + .chatelet/audit-checklist.md",
+      "priority": 9,
+      "depends": [
+        "gitsafe-primitives-impl",
+        "keepbudget-schema",
+        "ci-gate-keep",
+        "ci-gate-manifests"
+      ],
+      "produces": [
+        ".chatelet/security-audit.json",
+        ".chatelet/audit-checklist.md"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:.chatelet/security-audit.json"
+        }
+      ]
+    },
+    {
+      "id": "acceptance-validation",
+      "desc": "Verify all 8 acceptance scenarios (S1-S8) pass in .chatelet/acceptance-results.json",
+      "priority": 9,
+      "depends": [
+        "gitsafe-contract-tests",
+        "gitsafe-integration-tests",
+        "keepbudget-validator-tests",
+        "packs-list-tests",
+        "packs-show-tests",
+        "packs-extract-tests",
+        "chatelet-status-tests",
+        "cli-error-tests",
+        "gate-tests",
+        "migration-planner-tests",
+        "cli-perf-tests",
+        "e2e-integration-tests"
+      ],
+      "produces": [
+        ".chatelet/acceptance-results.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:.chatelet/acceptance-results.json"
+        }
+      ]
+    },
+    {
+      "id": "performance-gate",
+      "desc": "Verify latency targets in .chatelet/performance-gate.json",
+      "priority": 9,
+      "depends": [
+        "gitsafe-perf-tests",
+        "cli-perf-tests"
+      ],
+      "produces": [
+        ".chatelet/performance-gate.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:.chatelet/performance-gate.json"
+        }
+      ]
+    },
+    {
+      "id": "terminal-receipt",
+      "desc": "Generate phase completion receipt in .chatelet/fr-chatelet-001-complete.json",
+      "priority": 9,
+      "depends": [
+        "security-audit",
+        "acceptance-validation",
+        "performance-gate",
+        "coverage-report",
+        "docs-chatelet",
+        "docs-migration",
+        "docs-api",
+        "docs-troubleshooting"
+      ],
+      "produces": [
+        ".chatelet/fr-chatelet-001-complete.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "artifact-exists:.chatelet/fr-chatelet-001-complete.json"
+        }
+      ]
     }
   ],
   "metadata": {
-    "generated": "2026-03-01T23:11:13.404Z",
-    "compile_hash": "6d12bac0ad48340f5b3d7fb29a8581be1f2d1ee56cc2eb77edd06d4747301073"
+    "generated": "2026-03-02T00:46:23.653Z",
+    "compile_hash": "37a1fea1dea68ffdee7c65a0d98ed854c5848c22f9c7cf554a6092b37d0179ba"
   }
 }
