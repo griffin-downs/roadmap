@@ -1,0 +1,7 @@
+{
+  "dagId": "dispatch-system-001",
+  "selectedId": "execute",
+  "selectedAt": "2026-03-02T10:05:39.110Z",
+  "executionMode": "serial-with-pre-gates",
+  "rationale": "dispatch-system-001: linear DAG with one parallel batch (brief-gate-impl + handoff-journal-impl). Validate-as-you-go strategy."
+}
