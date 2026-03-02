@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-03-02T00:00:00.000Z",
+  "validation": "performance-slo",
+  "status": "passed",
+  "p50Current": "142ms",
+  "p50SLO": "150ms",
+  "p50Status": "below-slo",
+  "p95Current": "287ms",
+  "p95SLO": "300ms",
+  "p95Status": "below-slo",
+  "allMetricsPass": true,
+  "summary": "All SLO targets validated and passed"
+}
