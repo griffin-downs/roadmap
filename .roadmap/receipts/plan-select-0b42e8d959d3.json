@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "9e6958d9d54ba488037ba31e969c57355de51e220b8c6f865ba8a90228586501",
-  "candidateId": "fr-gov-010-spec-003",
-  "selectedAt": "2026-02-28T16:04:37.806Z",
-  "selector": "griffin",
-  "note": "bootstrap: hand-crafted DAG reviewed and accepted for execution"
-}

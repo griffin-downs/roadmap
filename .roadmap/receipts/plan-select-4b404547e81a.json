@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "e28f265173cb0dad16a489c9e8977a8ff3e1ac4d27866f090ddf0d1d11331b5a",
-  "candidateId": "fr-sk-integrate-001",
-  "selectedAt": "2026-03-01T17:20:10.487Z",
-  "selector": "griffin",
-  "note": "Accept current execution state after agents + batch fixes"
-}

@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "d7725c77e4c446ec7f18a74c14e0df44d36c2333fde9739ba59bec8576e4f853",
-  "candidateId": "metaflow-optimizer",
-  "selectedAt": "2026-03-01T21:13:17.868Z",
-  "selector": "griffin",
-  "note": "transition to 6hr optimization loop"
-}

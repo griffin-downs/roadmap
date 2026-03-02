@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "448944f38cc205fa3a3b755c213751ed4965553f64b61176270e8d80b6280cba",
-  "candidateId": "fr-sk-integrate-001",
-  "selectedAt": "2026-03-01T17:18:33.267Z",
-  "selector": "griffin",
-  "note": "re-select active DAG for complete pointer"
-}

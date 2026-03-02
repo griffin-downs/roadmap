@@ -1,7 +1,0 @@
-{
-  "agentId": "custodian-test",
-  "findings": [
-    {"kind": "archive-docs", "title": "ROADMAP-v0.4.0.md (outdated)", "evidence": [{"path": "docs/ROADMAP-v0.4.0.md", "lines": [1]}], "impact": {"risk": "low", "effortHours": 0.25, "benefit": ["cleanup"]}},
-    {"kind": "remove-test", "title": "validation-deprecated.test.ts (obsolete)", "evidence": [{"path": "tests/validation-deprecated.test.ts", "lines": [1]}], "impact": {"risk": "low", "effortHours": 0.25, "benefit": ["cleanup"]}}
-  ]
-}

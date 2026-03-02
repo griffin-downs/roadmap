@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "883501753e75dd6fc7d4b3c9ac65eeae60042e1ee7996e6b60e93a917a5201f9",
-  "candidateId": "fr-cli-hardening-001",
-  "selectedAt": "2026-03-01T21:36:20.242Z",
-  "selector": "griffin",
-  "note": "switching to next phase: CLI integration hardening"
-}

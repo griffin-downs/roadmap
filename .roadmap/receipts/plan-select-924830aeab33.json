@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "4be8bab83978adf110c15f82788419fb7be489be90729906541c509eb49d1d8c",
-  "candidateId": "metaflow-cli-quality",
-  "selectedAt": "2026-03-01T23:16:57.378Z",
-  "selector": "griffin",
-  "note": "acknowledge current DAG, prepare for expand"
-}

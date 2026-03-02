@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "9a332496b37b6adb858402c68b8c640af1436e374a64ccc72c56be00fe64b711",
-  "candidateId": "1d666f1",
-  "selectedAt": "2026-03-01T20:34:31.786Z",
-  "selector": "griffin",
-  "note": "reconcile DAG pointer to current HEAD"
-}

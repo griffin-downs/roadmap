@@ -1,7 +1,0 @@
-{
-  "rejected": true,
-  "baseSha": "0a63269aac823a5b75c667368250db0c113933608868563568fc7b6dc95b4fba",
-  "source": "import",
-  "rejectedAt": "2026-03-01T23:13:24.129Z",
-  "note": "reject spec-kit import due to orphaned nodes, use original cli-quality DAG"
-}

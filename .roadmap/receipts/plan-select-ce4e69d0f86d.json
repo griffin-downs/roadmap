@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "551179194bcfe479a714aaa5f25ee9c1fd811291837342447fb3301566226565",
-  "candidateId": "metaflow-cli-quality",
-  "selectedAt": "2026-03-01T23:29:15.502Z",
-  "selector": "w1",
-  "note": "re-select after concurrent head.json mutation"
-}

@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "1f7dadc865217b540bebe66b931dafd00662b8bddc674bd824c3cba234abf9a6",
-  "candidateId": "fr-cli-hardening-001",
-  "selectedAt": "2026-03-01T21:51:39.250Z",
-  "selector": "griffin",
-  "note": "re-select after commits advanced HEAD past plan pointer"
-}

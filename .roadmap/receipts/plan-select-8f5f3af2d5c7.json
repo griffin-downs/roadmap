@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "86cbaf7616739b545e97cf7e20a86e6b0e737e12fc9db7e2b133ba25a1cd914f",
-  "candidateId": "metaflow-cli-quality",
-  "selectedAt": "2026-03-01T23:24:28.428Z",
-  "selector": "griffin",
-  "note": "w4 — resync head pointer after concurrent modifications"
-}

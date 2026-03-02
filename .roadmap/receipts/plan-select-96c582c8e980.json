@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "7b69645fd2fbf2c180def68021f41a786a6096e4f76105a0915c95cc36d08a06",
-  "candidateId": "fr-surf-001",
-  "selectedAt": "2026-03-01T10:51:20.376Z",
-  "selector": "griffin",
-  "note": "resync after peer commits"
-}

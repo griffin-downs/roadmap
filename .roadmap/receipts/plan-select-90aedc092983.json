@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "0a6e25e9565de47b03bea1c6393a49772a5dbd54755d6746baa1ce1739a7497f",
-  "candidateId": "us1-gitsha-gov012",
-  "selectedAt": "2026-02-28T17:43:13.213Z",
-  "selector": "griffin",
-  "note": "re-select current DAG to update headSha pointer"
-}

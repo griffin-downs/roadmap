@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "d6237fd84c9faed042c7998abc14fb40dbe99c4e88a9bd64fccc66b949cbb4d8",
-  "candidateId": "rkg-governess",
-  "selectedAt": "2026-03-01T08:57:39.536Z",
-  "selector": "griffin",
-  "note": "re-select after manual expand commit"
-}

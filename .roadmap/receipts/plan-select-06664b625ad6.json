@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "674266074250a9eb6f51883ec4528a0527a58daeae054619b2f5db970e8bd84c",
-  "candidateId": "fr-sk-integrate-001",
-  "selectedAt": "2026-03-01T17:19:18.325Z",
-  "selector": "griffin",
-  "note": "re-select after fixing artifact-exists rule format"
-}

@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "682e2583d62aa0392b3f056058b978facb20980a6873cdd3cef286a85033d359",
-  "candidateId": "rkg-all",
-  "selectedAt": "2026-03-01T00:13:18.093Z",
-  "selector": "griffin",
-  "note": "re-select after validator removal commit"
-}

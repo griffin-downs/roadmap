@@ -1,5 +1,5 @@
 {
-  "lastCommit": "2c61917c6620a704c0d8c9da774c932f54363615",
-  "timestamp": "2026-03-02T08:48:36Z",
-  "message": "roadmap: dispatch-system-001 complete, ready for mainline"
+  "lastCommit": "1121fa3a8280df2d29c1f0e5db3adeaec22b06a7",
+  "timestamp": "2026-03-02T08:48:52Z",
+  "message": "roadmap: merge dispatch-system-001 phase (orchestrator, sealed briefs, handoff journal)"
 }

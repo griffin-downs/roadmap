@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "5b96c93f45ad2ddcc468ac2e9619be7eac164aba4cf05e5e86e173557be88cb3",
-  "candidateId": "rkg-harvest",
-  "selectedAt": "2026-02-28T23:08:15.271Z",
-  "selector": "griffin",
-  "note": "rkg-harvest plan select post re-import"
-}

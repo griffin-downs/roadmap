@@ -1,9 +1,0 @@
-{
-  "accepted": true,
-  "baseSha": "afdf5874028943b0d94c28ad2c5156b7a793d0c98ca9b2d9bc781c5e8142c432",
-  "source": "import",
-  "acceptedAt": "2026-03-01T20:15:37.816Z",
-  "nodesAdded": 16,
-  "nodesRemoved": 14,
-  "note": "accept metaflows-p1 DAG for parallel execution"
-}

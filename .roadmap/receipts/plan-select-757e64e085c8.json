@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "2ebccdf3a2532f5d74802bd9ed45e4d30f9b08f48b74a8bc5918222aa33ec031",
-  "candidateId": "fr-surf-001",
-  "selectedAt": "2026-03-01T10:50:30.872Z",
-  "selector": "griffin",
-  "note": "re-select after validate fix"
-}

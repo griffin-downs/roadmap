@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "3d708f1191f1c8ae3678596c785eba24084c102ea3815dcab0fa7e67149fdfdc",
-  "candidateId": "rkg-governess",
-  "selectedAt": "2026-03-01T09:00:10.837Z",
-  "selector": "griffin",
-  "note": "re-select for L02 batch completions"
-}

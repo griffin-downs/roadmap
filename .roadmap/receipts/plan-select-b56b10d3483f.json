@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "86ec1bde28246316eab859d30dfcfb226c2085d555555b8006d689c77cd71216",
-  "candidateId": "rkg-governess",
-  "selectedAt": "2026-03-01T11:03:21.086Z",
-  "selector": "griffin",
-  "note": "re-select before budget-gate completion"
-}

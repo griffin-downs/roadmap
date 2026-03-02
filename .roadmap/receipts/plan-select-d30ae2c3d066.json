@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "59eb956c11518a5c505887e3e489e523a9a7186f3d4a1ad67746123989caa80a",
-  "candidateId": "rkg-governess",
-  "selectedAt": "2026-03-01T08:54:54.418Z",
-  "selector": "griffin",
-  "note": "restoring rkg-governess with all plan nodes after receipt-first import"
-}

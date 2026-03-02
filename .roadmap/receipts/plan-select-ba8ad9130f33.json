@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "0a63269aac823a5b75c667368250db0c113933608868563568fc7b6dc95b4fba",
-  "candidateId": "cli-quality-improvements",
-  "selectedAt": "2026-03-01T23:13:17.508Z",
-  "selector": "griffin",
-  "note": "select cli-quality-improvements as active planning DAG, acknowledge spec-kit origin"
-}

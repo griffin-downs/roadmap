@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "8301077d046b7498458da29f78d05593e732631529108c4e1bd843e111cd09b2",
-  "candidateId": "rkg-all",
-  "selectedAt": "2026-02-28T23:56:11.840Z",
-  "selector": "griffin",
-  "note": "re-select plan at current HEAD after concurrent worker commits"
-}

@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "27f9f863ce825b54fb2fcb7134f0e5e7f954e211ca86653f0c101f4bd7252f4d",
-  "candidateId": "rkg-all",
-  "selectedAt": "2026-02-28T22:22:24.411Z",
-  "selector": "griffin",
-  "note": "re-select plan after commits advanced headSha"
-}

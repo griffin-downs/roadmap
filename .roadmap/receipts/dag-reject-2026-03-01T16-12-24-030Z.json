@@ -1,7 +1,0 @@
-{
-  "rejected": true,
-  "baseSha": "842bee5b11bf9b23a79cff4e5225a40a391fec540b10b23681eed4bf15b0c2b3",
-  "source": "import",
-  "rejectedAt": "2026-03-01T16:12:24.030Z",
-  "note": "dependencies incomplete — spec updated with explicit Depends: clauses"
-}

@@ -1,7 +1,0 @@
-{
-  "rejected": true,
-  "baseSha": "afdf5874028943b0d94c28ad2c5156b7a793d0c98ca9b2d9bc781c5e8142c432",
-  "source": "import",
-  "rejectedAt": "2026-03-01T20:12:55.536Z",
-  "note": "reject stale candidate"
-}

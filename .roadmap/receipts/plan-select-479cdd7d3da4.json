@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "6ab4fe262b40281a44bdafd7d77b02c8fc17d38befe0cef39eabc80fcf137332",
-  "candidateId": "rkg-all",
-  "selectedAt": "2026-02-28T19:10:36.884Z",
-  "selector": "griffin",
-  "note": "rkg-all speckit intake: governance kernel hardening + federated attestation — selecting for execution"
-}

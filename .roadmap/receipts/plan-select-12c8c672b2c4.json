@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "665c080219498b13fd1925a8360823821213689f92e3b5e336fc28279c4b2193",
-  "candidateId": "fr-metaflow-001",
-  "selectedAt": "2026-03-01T00:32:36.350Z",
-  "selector": "griffin",
-  "note": "worker-2 selecting metaflow DAG"
-}

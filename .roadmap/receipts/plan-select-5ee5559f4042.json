@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "0b2c2bf2f664d4b628bdf2aacbb7fa19a7e9c71e05a9ea5ec0ef9878f1001f53",
-  "candidateId": "fr-cli-001",
-  "selectedAt": "2026-02-28T17:49:08.622Z",
-  "selector": "griffin",
-  "note": "select fr-cli-001 DAG"
-}

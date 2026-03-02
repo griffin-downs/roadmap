@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "8301077d046b7498458da29f78d05593e732631529108c4e1bd843e111cd09b2",
-  "candidateId": "metaflow-ux-2",
-  "selectedAt": "2026-02-28T23:52:55.756Z",
-  "selector": "griffin",
-  "note": "re-select after concurrent commits from swarm workers"
-}

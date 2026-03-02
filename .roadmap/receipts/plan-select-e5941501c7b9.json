@@ -1,8 +1,0 @@
-{
-  "type": "plan-select",
-  "headSha": "ad64082cbbd9259f25591e4ab3d56c82836e46daf455a212ee56af1a6846a2d5",
-  "candidateId": "metaflow-optimizer",
-  "selectedAt": "2026-03-01T22:01:45.895Z",
-  "selector": "griffin",
-  "note": "re-select after HEAD advanced past plan pointer"
-}
