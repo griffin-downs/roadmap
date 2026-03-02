@@ -2366,5 +2366,43 @@
     ],
     "gitSha": "0245ed36da8b9fe102c7f7faa0c75b3312d14f59",
     "treeSha": "0fa835c36e704bd89eb162431e5b78ade13a84f6"
+  },
+  {
+    "nodeId": "packs-list-cmd",
+    "completedAt": "2026-03-02T00:57:38.479Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302005738",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "815134d7e5df1b4ff870c7a1c5d959d43b1c8889",
+    "treeSha": "75751b6b930fdec50a6e34de7232675688397cb8"
+  },
+  {
+    "nodeId": "chatelet-status-cmd",
+    "completedAt": "2026-03-02T00:59:09.786Z",
+    "owner": "w5-next",
+    "checkpointId": "cp-20260302005908",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "f2f5ed375e9b1fa59e2508816a0fd921ad2cf055",
+    "treeSha": "62aa38cf284bbc02afddf12410ab327eae6fd3a7"
   }
 ]
