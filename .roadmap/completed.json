@@ -268,5 +268,20 @@
     ],
     "gitSha": "f9963c5fd800acb8ac0a2895a7ced668183c816b",
     "treeSha": "1532cd59319ed3cd5f2af24f4532d0ecda6e88de"
+  },
+  {
+    "nodeId": "validate-gates-integration",
+    "completedAt": "2026-03-02T12:13:17.878Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302121317",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: gates-validation-report.json"
+      }
+    ],
+    "gitSha": "b715df3902ea544e816dfe858a5dca0008149d8f",
+    "treeSha": "864e46c0434a99023dc33a452f28ee98a361093e"
   }
 ]
