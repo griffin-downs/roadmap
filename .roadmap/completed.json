@@ -2763,5 +2763,171 @@
     ],
     "gitSha": "02f8a92fef47c563f8d302926172388dbd355400",
     "treeSha": "793a18aa4ec244ed6deab862ae99e7c6d0701f08"
+  },
+  {
+    "nodeId": "cli-perf-tests",
+    "completedAt": "2026-03-02T01:30:41.843Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013040",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest tests/perf-cli.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx vitest tests/perf-cli.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "e5d535f6b6210c68d42b9e87e6786e9a11dc0ea03aa61c0703f1613828380ed2",
+        "stderrSha": "8de95d615417ef682ebc0518e069eb5a903bae61d9e3f68fc20892b01e47fc0f",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/cli-perf-tests/mm8i5ixx-kfxp6u/stdout.txt",
+          "/home/griffin/src/roadmap/.roadmap/artifacts/cli-perf-tests/mm8i5ixx-kfxp6u/stderr.txt"
+        ]
+      }
+    ],
+    "gitSha": "41b981cf2ed622739600bb4d9ac5fd5a4f245d3c",
+    "treeSha": "8e760af08128ef01ffb94b56884b68772d7fd454"
+  },
+  {
+    "nodeId": "docs-api",
+    "completedAt": "2026-03-02T01:30:42.130Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013042",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: docs/API.md"
+      }
+    ],
+    "gitSha": "41b981cf2ed622739600bb4d9ac5fd5a4f245d3c",
+    "treeSha": "8e760af08128ef01ffb94b56884b68772d7fd454"
+  },
+  {
+    "nodeId": "docs-troubleshooting",
+    "completedAt": "2026-03-02T01:30:42.402Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013042",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists",
+        "passed": true,
+        "evidence": "artifact exists: docs/TROUBLESHOOTING.md"
+      }
+    ],
+    "gitSha": "41b981cf2ed622739600bb4d9ac5fd5a4f245d3c",
+    "treeSha": "8e760af08128ef01ffb94b56884b68772d7fd454"
+  },
+  {
+    "nodeId": "e2e-integration-tests",
+    "completedAt": "2026-03-02T01:30:44.931Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013043",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest tests/e2e-chatelet.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx vitest tests/e2e-chatelet.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "8135ab5231e969d1b40e7db3eb48a08a955f6177fb01061c18ce59a4ed0c579e",
+        "stderrSha": "e49b768ad9fb8e390f8a957b8518b6aaa5f0818e36412f43b237dc07371f82c3",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/e2e-integration-tests/mm8i5lbs-2gkkic/stdout.txt",
+          "/home/griffin/src/roadmap/.roadmap/artifacts/e2e-integration-tests/mm8i5lbs-2gkkic/stderr.txt"
+        ]
+      }
+    ],
+    "gitSha": "41b981cf2ed622739600bb4d9ac5fd5a4f245d3c",
+    "treeSha": "8e760af08128ef01ffb94b56884b68772d7fd454"
+  },
+  {
+    "nodeId": "gate-tests",
+    "completedAt": "2026-03-02T01:30:46.582Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013045",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest tests/ci-gates.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx vitest tests/ci-gates.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "29f7ec336ec6910df769a0581e1e021eeb82c87456927c356e65b55f9b33b035",
+        "stderrSha": "884b2ca0d15547663942c96fd907e9f0e82b57ecd87f39d93c04091974ac130c",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/gate-tests/mm8i5mlj-k9vn1x/stdout.txt",
+          "/home/griffin/src/roadmap/.roadmap/artifacts/gate-tests/mm8i5mlj-k9vn1x/stderr.txt"
+        ]
+      }
+    ],
+    "gitSha": "41b981cf2ed622739600bb4d9ac5fd5a4f245d3c",
+    "treeSha": "8e760af08128ef01ffb94b56884b68772d7fd454"
+  },
+  {
+    "nodeId": "gitsafe-perf-tests",
+    "completedAt": "2026-03-02T01:30:51.968Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013049",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest tests/perf-gitsafe.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx vitest tests/perf-gitsafe.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "3cacf9c94ac03a1a7d7788fba11f9c2dbec379e7b7f466a47cb8e6f89f5d6362",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/gitsafe-perf-tests/mm8i5qr7-bxcevc/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "41b981cf2ed622739600bb4d9ac5fd5a4f245d3c",
+    "treeSha": "8e760af08128ef01ffb94b56884b68772d7fd454"
+  },
+  {
+    "nodeId": "migration-planner-tests",
+    "completedAt": "2026-03-02T01:30:53.857Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302013053",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest tests/migration.test.ts"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx vitest tests/migration.test.ts",
+        "passed": true,
+        "exitCode": 0,
+        "stdoutSha": "122c3da4cc92642063b264b1cb32bea61d7352c0a1ec6edb30efbfe8c61136b8",
+        "artifactPaths": [
+          "/home/griffin/src/roadmap/.roadmap/artifacts/migration-planner-tests/mm8i5s7o-73mczw/stdout.txt"
+        ]
+      }
+    ],
+    "gitSha": "41b981cf2ed622739600bb4d9ac5fd5a4f245d3c",
+    "treeSha": "8e760af08128ef01ffb94b56884b68772d7fd454"
   }
 ]

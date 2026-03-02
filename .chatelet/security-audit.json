@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "auditDate": "2026-03-02",
+  "auditor": "automated",
+  "scope": ["gitsafe", "keepbudget", "chatelet-status", "packs"],
+  "gitsafe": {
+    "status": "pass",
+    "findings": [
+      {"id": "GS-001", "severity": "info", "component": "gitsafe/index.ts", "title": "Path traversal guard present", "detail": "validatePath rejects '..' and absolute paths before any git operation"},
+      {"id": "GS-002", "severity": "info", "component": "gitsafe/index.ts", "title": "Denylist enforcement on ls-tree", "detail": "isDenied filters paths in lsTree output"},
+      {"id": "GS-003", "severity": "low", "component": "gitsafe/index.ts", "title": "Shell command construction uses string interpolation", "detail": "readBlob constructs shell commands via template literals. Validated upstream but not shell-escaped.", "recommendation": "Consider execFileSync with argument arrays"},
+      {"id": "GS-004", "severity": "info", "component": "gitsafe/index.ts", "title": "Size limit enforcement", "detail": "readBlob enforces maxBytes after reading full blob into memory"},
+      {"id": "GS-005", "severity": "info", "component": "gitsafe/index.ts", "title": "Timeout enforcement", "detail": "All execSync calls use timeout: 5000ms"}
+    ]
+  },
+  "keepbudget": {
+    "status": "pass",
+    "findings": [
+      {"id": "KB-001", "severity": "info", "component": "chatelet/keepbudget.ts", "title": "Schema validation on load", "detail": "loadChatelet validates all required fields before returning KeepBudget"},
+      {"id": "KB-002", "severity": "info", "component": "chatelet/keepbudget.ts", "title": "Budget enforcement complete", "detail": "checkKeepBudget checks maxFiles, maxLineCount, and allowedDirs constraints"},
+      {"id": "KB-003", "severity": "low", "component": "chatelet/keepbudget.ts", "title": "Symlink traversal not checked", "detail": "getAllFilesRecursive follows symlinks. A symlink loop could cause deep recursion.", "recommendation": "Add visited-set or depth limit"}
+    ]
+  },
+  "auditTrail": {
+    "status": "pass",
+    "design": "Append-only trail in .roadmap/trail.jsonl with global mirror. Archive via trail --archive.",
+    "findings": [
+      {"id": "AT-001", "severity": "info", "title": "Trail entries are append-only", "detail": "recordTrail uses appendFileSync"}
+    ]
+  },
+  "summary": {
+    "totalFindings": 8,
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "info": 6,
+    "verdict": "pass"
+  }
+}
