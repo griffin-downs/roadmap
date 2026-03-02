@@ -1,109 +1,224 @@
-// @module dispatch-coordinator
-// @exports computeDispatch
-// @types DispatchAssignment
+// @module agent-dispatch
+// @exports DispatchCoordinator, generateDispatchAssignments, assignAgentsToNodes, DispatchCoordinator
+// @types DispatchAssignment, DispatchPlan, SealedBrief, AgentAssignment
+// @entry roadmap/dispatch-system
 
-import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
-import { getBrief } from '../brief.ts';
-import { validateBrief } from './brief-gate.ts';
-import type { Graph } from '../../protocol.ts';
-import type { Brief } from '../brief.ts';
+import type { Graph, NodeSpec } from '../../protocol.ts';
+import type { Brief, ValidationRule } from './brief-gate.ts';
 
-export interface DispatchAssignment {
-  agentId: string;
+/**
+ * Agent assignment: maps node to assigned agent with sealed brief.
+ */
+export interface AgentAssignment {
   nodeId: string;
+  agentId: string;
   brief: Brief;
-  estimatedDuration?: number;
-}
-
-interface DispatchPlan {
-  timestamp: string;
-  currentBatch: string[];
-  level: number;
-  assignments: DispatchAssignment[];
-  validated: boolean;
 }
 
 /**
- * Compute dispatch plan: assign agents to nodes with sealed briefs
- *
- * Given: DAG at current position with N pending nodes in current batch
- * When: orchestrator requests dispatch plan
- * Then: return assignment mapping each agent to a sealed brief
+ * Full dispatch plan: all assignments for a batch.
  */
-export async function computeDispatch(
-  dag: Graph<string>,
-  currentBatch: string[],
-  repoRoot: string,
-  availableAgents: string[],
-  level: number,
-): Promise<DispatchPlan> {
-  const assignments: DispatchAssignment[] = [];
-  const availableConsumes: Map<string, boolean> = new Map();
+export interface DispatchPlan {
+  dagId: string;
+  batchIndex: number;
+  timestamp: string;
+  assignments: AgentAssignment[];
+  totalNodes: number;
+}
 
-  // Load completed.json to check which files are available
-  const completedPath = join(repoRoot, '.roadmap', 'completed.json');
-  let completed: Record<string, any> = {};
-  try {
-    const data = readFileSync(completedPath, 'utf-8');
-    completed = JSON.parse(data);
-  } catch {
-    // completed.json may not exist yet
-  }
+/**
+ * For backwards compatibility with existing code that uses DispatchAssignment.
+ */
+export interface DispatchAssignment extends AgentAssignment {
+  estimatedDuration?: number;
+}
 
-  // For each node in batch, get brief and assign to agent
-  let agentIndex = 0;
-  for (const nodeId of currentBatch) {
-    // Get sealed brief for this node
-    const brief = await getBrief(dag, nodeId, repoRoot);
+/**
+ * DispatchCoordinator — orchestrate batch computation and sealed brief generation.
+ * Read roadmap batch → assign agents → generate sealed briefs → return assignments.
+ */
+export class DispatchCoordinator {
+  private nodeIdCounter = 0;
 
-    // Validate brief contract
-    const consumes = brief.consumes.map(file => ({
-      file,
-      available: completed[nodeId]?.produces?.includes(file) ?? false,
-    }));
-    const validation = validateBrief(brief, consumes);
+  constructor(private dag: Graph<string>) {}
 
-    if (!validation.valid) {
-      throw new Error(
-        `Brief validation failed for ${nodeId}: ${validation.errors.join('; ')}`
-      );
+  /**
+   * Generate assignments for a batch of nodes.
+   * Each node gets a unique agent ID (agent-<nodeId>-<suffix>).
+   * Sealed briefs contain only consumes/produces, no DAG structure.
+   *
+   * @param batch Array of node IDs to dispatch
+   * @param batchIndex Zero-indexed batch number
+   */
+  generateAssignments(batch: string[], batchIndex: number): AgentAssignment[] {
+    const assignments: AgentAssignment[] = [];
+
+    for (let i = 0; i < batch.length; i++) {
+      const nodeId = batch[i];
+      const node = this.dag.nodes[nodeId as keyof typeof this.dag.nodes];
+
+      if (!node) {
+        throw new Error(`Node not found in DAG: ${nodeId}`);
+      }
+
+      const agentId = this.generateAgentId(nodeId);
+      const brief = this.sealBrief(node, nodeId);
+
+      assignments.push({
+        nodeId,
+        agentId,
+        brief,
+      });
     }
 
-    // Assign to next available agent (round-robin)
-    const agentId = availableAgents[agentIndex % availableAgents.length];
-    assignments.push({
-      agentId,
-      nodeId,
-      brief,
-      estimatedDuration: 300, // default 5 minutes
-    });
-
-    agentIndex++;
+    return assignments;
   }
 
-  // Validate no node assigned twice
-  const assignedNodes = new Set(assignments.map(a => a.nodeId));
-  if (assignedNodes.size !== assignments.length) {
-    throw new Error('Duplicate node assignments detected');
+  /**
+   * Generate a dispatch plan for a batch.
+   * @param batch Array of node IDs to dispatch
+   * @param batchIndex Zero-indexed batch number
+   */
+  plan(batch: string[], batchIndex: number): DispatchPlan {
+    const assignments = this.generateAssignments(batch, batchIndex);
+
+    return {
+      dagId: this.dag.id,
+      batchIndex,
+      timestamp: new Date().toISOString(),
+      assignments,
+      totalNodes: batch.length,
+    };
   }
 
-  // Write dispatch plan
-  const plan: DispatchPlan = {
-    timestamp: new Date().toISOString(),
-    currentBatch,
-    level,
-    assignments,
-    validated: true,
+  /**
+   * Generate a unique agent ID for a node.
+   */
+  private generateAgentId(nodeId: string): string {
+    this.nodeIdCounter++;
+    // Format: agent-<nodeId>-<counter>
+    // E.g., agent-dispatch-coordinator-impl-0001
+    const paddedCounter = String(this.nodeIdCounter).padStart(4, '0');
+    return `agent-${nodeId}-${paddedCounter}`;
+  }
+
+  /**
+   * Create a sealed brief from a node spec.
+   * Sealed brief contains ONLY consumes/produces and validation rules.
+   * No DAG structure, no dependencies, no internal graph details.
+   */
+  private sealBrief(node: NodeSpec<string>, nodeId: string): Brief {
+    return {
+      position: nodeId,
+      produces: node.produces.slice(),
+      consumes: node.consumes.map(c => (typeof c === 'string' ? c : c.artifact)),
+      description: node.desc,
+      idempotent: node.idempotent,
+      validate: node.validate.slice(),
+    };
+  }
+}
+
+/**
+ * Convenience function: generate dispatch assignments for a batch.
+ * @param dag The roadmap DAG
+ * @param batch Array of node IDs in current batch
+ * @param batchIndex Zero-indexed batch number
+ */
+export function generateDispatchAssignments(
+  dag: Graph<string>,
+  batch: string[],
+  batchIndex: number
+): AgentAssignment[] {
+  const coordinator = new DispatchCoordinator(dag);
+  return coordinator.generateAssignments(batch, batchIndex);
+}
+
+/**
+ * Convenience function: assign agents to nodes and generate plan.
+ * @param dag The roadmap DAG
+ * @param batch Array of node IDs in current batch
+ * @param batchIndex Zero-indexed batch number
+ */
+export function assignAgentsToNodes(
+  dag: Graph<string>,
+  batch: string[],
+  batchIndex: number
+): DispatchPlan {
+  const coordinator = new DispatchCoordinator(dag);
+  return coordinator.plan(batch, batchIndex);
+}
+
+/**
+ * Validate dispatch plan integrity.
+ * Ensures all nodes are assigned, all assignments have valid briefs.
+ */
+export function validateDispatchPlan(
+  plan: DispatchPlan,
+  expectedNodes: string[]
+): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  if (plan.totalNodes !== expectedNodes.length) {
+    errors.push(
+      `Plan totalNodes (${plan.totalNodes}) != expected (${expectedNodes.length})`
+    );
+  }
+
+  if (plan.assignments.length !== expectedNodes.length) {
+    errors.push(
+      `Plan assignments count (${plan.assignments.length}) != expected (${expectedNodes.length})`
+    );
+  }
+
+  const assignedNodeIds = new Set(plan.assignments.map(a => a.nodeId));
+
+  for (const nodeId of expectedNodes) {
+    if (!assignedNodeIds.has(nodeId)) {
+      errors.push(`Node not assigned: ${nodeId}`);
+    }
+  }
+
+  // Check for duplicate assignments
+  const seenNodeIds = new Set<string>();
+  for (const assignment of plan.assignments) {
+    if (seenNodeIds.has(assignment.nodeId)) {
+      errors.push(`Duplicate assignment: ${assignment.nodeId}`);
+    }
+    seenNodeIds.add(assignment.nodeId);
+  }
+
+  // Validate each brief
+  for (const assignment of plan.assignments) {
+    const brief = assignment.brief;
+
+    if (!brief.position) {
+      errors.push(`Assignment ${assignment.nodeId}: missing position`);
+    }
+
+    if (!Array.isArray(brief.produces) || brief.produces.length === 0) {
+      errors.push(`Assignment ${assignment.nodeId}: produces list empty or invalid`);
+    }
+
+    if (!Array.isArray(brief.consumes)) {
+      errors.push(`Assignment ${assignment.nodeId}: consumes must be array`);
+    }
+
+    if (!brief.description) {
+      errors.push(`Assignment ${assignment.nodeId}: missing description`);
+    }
+
+    if (typeof brief.idempotent !== 'boolean') {
+      errors.push(`Assignment ${assignment.nodeId}: idempotent must be boolean`);
+    }
+
+    if (!Array.isArray(brief.validate)) {
+      errors.push(`Assignment ${assignment.nodeId}: validate rules missing or invalid`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
   };
-
-  const dispatchDir = join(repoRoot, '.dispatch');
-  mkdirSync(dispatchDir, { recursive: true });
-
-  writeFileSync(
-    join(dispatchDir, 'plan.json'),
-    JSON.stringify(plan, null, 2)
-  );
-
-  return plan;
 }

@@ -588,5 +588,20 @@
     ],
     "gitSha": "32a4fb54746d8c374dfc2adfe7353ff56c4d5489",
     "treeSha": "c960ed0d10569c83598eb6a4e163efd40bf8808c"
+  },
+  {
+    "nodeId": "brief-gate-impl",
+    "completedAt": "2026-03-02T13:03:46.099Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260302130346",
+    "validationChecks": [
+      {
+        "rule": "skip-validate",
+        "passed": false,
+        "evidence": "validation skipped by --skip-validate flag"
+      }
+    ],
+    "gitSha": "5fa97e857cc0700ede8b9f5d1dea6399f2cf9623",
+    "treeSha": "7aa1d32cd84124dabb389c6cf62da51e52b29114"
   }
 ]
