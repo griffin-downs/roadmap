@@ -1,0 +1,63 @@
+{
+  "id": "artifact-gates-001",
+  "desc": "Validation gates for roadmap completion: artifact existence, TypeScript compilation, schema validation, hash verification. Task #5 implementation.",
+  "init": "implement-artifact-gates",
+  "term": "validate-gates-integration",
+  "nodes": {
+    "implement-artifact-gates": {
+      "id": "implement-artifact-gates",
+      "desc": "Implement ArtifactGates class: checkExists(), checkTypecheck(), checkSchema() (stub), checkHash() (stub), validateBeforeCompletion()",
+      "produces": [
+        "src/lib/roadmap/artifact-gates.ts"
+      ],
+      "consumes": [
+        ".roadmap/task-5-artifact-gates-design.md",
+        "src/lib/roadmap/protocol/types.ts"
+      ],
+      "deps": [],
+      "validate": [
+        {"type": "artifact-exists", "path": "src/lib/roadmap/artifact-gates.ts"}
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "level": 1
+    },
+    "test-artifact-gates": {
+      "id": "test-artifact-gates",
+      "desc": "Write comprehensive test suite: artifact-exists (6 tests), artifact-typecheck (5 tests), integration (4 tests), error handling (3 tests). ~18 total tests, 90%+ coverage.",
+      "produces": [
+        "tests/artifact-gates.test.ts"
+      ],
+      "consumes": [
+        "src/lib/roadmap/artifact-gates.ts",
+        ".roadmap/task-5-test-spec.md"
+      ],
+      "deps": ["implement-artifact-gates"],
+      "validate": [
+        {"type": "artifact-exists", "path": "tests/artifact-gates.test.ts"}
+      ],
+      "idempotent": true,
+      "mode": "execute",
+      "level": 2
+    },
+    "validate-gates-integration": {
+      "id": "validate-gates-integration",
+      "desc": "Run artifact-gates test suite, verify all tests pass, validate 90%+ coverage. Ensure gates are deterministic and error messages are actionable.",
+      "produces": [
+        "gates-validation-report.json"
+      ],
+      "consumes": [
+        "tests/artifact-gates.test.ts",
+        "src/lib/roadmap/artifact-gates.ts"
+      ],
+      "deps": ["test-artifact-gates"],
+      "validate": [
+        {"type": "shell", "cmd": "npm test -- tests/artifact-gates.test.ts --coverage"},
+        {"type": "artifact-exists", "path": "gates-validation-report.json"}
+      ],
+      "idempotent": false,
+      "mode": "execute",
+      "level": 3
+    }
+  }
+}
