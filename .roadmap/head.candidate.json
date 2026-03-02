@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "baseSha": "2b13572d9c1d712aca7d4b50bf29bde823cfcd5ee0bf888ac8ea6da17dade2e0",
+  "source": "import",
+  "sourceDetail": ".roadmap/spec/spec-compiled.json",
+  "createdAt": "2026-03-02T09:02:34.670Z",
+  "dag": {
+    "id": "metadata-cleanup-001",
+    "desc": "Imported from spec-kit",
+    "init": "init",
+    "term": "term",
+    "nodes": {
+      "init": {
+        "id": "init",
+        "desc": "Synthetic init — roots all P0 tasks",
+        "produces": [
+          "init.marker"
+        ],
+        "consumes": [],
+        "deps": [],
+        "validate": [
+          {
+            "type": "spec-conformance",
+            "spec": ".specify/specs/metadata-cleanup-001/spec.md",
+            "scenario": "Plan clarity validated against feature spec",
+            "section": "Specification"
+          }
+        ],
+        "idempotent": true,
+        "ambient": [
+          ".specify/pre-spec.md",
+          ".specify/specs/metadata-cleanup-001/spec.md",
+          ".specify/specs/metadata-cleanup-001/tasks.md"
+        ]
+      },
+      "term": {
+        "id": "term",
+        "desc": "Synthetic term — gates on all leaf tasks",
+        "produces": [],
+        "consumes": [],
+        "deps": [
+          "enforce-ephemeral-cleanup",
+          "gitignore-ephemeral",
+          "dag-history-via-git",
+          "worktree-lifecycle",
+          "token-log-rotation",
+          "ci-gate-repo-size",
+          "maintenance-task"
+        ],
+        "validate": [
+          {
+            "type": "spec-conformance",
+            "spec": ".specify/specs/metadata-cleanup-001/spec.md",
+            "scenario": "All acceptance scenarios pass (User Stories 1-6)",
+            "section": "Feature Specification"
+          },
+          {
+            "type": "shell",
+            "command": "test -f package.json && npm run test 2>&1 | grep -q 'test'",
+            "expectExitCode": 0
+          },
+          {
+            "type": "shell",
+            "command": "npm run build 2>&1 | grep -q \"built\"",
+            "expectExitCode": 0
+          }
+        ],
+        "idempotent": false,
+        "ambient": [
+          ".specify/specs/metadata-cleanup-001/spec.md"
+        ]
+      },
+      "enforce-ephemeral-cleanup": {
+        "id": "enforce-ephemeral-cleanup",
+        "desc": "Add to `roadmap complete` hook—delete checkpoints/tokens/receipts, rotate log, archive trail",
+        "produces": [],
+        "consumes": [
+          "init.marker"
+        ],
+        "deps": [
+          "init"
+        ],
+        "validate": [],
+        "idempotent": true
+      },
+      "gitignore-ephemeral": {
+        "id": "gitignore-ephemeral",
+        "desc": "Update `.gitignore` with patterns for checkpoints, tokens, head.*.json, audit, vitest",
+        "produces": [],
+        "consumes": [
+          "init.marker"
+        ],
+        "deps": [
+          "init"
+        ],
+        "validate": [],
+        "idempotent": true
+      },
+      "dag-history-via-git": {
+        "id": "dag-history-via-git",
+        "desc": "Extract old head.json from git before deletion, archive to docs/archives/, delete duplicates",
+        "produces": [],
+        "consumes": [],
+        "deps": [],
+        "validate": [],
+        "idempotent": true
+      },
+      "worktree-lifecycle": {
+        "id": "worktree-lifecycle",
+        "desc": "Enforce in agent spawn/shutdown—add, remove, prune on failure",
+        "produces": [],
+        "consumes": [],
+        "deps": [],
+        "validate": [],
+        "idempotent": true
+      },
+      "token-log-rotation": {
+        "id": "token-log-rotation",
+        "desc": "Monitor index.ndjson, rotate to archive on > 1000 entries, keep working set lean",
+        "produces": [],
+        "consumes": [],
+        "deps": [],
+        "validate": [],
+        "idempotent": true
+      },
+      "ci-gate-repo-size": {
+        "id": "ci-gate-repo-size",
+        "desc": "Add gate-repo-size workflow—block merge if > 150M or stale metadata detected",
+        "produces": [],
+        "consumes": [],
+        "deps": [],
+        "validate": [],
+        "idempotent": true
+      },
+      "maintenance-task": {
+        "id": "maintenance-task",
+        "desc": "CLI command `roadmap maintenance --cleanup`—prune worktrees, delete backups, rotate receipts",
+        "produces": [],
+        "consumes": [],
+        "deps": [],
+        "validate": [],
+        "idempotent": true
+      }
+    },
+    "version": "0.3.0",
+    "protocolVersion": "0.3.0"
+  }
+}
