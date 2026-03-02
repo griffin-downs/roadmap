@@ -578,7 +578,10 @@
         "migration-planner-tests"
       ],
       "validate": [
-        {"type": "artifact-exists", "path": "docs/MIGRATION.md"}
+        {
+          "type": "artifact-exists",
+          "path": "docs/MIGRATION.md"
+        }
       ],
       "idempotent": true
     },
@@ -597,7 +600,10 @@
         "migration-planner-impl"
       ],
       "validate": [
-        {"type": "artifact-exists", "path": "docs/API.md"}
+        {
+          "type": "artifact-exists",
+          "path": "docs/API.md"
+        }
       ],
       "idempotent": true
     },
@@ -613,7 +619,10 @@
         "keepbudget-validator-tests"
       ],
       "validate": [
-        {"type": "artifact-exists", "path": "docs/TROUBLESHOOTING.md"}
+        {
+          "type": "artifact-exists",
+          "path": "docs/TROUBLESHOOTING.md"
+        }
       ],
       "idempotent": true
     },
@@ -639,8 +648,12 @@
       ],
       "validate": [
         {
+          "type": "artifact-exists",
+          "path": ".chatelet/coverage-report.json"
+        },
+        {
           "type": "shell",
-          "command": "npx vitest --coverage"
+          "command": "jq -e \".meetsTarget == true\" .chatelet/coverage-report.json"
         }
       ],
       "idempotent": true
@@ -660,7 +673,10 @@
         "ci-gate-manifests"
       ],
       "validate": [
-        {"type": "artifact-exists", "path": ".chatelet/security-audit.json"}
+        {
+          "type": "artifact-exists",
+          "path": ".chatelet/security-audit.json"
+        }
       ],
       "idempotent": true
     },
@@ -686,7 +702,10 @@
         "e2e-integration-tests"
       ],
       "validate": [
-        {"type": "artifact-exists", "path": ".chatelet/acceptance-results.json"}
+        {
+          "type": "artifact-exists",
+          "path": ".chatelet/acceptance-results.json"
+        }
       ],
       "idempotent": true
     },
@@ -702,7 +721,10 @@
         "cli-perf-tests"
       ],
       "validate": [
-        {"type": "artifact-exists", "path": ".chatelet/performance-gate.json"}
+        {
+          "type": "artifact-exists",
+          "path": ".chatelet/performance-gate.json"
+        }
       ],
       "idempotent": true
     },
@@ -724,7 +746,10 @@
         "docs-troubleshooting"
       ],
       "validate": [
-        {"type": "artifact-exists", "path": ".chatelet/fr-chatelet-001-complete.json"}
+        {
+          "type": "artifact-exists",
+          "path": ".chatelet/fr-chatelet-001-complete.json"
+        }
       ],
       "idempotent": true
     }
