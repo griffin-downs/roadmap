@@ -33,31 +33,48 @@ export async function loadDAGWithAutoMerge(
   const indexPath = path.join(roadmapRoot, '.roadmap', 'head-index.json');
 
   try {
-    // Check if we should auto-merge
-    const shouldMerge = await shouldAutoMerge(roadmapRoot);
-
-    if (!shouldMerge) {
-      // Single DAG case: load normally
+    // Check if head.json exists and is fresh
+    if (fs.existsSync(headPath) && !fs.existsSync(indexPath)) {
+      // head.json exists but index doesn't, regenerate it
       const graph = JSON.parse(fs.readFileSync(headPath, 'utf-8')) as Graph<string>;
+      await ensureIndexExists(roadmapRoot);
       return {
         graph,
         isMerged: false,
       };
     }
 
-    // Multi-DAG case: discover, merge, cache result
+    if (fs.existsSync(headPath) && fs.existsSync(indexPath)) {
+      // Both exist, check if any source DAG is newer
+      const headStats = fs.statSync(headPath);
+      const shouldMerge = await shouldAutoMerge(roadmapRoot);
+
+      if (!shouldMerge) {
+        // head.json is fresh, use it
+        const graph = JSON.parse(fs.readFileSync(headPath, 'utf-8')) as Graph<string>;
+        return {
+          graph,
+          isMerged: false,
+        };
+      }
+      // Otherwise proceed to merge
+    }
+
+    // Discover all DAG files
     const dagFiles = await discoverDAGFiles(roadmapRoot);
 
-    // If only one file found, load normally
-    if (dagFiles.length <= 1) {
-      const graph = JSON.parse(fs.readFileSync(headPath, 'utf-8')) as Graph<string>;
+    // If only one file, use it
+    if (dagFiles.length === 1) {
+      const graph = dagFiles[0].content;
+      fs.writeFileSync(headPath, JSON.stringify(graph, null, 2));
+      await ensureIndexExists(roadmapRoot);
       return {
         graph,
         isMerged: false,
       };
     }
 
-    // Perform merge
+    // Multiple DAGs: perform merge
     const mergeResult = mergeMultiWay(dagFiles);
 
     // Update head.json with merged result
