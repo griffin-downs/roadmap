@@ -818,14 +818,16 @@ async function cmdMake(note: string) {
   writeSpecOrigin(repoRoot, origin);
 
   // Commit
+  let commitWarning: string | undefined;
   try {
     execSync('git add .roadmap/head.json .roadmap/spec-origin.json', { cwd: repoRoot, stdio: 'pipe' });
     execSync(`git commit -m "make: ideal DAG from ${specPath}"`, {
       cwd: repoRoot,
       stdio: 'pipe',
     });
-  } catch (e) {
-    // Commit might fail, but DAG is written
+  } catch (e: any) {
+    const stderr = e.stderr?.toString().trim() || e.message || 'unknown error';
+    commitWarning = `Git commit failed (head.json written but uncommitted): ${stderr.slice(0, 200)}`;
   }
 
   const pos = await crossOrientWithState(dag);
@@ -846,6 +848,7 @@ async function cmdMake(note: string) {
     position: pos.position,
     level: pos.level,
     message: 'Ideal DAG created from spec',
+    ...(commitWarning ? { commitWarning } : {}),
   });
 }
 
