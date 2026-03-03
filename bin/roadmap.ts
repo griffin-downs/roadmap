@@ -289,6 +289,7 @@ async function main() {
       const errorPayload: import('../src/lib/cli-envelope.ts').CliError = {
         code, message,
         fix: rej.context?.fix ? [rej.context.fix] : undefined,
+        ...(rej.context?.errors ? { errors: rej.context.errors } : {}),
       };
       if (code === 'VALIDATION_FAILED') {
         Object.assign(errorPayload, schemaFields(deriveSchemaKey()));
@@ -511,7 +512,12 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
         allPassed = false;
       }
     } else if (rule.type === 'artifact-exists') {
-      const target = rule.target;
+      const target = rule.target ?? rule.path;
+      if (!target) {
+        // No explicit target — produces already checked above
+        checks.push({ rule: 'artifact-exists:produces', passed: true, evidence: 'covered by produces check' });
+        continue;
+      }
       const fullPath = join(repoRoot, target);
       const exists = existsSync(fullPath);
       checks.push({ rule: `artifact-exists:${target}`, passed: exists, evidence: exists ? 'file exists' : 'file missing' });
@@ -679,23 +685,22 @@ async function cmdMake(note: string) {
     }, 'Invalid spec: raw DAG detected. Use the spec pipeline to create a spec first.');
   }
 
-  // Validate required spec fields
+  // Validate required spec fields — collect all errors before throwing
+  const specErrors: Array<{ gate: string; message: string; fix: string }> = [];
   if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
-    throw new RoadmapError('VALIDATION_FAILED', {
-      fix: 'Spec must have a "tasks" array. Use: roadmap spec plan --from <requirements.md>',
-    }, 'Invalid spec: missing "tasks" array');
+    specErrors.push({ gate: 'spec-structure', message: 'Missing "tasks" array', fix: 'Spec must have a "tasks" array. Use: roadmap spec plan --from <requirements.md>' });
   }
-
   if (!parsed.metadata || typeof parsed.metadata !== 'object') {
-    throw new RoadmapError('VALIDATION_FAILED', {
-      fix: 'Spec must have a "metadata" object with "generated" and "compile_hash". Use the spec pipeline.',
-    }, 'Invalid spec: missing "metadata" object');
+    specErrors.push({ gate: 'spec-structure', message: 'Missing "metadata" object', fix: 'Spec must have a "metadata" object with "generated" and "compile_hash". Use the spec pipeline.' });
   }
-
   if (!parsed.schema_version) {
+    specErrors.push({ gate: 'spec-structure', message: 'Missing "schema_version"', fix: 'Spec must have "schema_version". Use the spec pipeline to generate a valid spec.' });
+  }
+  if (specErrors.length > 0) {
     throw new RoadmapError('VALIDATION_FAILED', {
-      fix: 'Spec must have "schema_version". Use the spec pipeline to generate a valid spec.',
-    }, 'Invalid spec: missing "schema_version"');
+      errors: specErrors,
+      fix: specErrors.map(e => `[${e.gate}] ${e.fix}`).join('\n'),
+    }, `${specErrors.length} spec structure error(s) found`);
   }
 
   // Input artifact verification (skip with --skip-input-verification)

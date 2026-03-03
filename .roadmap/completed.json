@@ -118,5 +118,199 @@
     "nodeId": "self-teaching-enabled",
     "completedAt": "2026-03-03T20:55:00+00:00",
     "evidence": "All validators pass: metrics.jsonl exists, spec-conformance.ts exists, checkpoint-runtime.ts exists, ENABLED.json written"
+  },
+  {
+    "nodeId": "init",
+    "completedAt": "2026-03-03T22:32:13.578Z",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:init.marker",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
+    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
+  },
+  {
+    "nodeId": "orient-forward-pointer",
+    "completedAt": "2026-03-03T22:32:58.341Z",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/orient-forward.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/orient-forward.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "intent:Plan clarity: orient forward pointer is unambiguous — scan .",
+        "passed": true,
+        "evidence": "intent acknowledged"
+      },
+      {
+        "rule": "artifact-exists:produces",
+        "passed": true,
+        "evidence": "covered by produces check"
+      },
+      {
+        "rule": "shell:npx tsx test/orient-forward.test.ts",
+        "passed": true,
+        "evidence": "✔ findPendingSpecs: excludes current DAG (1.386043ms)\n✔ findPendingSpecs: includes unloaded specs (0.471096ms)\n✔ findPendingSpecs: excludes historical specs in head-index.json (0.45497ms)\n✔ findPendin"
+      }
+    ],
+    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
+    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
+  },
+  {
+    "nodeId": "make-full-contract-errors",
+    "completedAt": "2026-03-03T22:33:03.144Z",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/make-validation.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/make-validation.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "intent:Plan clarity: make validation is unambiguous — collect all e",
+        "passed": true,
+        "evidence": "intent acknowledged"
+      },
+      {
+        "rule": "artifact-exists:produces",
+        "passed": true,
+        "evidence": "covered by produces check"
+      },
+      {
+        "rule": "shell:npx tsx test/make-validation.test.ts",
+        "passed": true,
+        "evidence": "✔ valid DAG returns empty errors array (0.974584ms)\n✔ DAG missing terminal intent returns 1 error (0.168725ms)\n✔ DAG with cycles returns define error (0.165946ms)\n✔ DAG with multiple errors returns al"
+      }
+    ],
+    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
+    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
+  },
+  {
+    "nodeId": "api-invariants",
+    "completedAt": "2026-03-03T22:33:03.830Z",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/api-invariants.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/api-invariants.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "intent:Plan clarity: api invariants are unambiguous — machine-reada",
+        "passed": true,
+        "evidence": "intent acknowledged"
+      },
+      {
+        "rule": "artifact-exists:produces",
+        "passed": true,
+        "evidence": "covered by produces check"
+      },
+      {
+        "rule": "shell:npx tsx test/api-invariants.test.ts",
+        "passed": true,
+        "evidence": "✔ getMakeInvariants returns array with at least 11 items (0.483896ms)\n✔ every invariant has all required fields (0.12276ms)\n✔ terminal-intent-gate invariant exists with correct skipFlag (0.094773ms)\n✔"
+      }
+    ],
+    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
+    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
+  },
+  {
+    "nodeId": "orient-wire-cli",
+    "completedAt": "2026-03-03T22:33:08.569Z",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "shell:bin/roadmap orient --note 'test' 2>&1 | grep -q 'pendingSpecs\\|complete'",
+        "passed": true,
+        "evidence": "exit 0"
+      }
+    ],
+    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
+    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
+  },
+  {
+    "nodeId": "make-wire-errors",
+    "completedAt": "2026-03-03T22:34:57.576Z",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "shell:echo '{\"tasks\":[]}' > /tmp/bad-spec.json && bin/roadmap make /tmp/bad-spec.json --note test 2>&1 | grep -q 'errors'",
+        "passed": true,
+        "evidence": "exit 0"
+      }
+    ],
+    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
+    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
+  },
+  {
+    "nodeId": "api-wire-invariants",
+    "completedAt": "2026-03-03T22:35:02.435Z",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "shell:bin/roadmap api make 2>&1 | grep -q 'invariants'",
+        "passed": true,
+        "evidence": "exit 0"
+      }
+    ],
+    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
+    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
+  },
+  {
+    "nodeId": "integration-verified",
+    "completedAt": "2026-03-03T22:35:06.811Z",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:test/reorientation-integration.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:produces",
+        "passed": true,
+        "evidence": "covered by produces check"
+      },
+      {
+        "rule": "shell:npx tsx test/reorientation-integration.test.ts",
+        "passed": true,
+        "evidence": "✔ 1. Orient Forward Pointer: finds unloaded specs (1.434682ms)\n✔ 1. Orient Forward Pointer: excludes current DAG spec (0.45311ms)\n✔ 2. Make Validation: detects structural error (define gate) (1.011244"
+      },
+      {
+        "rule": "intent:All three reorientation problems are resolved — agents can s",
+        "passed": true,
+        "evidence": "intent acknowledged"
+      }
+    ],
+    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
+    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
   }
 ]
