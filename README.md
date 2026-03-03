@@ -45,7 +45,7 @@ const pos = orient(g, completion);
 ```
 roadmap make <spec>  --note "..."   Create DAG from spec
 roadmap orient       --note "..."   Current position + produces/consumes
-roadmap advance      --note "..."   Move to next batch
+roadmap advance [id] --note "..."   Complete node (run validators) or advance batch
 
 roadmap dag insert   --note "..."   Insert node
 roadmap dag remove   --note "..."   Remove node (--cascade)

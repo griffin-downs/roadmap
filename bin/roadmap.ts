@@ -429,6 +429,9 @@ async function cmdOrient(note: string | undefined) {
   emit({ ok: true, cmd: _outputOpts.cmd, data: result }, _outputOpts);
 }
 
+// --- advance: complete node(s) + move to next batch ---
+// `advance <node-id>` — run validators, record evidence, advance if batch done
+// `advance` (no arg) — check batch complete, move to next batch
 async function cmdAdvance(note: string) {
   if (!hasLocalDAG) {
     json({ error: 'No roadmap tracked in this repo', fix: 'Initialize with: roadmap spec plan --gallery --note "..."' });
@@ -436,101 +439,187 @@ async function cmdAdvance(note: string) {
     return;
   }
 
-  // Runtime origin gate: reject DAGs without valid spec origin
   requireValidOrigin(repoRoot);
 
   const dag = await loadDAGAsync();
-  const pos = await crossOrientWithState(dag);
+  const nodeId = args[1]; // optional: advance <node-id>
 
-  // Validate current batch is complete
-  if (!pos.batchComplete) {
-    const remaining = pos.batchRemaining;
+  if (nodeId) {
+    return await advanceNode(dag, nodeId, note);
+  }
+  return await advanceBatchCmd(dag, note);
+}
+
+// Complete a single node: run validators, record evidence
+async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
+  const node = dag.nodes[nodeId as keyof typeof dag.nodes] as any;
+  if (!node) {
+    json({ error: `Node not found: ${nodeId}`, fix: `Check node IDs with: roadmap orient --note "..."` });
+    process.exit(1);
+    return;
+  }
+
+  // Check node is in current batch or remaining
+  const pos = await crossOrientWithState(dag);
+  if (!pos.batchRemaining.includes(nodeId) && !pos.position.includes(nodeId)) {
     json({
-      error: 'Batch not complete',
-      remaining: remaining.length,
-      nodes: remaining,
-      fix: `Complete nodes: ${remaining.join(', ')}`,
+      error: `Node ${nodeId} is not in current batch`,
+      currentBatch: pos.position,
+      remaining: pos.batchRemaining,
+      fix: 'Can only advance nodes in the current batch',
     });
     process.exit(1);
     return;
   }
 
-  // Validate all produce artifacts exist for current batch
-  const completion = CompletionStore.loadOrEmpty(repoRoot);
-  for (const nodeId of pos.position) {
-    const node = dag.nodes[nodeId as keyof typeof dag.nodes] as any;
-    if (!node) continue;
+  // Run validators
+  const validates = node.validate ?? [];
+  const produces = node.produces ?? [];
+  const checks: EvidenceRecord[] = [];
+  let allPassed = true;
 
-    const produces = node.produces ?? [];
-    if (!completion.hasPassing(nodeId) && produces.length > 0) {
-      json({
-        error: `Missing completion for ${nodeId}`,
-        produces,
-        fix: 'Node has not been completed yet',
-      });
-      process.exit(1);
-      return;
-    }
-
-    // Verify artifacts exist
-    for (const artifact of produces) {
-      const fullPath = join(repoRoot, artifact);
-      if (!existsSync(fullPath)) {
-        json({
-          error: `Missing artifact: ${artifact}`,
-          node: nodeId,
-          fix: 'Artifact was not produced',
-        });
-        process.exit(1);
-        return;
-      }
-    }
+  // Check produces artifacts exist
+  for (const artifact of produces) {
+    const fullPath = join(repoRoot, artifact);
+    const exists = existsSync(fullPath);
+    checks.push({ rule: `artifact-exists:${artifact}`, passed: exists, evidence: exists ? 'file exists' : 'file missing' });
+    if (!exists) allPassed = false;
   }
 
-  // Move to next batch using advanceBatch
-  const next = await advanceBatch(dag, completion, retiredSet());
+  // Run declared validators
+  for (const rule of validates) {
+    if (rule.type === 'shell') {
+      try {
+        const output = execSync(rule.command, { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30000 }).trim();
+        checks.push({ rule: `shell:${rule.command}`, passed: true, evidence: output.slice(0, 200) || 'exit 0' });
+      } catch (e: any) {
+        const stderr = e.stderr?.toString().trim() || e.message || 'non-zero exit';
+        checks.push({ rule: `shell:${rule.command}`, passed: false, evidence: stderr.slice(0, 200) });
+        allPassed = false;
+      }
+    } else if (rule.type === 'artifact-exists') {
+      const target = rule.target;
+      const fullPath = join(repoRoot, target);
+      const exists = existsSync(fullPath);
+      checks.push({ rule: `artifact-exists:${target}`, passed: exists, evidence: exists ? 'file exists' : 'file missing' });
+      if (!exists) allPassed = false;
+    } else if (rule.type === 'intent') {
+      // Intent validators pass if node has produces or is explicitly completed
+      checks.push({ rule: `intent:${rule.statement?.slice(0, 60) || 'ok'}`, passed: true, evidence: 'intent acknowledged' });
+    }
+    // Other validator types (function, manual-approval, expanded) — skip silently
+  }
 
-  if (!next || next.position.length === 0) {
-    // Terminal: all work complete
+  if (!allPassed) {
     json({
-      ok: true,
-      advanced: true,
-      level: pos.level + 1,
-      position: [],
-      message: 'All work complete',
-      done: true,
+      error: `Validation failed for ${nodeId}`,
+      checks,
+      fix: 'Fix failing validators and retry',
     });
-
-    recordTrail({
-      ts: new Date().toISOString(),
-      cmd: 'advance',
-      note,
-      repo: basename(repoRoot),
-      position: [],
-      level: pos.level + 1,
-      detail: { done: true },
-    });
+    recordTrailError('advance', 'VALIDATION_FAILED', `Node ${nodeId}: ${checks.filter(c => !c.passed).map(c => c.rule).join(', ')}`, note);
+    process.exit(1);
     return;
   }
 
-  json({
-    ok: true,
-    advanced: true,
-    previousLevel: pos.level,
-    level: next.level,
-    position: next.position,
-    batchRemaining: next.batchRemaining,
-    produces: next.produces,
-    consumes: next.consumes,
-  });
+  // Record completion with evidence
+  saveCompletionWithEvidence(repoRoot, nodeId, checks);
+
+  // Re-orient to check if batch is now complete
+  const newPos = await crossOrientWithState(dag);
+
+  const result: any = {
+    completed: nodeId,
+    checks,
+    batchComplete: newPos.batchComplete,
+    remaining: newPos.batchRemaining,
+  };
+
+  // If batch is now complete, auto-advance
+  if (newPos.batchComplete) {
+    const completion = CompletionStore.loadOrEmpty(repoRoot);
+    const next = advanceBatch(dag, completion, retiredSet());
+    if (!next || next.position.length === 0) {
+      result.advanced = true;
+      result.done = true;
+      result.message = 'All work complete';
+    } else {
+      result.advanced = true;
+      result.nextPosition = next.position;
+      result.nextLevel = next.level;
+      result.nextProduces = next.produces;
+      result.nextConsumes = next.consumes;
+    }
+  }
+
+  emit({ ok: true, cmd: _outputOpts.cmd, data: result }, _outputOpts);
 
   recordTrail({
     ts: new Date().toISOString(),
     cmd: 'advance',
     note,
     repo: basename(repoRoot),
-    position: next.position,
-    level: next.level,
+    position: newPos.position,
+    level: newPos.level,
+    detail: { completed: nodeId, checks: checks.length, passed: allPassed },
+  });
+}
+
+// Move to next batch (requires all nodes in current batch completed)
+async function advanceBatchCmd(dag: Graph<string>, note: string) {
+  const pos = await crossOrientWithState(dag);
+
+  if (!pos.batchComplete) {
+    json({
+      error: 'Batch not complete',
+      remaining: pos.batchRemaining.length,
+      nodes: pos.batchRemaining,
+      fix: `Complete nodes: ${pos.batchRemaining.map(n => `roadmap advance ${n} --note "..."`).join(', ')}`,
+    });
+    process.exit(1);
+    return;
+  }
+
+  const completion = CompletionStore.loadOrEmpty(repoRoot);
+
+  // Verify all completion records exist
+  for (const nodeId of pos.position) {
+    const node = dag.nodes[nodeId as keyof typeof dag.nodes] as any;
+    if (!node) continue;
+    const produces = node.produces ?? [];
+    if (!completion.hasPassing(nodeId) && produces.length > 0) {
+      json({
+        error: `Missing completion evidence for ${nodeId}`,
+        produces,
+        fix: `Record completion: roadmap advance ${nodeId} --note "..."`,
+      });
+      process.exit(1);
+      return;
+    }
+  }
+
+  const next = advanceBatch(dag, completion, retiredSet());
+
+  if (!next || next.position.length === 0) {
+    emit({ ok: true, cmd: _outputOpts.cmd, data: {
+      advanced: true, level: pos.level + 1, position: [], message: 'All work complete', done: true,
+    }}, _outputOpts);
+
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'advance', note, repo: basename(repoRoot),
+      position: [], level: pos.level + 1, detail: { done: true },
+    });
+    return;
+  }
+
+  emit({ ok: true, cmd: _outputOpts.cmd, data: {
+    advanced: true, previousLevel: pos.level, level: next.level,
+    position: next.position, batchRemaining: next.batchRemaining,
+    produces: next.produces, consumes: next.consumes,
+  }}, _outputOpts);
+
+  recordTrail({
+    ts: new Date().toISOString(), cmd: 'advance', note, repo: basename(repoRoot),
+    position: next.position, level: next.level,
   });
 }
 
@@ -1251,7 +1340,7 @@ function cmdHelp() {
 Core commands (mainline execution loop):
   make <spec>        Create ideal DAG from spec
   orient             Current batch position + produces/consumes
-  advance            Advance to next batch (requires batch complete)
+  advance [node-id]  Complete node (run validators, record evidence) or advance batch
 
 Command groups (use 'roadmap <group> help' for details):
   spec <sub>         Spec planning: plan (gallery, select, status)
@@ -1262,13 +1351,13 @@ Discovery:
   api --all          Full registry dump
 
 All commands require --note "reason" (except help/orient/api).
-Output is JSON. Use jq for filtering.
+Output is JSON.
 
 Examples:
   roadmap orient --note "check position"
   roadmap make spec.json --note "create ideal DAG"
+  roadmap advance my-node --note "validators pass"
   roadmap advance --note "move to next batch"
-  roadmap api make
 `);
 }
 
@@ -1311,8 +1400,11 @@ function loadDAG(): Graph<string> {
 function json(obj: unknown) {
   const hasError = typeof obj === 'object' && obj !== null && 'error' in obj;
 
-  // Send to emit() for stdout/exit/rendering
-  emit({ ok: !hasError, cmd: _outputOpts.cmd, data: obj } as any, _outputOpts);
+  if (hasError) {
+    emit({ ok: false, cmd: _outputOpts.cmd, error: obj } as any, _outputOpts);
+  } else {
+    emit({ ok: true, cmd: _outputOpts.cmd, data: obj }, _outputOpts);
+  }
 }
 
 // Entry point

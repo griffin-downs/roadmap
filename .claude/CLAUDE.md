@@ -269,7 +269,7 @@ Multiple DAGs are consolidated via:
 Core (mainline execution loop):
   bin/roadmap make <spec>  --note "..."   Create ideal DAG from spec
   bin/roadmap orient       --note "..."   Batch position + produces/consumes (JSON)
-  bin/roadmap advance      --note "..."   Advance to next batch (requires batch complete)
+  bin/roadmap advance [id] --note "..."   Complete node (run validators) or advance batch
 
 Groups:
   bin/roadmap dag insert   --note "..."   Insert node into DAG
@@ -292,18 +292,17 @@ All commands require `--note "reason"` (except help, orient, api). Output is JSO
 
 Example: `--note "auth module — adding JWT refresh token rotation"`
 
-**Core mainline:**
+**Core loop:**
 ```bash
-roadmap orient --note "..."      # Find batch position
-roadmap api <cmd>                # Schema discovery (if needed)
-roadmap advance --note "..."     # Move to next batch
+roadmap orient --note "..."             # Find batch position + produces
+# ... implement produces ...
+roadmap advance <node-id> --note "..."  # Run validators, record completion
+roadmap advance --note "..."            # Advance to next batch (when all nodes done)
 ```
 
 **Group reference:** `roadmap <group> help` (dag, spec)
 
 **During work**: Orient after completing logical units.
-
-**Completion tracking**: `.roadmap/completed.json` stores node completion records. Update directly or via `saveCompletionWithEvidence()` from `src/lib/evidence/completion-evidence.ts`.
 
 ## This Repo's Own Roadmap
 
@@ -342,7 +341,7 @@ Grep for `@exports` across src/ to get the full API map without reading function
 ### Core
 - `make <spec>` — Create ideal DAG from spec (validates: define, verify, check)
 - `orient` — Batch position from filesystem
-- `advance` — Move to next batch (validates current batch complete)
+- `advance [node-id]` — Complete node (run validators, record evidence) or advance batch
 
 ### Groups
 - `dag {insert,remove,modify,log}` — DAG mutations with provenance
