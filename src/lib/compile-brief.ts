@@ -196,7 +196,33 @@ function formatSuccessCriteria(validate: ValidationRule[]): string[] {
 }
 
 /**
+ * Deep freeze an object to ensure immutability.
+ * Recursively freezes all nested objects and arrays.
+ */
+function deepFreeze<T>(obj: T): T {
+  Object.freeze(obj);
+
+  if (obj !== null && typeof obj === 'object') {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = obj[key];
+        if (
+          value !== null &&
+          (typeof value === 'object' || typeof value === 'function') &&
+          !Object.isFrozen(value)
+        ) {
+          deepFreeze(value);
+        }
+      }
+    }
+  }
+
+  return obj;
+}
+
+/**
  * Compile a human-readable brief for an agent from node spec + environment.
+ * Returns a sealed, frozen brief that prevents any mutations by agents.
  */
 export function compileBrief(
   dag: Graph<string>,
@@ -342,19 +368,25 @@ export function compileBrief(
 
   const markdown = lines.join('\n');
 
-  return {
+  // Create the brief object with sealed arrays and deep freeze it
+  const brief: CompiledBrief = {
     nodeId,
     title: `${nodeId} — ${node.desc.slice(0, 60)}...`,
     assignment: node.desc,
-    whatYouProduce: produces,
-    whatYouConsume: consumes,
+    whatYouProduce: Object.freeze([...produces]) as string[],
+    whatYouConsume: Object.freeze([...consumes]) as string[],
     architectureContext: archContext,
     typeContract: typeContractStr,
-    securityConstraints,
-    successCriteria,
-    nextBlockers: blockers,
-    validationRules: (node.validate ?? []) as ValidationRule[],
+    securityConstraints: Object.freeze([...securityConstraints]) as string[],
+    successCriteria: Object.freeze([...successCriteria]) as string[],
+    nextBlockers: Object.freeze([...blockers]) as string[],
+    validationRules: Object.freeze(
+      (node.validate ?? []).map((r: ValidationRule) => Object.freeze({ ...r }))
+    ) as ValidationRule[],
     allNodes,
     markdown,
   };
+
+  // Deep freeze the entire brief object to prevent any modifications
+  return deepFreeze(brief);
 }
