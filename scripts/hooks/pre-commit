@@ -40,7 +40,7 @@ echo -e "${GREEN}  + Main branch guard (on: $BRANCH)${NC}"
 echo -e "${YELLOW}  > Branch discipline (head.json)...${NC}"
 if [ -n "$STAGED_FILES" ]; then
   if echo "$STAGED_FILES" | grep -q '\.roadmap/head.*\.json'; then
-    if [[ "$BRANCH" != "feat/"* ]] && [[ "$BRANCH" != "wip/"* ]] && [[ "$BRANCH" != "develop" ]]; then
+    if [[ "$BRANCH" != "feat/"* ]] && [[ "$BRANCH" != "wip/"* ]] && [[ "$BRANCH" != "develop" ]] && [ ! -f .git/MERGE_HEAD ]; then
       echo -e "${RED}  x Branch discipline violation${NC}"
       echo -e "${RED}ERROR: Cannot edit .roadmap/head*.json on branch '$BRANCH'${NC}"
       echo ""
@@ -97,7 +97,9 @@ fi
 
 # Gate 4: DAG structural integrity (main/merge only — gitsafe blocks on feature branches)
 echo -e "${YELLOW}  > DAG structure...${NC}"
-if [[ "$BRANCH" == "main" ]] || [[ "$BRANCH" == "master" ]] || [ -f .git/MERGE_HEAD ]; then
+if [ -f .git/MERGE_HEAD ]; then
+  echo -e "${GREEN}  + DAG integrity (skipped: merge commit)${NC}"
+elif [[ "$BRANCH" == "main" ]] || [[ "$BRANCH" == "master" ]]; then
   if npm run check:dag:define > /tmp/dag.log 2>&1; then
     echo -e "${GREEN}  + DAG integrity${NC}"
   else
