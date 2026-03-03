@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
+import { roadmapCliJson } from './cli-helper.ts';
 
 describe('Explore CLI - All Modes', () => {
   it('roadmap explore --api dumps API surface', () => {
@@ -98,11 +99,7 @@ describe('Explore CLI - All Modes', () => {
   });
 
   it('roadmap explore --api --json returns JSON', () => {
-    const output = execSync(`npx tsx bin/roadmap.ts explore --api --json`, {
-      encoding: 'utf-8',
-    });
-
-    const data = JSON.parse(output);
+    const data = roadmapCliJson('explore --api --json');
     expect(data).toHaveProperty('import', 'roadmap/explore');
     expect(data.observations).toHaveLength(17);
     expect(data.interactions).toHaveLength(19);
@@ -111,11 +108,7 @@ describe('Explore CLI - All Modes', () => {
   });
 
   it('roadmap explore --eval evaluates inline code', () => {
-    const output = execSync(`npx tsx bin/roadmap.ts explore --eval "typeof checkVisible" --json`, {
-      encoding: 'utf-8',
-    });
-
-    const data = JSON.parse(output);
+    const data = roadmapCliJson('explore --eval "typeof checkVisible" --json');
     expect(data).toHaveProperty('result');
   });
 
