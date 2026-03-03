@@ -1,0 +1,78 @@
+{
+  "id": "hardening-validation-001",
+  "timestamp": "2026-03-03T12:55:00Z",
+  "validator": "hardening-validator",
+
+  "minimized_surface": false,
+  "minimized_surface_detail": {
+    "target": 50,
+    "actual": 745,
+    "verdict": "FAIL — main has 745 tracked files, 15x over the <50 target. Tree-shake has not been executed; main still carries the full codebase."
+  },
+
+  "gitsafe_enforced": false,
+  "gitsafe_enforced_detail": {
+    "denylist_loaded": true,
+    "denylist_entries": ["node_modules/**", ".env", ".env.local", "dist/**", "build/**"],
+    "env_blocked": true,
+    "dist_blocked": true,
+    "node_modules_blocked": false,
+    "bug": "gitsafe-loader.ts:58-62 — glob-to-regex conversion replaces ** with .* then * with [^/]*, clobbering .* into .[^/]*. Result: node_modules/foo matches but node_modules/foo/bar.js does NOT.",
+    "verdict": "PARTIAL — .env and dist/** enforced, but node_modules/** denylist is bypassed for nested paths due to regex bug."
+  },
+
+  "main_locked": false,
+  "main_locked_detail": {
+    "pre_commit_hook_installed": true,
+    "installed_hook_version": "old (test-enforcement, hooks/pre-commit)",
+    "expected_hook_version": "new (hardening, scripts/hooks/pre-commit with Gate 0: main read-only)",
+    "main_guard_present": false,
+    "head_json_guard_present": true,
+    "verdict": "FAIL — .git/hooks/pre-commit is the old test-enforcement hook, not the hardening hook. Gate 0 (block all commits on main) is NOT active. head.json branch discipline IS present but uses the old logic."
+  },
+
+  "archive_complete": true,
+  "archive_complete_detail": {
+    "archive_branch": "archive/full-codebase",
+    "archive_file_count": 1144,
+    "main_file_count": 745,
+    "archive_tip": "65cf0fe (roadmap: sync head.json with updated hardening-001)",
+    "main_tip": "d87f454 (roadmap: hardening-001 complete — all 13 nodes executed)",
+    "archive_unique_commits": 0,
+    "immutable": true,
+    "verdict": "PASS — archive/full-codebase has 1144 files (superset of main's 745). No commits added to archive after fork. Branch is frozen at 65cf0fe."
+  },
+
+  "hardening_tag": {
+    "tag": "hardening-001-baseline",
+    "commit": "ad546b9 (roadmap: L2-L3 batch completion — tree-shake, gitsafe integration, branch architecture)",
+    "exists": true
+  },
+
+  "issues": [
+    {
+      "severity": "critical",
+      "area": "minimized_surface",
+      "description": "Main has 745 files, not <50. Tree-shake was not applied to main branch. The hardening DAG claims tree-shake complete but the filesystem contradicts."
+    },
+    {
+      "severity": "high",
+      "area": "gitsafe_denylist",
+      "description": "node_modules/** denylist bypass: gitsafe-loader.ts regex conversion bug at line 58-62. ** → .* then * → [^/]* clobbers the .* replacement. Nested paths like node_modules/foo/bar.js pass through.",
+      "fix": "Replace sequential .replace() with a single-pass approach using a sentinel: e.g., replace ** with <<<GLOBSTAR>>> first, then * with [^/]*, then <<<GLOBSTAR>>> with .*"
+    },
+    {
+      "severity": "critical",
+      "area": "main_locked",
+      "description": "Wrong pre-commit hook installed in .git/hooks/pre-commit. The installed hook is the old test-enforcement version (hooks/pre-commit), not the hardening version (scripts/hooks/pre-commit). Gate 0 (main read-only) is absent.",
+      "fix": "cp scripts/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
+    }
+  ],
+
+  "summary": {
+    "pass": 1,
+    "fail": 3,
+    "total": 4,
+    "overall": "FAIL — 3 of 4 hardening constraints are NOT enforced. Only archive completeness passes. Main is not minimized (745 files), gitsafe has a regex bypass bug, and the wrong pre-commit hook is installed."
+  }
+}
