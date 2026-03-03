@@ -45,6 +45,7 @@ export interface CliError {
   fix?: string[];
   schema?: object;    // JSON Schema of expected input (when VALIDATION_FAILED)
   example?: object;   // One valid example input
+  [key: string]: unknown;  // Additional context fields from RoadmapError
 }
 
 export type OutputFormat = 'json' | 'human';
