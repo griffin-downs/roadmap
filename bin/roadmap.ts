@@ -10,6 +10,8 @@ import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createGitSafeLoader } from '../src/lib/gitsafe-loader.ts';
+import { detectCurrentClone, getArchitecture, getWhere, validateClone, enforceOperation } from '../src/lib/topology/topology-service.ts';
+import type { Operation } from '../src/lib/topology/enforcement-rules.ts';
 import {
   define, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, readyNodes, nextBatch, criticalPath, reconcile,
   validateNode, validateGraph, consumeArtifact,
@@ -145,7 +147,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 }
 
 // Commands that don't require a note
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec', 'topology']);
 const isOrientCheck = (cmd === 'orient') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -222,7 +224,7 @@ async function main() {
   const note = _note;
 
   // Enforce main branch for all DAG-mutating commands
-  const BRANCH_EXEMPT = new Set(['help', '--help', '-h']);
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'topology']);
   if (!BRANCH_EXEMPT.has(cmd)) {
     enforceMainBranch();
   }
@@ -252,6 +254,9 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
 
     // Spec pipeline
     case 'spec':      return await cmdSpecGroup(note);
+
+    // Topology group
+    case 'topology':  return cmdTopologyGroup();
 
     // Help & unknown
     case 'help':
@@ -829,6 +834,81 @@ function cmdSpecInit(note: string) {
   json({ error: 'spec init not yet implemented in mainline', fix: 'roadmap spec init --id <dag-id> --note "..."' });
 }
 
+// --- Topology group ---
+
+function cmdTopologyGroup() {
+  const sub = args[1];
+  switch (sub) {
+    case 'help':
+    case '--help':
+    case '-h':
+      return cmdTopologyHelp();
+    case 'show':
+      return cmdTopologyShow();
+    case 'where':
+      return cmdTopologyWhere();
+    case 'validate':
+      return cmdTopologyValidate();
+    case 'enforce':
+      return cmdTopologyEnforce();
+    default:
+      json({ error: `Unknown topology subcommand: ${sub}`, fix: 'roadmap topology show|where|validate|enforce' });
+      process.exit(1);
+  }
+}
+
+function cmdTopologyHelp() {
+  json({
+    command: 'topology',
+    description: 'Git architecture topology for LLM agents',
+    subcommands: [
+      { name: 'show', args: '', description: 'Full architecture: clones, branches, contracts' },
+      { name: 'where', args: '', description: 'Current position: clone, branch, sync status' },
+      { name: 'validate', args: '', description: 'Verify clone state matches expected topology' },
+      { name: 'enforce', args: '--op <operation> [--branch <branch>] [--to <target>]', description: 'Check if operation is allowed in current context' },
+    ],
+    examples: [
+      'roadmap topology show',
+      'roadmap topology where',
+      'roadmap topology validate',
+      'roadmap topology enforce --op push --to origin',
+      'roadmap topology enforce --op work --branch feat/new',
+    ],
+  });
+}
+
+function cmdTopologyShow() {
+  const result = getArchitecture(repoRoot);
+  emit({ ok: true, cmd: 'topology.show', data: result }, _outputOpts);
+}
+
+function cmdTopologyWhere() {
+  const result = getWhere(repoRoot);
+  emit({ ok: true, cmd: 'topology.where', data: result }, _outputOpts);
+}
+
+function cmdTopologyValidate() {
+  const result = validateClone(repoRoot);
+  emit({ ok: true, cmd: 'topology.validate', data: result }, _outputOpts);
+}
+
+function cmdTopologyEnforce() {
+  const opIdx = args.indexOf('--op');
+  if (opIdx === -1 || !args[opIdx + 1]) {
+    json({ error: 'Missing --op <operation>', fix: 'roadmap topology enforce --op push|merge|fetch|checkout|commit|work|read [--branch X] [--to Y]' });
+    process.exit(1);
+    return;
+  }
+  const op = args[opIdx + 1] as Operation;
+  const branchIdx = args.indexOf('--branch');
+  const branch = branchIdx !== -1 ? args[branchIdx + 1] : undefined;
+  const toIdx = args.indexOf('--to');
+  const to = toIdx !== -1 ? args[toIdx + 1] : undefined;
+
+  const result = enforceOperation(repoRoot, op, branch, to);
+  emit({ ok: true, cmd: 'topology.enforce', data: result }, _outputOpts);
+}
+
 // --- Help ---
 function cmdHelp() {
   console.log(`roadmap — DAG expansion protocol CLI
@@ -840,14 +920,17 @@ Core commands (mainline execution loop):
 
 Command groups (use 'roadmap <group> help' for details):
   spec <sub>         Spec planning and intake: plan, import, intake, compile, init
+  topology <sub>     Git architecture topology: show, where, validate, enforce
 
-All commands require --note "reason" (except help/orient).
+All commands require --note "reason" (except help/orient/topology).
 Output is JSON. Use jq for filtering.
 
 Examples:
   roadmap orient --note "check position"
   roadmap make spec.json --note "create ideal DAG"
   roadmap advance --note "move to next batch"
+  roadmap topology where
+  roadmap topology enforce --op push --to origin
 `);
 }
 
