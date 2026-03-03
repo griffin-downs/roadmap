@@ -115,9 +115,9 @@ function branchFileCount(cwd: string, branch: string): number {
 }
 
 function hasPreCommitHook(cwd: string): boolean {
-  // Check .git/hooks/pre-commit or scripts/hooks/pre-commit
-  return existsSync(join(cwd, '.git', 'hooks', 'pre-commit')) ||
-         existsSync(join(cwd, 'scripts', 'hooks', 'pre-commit'));
+  // Check .husky/pre-commit (standard) or .git/hooks/pre-commit (fallback)
+  return existsSync(join(cwd, '.husky', 'pre-commit')) ||
+         existsSync(join(cwd, '.git', 'hooks', 'pre-commit'));
 }
 
 function hasEnforcementJson(cwd: string): boolean {
@@ -281,7 +281,7 @@ export function validateClone(cwd: string): TopologyValidation {
   const hookActive = hasPreCommitHook(cwd);
   const gitsafeActive = hasGitsafe(cwd);
   const enforcementActive = hookActive && gitsafeActive;
-  if (!hookActive) issues.push('Pre-commit hook not installed (check .git/hooks/pre-commit or scripts/hooks/pre-commit)');
+  if (!hookActive) issues.push('Pre-commit hook not installed (check .husky/pre-commit or .git/hooks/pre-commit)');
   if (!gitsafeActive) issues.push('Gitsafe enforcement.json not found at .roadmap/enforcement.json');
 
   // Check: .gitignore correctness (node_modules, dist, etc.)
