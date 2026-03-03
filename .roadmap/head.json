@@ -479,7 +479,7 @@
       "validate": [
         {
           "type": "shell",
-          "command": "npx tsc --noEmit src/protocol-distributed.ts"
+          "command": "npx tsc --noEmit"
         },
         {
           "type": "shell",
