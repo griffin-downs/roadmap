@@ -1,0 +1,243 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║            ROADMAP PROJECT TOPOLOGY & GIT STRUCTURE                        ║
+║              ~/src/.dev/roadmap — Single Repository                        ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+CURRENT STATE
+═════════════════════════════════════════════════════════════════════════════
+
+  Branch:           main
+  HEAD:             05d7dc3
+  Status:           2 uncommitted changes
+  DAG ID:           hardening-001
+  DAG Nodes:        13 (start → hardened-locked)
+
+  Remote:           https://github.com/Ocean-Synaptics/roadmap
+  CI/CD:            None detected
+  Worktrees:        None active (but protocol supports them)
+
+BRANCH STRUCTURE
+═════════════════════════════════════════════════════════════════════════════
+
+  main (CANONICAL)
+  ├─ Commits merged from feature branches
+  ├─ Last 5 commits:
+  │  ├─ 05d7dc3  roadmap: merge hook fix — allow merge commits through gates
+  │  ├─ a8bdb6c  roadmap: fix pre-commit hook — allow merge commits
+  │  ├─ 9b25f28  roadmap: merge feat/deep-treeshake — reduce to essential code
+  │  ├─ 18f239c  roadmap: aggressive tree-shake — core only (421→9 files)
+  │  └─ 667673e  roadmap: merge feat/trail-update — final trail after cleanup
+  │
+  ├─ FEATURE BRANCHES (completed, merged):
+  │  ├─ feat/consolidation-complete (48a8eaf) — DAG consolidation
+  │  ├─ feat/deep-treeshake (18f239c) — Aggressive code reduction
+  │  ├─ feat/dispatch-system-complete (6e9c892) — Agent dispatch system
+  │  ├─ feat/explore-api (53cdc60) — Explore API design
+  │  ├─ feat/fix-gate0 (96fbd16) — Pre-commit gate fixes
+  │  ├─ feat/fix-gitsafe-glob-regex (3bcecde) — Gitsafe enforcement
+  │  ├─ feat/fix-hook-merge-gate (a8bdb6c) — Merge gate fixes
+  │  ├─ feat/hardening-verification (bf5ce57) — DAG hardening
+  │  ├─ feat/hook-installation (5f4af3f) — Pre-commit hook setup
+  │  ├─ feat/protocol-design (e535f8f) — Core protocol design
+  │  ├─ feat/spec-kit-optimize (0f79a2f) — Spec-kit optimization
+  │  └─ feat/worktree-spawn-command (0894831) — Worktree spawning
+  │
+  ├─ ARCHIVE BRANCHES:
+  │  └─ archive/full-codebase (7de8dcf) — Complete pre-treeshake snapshot
+  │
+  └─ WORKTREE BRANCHES (agent isolation, not cleaned up):
+     ├─ worktree-agent-a0fda31e (cca6bf0)
+     ├─ worktree-agent-a15151b7 (bdafff0)
+     ├─ worktree-agent-a258d6f4 (cca6bf0)
+     ├─ ... [21 total stale worktree branches]
+     └─ These can be cleaned: git branch -r | grep worktree- | xargs git push -d origin
+
+
+DAG STRUCTURE (hardening-001)
+═════════════════════════════════════════════════════════════════════════════
+
+  Current position: START
+
+  Nodes: 13 total
+  ├─ start                           (init node)
+  ├─ archive-full-codebase
+  ├─ create-enforcement-config
+  ├─ tree-shake-main
+  ├─ integrate-gitsafe
+  ├─ test-gitsafe-enforcement
+  ├─ setup-branch-protections
+  ├─ verify-minimal-surface
+  ├─ test-immutability
+  ├─ document-branch-architecture
+  ├─ setup-git-refs
+  ├─ enforce-main-reads
+  └─ hardened-locked              (term node)
+
+  Progress: 0% (2 uncommitted changes in core files)
+
+
+PROJECT STRUCTURE
+═════════════════════════════════════════════════════════════════════════════
+
+  /
+  ├─ bin/                          CLI entry points
+  │  ├─ roadmap                    Main CLI (shebang → roadmap.ts)
+  │  ├─ roadmap.ts                 TypeScript implementation
+  │  └─ ...
+  │
+  ├─ src/                          Core library
+  │  ├─ protocol.ts                DAG operations (define, verify, orient, etc)
+  │  ├─ agent.ts                   Sealed agent API
+  │  ├─ recovery.ts                Checkpoint & audit trail
+  │  ├─ validation.ts              Validation rules
+  │  ├─ versioning.ts              DAG migrations
+  │  ├─ errors.ts                  Error types
+  │  └─ lib/                       Supporting modules
+  │     ├─ gitsafe-loader.ts       File access control
+  │     └─ ...
+  │
+  ├─ .roadmap/                     Session state
+  │  ├─ head.json                  Current DAG (13 nodes)
+  │  ├─ completed.json             Completion tracker (empty)
+  │  ├─ BRANCHES.md                Branch architecture docs
+  │  ├─ enforcement.json           Gitsafe config
+  │  └─ trail.jsonl                Session invocation log
+  │
+  ├─ .claude/                      Claude Code session
+  │  ├─ worktrees/                 Isolated work directories (protocol support)
+  │  ├─ CLAUDE.md                  Project instructions
+  │  └─ tasks/                     Task tracking (if enabled)
+  │
+  ├─ .github/                      GitHub configuration
+  │  ├─ branch-protections.yml
+  │  └─ workflows/                 (none detected)
+  │
+  ├─ scripts/                      Build & utility scripts
+  │  └─ hooks/                     Git pre-commit enforcement
+  │
+  ├─ package.json                  npm metadata (no dependencies)
+  ├─ tsconfig.json                 TypeScript config
+  ├─ vitest.config.ts              Test configuration
+  └─ README.md                     Project documentation
+
+
+DISCONNECTED / ORPHANED SYSTEMS
+═════════════════════════════════════════════════════════════════════════════
+
+  Stale Worktree Branches (21 total):
+  └─ All are cleanup candidates — agents have finished work
+     These should be deleted to keep branch history clean:
+
+     git push origin --delete worktree-agent-*
+     (filter for stale ones based on commit age)
+
+
+UNCOMMITTED CHANGES
+═════════════════════════════════════════════════════════════════════════════
+
+  Status: 2 files
+
+  To see what's changed:
+    git status --short
+
+  To commit:
+    git add <produces>
+    git commit -m "roadmap: <node-id>: <what>"
+
+
+WORKFLOWS & AUTOMATION
+═════════════════════════════════════════════════════════════════════════════
+
+  Pre-commit Hooks:
+  ├─ gitsafe validation         (enforces file denylist)
+  ├─ TypeScript type check      (npx tsc --noEmit)
+  ├─ DAG validation            (roadmap validate)
+  └─ Branch discipline         (blocks head.json edits on main)
+
+  CI/CD: None (roadmap is a library, not a service)
+
+  Post-push: None detected
+
+
+KEY FILES & ENTRY POINTS
+═════════════════════════════════════════════════════════════════════════════
+
+  CLI:
+    bin/roadmap                  ← Main entry (executable shebang script)
+
+  API:
+    src/protocol.ts              ← Core operations (define, verify, orient, etc)
+    src/agent.ts                 ← Sealed agent API
+
+  Config:
+    .roadmap/head.json           ← Current DAG (13 nodes)
+    .roadmap/enforcement.json    ← Gitsafe denylist
+    scripts/hooks/pre-commit     ← Git gate enforcement
+
+  Documentation:
+    README.md                    ← Project overview
+    .roadmap/BRANCHES.md         ← Branch strategy
+    CLAUDE.md                    ← Session protocol
+
+
+SESSIONS & TRACKING
+═════════════════════════════════════════════════════════════════════════════
+
+  Trail Log: .roadmap/trail.jsonl
+  └─ Records all roadmap command invocations with position/notes
+
+  Completion: .roadmap/completed.json
+  └─ Tracks which DAG nodes are done (currently empty)
+
+  Workflow: Use bin/roadmap CLI:
+    ├─ roadmap orient --note "..."      Find batch position
+    ├─ roadmap show <node-id>           Inspect node
+    ├─ roadmap validate [id]            Run validation rules
+    ├─ roadmap complete <id>            Mark node done + advance
+    ├─ roadmap chart                    View progress
+    └─ roadmap trail [--archive]        View/archive session log
+
+
+GRAPH SUMMARY
+═════════════════════════════════════════════════════════════════════════════
+
+  Remote (GitHub)
+    ↓ clone ↓
+  Local main branch (05d7dc3)
+    ├─ Merged from feat/* branches
+    └─ Current commits: 05d7dc3, a8bdb6c, 9b25f28, ...
+
+  Feature branches (completed, stale):
+    └─ All merged to main (can be deleted)
+
+  Worktree branches (agent isolation):
+    └─ 21 stale branches (cleanup candidate)
+
+  Archive:
+    └─ archive/full-codebase (point-in-time snapshot)
+
+
+NEXT STEPS
+═════════════════════════════════════════════════════════════════════════════
+
+  1. Commit the 2 changes:
+     git add <files>
+     git commit -m "roadmap: <what changed>"
+
+  2. Clean up stale branches:
+     git branch -r | grep 'worktree-agent-' | while read b; do
+       git push origin --delete "${b#origin/}"
+     done
+
+  3. Orient for next session:
+     ./bin/roadmap orient --note "session intent"
+     ./bin/roadmap chart
+
+  4. Continue DAG execution:
+     ./bin/roadmap show start
+     (implement changes for nodes)
+     ./bin/roadmap complete start
+
+
+═════════════════════════════════════════════════════════════════════════════
+Generated: 2026-03-03 | Session: git topology visualization

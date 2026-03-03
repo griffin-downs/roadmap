@@ -1,28 +1,281 @@
 {
-  "id": "self-compounding-001",
-  "desc": "Self-teaching system: wire existing components (CheckpointManager, metrics), implement spec-conformance validation, enable LLM pattern learning. Foundation for self-compounding architecture.",
-  "init": "phase-0-start",
+  "id": "hardening-001+self-compounding-001",
+  "desc": "Minimal + Safe: tree-shake main, enforce via gitsafe + branch protections, archive full codebase. → Self-teaching system: wire existing components (CheckpointManager, metrics), implement spec-conformance validation, enable LLM pattern learning. Foundation for self-compounding architecture.",
+  "init": "start",
   "term": "self-teaching-enabled",
   "nodes": {
-    "phase-0-start": {
-      "id": "phase-0-start",
-      "desc": "Foundation: Establish agent self-orientation. Update CLAUDE.md with architecture guide so agents understand system without handholding.",
+    "start": {
+      "id": "start",
+      "desc": "Baseline: current recursive-locked state. Target: hardened main with gitsafe enforcement.",
       "produces": [],
       "consumes": [],
       "deps": [],
       "validate": [],
       "idempotent": false
     },
+    "archive-full-codebase": {
+      "id": "archive-full-codebase",
+      "desc": "Create archive/full-codebase branch from current HEAD. Preserves entire codebase for reference.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "start"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "git rev-parse --verify archive/full-codebase"
+        }
+      ],
+      "idempotent": true
+    },
+    "create-enforcement-config": {
+      "id": "create-enforcement-config",
+      "desc": "Create .roadmap/enforcement.json: gitsafe denylist, branch rules, allowed files, audit trail.",
+      "produces": [
+        ".roadmap/enforcement.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "start"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "jq '.version' .roadmap/enforcement.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "tree-shake-main": {
+      "id": "tree-shake-main",
+      "desc": "Delete non-essential files from main: docs/, tests/, examples/, legacy src/lib/ subdirs. Keep only 10-15 core files.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "archive-full-codebase"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "! test -d docs"
+        },
+        {
+          "type": "shell",
+          "command": "! test -d tests"
+        },
+        {
+          "type": "shell",
+          "command": "test -f bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test -f src/protocol.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "integrate-gitsafe": {
+      "id": "integrate-gitsafe",
+      "desc": "Load enforcement.json in CLI. Route all file reads through gitsafe with denylist + size limits.",
+      "produces": [
+        "bin/roadmap.ts",
+        "src/lib/gitsafe-loader.ts"
+      ],
+      "consumes": [
+        ".roadmap/enforcement.json"
+      ],
+      "deps": [
+        "create-enforcement-config"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit bin/roadmap.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "test-gitsafe-enforcement": {
+      "id": "test-gitsafe-enforcement",
+      "desc": "Tests: gitsafe rejects denylist paths, enforces maxBytes, validates on main branch only.",
+      "produces": [
+        "tests/gitsafe-enforcement.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "integrate-gitsafe"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test tests/gitsafe-enforcement.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "setup-branch-protections": {
+      "id": "setup-branch-protections",
+      "desc": "Configure GitHub: main immutable, require status checks, require reviews, auto-delete branches after merge.",
+      "produces": [
+        ".github/branch-protections.yml"
+      ],
+      "consumes": [],
+      "deps": [
+        "tree-shake-main"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".github/branch-protections.yml"
+        }
+      ],
+      "idempotent": true
+    },
+    "verify-minimal-surface": {
+      "id": "verify-minimal-surface",
+      "desc": "Verify main has only essential files (< 50 files total, gitsafe can enumerate all).",
+      "produces": [
+        ".roadmap/metaflow/hardening/SURFACE.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "tree-shake-main"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test $(git ls-tree -r HEAD --name-only | wc -l) -lt 50"
+        }
+      ],
+      "idempotent": true
+    },
+    "test-immutability": {
+      "id": "test-immutability",
+      "desc": "Verify main cannot be pushed to directly, only via PR. Pre-commit hook blocks DAG edits outside feat/wip.",
+      "produces": [
+        "tests/immutability.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "setup-branch-protections"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test tests/immutability.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "document-branch-architecture": {
+      "id": "document-branch-architecture",
+      "desc": "Create .roadmap/BRANCHES.md: document main (canonical), archive/full-codebase (snapshot), develop (experimental) relationship.",
+      "produces": [
+        ".roadmap/BRANCHES.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "archive-full-codebase",
+        "tree-shake-main"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/BRANCHES.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "setup-git-refs": {
+      "id": "setup-git-refs",
+      "desc": "Create git tags (hardening-001-baseline) and refs marking canonical state, archive snapshot, branch relationships.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "document-branch-architecture"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "git rev-parse --verify hardening-001-baseline"
+        }
+      ],
+      "idempotent": true
+    },
+    "enforce-main-reads": {
+      "id": "enforce-main-reads",
+      "desc": "Add CLI validation: verify all file reads are from main (not current branch). Update bin/roadmap.ts.",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        ".roadmap/enforcement.json"
+      ],
+      "deps": [
+        "integrate-gitsafe"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx ts-node bin/roadmap.ts orient --note 'test' 2>&1 | jq -e '.ok'"
+        }
+      ],
+      "idempotent": true
+    },
+    "hardened-locked": {
+      "id": "hardened-locked",
+      "desc": "Hardening complete: minimal main (15 files), gitsafe enforced, branch protections active, archive preserved, main-read enforced.",
+      "produces": [
+        ".roadmap/metaflow/hardening/LOCKED.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "tree-shake-main",
+        "integrate-gitsafe",
+        "test-gitsafe-enforcement",
+        "verify-minimal-surface",
+        "test-immutability",
+        "enforce-main-reads",
+        "setup-git-refs"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
+    "phase-0-start": {
+      "id": "phase-0-start",
+      "desc": "Foundation: Establish agent self-orientation. Update CLAUDE.md with architecture guide so agents understand system without handholding.",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "hardened-locked"
+      ],
+      "validate": [],
+      "idempotent": false
+    },
     "enrich-claude-md": {
       "id": "enrich-claude-md",
       "desc": "Add AGENT_GUIDE section to .claude/CLAUDE.md: 6 layers, gap intents, existing resources (CheckpointManager, trail, gitsafe), integration patterns from branches, quick reference mapping.",
-      "produces": [".claude/CLAUDE.md"],
+      "produces": [
+        ".claude/CLAUDE.md"
+      ],
       "consumes": [],
-      "deps": ["phase-0-start"],
+      "deps": [
+        "phase-0-start"
+      ],
       "validate": [
-        {"type": "shell", "command": "grep -q 'AGENT_GUIDE' .claude/CLAUDE.md"},
-        {"type": "shell", "command": "grep -q 'CheckpointManager' .claude/CLAUDE.md"},
-        {"type": "shell", "command": "grep -q 'Layer 1' .claude/CLAUDE.md"}
+        {
+          "type": "shell",
+          "command": "grep -q 'AGENT_GUIDE' .claude/CLAUDE.md"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'CheckpointManager' .claude/CLAUDE.md"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'Layer 1.*DAG' .claude/CLAUDE.md"
+        }
       ],
       "idempotent": true
     },
@@ -31,43 +284,79 @@
       "desc": "Parallel phase: Wire existing systems. High leverage, low effort. Unlocks audit trail + metrics for downstream work.",
       "produces": [],
       "consumes": [],
-      "deps": ["enrich-claude-md"],
+      "deps": [
+        "enrich-claude-md"
+      ],
       "validate": [],
       "idempotent": false
     },
     "integrate-checkpoint-manager": {
       "id": "integrate-checkpoint-manager",
       "desc": "Wire CheckpointManager (recovery.ts) into roadmap runtime. Hook into complete() to create snapshots, record decisions, enable rollback.",
-      "produces": ["src/checkpoint-runtime.ts", "tests/checkpoint-integration.test.ts"],
+      "produces": [
+        "src/checkpoint-runtime.ts",
+        "tests/checkpoint-integration.test.ts"
+      ],
       "consumes": [],
-      "deps": ["phase-1-start"],
+      "deps": [
+        "phase-1-start"
+      ],
       "validate": [
-        {"type": "shell", "command": "npx tsc --noEmit src/checkpoint-runtime.ts"},
-        {"type": "shell", "command": "npm test tests/checkpoint-integration.test.ts"}
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit src/checkpoint-runtime.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npm test tests/checkpoint-integration.test.ts"
+        }
       ],
       "idempotent": true
     },
     "extract-metrics-from-trail": {
       "id": "extract-metrics-from-trail",
       "desc": "Parse .roadmap/trail.jsonl retrospectively. Compute SLO metrics (execution time, success rate, validator hits, completion velocity) from existing data. Zero instrumentation cost.",
-      "produces": ["src/metrics-extractor.ts", ".roadmap/metrics.jsonl", "tests/metrics-extractor.test.ts"],
+      "produces": [
+        "src/metrics-extractor.ts",
+        ".roadmap/metrics.jsonl",
+        "tests/metrics-extractor.test.ts"
+      ],
       "consumes": [],
-      "deps": ["phase-1-start"],
+      "deps": [
+        "phase-1-start"
+      ],
       "validate": [
-        {"type": "shell", "command": "test -f .roadmap/metrics.jsonl"},
-        {"type": "shell", "command": "jq 'length' .roadmap/metrics.jsonl"}
+        {
+          "type": "shell",
+          "command": "test -f .roadmap/metrics.jsonl"
+        },
+        {
+          "type": "shell",
+          "command": "jq 'length' .roadmap/metrics.jsonl | grep -qE '^[0-9]+$'"
+        }
       ],
       "idempotent": true
     },
     "extend-gitsafe-multirepo": {
       "id": "extend-gitsafe-multirepo",
       "desc": "Extend gitsafe-loader.ts to support N repositories instead of single repo. Update glob patterns, enforce consistency across all repos.",
-      "produces": ["src/lib/gitsafe-loader.ts", "tests/gitsafe-multirepo.test.ts"],
+      "produces": [
+        "src/lib/gitsafe-loader.ts",
+        "tests/gitsafe-multirepo.test.ts"
+      ],
       "consumes": [],
-      "deps": ["phase-1-start"],
+      "deps": [
+        "phase-1-start"
+      ],
       "validate": [
-        {"type": "shell", "command": "npx tsc --noEmit src/lib/gitsafe-loader.ts"},
-        {"type": "shell", "command": "npm test tests/gitsafe-multirepo.test.ts"}
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit src/lib/gitsafe-loader.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npm test tests/gitsafe-multirepo.test.ts"
+        }
       ],
       "idempotent": true
     },
@@ -76,31 +365,57 @@
       "desc": "Parallel phase: Implement spec-conformance validation. Depends on phase 1 audit trail + metrics foundation.",
       "produces": [],
       "consumes": [],
-      "deps": ["integrate-checkpoint-manager", "extract-metrics-from-trail", "extend-gitsafe-multirepo"],
+      "deps": [
+        "integrate-checkpoint-manager",
+        "extract-metrics-from-trail",
+        "extend-gitsafe-multirepo"
+      ],
       "validate": [],
       "idempotent": false
     },
     "implement-spec-conformance-validator": {
       "id": "implement-spec-conformance-validator",
-      "desc": "Build spec-conformance validator: scenario (Given/When/Then) -> node mapping engine. Validate DAGs against scenarios. Feed failures into audit trail.",
-      "produces": ["src/validators/spec-conformance.ts", "tests/spec-conformance.test.ts"],
+      "desc": "Build spec-conformance validator: scenario (Given/When/Then) → node mapping engine. Validate DAGs against scenarios. Feed failures into audit trail.",
+      "produces": [
+        "src/validators/spec-conformance.ts",
+        "tests/spec-conformance.test.ts"
+      ],
       "consumes": [],
-      "deps": ["phase-2-start"],
+      "deps": [
+        "phase-2-start"
+      ],
       "validate": [
-        {"type": "shell", "command": "npx tsc --noEmit src/validators/spec-conformance.ts"},
-        {"type": "shell", "command": "npm test tests/spec-conformance.test.ts"}
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit src/validators/spec-conformance.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npm test tests/spec-conformance.test.ts"
+        }
       ],
       "idempotent": true
     },
     "integrate-llm-feedback-loop": {
       "id": "integrate-llm-feedback-loop",
-      "desc": "Parse metrics + audit trail -> LLM-friendly feedback. Generate improvement prompts for agent iterations. Wire into agent brief generation.",
-      "produces": ["src/llm-feedback.ts", "tests/llm-feedback.test.ts"],
+      "desc": "Parse metrics + audit trail → LLM-friendly feedback. Generate improvement prompts for agent iterations. Wire into agent brief generation.",
+      "produces": [
+        "src/llm-feedback.ts",
+        "tests/llm-feedback.test.ts"
+      ],
       "consumes": [],
-      "deps": ["phase-2-start"],
+      "deps": [
+        "phase-2-start"
+      ],
       "validate": [
-        {"type": "shell", "command": "npx tsc --noEmit src/llm-feedback.ts"},
-        {"type": "shell", "command": "npm test tests/llm-feedback.test.ts"}
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit src/llm-feedback.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npm test tests/llm-feedback.test.ts"
+        }
       ],
       "idempotent": true
     },
@@ -109,32 +424,59 @@
       "desc": "Scale phase: Enable distributed DAG state. Multi-repo support enables cross-project pattern mining.",
       "produces": [],
       "consumes": [],
-      "deps": ["implement-spec-conformance-validator", "integrate-llm-feedback-loop"],
+      "deps": [
+        "implement-spec-conformance-validator",
+        "integrate-llm-feedback-loop"
+      ],
       "validate": [],
       "idempotent": false
     },
     "implement-distributed-dag": {
       "id": "implement-distributed-dag",
       "desc": "Extend core protocol for multi-repo DAG state. Support merging DAGs from multiple repositories. Aggregate patterns across projects for LLM learning.",
-      "produces": ["src/protocol-distributed.ts", "tests/distributed-dag.test.ts"],
+      "produces": [
+        "src/protocol-distributed.ts",
+        "tests/distributed-dag.test.ts"
+      ],
       "consumes": [],
-      "deps": ["phase-3-start"],
+      "deps": [
+        "phase-3-start"
+      ],
       "validate": [
-        {"type": "shell", "command": "npx tsc --noEmit src/protocol-distributed.ts"},
-        {"type": "shell", "command": "npm test tests/distributed-dag.test.ts"}
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit src/protocol-distributed.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npm test tests/distributed-dag.test.ts"
+        }
       ],
       "idempotent": true
     },
     "self-teaching-enabled": {
       "id": "self-teaching-enabled",
       "desc": "Self-teaching architecture complete: metrics visible, spec-conformance testable, audit trail recorded, patterns emerge from cross-project DAGs. LLM learns to generate better DAGs.",
-      "produces": [".roadmap/metaflow/self-compounding/ENABLED.json"],
+      "produces": [
+        ".roadmap/metaflow/self-compounding/ENABLED.json"
+      ],
       "consumes": [],
-      "deps": ["implement-distributed-dag"],
+      "deps": [
+        "implement-distributed-dag"
+      ],
       "validate": [
-        {"type": "shell", "command": "test -f src/checkpoint-runtime.ts"},
-        {"type": "shell", "command": "test -f src/validators/spec-conformance.ts"},
-        {"type": "shell", "command": "test -f src/llm-feedback.ts"}
+        {
+          "type": "shell",
+          "command": "test -f .roadmap/metrics.jsonl"
+        },
+        {
+          "type": "shell",
+          "command": "test -f src/validators/spec-conformance.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test -f src/checkpoint-runtime.ts"
+        }
       ],
       "idempotent": false
     }

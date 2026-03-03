@@ -1,0 +1,280 @@
+{
+  "id": "hardening-001",
+  "desc": "Minimal + Safe: tree-shake main, enforce via gitsafe + branch protections, archive full codebase.",
+  "sourceDAGs": [
+    "head.json"
+  ],
+  "timestamp": "2026-03-03T12:58:37.873Z",
+  "entries": [
+    {
+      "id": "start",
+      "phase": "hardening-001",
+      "produces": [],
+      "consumes": [],
+      "deps": [],
+      "desc": "Baseline: current recursive-locked state. Target: hardened main with gitsafe enforcement.",
+      "validate": []
+    },
+    {
+      "id": "archive-full-codebase",
+      "phase": "hardening-001",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "start"
+      ],
+      "desc": "Create archive/full-codebase branch from current HEAD. Preserves entire codebase for reference.",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "git rev-parse --verify archive/full-codebase"
+        }
+      ]
+    },
+    {
+      "id": "create-enforcement-config",
+      "phase": "hardening-001",
+      "produces": [
+        ".roadmap/enforcement.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "start"
+      ],
+      "desc": "Create .roadmap/enforcement.json: gitsafe denylist, branch rules, allowed files, audit trail.",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "jq '.version' .roadmap/enforcement.json"
+        }
+      ]
+    },
+    {
+      "id": "tree-shake-main",
+      "phase": "hardening-001",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "archive-full-codebase"
+      ],
+      "desc": "Delete non-essential files from main: docs/, tests/, examples/, legacy src/lib/ subdirs. Keep only 10-15 core files.",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "! test -d docs"
+        },
+        {
+          "type": "shell",
+          "command": "! test -d tests"
+        },
+        {
+          "type": "shell",
+          "command": "test -f bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test -f src/protocol.ts"
+        }
+      ]
+    },
+    {
+      "id": "integrate-gitsafe",
+      "phase": "hardening-001",
+      "produces": [
+        "bin/roadmap.ts",
+        "src/lib/gitsafe-loader.ts"
+      ],
+      "consumes": [
+        ".roadmap/enforcement.json"
+      ],
+      "deps": [
+        "create-enforcement-config"
+      ],
+      "desc": "Load enforcement.json in CLI. Route all file reads through gitsafe with denylist + size limits.",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit bin/roadmap.ts"
+        }
+      ]
+    },
+    {
+      "id": "test-gitsafe-enforcement",
+      "phase": "hardening-001",
+      "produces": [
+        "tests/gitsafe-enforcement.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "integrate-gitsafe"
+      ],
+      "desc": "Tests: gitsafe rejects denylist paths, enforces maxBytes, validates on main branch only.",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test tests/gitsafe-enforcement.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "setup-branch-protections",
+      "phase": "hardening-001",
+      "produces": [
+        ".github/branch-protections.yml"
+      ],
+      "consumes": [],
+      "deps": [
+        "tree-shake-main"
+      ],
+      "desc": "Configure GitHub: main immutable, require status checks, require reviews, auto-delete branches after merge.",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".github/branch-protections.yml"
+        }
+      ]
+    },
+    {
+      "id": "verify-minimal-surface",
+      "phase": "hardening-001",
+      "produces": [
+        ".roadmap/metaflow/hardening/SURFACE.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "tree-shake-main"
+      ],
+      "desc": "Verify main has only essential files (< 50 files total, gitsafe can enumerate all).",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test $(git ls-tree -r HEAD --name-only | wc -l) -lt 50"
+        }
+      ]
+    },
+    {
+      "id": "test-immutability",
+      "phase": "hardening-001",
+      "produces": [
+        "tests/immutability.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "setup-branch-protections"
+      ],
+      "desc": "Verify main cannot be pushed to directly, only via PR. Pre-commit hook blocks DAG edits outside feat/wip.",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test tests/immutability.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "document-branch-architecture",
+      "phase": "hardening-001",
+      "produces": [
+        ".roadmap/BRANCHES.md"
+      ],
+      "consumes": [],
+      "deps": [
+        "archive-full-codebase",
+        "tree-shake-main"
+      ],
+      "desc": "Create .roadmap/BRANCHES.md: document main (canonical), archive/full-codebase (snapshot), develop (experimental) relationship.",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/BRANCHES.md"
+        }
+      ]
+    },
+    {
+      "id": "setup-git-refs",
+      "phase": "hardening-001",
+      "produces": [],
+      "consumes": [],
+      "deps": [
+        "document-branch-architecture"
+      ],
+      "desc": "Create git tags (hardening-001-baseline) and refs marking canonical state, archive snapshot, branch relationships.",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "git rev-parse --verify hardening-001-baseline"
+        }
+      ]
+    },
+    {
+      "id": "enforce-main-reads",
+      "phase": "hardening-001",
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [
+        ".roadmap/enforcement.json"
+      ],
+      "deps": [
+        "integrate-gitsafe"
+      ],
+      "desc": "Add CLI validation: verify all file reads are from main (not current branch). Update bin/roadmap.ts.",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx ts-node bin/roadmap.ts orient --note 'test' 2>&1 | jq -e '.ok'"
+        }
+      ]
+    },
+    {
+      "id": "hardened-locked",
+      "phase": "hardening-001",
+      "produces": [
+        ".roadmap/metaflow/hardening/LOCKED.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "tree-shake-main",
+        "integrate-gitsafe",
+        "test-gitsafe-enforcement",
+        "verify-minimal-surface",
+        "test-immutability",
+        "enforce-main-reads",
+        "setup-git-refs"
+      ],
+      "desc": "Hardening complete: minimal main (15 files), gitsafe enforced, branch protections active, archive preserved, main-read enforced.",
+      "validate": []
+    }
+  ],
+  "phaseMap": {
+    "hardening-001": [
+      "start",
+      "archive-full-codebase",
+      "create-enforcement-config",
+      "tree-shake-main",
+      "integrate-gitsafe",
+      "test-gitsafe-enforcement",
+      "setup-branch-protections",
+      "verify-minimal-surface",
+      "test-immutability",
+      "document-branch-architecture",
+      "setup-git-refs",
+      "enforce-main-reads",
+      "hardened-locked"
+    ]
+  },
+  "nodeToPhase": {
+    "start": "hardening-001",
+    "archive-full-codebase": "hardening-001",
+    "create-enforcement-config": "hardening-001",
+    "tree-shake-main": "hardening-001",
+    "integrate-gitsafe": "hardening-001",
+    "test-gitsafe-enforcement": "hardening-001",
+    "setup-branch-protections": "hardening-001",
+    "verify-minimal-surface": "hardening-001",
+    "test-immutability": "hardening-001",
+    "document-branch-architecture": "hardening-001",
+    "setup-git-refs": "hardening-001",
+    "enforce-main-reads": "hardening-001",
+    "hardened-locked": "hardening-001"
+  }
+}

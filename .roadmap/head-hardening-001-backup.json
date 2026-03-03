@@ -1,0 +1,130 @@
+{
+  "id": "hardening-001",
+  "desc": "Minimal + Safe: tree-shake main, enforce via gitsafe + branch protections, archive full codebase.",
+  "init": "start",
+  "term": "hardened-locked",
+  "nodes": {
+    "start": {
+      "id": "start",
+      "desc": "Baseline: current recursive-locked state. Target: hardened main with gitsafe enforcement.",
+      "produces": [],
+      "consumes": [],
+      "deps": [],
+      "validate": [],
+      "idempotent": false
+    },
+    "archive-full-codebase": {
+      "id": "archive-full-codebase",
+      "desc": "Create archive/full-codebase branch from current HEAD. Preserves entire codebase for reference.",
+      "produces": [],
+      "consumes": [],
+      "deps": ["start"],
+      "validate": [{"type": "shell", "command": "git rev-parse --verify archive/full-codebase"}],
+      "idempotent": true
+    },
+    "create-enforcement-config": {
+      "id": "create-enforcement-config",
+      "desc": "Create .roadmap/enforcement.json: gitsafe denylist, branch rules, allowed files, audit trail.",
+      "produces": [".roadmap/enforcement.json"],
+      "consumes": [],
+      "deps": ["start"],
+      "validate": [{"type": "shell", "command": "jq '.version' .roadmap/enforcement.json"}],
+      "idempotent": true
+    },
+    "tree-shake-main": {
+      "id": "tree-shake-main",
+      "desc": "Delete non-essential files from main: docs/, tests/, examples/, legacy src/lib/ subdirs. Keep only 10-15 core files.",
+      "produces": [],
+      "consumes": [],
+      "deps": ["archive-full-codebase"],
+      "validate": [
+        {"type": "shell", "command": "! test -d docs"},
+        {"type": "shell", "command": "! test -d tests"},
+        {"type": "shell", "command": "test -f bin/roadmap.ts"},
+        {"type": "shell", "command": "test -f src/protocol.ts"}
+      ],
+      "idempotent": true
+    },
+    "integrate-gitsafe": {
+      "id": "integrate-gitsafe",
+      "desc": "Load enforcement.json in CLI. Route all file reads through gitsafe with denylist + size limits.",
+      "produces": ["bin/roadmap.ts", "src/lib/gitsafe-loader.ts"],
+      "consumes": [".roadmap/enforcement.json"],
+      "deps": ["create-enforcement-config"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit bin/roadmap.ts"}],
+      "idempotent": true
+    },
+    "test-gitsafe-enforcement": {
+      "id": "test-gitsafe-enforcement",
+      "desc": "Tests: gitsafe rejects denylist paths, enforces maxBytes, validates on main branch only.",
+      "produces": ["tests/gitsafe-enforcement.test.ts"],
+      "consumes": [],
+      "deps": ["integrate-gitsafe"],
+      "validate": [{"type": "shell", "command": "npm test tests/gitsafe-enforcement.test.ts"}],
+      "idempotent": true
+    },
+    "setup-branch-protections": {
+      "id": "setup-branch-protections",
+      "desc": "Configure GitHub: main immutable, require status checks, require reviews, auto-delete branches after merge.",
+      "produces": [".github/branch-protections.yml"],
+      "consumes": [],
+      "deps": ["tree-shake-main"],
+      "validate": [{"type": "artifact-exists", "target": ".github/branch-protections.yml"}],
+      "idempotent": true
+    },
+    "verify-minimal-surface": {
+      "id": "verify-minimal-surface",
+      "desc": "Verify main has only essential files (< 50 files total, gitsafe can enumerate all).",
+      "produces": [".roadmap/metaflow/hardening/SURFACE.json"],
+      "consumes": [],
+      "deps": ["tree-shake-main"],
+      "validate": [{"type": "shell", "command": "test $(git ls-tree -r HEAD --name-only | wc -l) -lt 50"}],
+      "idempotent": true
+    },
+    "test-immutability": {
+      "id": "test-immutability",
+      "desc": "Verify main cannot be pushed to directly, only via PR. Pre-commit hook blocks DAG edits outside feat/wip.",
+      "produces": ["tests/immutability.test.ts"],
+      "consumes": [],
+      "deps": ["setup-branch-protections"],
+      "validate": [{"type": "shell", "command": "npm test tests/immutability.test.ts"}],
+      "idempotent": true
+    },
+    "document-branch-architecture": {
+      "id": "document-branch-architecture",
+      "desc": "Create .roadmap/BRANCHES.md: document main (canonical), archive/full-codebase (snapshot), develop (experimental) relationship.",
+      "produces": [".roadmap/BRANCHES.md"],
+      "consumes": [],
+      "deps": ["archive-full-codebase", "tree-shake-main"],
+      "validate": [{"type": "artifact-exists", "target": ".roadmap/BRANCHES.md"}],
+      "idempotent": true
+    },
+    "setup-git-refs": {
+      "id": "setup-git-refs",
+      "desc": "Create git tags (hardening-001-baseline) and refs marking canonical state, archive snapshot, branch relationships.",
+      "produces": [],
+      "consumes": [],
+      "deps": ["document-branch-architecture"],
+      "validate": [{"type": "shell", "command": "git rev-parse --verify hardening-001-baseline"}],
+      "idempotent": true
+    },
+    "enforce-main-reads": {
+      "id": "enforce-main-reads",
+      "desc": "Add CLI validation: verify all file reads are from main (not current branch). Update bin/roadmap.ts.",
+      "produces": ["bin/roadmap.ts"],
+      "consumes": [".roadmap/enforcement.json"],
+      "deps": ["integrate-gitsafe"],
+      "validate": [{"type": "shell", "command": "npx ts-node bin/roadmap.ts orient --note 'test' 2>&1 | jq -e '.ok'"}],
+      "idempotent": true
+    },
+    "hardened-locked": {
+      "id": "hardened-locked",
+      "desc": "Hardening complete: minimal main (15 files), gitsafe enforced, branch protections active, archive preserved, main-read enforced.",
+      "produces": [".roadmap/metaflow/hardening/LOCKED.json"],
+      "consumes": [],
+      "deps": ["tree-shake-main", "integrate-gitsafe", "test-gitsafe-enforcement", "verify-minimal-surface", "test-immutability", "enforce-main-reads", "setup-git-refs"],
+      "validate": [],
+      "idempotent": false
+    }
+  }
+}
