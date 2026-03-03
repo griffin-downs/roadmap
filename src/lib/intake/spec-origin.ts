@@ -1,5 +1,5 @@
 // @module spec-origin
-// @exports SpecOrigin, SpecImportReceipt, isSpecOrigin, SPEC_ORIGIN_PATH, SPEC_IMPORT_RECEIPT_DIR, hasSpecOrigin, hasSpecOriginSync, specImportReceiptPath, writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit
+// @exports SpecOrigin, SpecImportReceipt, isSpecOrigin, SPEC_ORIGIN_PATH, SPEC_IMPORT_RECEIPT_DIR, hasSpecOrigin, hasSpecOriginSync, specImportReceiptPath, writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit, loadSpecOrigin, loadSpecOriginAsync, sha256File, sha256, validateOriginHash
 // @types SpecOrigin, SpecImportReceipt
 // @entry roadmap
 
@@ -10,6 +10,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
+import { createHash } from 'node:crypto';
 
 export interface SpecOrigin {
   schemaVersion: 1;
@@ -89,6 +90,54 @@ export function writeSpecImportReceipt(repoRoot: string, receipt: SpecImportRece
   const p = join(dir, `spec-import-${receipt.specOrigin.spec_sha.slice(0, 12)}.json`);
   writeFileSync(p, JSON.stringify(receipt, null, 2) + '\n');
   return p;
+}
+
+/** Load and return SpecOrigin from .roadmap/spec-origin.json, or null if missing/invalid. */
+export function loadSpecOrigin(repoRoot: string): SpecOrigin | null {
+  const p = join(repoRoot, SPEC_ORIGIN_PATH);
+  if (!existsSync(p)) return null;
+  try {
+    const data = JSON.parse(readFileSync(p, 'utf-8'));
+    return isSpecOrigin(data) ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Async variant of loadSpecOrigin. */
+export async function loadSpecOriginAsync(repoRoot: string): Promise<SpecOrigin | null> {
+  const p = join(repoRoot, SPEC_ORIGIN_PATH);
+  try {
+    const raw = await readFile(p, 'utf-8');
+    const data = JSON.parse(raw);
+    return isSpecOrigin(data) ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Compute SHA256 of a file's contents. */
+export function sha256File(filePath: string): string {
+  const content = readFileSync(filePath, 'utf-8');
+  return createHash('sha256').update(content).digest('hex');
+}
+
+/** Compute SHA256 of a string. */
+export function sha256(content: string): string {
+  return createHash('sha256').update(content).digest('hex');
+}
+
+/**
+ * Validate that the spec file hasn't mutated since the DAG was created.
+ * Compares current spec file SHA against the stored spec_sha.
+ * Returns true if hashes match, false if spec has been modified or origin is missing.
+ */
+export function validateOriginHash(repoRoot: string, specFilePath: string): boolean {
+  const origin = loadSpecOrigin(repoRoot);
+  if (!origin) return false;
+  if (!existsSync(specFilePath)) return false;
+  const currentHash = sha256File(specFilePath);
+  return currentHash === origin.spec_sha;
 }
 
 /**
