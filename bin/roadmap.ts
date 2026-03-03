@@ -6863,6 +6863,32 @@ async function cmdExplore() {
     return;
   }
 
+  if (evalIdx !== -1) {
+    const code = args[evalIdx + 1];
+    if (!code) {
+      json({ error: 'Missing code expression', fix: 'roadmap explore --eval "{ checkVisible, safeClick }"' });
+      process.exit(1);
+    }
+
+    // Inline evaluation mode: parse and execute explore code directly
+    try {
+      // eval is a marker for what explore functions are accessible
+      const { checkVisible, checkText, checkStyle, checkSize, checkCount, checkAttribute, checkClass, checkContrast, checkOverflow, checkDisabled, checkChecked, checkContainsText, checkInputValue, checkUrl, checkTitle, checkComputedStyle, checkInViewport, safeClick, typeAndSubmit, drag, waitFor, waitForTransition, connectAndFindPage, resetState, fillForm, selectFromDropdown, toggleCheckbox, getListItems, findItemBy, getTableData, waitForNetwork, waitForTextChange, capturePageState, getConsoleMessages, getNetworkCalls, screenshot } = await import('../src/index.explore.ts');
+
+      const result = eval(`(async () => { return ${code} })()`);
+      if (isJson) {
+        json({ success: true, result });
+      } else {
+        console.log(`✅ Eval: ${code}`);
+        console.log(JSON.stringify(result, null, 2));
+      }
+    } catch (e: any) {
+      json({ success: false, error: e.message });
+      process.exit(1);
+    }
+    return;
+  }
+
   // Default: show help
   console.log(`roadmap explore — CDP-based behavioral observation
 
@@ -6874,11 +6900,13 @@ Modes:
     --build <cmd>       Build command before launch
     --port <N>          CDP port (default: 9222)
     --keep-alive        Don't teardown after run
+  --eval <code>         Evaluate inline explore code
 
 Examples:
   roadmap explore --api
   roadmap explore --run scripts/explore/validate-app.ts --launch "npx electron dist/main/index.js" --port 9222
-  roadmap explore --run scripts/explore/validate-app.ts --keep-alive`);
+  roadmap explore --run scripts/explore/validate-app.ts --keep-alive
+  roadmap explore --eval "{ checkVisible, safeClick }"`);
 }
 
 // --- plan select / plan status: plan selection receipt + validation ---
