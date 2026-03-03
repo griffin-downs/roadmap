@@ -409,6 +409,17 @@ async function cmdOrient(note: string | undefined) {
     complete: pos.remaining.length === 0,
   };
 
+  // When DAG is complete, surface unloaded specs as next action
+  if (result.complete) {
+    const { findPendingSpecs } = await import('../src/lib/orient-forward.ts');
+    const dagId = dag.id ?? '';
+    const pending = findPendingSpecs(repoRoot, dagId);
+    if (pending.length > 0) {
+      result.pendingSpecs = pending;
+      result.nextAction = `Load next spec: roadmap make ${pending[0].path} --note "..."`;
+    }
+  }
+
   // Include spec drift warning if detected
   if (drift.drifted) {
     result.specDrift = { drifted: true, message: drift.message };

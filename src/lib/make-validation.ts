@@ -51,7 +51,7 @@ export function collectMakeErrors(
       for (const err of verifyErrors) {
         errors.push({
           gate: 'verify',
-          message: err,
+          message: typeof err === 'string' ? err : (err as any).message ?? String(err),
           fix: 'Ensure all consumed artifacts are produced by predecessor nodes',
         });
       }
