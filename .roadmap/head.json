@@ -1,69 +1,105 @@
 {
-  "id": "explore-api-001",
-  "desc": "Expose explore helpers via package export (roadmap/explore) and CLI (roadmap explore --api/--run/--eval)",
-  "init": "init",
-  "term": "term",
+  "id": "cli-consolidation-001",
+  "desc": "CLI Consolidation: 41 commands → 6 core + 4 groups. Enforce mainline workflows.",
+  "init": "refactor-core-routing",
+  "term": "cli-ready",
   "nodes": {
-    "init": {
-      "id": "init",
-      "desc": "Baseline: explore helpers exist but not exported or CLI-accessible",
-      "produces": [],
+    "refactor-core-routing": {
+      "id": "refactor-core-routing",
+      "desc": "Refactor bin/roadmap.ts main switch: 6 core commands dispatch (orient, show, complete, advance, chart, validate)",
+      "produces": ["bin/roadmap.ts", "tests/routing.test.ts"],
       "consumes": [],
       "deps": [],
-      "validate": [],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
       "idempotent": true
     },
-    "implement-export": {
-      "id": "implement-export",
-      "desc": "Create src/index.explore.ts barrel + add ./explore to package.json exports",
-      "produces": ["src/index.explore.ts", "package.json"],
+    "implement-dag-group": {
+      "id": "implement-dag-group",
+      "desc": "Implement dag group: diff, expand, propagate, retire, optimize, switch, spawn",
+      "produces": ["bin/roadmap.ts", "tests/dag-group.test.ts"],
       "consumes": [],
-      "deps": ["init"],
-      "validate": [
-        {"type": "artifact-exists", "target": "src/index.explore.ts"},
-        {"type": "shell", "command": "grep -q '\"./explore\"' package.json"}
-      ],
+      "deps": ["refactor-core-routing"],
+      "validate": [{"type": "shell", "command": "bin/roadmap dag help | grep -q expand"}],
       "idempotent": true
     },
-    "implement-cli": {
-      "id": "implement-cli",
-      "desc": "Implement all CLI modes: --api (dump surface), --run (managed execution), --eval (inline)",
-      "produces": ["bin/roadmap.ts"],
+    "implement-team-group": {
+      "id": "implement-team-group",
+      "desc": "Implement team group: assign, claim, dispatch, strategy",
+      "produces": ["bin/roadmap.ts", "tests/team-group.test.ts"],
       "consumes": [],
-      "deps": ["implement-export"],
-      "validate": [
-        {"type": "shell", "command": "bin/roadmap explore --api > /dev/null"},
-        {"type": "shell", "command": "bin/roadmap explore --help | grep -q '\\-\\-run'"},
-        {"type": "shell", "command": "bin/roadmap explore --help | grep -q '\\-\\-eval'"}
-      ],
+      "deps": ["refactor-core-routing"],
+      "validate": [{"type": "shell", "command": "bin/roadmap team help | grep -q assign"}],
       "idempotent": true
     },
-    "test-all": {
-      "id": "test-all",
-      "desc": "Run all tests: export resolution, CLI output format, integration, regression, e2e",
-      "produces": ["tests/explore-export.test.ts", "tests/explore-cli.test.ts"],
+    "implement-spec-group": {
+      "id": "implement-spec-group",
+      "desc": "Implement spec group: plan, import, intake, compile",
+      "produces": ["bin/roadmap.ts", "tests/spec-group.test.ts"],
       "consumes": [],
-      "deps": ["implement-cli"],
-      "validate": [
-        {"type": "shell", "command": "npm test tests/explore-export.test.ts && npm test tests/explore-cli.test.ts"}
-      ],
+      "deps": ["refactor-core-routing"],
+      "validate": [{"type": "shell", "command": "bin/roadmap spec help | grep -q import"}],
       "idempotent": true
     },
-    "docs": {
-      "id": "docs",
-      "desc": "Update FR-EXPLORE-API.md: implementation notes, usage examples, API reference",
-      "produces": ["docs/FR-EXPLORE-API.md"],
+    "implement-util-group": {
+      "id": "implement-util-group",
+      "desc": "Implement util group: trail, checkpoint, explore, install, health",
+      "produces": ["bin/roadmap.ts", "tests/util-group.test.ts"],
       "consumes": [],
-      "deps": ["implement-cli"],
-      "validate": [{"type": "artifact-exists", "target": "docs/FR-EXPLORE-API.md"}],
+      "deps": ["refactor-core-routing"],
+      "validate": [{"type": "shell", "command": "bin/roadmap util help | grep -q trail"}],
       "idempotent": true
     },
-    "term": {
-      "id": "term",
-      "desc": "Explore API complete: export works, CLI functional, tests passing, docs updated",
+    "implement-deprecation": {
+      "id": "implement-deprecation",
+      "desc": "Add deprecation routing: old commands → new with warnings",
+      "produces": ["bin/roadmap.ts", "docs/DEPRECATIONS.md"],
+      "consumes": [],
+      "deps": ["implement-dag-group", "implement-team-group", "implement-spec-group", "implement-util-group"],
+      "validate": [{"type": "shell", "command": "bin/roadmap parallel 2>&1 | grep -q deprecat"}],
+      "idempotent": true
+    },
+    "add-enforcement-hooks": {
+      "id": "add-enforcement-hooks",
+      "desc": "Add enforcement: pre-commit blocks DAG edits, validation gates node claims, trail enforcement",
+      "produces": ["scripts/hooks/pre-commit", "src/lib/enforce.ts"],
+      "consumes": [],
+      "deps": ["implement-deprecation"],
+      "validate": [{"type": "artifact-exists", "target": "scripts/hooks/pre-commit"}],
+      "idempotent": true
+    },
+    "update-documentation": {
+      "id": "update-documentation",
+      "desc": "Update CLAUDE.md (mainline only), CLI-REFERENCE.md (consolidated), MIGRATION.md (mappings)",
+      "produces": [".claude/CLAUDE.md", "docs/MIGRATION.md"],
+      "consumes": [],
+      "deps": ["implement-deprecation"],
+      "validate": [{"type": "artifact-exists", "target": "docs/MIGRATION.md"}],
+      "idempotent": true
+    },
+    "add-consolidation-tests": {
+      "id": "add-consolidation-tests",
+      "desc": "Smoke-test all 41 old commands, coverage for 6 + 4 new structure",
+      "produces": ["tests/cli-consolidation.test.ts"],
+      "consumes": [],
+      "deps": ["implement-deprecation"],
+      "validate": [{"type": "shell", "command": "npm test tests/cli-consolidation.test.ts"}],
+      "idempotent": true
+    },
+    "verify-surface": {
+      "id": "verify-surface",
+      "desc": "Verify: help < 40 lines, group help discoverable, enforcement active",
+      "produces": [".roadmap/metaflow/cli-consolidation/VERIFICATION.json"],
+      "consumes": [],
+      "deps": ["add-enforcement-hooks", "add-consolidation-tests", "update-documentation"],
+      "validate": [{"type": "shell", "command": "test $(bin/roadmap help | wc -l) -lt 50"}],
+      "idempotent": true
+    },
+    "cli-ready": {
+      "id": "cli-ready",
+      "desc": "CLI consolidation complete: small surface, mainline enforced, ready for production",
       "produces": [],
       "consumes": [],
-      "deps": ["test-all", "docs"],
+      "deps": ["verify-surface"],
       "validate": [],
       "idempotent": false
     }
