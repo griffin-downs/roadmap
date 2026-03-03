@@ -479,6 +479,21 @@
         }
       ],
       "idempotent": false
+    },
+    "enforce-dag-intake-pipeline": {
+      "id": "enforce-dag-intake-pipeline",
+      "desc": "Block manual DAG construction",
+      "produces": [
+        "src/lib/intake/spec-origin.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "integrate-checkpoint-manager",
+        "extract-metrics-from-trail",
+        "extend-gitsafe-multirepo"
+      ],
+      "validate": [],
+      "idempotent": true
     }
   }
 }
