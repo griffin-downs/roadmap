@@ -23,6 +23,7 @@ export type TrailEntry = {
   label?: string;
   code?: string;
   operation?: string;
+  roadmapSha?: string;
   detail?: {
     done?: number;
     remaining?: number;

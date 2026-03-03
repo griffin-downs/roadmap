@@ -182,17 +182,31 @@ function retiredSet(): Set<string> {
 }
 
 // --- Trail recording ---
+let _roadmapSha: string | undefined;
+function getRoadmapSha(): string | undefined {
+  if (_roadmapSha !== undefined) return _roadmapSha || undefined;
+  try {
+    const binDir = dirname(new URL(import.meta.url).pathname);
+    const pkgDir = resolve(binDir, '..');
+    _roadmapSha = execSync('git rev-parse --short HEAD', { cwd: pkgDir, encoding: 'utf-8' }).trim();
+  } catch { _roadmapSha = ''; }
+  return _roadmapSha || undefined;
+}
+
 function recordTrail(entry: any) {
+  const sha = getRoadmapSha();
+  const stamped = sha ? { ...entry, roadmapSha: sha } : entry;
+
   const trailPath = join(repoRoot, '.roadmap', 'trail.jsonl');
   const roadmapDir = join(repoRoot, '.roadmap');
   if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
-  appendFileSync(trailPath, JSON.stringify(entry) + '\n', 'utf-8');
+  appendFileSync(trailPath, JSON.stringify(stamped) + '\n', 'utf-8');
 
   // Also write to global trail
   const globalTrailPath = join(homedir(), '.roadmap', 'trail.jsonl');
   const globalDir = join(homedir(), '.roadmap');
   if (!existsSync(globalDir)) mkdirSync(globalDir, { recursive: true });
-  appendFileSync(globalTrailPath, JSON.stringify(entry) + '\n', 'utf-8');
+  appendFileSync(globalTrailPath, JSON.stringify(stamped) + '\n', 'utf-8');
 }
 
 // --- Async section ---
