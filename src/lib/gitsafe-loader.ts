@@ -49,8 +49,9 @@ export function createGitSafeLoader(repoRoot: string): GitSafeLoader {
       // Simple glob matching: * = any string, ** = any path
       const regex = new RegExp('^' + pattern
         .replace(/\./g, '\\.')
-        .replace(/\*\*/g, '.*')
+        .replace(/\*\*/g, '__GLOBSTAR__')
         .replace(/\*/g, '[^/]*')
+        .replace(/__GLOBSTAR__/g, '.*')
         + '$');
       if (regex.test(path)) return true;
     }
