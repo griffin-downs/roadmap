@@ -75,7 +75,7 @@ import { roadmap } from '../roadmap/src/protocol'
 ### Branch Protection
 - `main`: Immutable, PR-only
 - `feat/*`: Unprotected, allows force pushes
-- `archive/full-codebase`: Immutable snapshot
+- `enceinte`: Immutable snapshot (full pre-shake codebase)
 
 ## Safety Guarantees
 

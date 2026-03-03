@@ -28,7 +28,7 @@ main:
   allow_squash_merge: true
   allow_rebase_merge: true
 
-archive/full-codebase:
+enceinte:
   protect: true
   allow_force_pushes: false
   allow_deletions: false
