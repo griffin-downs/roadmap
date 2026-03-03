@@ -1,6 +1,6 @@
 // @module completion-evidence
 // @description Receipt-based completion evidence — extends CompletionRecord with validator proof
-// @exports EvidenceRecord, CompletionRecordWithEvidence, hasPassingReceipt, saveCompletionWithEvidence, loadCompletionsWithEvidence
+// @exports EvidenceRecord, CompletionRecordWithEvidence, hasPassingReceipt, saveCompletionWithEvidence, loadCompletionsWithEvidence, validateEntry, migrateEntry
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -25,6 +25,43 @@ export interface CompletionRecordWithEvidence {
   treeSha?: string;
 }
 
+// Type guard: validates that an entry conforms to CompletionRecordWithEvidence
+export function validateEntry(entry: unknown): entry is CompletionRecordWithEvidence {
+  if (typeof entry !== 'object' || entry === null) return false;
+  const e = entry as Record<string, unknown>;
+  return typeof e.nodeId === 'string' && typeof e.completedAt === 'string';
+}
+
+// Migrate legacy entries to new schema
+export function migrateEntry(entry: Record<string, unknown>): CompletionRecordWithEvidence {
+  const nodeId = String(entry.nodeId ?? '');
+  const completedAt = String(entry.completedAt ?? new Date().toISOString());
+
+  // Normalize evidence field
+  let validationChecks: EvidenceRecord[] = [];
+  if (Array.isArray(entry.validationChecks)) {
+    validationChecks = entry.validationChecks;
+  } else if (Array.isArray(entry.evidence)) {
+    // evidence as array of objects
+    validationChecks = entry.evidence;
+  } else if (typeof entry.evidence === 'string') {
+    // Old format: single evidence string — convert to empty checks but keep legacy flag
+    validationChecks = [];
+  }
+
+  return {
+    nodeId,
+    completedAt,
+    ...(typeof entry.owner === 'string' ? { owner: entry.owner } : {}),
+    ...(typeof entry.checkpointId === 'string' ? { checkpointId: entry.checkpointId } : {}),
+    ...(validationChecks.length > 0 ? { validationChecks } : {}),
+    ...(Array.isArray(entry.validatorResults) ? { validatorResults: entry.validatorResults } : {}),
+    ...(typeof entry.gitSha === 'string' ? { gitSha: entry.gitSha } : {}),
+    ...(typeof entry.treeSha === 'string' ? { treeSha: entry.treeSha } : {}),
+    legacy: true,
+  };
+}
+
 // Receipt is passing when:
 //   - record exists with validationChecks and all passed, OR
 //   - record exists with completedAt but no validationChecks (pre-evidence legacy format)
@@ -46,7 +83,11 @@ export function loadCompletionsWithEvidence(repoRoot: string): Map<string, Compl
     const data = JSON.parse(readFileSync(completionPath, 'utf-8'));
     const records = new Map<string, CompletionRecordWithEvidence>();
     if (Array.isArray(data)) {
-      for (const record of data) records.set(record.nodeId, record);
+      for (const entry of data) {
+        // Migrate if not valid
+        const record = validateEntry(entry) ? entry : migrateEntry(entry as Record<string, unknown>);
+        records.set(record.nodeId, record);
+      }
     }
     return records;
   } catch {
@@ -75,7 +116,7 @@ export function saveCompletionWithEvidence(
   }
 
   const completions = loadCompletionsWithEvidence(repoRoot);
-  completions.set(nodeId, {
+  const newEntry: CompletionRecordWithEvidence = {
     nodeId,
     completedAt: new Date().toISOString(),
     owner,
@@ -84,7 +125,15 @@ export function saveCompletionWithEvidence(
     ...(validatorResults && validatorResults.length > 0 ? { validatorResults } : {}),
     ...(gitSha ? { gitSha } : {}),
     ...(treeSha ? { treeSha } : {}),
-  });
+  };
+
+  // Validate before setting
+  if (!validateEntry(newEntry)) {
+    const migrated = migrateEntry(newEntry as unknown as Record<string, unknown>);
+    completions.set(nodeId, migrated);
+  } else {
+    completions.set(nodeId, newEntry);
+  }
 
   const recordArray = Array.from(completions.values());
   writeFileSync(join(dirPath, 'completed.json'), JSON.stringify(recordArray, null, 2) + '\n');
