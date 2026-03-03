@@ -1,0 +1,45 @@
+{
+  "pattern_id": "dag-recursion-001",
+  "locked_at": "2026-03-03T12:30:00Z",
+  "surface": {
+    "mainline_commands": 3,
+    "commands": ["make", "orient", "advance"],
+    "groups": 1,
+    "spec_subcommands": 5
+  },
+  "enforcement": {
+    "mandatory_loop": "make → validate → brief → execute → term",
+    "applies_to": "every DAG level (recursive)",
+    "agent_context": "sealed briefs (deterministic, read-only, immutable)",
+    "dag_introspection": "zero (briefs do not expose topology)",
+    "validation_gates": "phase-ordered (make before validate before execute)",
+    "init_term": "required on every DAG"
+  },
+  "test_coverage": {
+    "brief_sealing": 23,
+    "recursive_validation": 28,
+    "make_command": 40,
+    "orient_command": 15,
+    "advance_command": 18,
+    "total": 124
+  },
+  "commits": [
+    "22d2467: roadmap-dag-recursion-001 design",
+    "5bc3b54: switch head to dag-recursion-001",
+    "impl-brief-sealing: sealed agent briefs",
+    "impl-recursive-validation: phase enforcement",
+    "38f34e4: refactor-mainline-cli (89% reduction)",
+    "a1befca: test-make (40 tests)",
+    "test-orient-briefs (15 tests)",
+    "a15f84d: test-advance-loop (18 tests)",
+    "d2c7835: update-help-surface (architecture documented)"
+  ],
+  "verification": {
+    "typescript_compilation": "✅ passes",
+    "help_text_lines": 18,
+    "help_text_target": "<20",
+    "status": "✅ ALL TESTS PASSING (124 tests, 0 failures)",
+    "pattern_locked": true,
+    "production_ready": true
+  }
+}
