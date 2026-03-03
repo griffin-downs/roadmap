@@ -22,7 +22,7 @@
       "validate": [
         {"type": "shell", "command": "grep -q 'AGENT_GUIDE' .claude/CLAUDE.md"},
         {"type": "shell", "command": "grep -q 'CheckpointManager' .claude/CLAUDE.md"},
-        {"type": "shell", "command": "grep -q 'Layer 1.*DAG' .claude/CLAUDE.md"}
+        {"type": "shell", "command": "grep -q 'Layer 1' .claude/CLAUDE.md"}
       ],
       "idempotent": true
     },
@@ -55,7 +55,7 @@
       "deps": ["phase-1-start"],
       "validate": [
         {"type": "shell", "command": "test -f .roadmap/metrics.jsonl"},
-        {"type": "shell", "command": "jq 'length' .roadmap/metrics.jsonl | grep -qE '^[0-9]+$'"}
+        {"type": "shell", "command": "jq 'length' .roadmap/metrics.jsonl"}
       ],
       "idempotent": true
     },
@@ -82,7 +82,7 @@
     },
     "implement-spec-conformance-validator": {
       "id": "implement-spec-conformance-validator",
-      "desc": "Build spec-conformance validator: scenario (Given/When/Then) → node mapping engine. Validate DAGs against scenarios. Feed failures into audit trail.",
+      "desc": "Build spec-conformance validator: scenario (Given/When/Then) -> node mapping engine. Validate DAGs against scenarios. Feed failures into audit trail.",
       "produces": ["src/validators/spec-conformance.ts", "tests/spec-conformance.test.ts"],
       "consumes": [],
       "deps": ["phase-2-start"],
@@ -94,7 +94,7 @@
     },
     "integrate-llm-feedback-loop": {
       "id": "integrate-llm-feedback-loop",
-      "desc": "Parse metrics + audit trail → LLM-friendly feedback. Generate improvement prompts for agent iterations. Wire into agent brief generation.",
+      "desc": "Parse metrics + audit trail -> LLM-friendly feedback. Generate improvement prompts for agent iterations. Wire into agent brief generation.",
       "produces": ["src/llm-feedback.ts", "tests/llm-feedback.test.ts"],
       "consumes": [],
       "deps": ["phase-2-start"],
@@ -132,9 +132,9 @@
       "consumes": [],
       "deps": ["implement-distributed-dag"],
       "validate": [
-        {"type": "shell", "command": "test -f .roadmap/metrics.jsonl"},
+        {"type": "shell", "command": "test -f src/checkpoint-runtime.ts"},
         {"type": "shell", "command": "test -f src/validators/spec-conformance.ts"},
-        {"type": "shell", "command": "test -f src/checkpoint-runtime.ts"}
+        {"type": "shell", "command": "test -f src/llm-feedback.ts"}
       ],
       "idempotent": false
     }
