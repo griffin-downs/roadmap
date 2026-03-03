@@ -24,6 +24,7 @@ import { compileIR, parseIRFile, defaultConfig } from '../src/lib/intake/spec-ir
 import type { SpecConfig, SpecIR, SpecIRTask, SpecInput } from '../src/lib/intake/spec-ir.ts';
 import { enrichIntentGate } from '../src/lib/intent/intent-gate-enrichment.ts';
 import { loadCompletions, getCompletedNodeIds } from '../src/lib/completion/completion-tracker.ts';
+import { CompletionStore } from '../src/lib/completion/completion-context.ts';
 import { saveCompletionWithEvidence, loadCompletionsWithEvidence, hasPassingReceipt } from '../src/lib/evidence/completion-evidence.ts';
 import type { EvidenceRecord } from '../src/lib/evidence/completion-evidence.ts';
 import { buildScaffold } from '../src/lib/scaffold.ts';
@@ -158,17 +159,14 @@ function recordTrail(entry: any) {
 
 // --- Async section ---
 async function crossOrientWithState(dag: Graph<string>) {
-  const completionsMap = await loadCompletionsWithEvidence(repoRoot);
+  const completion = CompletionStore.loadOrEmpty(repoRoot);
   const retired = retiredSet();
 
-  // Convert Map to CompletionStore-compatible interface
-  const completions: any = completionsMap;
+  const pos = orient(dag, completion, retired);
 
-  const pos = orient(dag, completions, retired);
-
-  // Recompute remaining based on completions
+  // Recompute remaining based on completion store
   const allNodeIds = Object.keys(dag.nodes);
-  const remainingIds = allNodeIds.filter(nid => !retired.has(nid) && !completionsMap.has(nid));
+  const remainingIds = allNodeIds.filter(nid => !retired.has(nid) && !completion.hasPassing(nid));
 
   return {
     ...pos,
