@@ -1,0 +1,18 @@
+{
+  "installed_at": "2026-03-03T13:01:00Z",
+  "hook_path": ".git/hooks/pre-commit",
+  "source_path": "scripts/hooks/pre-commit",
+  "gates_active": 5,
+  "gates": [
+    { "id": 0, "name": "main-branch-guard", "desc": "Block ALL direct commits on main/master" },
+    { "id": 1, "name": "branch-discipline", "desc": "head*.json locked to feat/*, wip/*, develop" },
+    { "id": 2, "name": "gitsafe-denylist", "desc": "Blocks forbidden paths via enforcement.json denylist" },
+    { "id": 3, "name": "typescript-check", "desc": "npm run check — TypeScript compilation" },
+    { "id": 4, "name": "dag-integrity", "desc": "npm run check:dag:define — DAG structural integrity" }
+  ],
+  "test_results": {
+    "main_blocked": true,
+    "feature_allowed": true,
+    "all_gates_passed_on_feature": true
+  }
+}
