@@ -24,6 +24,16 @@ export class CompletionStore {
     this.records = records;
   }
 
+  filterByDagId(dagId: string): CompletionStore {
+    const filtered = new Map<string, CompletionRecordWithEvidence>();
+    for (const [id, record] of this.records) {
+      if (record.dagId === dagId || record.dagId === undefined) {
+        filtered.set(id, record);
+      }
+    }
+    return new CompletionStore(filtered);
+  }
+
   /** Is this node completed with passing evidence? */
   hasPassing(nodeId: string): boolean {
     const record = this.records.get(nodeId);
