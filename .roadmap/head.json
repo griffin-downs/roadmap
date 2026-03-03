@@ -6,118 +6,64 @@
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Baseline: explore helpers exist (checkVisible, checkText, etc.) but not exported; cmdExplore partial",
+      "desc": "Baseline: explore helpers exist but not exported or CLI-accessible",
       "produces": [],
       "consumes": [],
       "deps": [],
       "validate": [],
       "idempotent": true
     },
-    "export-barrel": {
-      "id": "export-barrel",
-      "desc": "Create src/index.explore.ts barrel exporting all helpers + types",
-      "produces": ["src/index.explore.ts"],
+    "implement-export": {
+      "id": "implement-export",
+      "desc": "Create src/index.explore.ts barrel + add ./explore to package.json exports",
+      "produces": ["src/index.explore.ts", "package.json"],
       "consumes": [],
       "deps": ["init"],
-      "validate": [{"type": "artifact-exists", "target": "src/index.explore.ts"}],
+      "validate": [
+        {"type": "artifact-exists", "target": "src/index.explore.ts"},
+        {"type": "shell", "command": "grep -q '\"./explore\"' package.json"}
+      ],
       "idempotent": true
     },
-    "package-exports": {
-      "id": "package-exports",
-      "desc": "Add package.json exports entry for ./explore pointing to src/index.explore.ts",
-      "produces": ["package.json"],
-      "consumes": [],
-      "deps": ["export-barrel"],
-      "validate": [{"type": "shell", "command": "grep -q '\"./explore\"' package.json"}],
-      "idempotent": true
-    },
-    "cli-api-mode": {
-      "id": "cli-api-mode",
-      "desc": "Implement roadmap explore --api: dump API surface (16 functions with signatures)",
+    "implement-cli": {
+      "id": "implement-cli",
+      "desc": "Implement all CLI modes: --api (dump surface), --run (managed execution), --eval (inline)",
       "produces": ["bin/roadmap.ts"],
       "consumes": [],
-      "deps": ["export-barrel"],
-      "validate": [{"type": "shell", "command": "bin/roadmap explore --api > /dev/null"}],
+      "deps": ["implement-export"],
+      "validate": [
+        {"type": "shell", "command": "bin/roadmap explore --api > /dev/null"},
+        {"type": "shell", "command": "bin/roadmap explore --help | grep -q '\\-\\-run'"},
+        {"type": "shell", "command": "bin/roadmap explore --help | grep -q '\\-\\-eval'"}
+      ],
       "idempotent": true
     },
-    "cli-run-mode": {
-      "id": "cli-run-mode",
-      "desc": "Implement roadmap explore --run <script> [--launch <cmd>] [--port] [--build] [--keep-alive]",
-      "produces": ["bin/roadmap.ts"],
+    "test-all": {
+      "id": "test-all",
+      "desc": "Run all tests: export resolution, CLI output format, integration, regression, e2e",
+      "produces": ["tests/explore-export.test.ts", "tests/explore-cli.test.ts"],
       "consumes": [],
-      "deps": ["export-barrel"],
-      "validate": [{"type": "shell", "command": "bin/roadmap explore --help | grep -q '\\-\\-run'"}],
-      "idempotent": true
-    },
-    "cli-eval-mode": {
-      "id": "cli-eval-mode",
-      "desc": "Implement roadmap explore --eval '<inline script>': one-shot evaluation from CLI",
-      "produces": ["bin/roadmap.ts"],
-      "consumes": [],
-      "deps": ["export-barrel"],
-      "validate": [{"type": "shell", "command": "bin/roadmap explore --help | grep -q '\\-\\-eval'"}],
-      "idempotent": true
-    },
-    "test-export-resolution": {
-      "id": "test-export-resolution",
-      "desc": "Unit tests: verify import { checkVisible } from 'roadmap/explore' resolves correctly",
-      "produces": ["tests/explore-export.test.ts"],
-      "consumes": [],
-      "deps": ["package-exports"],
-      "validate": [{"type": "shell", "command": "npm test tests/explore-export.test.ts"}],
-      "idempotent": true
-    },
-    "test-cli-api": {
-      "id": "test-cli-api",
-      "desc": "Unit tests: roadmap explore --api output format and completeness (all 16 functions)",
-      "produces": ["tests/explore-cli-api.test.ts"],
-      "consumes": [],
-      "deps": ["cli-api-mode"],
-      "validate": [{"type": "shell", "command": "npm test tests/explore-cli-api.test.ts"}],
-      "idempotent": true
-    },
-    "test-cli-run": {
-      "id": "test-cli-run",
-      "desc": "Integration tests: roadmap explore --run with mock script and CDP",
-      "produces": ["tests/explore-cli-run.test.ts"],
-      "consumes": [],
-      "deps": ["cli-run-mode"],
-      "validate": [{"type": "shell", "command": "npm test tests/explore-cli-run.test.ts"}],
-      "idempotent": true
-    },
-    "verify-no-regression": {
-      "id": "verify-no-regression",
-      "desc": "Integration test: existing complete --explore still works (no regression)",
-      "produces": [],
-      "consumes": [],
-      "deps": ["cli-run-mode"],
-      "validate": [{"type": "shell", "command": "npm test tests/complete-explore-regression.test.ts"}],
-      "idempotent": true
-    },
-    "verify-e2e": {
-      "id": "verify-e2e",
-      "desc": "End-to-end test: spawn toy app, run explore script via CLI, validate observations table",
-      "produces": [],
-      "consumes": [],
-      "deps": ["test-cli-run", "verify-no-regression"],
-      "validate": [{"type": "shell", "command": "npm test tests/explore-e2e.test.ts"}],
+      "deps": ["implement-cli"],
+      "validate": [
+        {"type": "shell", "command": "npm test tests/explore-export.test.ts && npm test tests/explore-cli.test.ts"}
+      ],
       "idempotent": true
     },
     "docs": {
       "id": "docs",
-      "desc": "Update docs/FR-EXPLORE-API.md with implementation status + usage examples",
+      "desc": "Update FR-EXPLORE-API.md: implementation notes, usage examples, API reference",
       "produces": ["docs/FR-EXPLORE-API.md"],
       "consumes": [],
-      "deps": ["cli-api-mode"],
+      "deps": ["implement-cli"],
       "validate": [{"type": "artifact-exists", "target": "docs/FR-EXPLORE-API.md"}],
       "idempotent": true
     },
     "term": {
       "id": "term",
-      "desc": "Explore API complete: export works, CLI functional, tests passing, docs updated, no regressions",
+      "desc": "Explore API complete: export works, CLI functional, tests passing, docs updated",
       "produces": [],
       "consumes": [],
-      "deps": ["verify-e2e", "docs"],
+      "deps": ["test-all", "docs"],
       "validate": [],
       "idempotent": false
     }
