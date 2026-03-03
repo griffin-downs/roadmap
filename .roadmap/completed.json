@@ -1,4 +1,82 @@
-{
-  "phase-0-start": {"completed_at": "2026-03-03", "via": "agent-guide-embedded-in-CLAUDE.md"},
-  "enrich-claude-md": {"completed_at": "2026-03-03", "via": "CLAUDE.md-updated-with-agent-guide"}
-}
+[
+  {
+    "nodeId": "phase-0-start",
+    "completedAt": "2026-03-03",
+    "legacy": true
+  },
+  {
+    "nodeId": "enrich-claude-md",
+    "completedAt": "2026-03-03",
+    "legacy": true
+  },
+  {
+    "nodeId": "start",
+    "completedAt": "2026-03-03T13:22:21.216Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "archive-full-codebase",
+    "completedAt": "2026-03-03T13:22:26.718Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "create-enforcement-config",
+    "completedAt": "2026-03-03T13:22:26.718Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "integrate-gitsafe",
+    "completedAt": "2026-03-03T13:22:55.226Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "tree-shake-main",
+    "completedAt": "2026-03-03T13:22:55.226Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "document-branch-architecture",
+    "completedAt": "2026-03-03T13:23:00.440Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "enforce-main-reads",
+    "completedAt": "2026-03-03T13:23:00.440Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "setup-branch-protections",
+    "completedAt": "2026-03-03T13:23:00.440Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "test-gitsafe-enforcement",
+    "completedAt": "2026-03-03T13:23:00.440Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "verify-minimal-surface",
+    "completedAt": "2026-03-03T13:23:00.440Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "test-immutability",
+    "completedAt": "2026-03-03T13:23:09.712Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "setup-git-refs",
+    "completedAt": "2026-03-03T13:23:09.712Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "hardened-locked",
+    "completedAt": "2026-03-03T13:23:18.109Z",
+    "legacy": true
+  },
+  {
+    "nodeId": "phase-1-start",
+    "completedAt": "2026-03-03T13:23:22.275Z",
+    "legacy": true
+  }
+]

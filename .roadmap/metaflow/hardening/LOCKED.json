@@ -1,16 +1,1 @@
-{
-  "phase": "hardening-001",
-  "status": "locked",
-  "timestamp": "2026-03-03T12:52:00Z",
-  "completedNodes": 10,
-  "totalNodes": 13,
-  "progress": "77%",
-  "architecture": "minimal-main + gitsafe-enforcement + branch-protections",
-  "artifacts": [
-    ".roadmap/enforcement.json",
-    ".roadmap/BRANCHES.md",
-    ".github/branch-protections.yml",
-    "src/lib/gitsafe-loader.ts",
-    "hardening-001-baseline tag"
-  ]
-}
+{"locked": true, "timestamp": "2026-03-03T13:23:18Z"}
