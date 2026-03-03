@@ -22,6 +22,7 @@ export default async function setup(): Promise<void> {
     target: 'node22',
     format: 'esm',
     outExtension: { '.js': '.mjs' },
+    external: ['playwright-core', 'chromium-bidi'],
     banner: { js: `import { createRequire as __cr } from 'module'; const require = __cr(import.meta.url);` },
   });
 
