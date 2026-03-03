@@ -1,6 +1,0 @@
-{
-  "specId": "fr-meta-refac-001-gen",
-  "selectedStrategy": "cluster-first",
-  "repo": { "headSha": "1e97a715b9917245a535eb472f4888a3a6ae8fb0" },
-  "synthesis": { "hash": "sha256-abc123def456" }
-}

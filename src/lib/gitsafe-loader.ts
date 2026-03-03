@@ -36,8 +36,8 @@ export function createGitSafeLoader(repoRoot: string): GitSafeLoader {
     }
 
     try {
-      config = JSON.parse(readFileSync(enforcementPath, 'utf-8'));
-      return config;
+      config = JSON.parse(readFileSync(enforcementPath, 'utf-8')) as EnforcementConfig;
+      return config!;
     } catch (err) {
       throw new Error(`Failed to parse enforcement.json: ${err instanceof Error ? err.message : String(err)}`);
     }

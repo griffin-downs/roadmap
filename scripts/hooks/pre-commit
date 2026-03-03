@@ -1,89 +1,118 @@
 #!/bin/bash
-# Pre-commit hook for governance enforcement
-# 1. Branch discipline: reject head.json edits on main/master
-# 2. Local validation gates: typecheck + DAG integrity
-# Blocks commit if any gate fails
-# Override with: git commit --no-verify
+# Pre-commit hook: branch discipline + gitsafe denylist + DAG integrity
+# Gates: (1) main branch is read-only, (2) head.json locked to feature branches,
+#         (3) gitsafe denylist blocks forbidden paths, (4) typecheck, (5) DAG define()
 
 set -e
 
-# Color codes
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-echo -e "${YELLOW}🔍 Pre-commit validation...${NC}"
+echo -e "${YELLOW}Pre-commit validation...${NC}"
 
-# Get the project root
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 cd "$PROJECT_ROOT"
 
-# Track failures
 FAILED=0
-
-# 0. Worktree Protocol: Branch discipline enforcement
-echo -e "${YELLOW}  ➤ Branch discipline...${NC}"
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 STAGED_FILES=$(git diff --cached --name-only 2>/dev/null || echo "")
 
-if [ -n "$BRANCH" ] && [ -n "$STAGED_FILES" ]; then
-  # Check if any staged files match head*.json pattern
+# Gate 0: Block ALL direct commits on main/master
+echo -e "${YELLOW}  > Main branch guard...${NC}"
+if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
+  echo -e "${RED}  x Main branch is read-only${NC}"
+  echo ""
+  echo -e "${RED}ERROR: Direct commits to '$BRANCH' are blocked.${NC}"
+  echo -e "All changes must go through feature branches and pull requests."
+  echo ""
+  echo -e "${YELLOW}Fix:${NC}"
+  echo -e "  1. git stash"
+  echo -e "  2. git checkout -b feat/<your-feature>"
+  echo -e "  3. git stash pop"
+  echo -e "  4. git commit"
+  echo ""
+  exit 1
+fi
+echo -e "${GREEN}  + Main branch guard (on: $BRANCH)${NC}"
+
+# Gate 1: head*.json locked to feat/*, wip/*, develop
+echo -e "${YELLOW}  > Branch discipline (head.json)...${NC}"
+if [ -n "$STAGED_FILES" ]; then
   if echo "$STAGED_FILES" | grep -q '\.roadmap/head.*\.json'; then
-    # Allow edits ONLY on feature/work branches and develop
     if [[ "$BRANCH" != "feat/"* ]] && [[ "$BRANCH" != "wip/"* ]] && [[ "$BRANCH" != "develop" ]]; then
-      echo -e "${RED}  ✗ Branch discipline violation${NC}"
-      echo -e "${RED}❌ ERROR: Cannot edit .roadmap/head*.json on branch '$BRANCH'${NC}"
+      echo -e "${RED}  x Branch discipline violation${NC}"
+      echo -e "${RED}ERROR: Cannot edit .roadmap/head*.json on branch '$BRANCH'${NC}"
       echo ""
-      echo -e "${YELLOW}Worktree Protocol:${NC}"
-      echo -e "   Only feat/*, wip/*, and develop branches may edit .roadmap/head*.json"
-      echo -e "   Files locked on: main, master (read-only by design)"
-      echo ""
-      echo -e "${YELLOW}Fix:${NC}"
-      echo -e "   1. git reset HEAD .roadmap/head*.json"
-      echo -e "   2. roadmap spawn --task <node-id>"
-      echo -e "   3. Edit in feature branch"
-      echo ""
+      echo -e "${YELLOW}Only feat/*, wip/*, develop branches may edit head*.json${NC}"
+      echo -e "${YELLOW}Fix: roadmap spawn --task <node-id>${NC}"
       FAILED=$((FAILED + 1))
     else
-      echo -e "${GREEN}  ✓ Branch discipline${NC}"
+      echo -e "${GREEN}  + Branch discipline${NC}"
     fi
   else
-    echo -e "${GREEN}  ✓ Branch discipline${NC}"
+    echo -e "${GREEN}  + Branch discipline${NC}"
   fi
 else
-  # Edge case: HEAD not available (early in repo) or no staged files
-  echo -e "${GREEN}  ✓ Branch discipline${NC}"
+  echo -e "${GREEN}  + Branch discipline (no staged files)${NC}"
 fi
 
-# 1. TypeScript check
-echo -e "${YELLOW}  ➤ TypeScript compilation...${NC}"
+# Gate 2: Gitsafe denylist compliance
+echo -e "${YELLOW}  > Gitsafe denylist...${NC}"
+ENFORCEMENT_FILE="$PROJECT_ROOT/.roadmap/enforcement.json"
+DENYLIST_VIOLATION=0
+if [ -f "$ENFORCEMENT_FILE" ] && [ -n "$STAGED_FILES" ]; then
+  DENYLIST=$(jq -r '.denylist[]?' "$ENFORCEMENT_FILE" 2>/dev/null || echo "")
+  if [ -n "$DENYLIST" ]; then
+    while IFS= read -r file; do
+      [ -z "$file" ] && continue
+      while IFS= read -r pattern; do
+        [ -z "$pattern" ] && continue
+        # Convert glob pattern to regex for matching
+        REGEX=$(echo "$pattern" | sed 's/\*\*/.*/' | sed 's/\*/.*/g')
+        if echo "$file" | grep -qE "^${REGEX}$"; then
+          echo -e "${RED}  x Denied: $file (matches denylist: $pattern)${NC}"
+          DENYLIST_VIOLATION=1
+        fi
+      done <<< "$DENYLIST"
+    done <<< "$STAGED_FILES"
+  fi
+fi
+if [ "$DENYLIST_VIOLATION" -eq 1 ]; then
+  echo -e "${RED}  x Gitsafe denylist violation${NC}"
+  FAILED=$((FAILED + 1))
+else
+  echo -e "${GREEN}  + Gitsafe denylist${NC}"
+fi
+
+# Gate 3: TypeScript compilation
+echo -e "${YELLOW}  > TypeScript compilation...${NC}"
 if npm run check > /tmp/tsc.log 2>&1; then
-  echo -e "${GREEN}  ✓ TypeScript${NC}"
+  echo -e "${GREEN}  + TypeScript${NC}"
 else
-  echo -e "${RED}  ✗ TypeScript errors:${NC}"
-  cat /tmp/tsc.log | head -30
+  echo -e "${RED}  x TypeScript errors:${NC}"
+  head -30 /tmp/tsc.log
   FAILED=$((FAILED + 1))
 fi
 
-# 2. DAG structural integrity
-echo -e "${YELLOW}  ➤ DAG structure...${NC}"
+# Gate 4: DAG structural integrity
+echo -e "${YELLOW}  > DAG structure...${NC}"
 if npm run check:dag:define > /tmp/dag.log 2>&1; then
-  echo -e "${GREEN}  ✓ DAG integrity${NC}"
+  echo -e "${GREEN}  + DAG integrity${NC}"
 else
-  echo -e "${RED}  ✗ DAG structural errors:${NC}"
-  cat /tmp/dag.log | head -30
+  echo -e "${RED}  x DAG structural errors:${NC}"
+  head -30 /tmp/dag.log
   FAILED=$((FAILED + 1))
 fi
 
-# Final result
+# Result
 echo ""
 if [ $FAILED -eq 0 ]; then
-  echo -e "${GREEN}✅ All pre-commit gates passed${NC}"
+  echo -e "${GREEN}All pre-commit gates passed${NC}"
   exit 0
 else
-  echo -e "${RED}❌ Pre-commit validation failed ($FAILED gate(s))${NC}"
-  echo -e "${YELLOW}💡 Fix the errors above and try again, or use:${NC}"
-  echo -e "${YELLOW}   git commit --no-verify${NC} (governance override, use sparingly)"
+  echo -e "${RED}Pre-commit validation failed ($FAILED gate(s))${NC}"
+  echo -e "${YELLOW}Fix the errors above. Override: git commit --no-verify${NC}"
   exit 1
 fi

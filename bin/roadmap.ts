@@ -9,6 +9,7 @@ import { join, resolve, basename, dirname } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { createGitSafeLoader } from '../src/lib/gitsafe-loader.ts';
 import {
   define, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, readyNodes, nextBatch, criticalPath, reconcile,
   validateNode, validateGraph, consumeArtifact,
@@ -52,6 +53,41 @@ import { specKitInit, SPEC_KIT_INIT_HELP } from '../src/commands/spec-init.ts';
 
 const rawArgs = process.argv.slice(2);
 const repoRoot = process.cwd();
+
+// --- GitSafe enforcement ---
+const gitsafe = createGitSafeLoader(repoRoot);
+
+function getCurrentBranch(): string {
+  try {
+    return execSync('git rev-parse --abbrev-ref HEAD', { cwd: repoRoot, stdio: 'pipe' }).toString().trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+function enforceMainBranch(): void {
+  const branch = getCurrentBranch();
+  if (branch !== 'main' && branch !== 'HEAD') {
+    console.error(JSON.stringify({
+      error: 'gitsafe: file operations only allowed from main branch',
+      currentBranch: branch,
+      fix: 'Switch to main branch: git checkout main',
+    }));
+    process.exit(1);
+  }
+}
+
+/** Wrap readFileSync through gitsafe denylist + maxBytes validation */
+function safeReadFile(path: string): string {
+  // Resolve relative to repoRoot for denylist check
+  const relative = path.startsWith(repoRoot)
+    ? path.slice(repoRoot.length + 1)
+    : path;
+  if (!gitsafe.isAllowed(relative)) {
+    throw new Error(`gitsafe: file access denied (denylist): ${relative}`);
+  }
+  return readFileSync(path, 'utf-8');
+}
 
 // Extract --note and its value, return note + remaining positional args
 function extractNote(argv: string[]): { note: string | undefined; positional: string[] } {
@@ -184,6 +220,12 @@ async function main() {
   }
 
   const note = _note;
+
+  // Enforce main branch for all DAG-mutating commands
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h']);
+  if (!BRANCH_EXEMPT.has(cmd)) {
+    enforceMainBranch();
+  }
 
   try {
     // Route to core commands or group handlers
@@ -435,8 +477,8 @@ async function cmdMake(note: string) {
     }, `Spec not found: ${resolved}`);
   }
 
-  // Load and parse the spec
-  const specContent = readFileSync(resolved, 'utf-8');
+  // Load and parse the spec (through gitsafe)
+  const specContent = safeReadFile(resolved);
   let parsed: any;
   try {
     parsed = JSON.parse(specContent);
@@ -828,7 +870,7 @@ async function loadDAGAsync(): Promise<Graph<string>> {
     return result.graph;
   } catch (err) {
     // Fallback: load head.json directly
-    return JSON.parse(readFileSync(headPath, 'utf-8'));
+    return JSON.parse(safeReadFile(headPath));
   }
 }
 
@@ -842,7 +884,7 @@ function loadDAG(): Graph<string> {
       entry: 'roadmap orient',
     }, 'No .roadmap/head.json found.');
   }
-  return JSON.parse(readFileSync(headPath, 'utf-8'));
+  return JSON.parse(safeReadFile(headPath));
 }
 
 function json(obj: unknown) {
