@@ -797,25 +797,22 @@ function cmdHelp() {
   console.log(`roadmap — DAG expansion protocol CLI
 
 Core commands (mainline execution loop):
-  make <spec>        Create ideal DAG from spec (JSON or IR)
+  make <spec>        Create ideal DAG from spec
   orient             Current batch position + produces/consumes
-  advance            Advance to next batch — validate all work complete
+  advance            Advance to next batch (requires batch complete)
 
 Command groups (use 'roadmap <group> help' for details):
-  spec <sub>         Spec pipeline: plan, import, intake, compile, init
+  spec <sub>         Spec planning and intake: plan, import, intake, compile, init
 
 Global flags:
-  --quiet, -q        Suppress non-fatal output
   --json, -j         Machine-readable JSON output
-  --dry-run          Show what would happen without executing
 
-All commands (except help/orient) require --note "reason".
+All commands require --note "reason" (except help/orient).
 
 Examples:
   roadmap orient --note "check position"
   roadmap make spec.json --note "create ideal DAG"
   roadmap advance --note "move to next batch"
-  roadmap spec plan --gallery --note "show candidates"
 `);
 }
 
