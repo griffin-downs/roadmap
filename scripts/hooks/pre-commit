@@ -19,21 +19,20 @@ FAILED=0
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
 STAGED_FILES=$(git diff --cached --name-only 2>/dev/null || echo "")
 
-# Gate 0: Block ALL direct commits on main/master
+# Gate 0: Block direct commits to main/master, allow merge commits (PR workflow)
 echo -e "${YELLOW}  > Main branch guard...${NC}"
-if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
-  echo -e "${RED}  x Main branch is read-only${NC}"
-  echo ""
-  echo -e "${RED}ERROR: Direct commits to '$BRANCH' are blocked.${NC}"
-  echo -e "All changes must go through feature branches and pull requests."
-  echo ""
-  echo -e "${YELLOW}Fix:${NC}"
-  echo -e "  1. git stash"
-  echo -e "  2. git checkout -b feat/<your-feature>"
-  echo -e "  3. git stash pop"
-  echo -e "  4. git commit"
-  echo ""
-  exit 1
+if [[ "$BRANCH" == "main" ]] || [[ "$BRANCH" == "master" ]]; then
+  if [ -f .git/MERGE_HEAD ]; then
+    # Merge commit — allow (from feature branch)
+    :
+  else
+    # Direct commit — block
+    echo -e "${RED}  x Main branch is read-only${NC}"
+    echo ""
+    echo -e "${RED}ERROR: Direct commits to '$BRANCH' are blocked. Use: git checkout -b feat/... && git push${NC}"
+    echo ""
+    exit 1
+  fi
 fi
 echo -e "${GREEN}  + Main branch guard (on: $BRANCH)${NC}"
 
