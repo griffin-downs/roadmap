@@ -302,6 +302,14 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
     }
   }
 
+  // Synthesize produces for tasks that don't have them (simple task format)
+  for (const t of sorted) {
+    if (t.produces.length === 0) {
+      // Generate artifact path from task ID
+      t.produces = [`.roadmap/tasks/${t.id}.artifact.json`];
+    }
+  }
+
   // Build nodes
   const nodes: Record<string, NodeSpec<string, string>> = {};
 
