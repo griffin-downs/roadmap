@@ -1,0 +1,226 @@
+{
+  "id": "spec-kit-core-001",
+  "desc": "Spec Kit — Core CLI and agent integration for spec-driven development",
+  "init": "spec-kit-planning",
+  "term": "spec-kit-ready",
+  "baseSha": "09686fd",
+  "nodes": {
+    "spec-kit-planning": {
+      "id": "spec-kit-planning",
+      "desc": "Plan spec-kit core implementation: constitution, spec framework, task extraction, agent integration",
+      "produces": [".roadmap/metaflow/spec-kit/PLAN.md"],
+      "consumes": [".specify/spec.md", ".specify/tasks.md"],
+      "deps": [],
+      "mode": "plan",
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/spec-kit/PLAN.md"}],
+      "idempotent": true
+    },
+    "init-setup-core": {
+      "id": "init-setup-core",
+      "desc": "Implement specify init command: directory creation, template generation, git integration",
+      "produces": ["src/lib/init.ts"],
+      "consumes": [],
+      "deps": ["spec-kit-planning"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "init-ai-detection": {
+      "id": "init-ai-detection",
+      "desc": "Implement AI agent detection (Claude, Gemini, GitHub Copilot, Cursor)",
+      "produces": ["src/lib/ai-detect.ts"],
+      "consumes": [],
+      "deps": ["spec-kit-planning"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "init-template-generation": {
+      "id": "init-template-generation",
+      "desc": "Generate .specify/ directory templates (constitution, spec, plan, tasks)",
+      "produces": ["src/lib/templates.ts"],
+      "consumes": [],
+      "deps": ["spec-kit-planning"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "spec-constitution": {
+      "id": "spec-constitution",
+      "desc": "Implement constitution capture (project principles, constraints)",
+      "produces": ["src/lib/constitution.ts"],
+      "consumes": [],
+      "deps": ["init-setup-core"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "spec-specification": {
+      "id": "spec-specification",
+      "desc": "Implement specification DSL (Given/When/Then scenarios, requirements)",
+      "produces": ["src/lib/specification.ts"],
+      "consumes": [],
+      "deps": ["spec-constitution"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "spec-validation": {
+      "id": "spec-validation",
+      "desc": "Validate spec format, detect missing required sections",
+      "produces": ["src/lib/spec-validator.ts"],
+      "consumes": ["src/lib/specification.ts"],
+      "deps": ["spec-specification"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "plan-technical": {
+      "id": "plan-technical",
+      "desc": "Implement technical plan capture (architecture, tech stack, design)",
+      "produces": ["src/lib/technical-plan.ts"],
+      "consumes": [],
+      "deps": ["spec-validation"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "task-generation": {
+      "id": "task-generation",
+      "desc": "Extract tasks from spec + plan, break into implementable units",
+      "produces": ["src/lib/task-generator.ts"],
+      "consumes": ["src/lib/specification.ts", "src/lib/technical-plan.ts"],
+      "deps": ["plan-technical", "spec-specification"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "task-ordering": {
+      "id": "task-ordering",
+      "desc": "Topological sort of tasks, identify parallel-executable batches",
+      "produces": ["src/lib/task-ordering.ts"],
+      "consumes": ["src/lib/task-generator.ts"],
+      "deps": ["task-generation"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "task-dependencies": {
+      "id": "task-dependencies",
+      "desc": "Link task dependencies, validate no cycles",
+      "produces": ["src/lib/task-dependencies.ts"],
+      "consumes": ["src/lib/task-generator.ts"],
+      "deps": ["task-generation"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "agent-claude-code": {
+      "id": "agent-claude-code",
+      "desc": "Register /speckit.* slash commands for Claude Code",
+      "produces": [".claude/skills/speckit-constitution.md", ".claude/skills/speckit-specify.md"],
+      "consumes": [],
+      "deps": ["task-ordering"],
+      "validate": [{"type": "artifact-exists", "path": ".claude/skills/speckit-constitution.md"}],
+      "idempotent": true
+    },
+    "agent-gemini": {
+      "id": "agent-gemini",
+      "desc": "Implement custom commands for Gemini CLI",
+      "produces": ["src/lib/gemini-agent.ts"],
+      "consumes": [],
+      "deps": ["task-ordering"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "agent-generic": {
+      "id": "agent-generic",
+      "desc": "Generic CLI interface for unsupported agents",
+      "produces": ["src/lib/generic-agent.ts"],
+      "consumes": [],
+      "deps": ["task-ordering"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "check-git": {
+      "id": "check-git",
+      "desc": "Detect git installation, show version",
+      "produces": ["src/lib/check-git.ts"],
+      "consumes": [],
+      "deps": ["task-dependencies"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "check-ai-agent": {
+      "id": "check-ai-agent",
+      "desc": "Detect AI agent availability (Claude, Gemini, Copilot)",
+      "produces": ["src/lib/check-ai.ts"],
+      "consumes": ["src/lib/ai-detect.ts"],
+      "deps": ["init-ai-detection", "task-dependencies"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "check-report": {
+      "id": "check-report",
+      "desc": "Generate comprehensive tool check report with fixes",
+      "produces": ["src/lib/check-report.ts"],
+      "consumes": ["src/lib/check-git.ts", "src/lib/check-ai.ts"],
+      "deps": ["check-git", "check-ai-agent"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "implement-runner": {
+      "id": "implement-runner",
+      "desc": "Execute tasks in order, collect outputs",
+      "produces": ["src/lib/implement.ts"],
+      "consumes": ["src/lib/task-ordering.ts"],
+      "deps": ["check-report"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "implement-validation": {
+      "id": "implement-validation",
+      "desc": "Run acceptance tests per scenario",
+      "produces": ["src/lib/validate-impl.ts"],
+      "consumes": ["src/lib/specification.ts"],
+      "deps": ["implement-runner"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "doc-user-guide": {
+      "id": "doc-user-guide",
+      "desc": "User guide for spec-driven workflow",
+      "produces": ["docs/USER-GUIDE.md"],
+      "consumes": [],
+      "deps": ["implement-validation"],
+      "validate": [{"type": "artifact-exists", "path": "docs/USER-GUIDE.md"}],
+      "idempotent": true
+    },
+    "test-init-workflow": {
+      "id": "test-init-workflow",
+      "desc": "Unit + integration tests for init flow",
+      "produces": ["tests/init.test.ts"],
+      "consumes": ["src/lib/init.ts"],
+      "deps": ["implement-validation"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "test-spec-parsing": {
+      "id": "test-spec-parsing",
+      "desc": "Tests for spec format parsing, edge cases",
+      "produces": ["tests/spec-parser.test.ts"],
+      "consumes": ["src/lib/specification.ts"],
+      "deps": ["implement-validation"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "test-e2e": {
+      "id": "test-e2e",
+      "desc": "End-to-end: init → spec → plan → tasks → execute",
+      "produces": ["tests/e2e.test.ts"],
+      "consumes": ["src/lib/init.ts", "src/lib/task-generator.ts", "src/lib/implement.ts"],
+      "deps": ["test-init-workflow", "test-spec-parsing"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "spec-kit-ready": {
+      "id": "spec-kit-ready",
+      "desc": "Spec Kit core complete: CLI, agent integration, task generation, tests all passing",
+      "produces": [".roadmap/metaflow/spec-kit/system-ready.json"],
+      "consumes": [],
+      "deps": ["test-e2e", "doc-user-guide"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/spec-kit/system-ready.json"}],
+      "idempotent": true
+    }
+  }
+}
