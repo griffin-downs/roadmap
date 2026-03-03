@@ -463,5 +463,196 @@
     ],
     "gitSha": "3944dcc095b7a75acd13a877a2e5eccb4b7ef88d",
     "treeSha": "9c376ed0bd4ff60ff849d569c71dd4a9649665f6"
+  },
+  {
+    "nodeId": "orient-branch-info",
+    "completedAt": "2026-03-03T23:00:45.942Z",
+    "validationChecks": [
+      {
+        "rule": "intent:Plan clarity: orient output includes branch name and worktre",
+        "passed": true,
+        "evidence": "unevaluated"
+      },
+      {
+        "rule": "shell:npx tsx test/orient-branch.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsx test/orient-branch.test.ts"
+      },
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/orient-branch.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "3e9c69f48f17ca9cba2a29e85e863df122214a71",
+    "treeSha": "14809894b5186c9e3d884473cbe4fbea8d719487"
+  },
+  {
+    "nodeId": "validator-env-vars",
+    "completedAt": "2026-03-03T23:04:10.687Z",
+    "validationChecks": [
+      {
+        "rule": "intent:Plan clarity: shell validators get ROADMAP_BRANCH, ROADMAP_N",
+        "passed": true,
+        "evidence": "unevaluated"
+      },
+      {
+        "rule": "shell:npx tsx test/validator-env.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsx test/validator-env.test.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/protocol/validation.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/validator-env.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "988a132671eab3855a75eb419b9b9284087957e5",
+    "treeSha": "cd633e79b88559e451f03549ccc455ee357afe98"
+  },
+  {
+    "nodeId": "compile-hash-gate",
+    "completedAt": "2026-03-03T23:04:07.268Z",
+    "validationChecks": [
+      {
+        "rule": "intent:Plan clarity: make normalizes compile_hash to sha256 hex — n",
+        "passed": true,
+        "evidence": "unevaluated"
+      },
+      {
+        "rule": "shell:npx tsx test/compile-hash-gate.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsx test/compile-hash-gate.test.ts"
+      },
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/compile-hash-gate.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "988a132671eab3855a75eb419b9b9284087957e5",
+    "treeSha": "cd633e79b88559e451f03549ccc455ee357afe98"
+  },
+  {
+    "nodeId": "make-commit-failure",
+    "completedAt": "2026-03-03T23:04:09.970Z",
+    "validationChecks": [
+      {
+        "rule": "intent:Plan clarity: make reports commit failure as warning in outp",
+        "passed": true,
+        "evidence": "unevaluated"
+      },
+      {
+        "rule": "shell:npx tsx test/make-commit-warn.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsx test/make-commit-warn.test.ts"
+      },
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/make-commit-warn.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "988a132671eab3855a75eb419b9b9284087957e5",
+    "treeSha": "cd633e79b88559e451f03549ccc455ee357afe98"
+  },
+  {
+    "nodeId": "completed-json-schema",
+    "completedAt": "2026-03-03T23:04:11.406Z",
+    "validationChecks": [
+      {
+        "rule": "intent:Plan clarity: completed.json has enforced schema — write rej",
+        "passed": true,
+        "evidence": "unevaluated"
+      },
+      {
+        "rule": "shell:npx tsx test/completed-schema.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsx test/completed-schema.test.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/evidence/completion-evidence.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/completed-schema.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "988a132671eab3855a75eb419b9b9284087957e5",
+    "treeSha": "cd633e79b88559e451f03549ccc455ee357afe98"
+  },
+  {
+    "nodeId": "agent-attribution-warn",
+    "completedAt": "2026-03-03T23:04:12.154Z",
+    "validationChecks": [
+      {
+        "rule": "intent:Plan clarity: advance warns when branch has changes outside ",
+        "passed": true,
+        "evidence": "unevaluated"
+      },
+      {
+        "rule": "shell:npx tsx test/attribution-warn.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsx test/attribution-warn.test.ts"
+      },
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:test/attribution-warn.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "988a132671eab3855a75eb419b9b9284087957e5",
+    "treeSha": "cd633e79b88559e451f03549ccc455ee357afe98"
+  },
+  {
+    "nodeId": "hardening-verified",
+    "completedAt": "2026-03-03T23:04:29.508Z",
+    "validationChecks": [
+      {
+        "rule": "shell:npx tsx test/hardening-integration.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsx test/hardening-integration.test.ts"
+      },
+      {
+        "rule": "intent:All 6 hardening issues resolved — make→orient→advance pipeli",
+        "passed": true,
+        "evidence": "unevaluated"
+      },
+      {
+        "rule": "artifact-exists:test/hardening-integration.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "988a132671eab3855a75eb419b9b9284087957e5",
+    "treeSha": "cd633e79b88559e451f03549ccc455ee357afe98"
   }
 ]
