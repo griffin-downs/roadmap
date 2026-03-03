@@ -32,8 +32,8 @@ if [ -z "$ORIENT_JSON" ]; then
   exit 0
 fi
 
-LEVEL=$(echo "$ORIENT_JSON" | jq -r '.level // empty' 2>/dev/null)
-POSITION=$(echo "$ORIENT_JSON" | jq -r '.position | join(", ")' 2>/dev/null)
+LEVEL=$(echo "$ORIENT_JSON" | jq -r '.level // empty' 2>/dev/null || true)
+POSITION=$(echo "$ORIENT_JSON" | jq -r '.position | join(", ")' 2>/dev/null || true)
 
 if [ -n "$LEVEL" ] && [ -n "$POSITION" ]; then
   echo "" >> "$COMMIT_MSG_FILE"

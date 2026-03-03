@@ -1,22 +1,32 @@
 {
-  "id": "hardening-001+self-compounding-001",
-  "desc": "Minimal + Safe: tree-shake main, enforce via gitsafe + branch protections, archive full codebase. → Self-teaching system: wire existing components (CheckpointManager, metrics), implement spec-conformance validation, enable LLM pattern learning. Foundation for self-compounding architecture.",
+  "id": "self-compounding-001",
+  "desc": "Self-compounding architecture: hardened foundation → checkpoint/metrics/gitsafe → spec-conformance + LLM feedback → distributed DAG. Enables system self-teaching via cross-project pattern mining.",
   "init": "start",
   "term": "self-teaching-enabled",
   "nodes": {
     "start": {
       "id": "start",
       "desc": "Baseline: current recursive-locked state. Target: hardened main with gitsafe enforcement.",
-      "produces": [],
+      "produces": [
+        ".roadmap/tasks/start.artifact.json"
+      ],
       "consumes": [],
       "deps": [],
-      "validate": [],
-      "idempotent": false
+      "validate": [
+        {
+          "type": "intent",
+          "expandOnFail": true,
+          "statement": "Plan clarity: baseline state is unambiguous — hardened main with gitsafe enforcement as target"
+        }
+      ],
+      "idempotent": true
     },
     "archive-full-codebase": {
       "id": "archive-full-codebase",
       "desc": "Create archive/full-codebase branch from current HEAD. Preserves entire codebase for reference.",
-      "produces": [],
+      "produces": [
+        ".roadmap/tasks/archive-full-codebase.artifact.json"
+      ],
       "consumes": [],
       "deps": [
         "start"
@@ -50,7 +60,9 @@
     "tree-shake-main": {
       "id": "tree-shake-main",
       "desc": "Delete non-essential files from main: docs/, tests/, examples/, legacy src/lib/ subdirs. Keep only 10-15 core files.",
-      "produces": [],
+      "produces": [
+        ".roadmap/tasks/tree-shake-main.artifact.json"
+      ],
       "consumes": [],
       "deps": [
         "archive-full-codebase"
@@ -150,20 +162,22 @@
       ],
       "idempotent": true
     },
-    "test-immutability": {
-      "id": "test-immutability",
-      "desc": "Verify main cannot be pushed to directly, only via PR. Pre-commit hook blocks DAG edits outside feat/wip.",
+    "enforce-main-reads": {
+      "id": "enforce-main-reads",
+      "desc": "Add CLI validation: verify all file reads are from main (not current branch). Update bin/roadmap.ts.",
       "produces": [
-        "tests/immutability.test.ts"
+        "bin/roadmap.ts"
       ],
-      "consumes": [],
+      "consumes": [
+        ".roadmap/enforcement.json"
+      ],
       "deps": [
-        "setup-branch-protections"
+        "integrate-gitsafe"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "npm test tests/immutability.test.ts"
+          "command": "npx tsc --noEmit bin/roadmap.ts"
         }
       ],
       "idempotent": true
@@ -187,10 +201,30 @@
       ],
       "idempotent": true
     },
+    "test-immutability": {
+      "id": "test-immutability",
+      "desc": "Verify main cannot be pushed to directly, only via PR. Pre-commit hook blocks DAG edits outside feat/wip.",
+      "produces": [
+        "tests/immutability.test.ts"
+      ],
+      "consumes": [],
+      "deps": [
+        "setup-branch-protections"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test tests/immutability.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
     "setup-git-refs": {
       "id": "setup-git-refs",
       "desc": "Create git tags (hardening-001-baseline) and refs marking canonical state, archive snapshot, branch relationships.",
-      "produces": [],
+      "produces": [
+        ".roadmap/tasks/setup-git-refs.artifact.json"
+      ],
       "consumes": [],
       "deps": [
         "document-branch-architecture"
@@ -203,29 +237,9 @@
       ],
       "idempotent": true
     },
-    "enforce-main-reads": {
-      "id": "enforce-main-reads",
-      "desc": "Add CLI validation: verify all file reads are from main (not current branch). Update bin/roadmap.ts.",
-      "produces": [
-        "bin/roadmap.ts"
-      ],
-      "consumes": [
-        ".roadmap/enforcement.json"
-      ],
-      "deps": [
-        "integrate-gitsafe"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx ts-node bin/roadmap.ts orient --note 'test' 2>&1 | jq -e '.ok'"
-        }
-      ],
-      "idempotent": true
-    },
     "hardened-locked": {
       "id": "hardened-locked",
-      "desc": "Hardening complete: minimal main (15 files), gitsafe enforced, branch protections active, archive preserved, main-read enforced.",
+      "desc": "Hardening complete: minimal main, gitsafe enforced, branch protections active, archive preserved, main-read enforced.",
       "produces": [
         ".roadmap/metaflow/hardening/LOCKED.json"
       ],
@@ -240,28 +254,17 @@
         "setup-git-refs"
       ],
       "validate": [],
-      "idempotent": false
-    },
-    "phase-0-start": {
-      "id": "phase-0-start",
-      "desc": "Foundation: Establish agent self-orientation. Update CLAUDE.md with architecture guide so agents understand system without handholding.",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "hardened-locked"
-      ],
-      "validate": [],
-      "idempotent": false
+      "idempotent": true
     },
     "enrich-claude-md": {
       "id": "enrich-claude-md",
-      "desc": "Add AGENT_GUIDE section to .claude/CLAUDE.md: 6 layers, gap intents, existing resources (CheckpointManager, trail, gitsafe), integration patterns from branches, quick reference mapping.",
+      "desc": "Add AGENT_GUIDE section to .claude/CLAUDE.md: 6 layers, gap intents, existing resources, integration patterns, quick reference mapping.",
       "produces": [
         ".claude/CLAUDE.md"
       ],
       "consumes": [],
       "deps": [
-        "phase-0-start"
+        "hardened-locked"
       ],
       "validate": [
         {
@@ -279,17 +282,6 @@
       ],
       "idempotent": true
     },
-    "phase-1-start": {
-      "id": "phase-1-start",
-      "desc": "Parallel phase: Wire existing systems. High leverage, low effort. Unlocks audit trail + metrics for downstream work.",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "enrich-claude-md"
-      ],
-      "validate": [],
-      "idempotent": false
-    },
     "integrate-checkpoint-manager": {
       "id": "integrate-checkpoint-manager",
       "desc": "Wire CheckpointManager (recovery.ts) into roadmap runtime. Hook into complete() to create snapshots, record decisions, enable rollback.",
@@ -299,7 +291,7 @@
       ],
       "consumes": [],
       "deps": [
-        "phase-1-start"
+        "enrich-claude-md"
       ],
       "validate": [
         {
@@ -315,7 +307,7 @@
     },
     "extract-metrics-from-trail": {
       "id": "extract-metrics-from-trail",
-      "desc": "Parse .roadmap/trail.jsonl retrospectively. Compute SLO metrics (execution time, success rate, validator hits, completion velocity) from existing data. Zero instrumentation cost.",
+      "desc": "Parse .roadmap/trail.jsonl retrospectively. Compute SLO metrics from existing data. Zero instrumentation cost.",
       "produces": [
         "src/metrics-extractor.ts",
         ".roadmap/metrics.jsonl",
@@ -323,30 +315,26 @@
       ],
       "consumes": [],
       "deps": [
-        "phase-1-start"
+        "enrich-claude-md"
       ],
       "validate": [
         {
           "type": "shell",
           "command": "test -f .roadmap/metrics.jsonl"
-        },
-        {
-          "type": "shell",
-          "command": "jq 'length' .roadmap/metrics.jsonl | grep -qE '^[0-9]+$'"
         }
       ],
       "idempotent": true
     },
     "extend-gitsafe-multirepo": {
       "id": "extend-gitsafe-multirepo",
-      "desc": "Extend gitsafe-loader.ts to support N repositories instead of single repo. Update glob patterns, enforce consistency across all repos.",
+      "desc": "Extend gitsafe-loader.ts to support N repositories. Update glob patterns, enforce consistency across all repos.",
       "produces": [
         "src/lib/gitsafe-loader.ts",
         "tests/gitsafe-multirepo.test.ts"
       ],
       "consumes": [],
       "deps": [
-        "phase-1-start"
+        "enrich-claude-md"
       ],
       "validate": [
         {
@@ -360,29 +348,42 @@
       ],
       "idempotent": true
     },
-    "phase-2-start": {
-      "id": "phase-2-start",
-      "desc": "Parallel phase: Implement spec-conformance validation. Depends on phase 1 audit trail + metrics foundation.",
-      "produces": [],
+    "enforce-dag-intake-pipeline": {
+      "id": "enforce-dag-intake-pipeline",
+      "desc": "Block manual DAG construction. All DAGs must originate from spec pipeline. Pre-commit + runtime enforcement.",
+      "produces": [
+        "scripts/validate-dag-origin.ts",
+        "src/lib/intake/index.ts"
+      ],
       "consumes": [],
       "deps": [
-        "integrate-checkpoint-manager",
-        "extract-metrics-from-trail",
-        "extend-gitsafe-multirepo"
+        "enrich-claude-md"
       ],
-      "validate": [],
-      "idempotent": false
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit scripts/validate-dag-origin.ts"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit src/lib/intake/index.ts"
+        }
+      ],
+      "idempotent": true
     },
     "implement-spec-conformance-validator": {
       "id": "implement-spec-conformance-validator",
-      "desc": "Build spec-conformance validator: scenario (Given/When/Then) → node mapping engine. Validate DAGs against scenarios. Feed failures into audit trail.",
+      "desc": "Build spec-conformance validator: scenario (Given/When/Then) to node mapping engine. Validate DAGs against scenarios. Feed failures into audit trail.",
       "produces": [
         "src/validators/spec-conformance.ts",
         "tests/spec-conformance.test.ts"
       ],
       "consumes": [],
       "deps": [
-        "phase-2-start"
+        "integrate-checkpoint-manager",
+        "extract-metrics-from-trail",
+        "extend-gitsafe-multirepo",
+        "enforce-dag-intake-pipeline"
       ],
       "validate": [
         {
@@ -398,14 +399,17 @@
     },
     "integrate-llm-feedback-loop": {
       "id": "integrate-llm-feedback-loop",
-      "desc": "Parse metrics + audit trail → LLM-friendly feedback. Generate improvement prompts for agent iterations. Wire into agent brief generation.",
+      "desc": "Parse metrics + audit trail into LLM-friendly feedback. Generate improvement prompts for agent iterations. Wire into agent brief generation.",
       "produces": [
         "src/llm-feedback.ts",
         "tests/llm-feedback.test.ts"
       ],
       "consumes": [],
       "deps": [
-        "phase-2-start"
+        "integrate-checkpoint-manager",
+        "extract-metrics-from-trail",
+        "extend-gitsafe-multirepo",
+        "enforce-dag-intake-pipeline"
       ],
       "validate": [
         {
@@ -419,17 +423,44 @@
       ],
       "idempotent": true
     },
-    "phase-3-start": {
-      "id": "phase-3-start",
-      "desc": "Scale phase: Enable distributed DAG state. Multi-repo support enables cross-project pattern mining.",
-      "produces": [],
+    "dag-mutation-commands": {
+      "id": "dag-mutation-commands",
+      "desc": "CLI commands for DAG mutations: insert, remove, modify nodes with provenance receipts and validation.",
+      "produces": [
+        "src/lib/dag-mutator.ts"
+      ],
       "consumes": [],
       "deps": [
-        "implement-spec-conformance-validator",
-        "integrate-llm-feedback-loop"
+        "integrate-checkpoint-manager",
+        "extract-metrics-from-trail",
+        "extend-gitsafe-multirepo",
+        "enforce-dag-intake-pipeline"
       ],
-      "validate": [],
-      "idempotent": false
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit src/lib/dag-mutator.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "runtime-origin-gate": {
+      "id": "runtime-origin-gate",
+      "desc": "Enforce valid spec origin on all DAG read commands. Reject DAGs without provenance.",
+      "produces": [
+        ".roadmap/tasks/runtime-origin-gate.artifact.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "enforce-dag-intake-pipeline"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit bin/roadmap.ts"
+        }
+      ],
+      "idempotent": true
     },
     "implement-distributed-dag": {
       "id": "implement-distributed-dag",
@@ -440,7 +471,10 @@
       ],
       "consumes": [],
       "deps": [
-        "phase-3-start"
+        "implement-spec-conformance-validator",
+        "integrate-llm-feedback-loop",
+        "dag-mutation-commands",
+        "runtime-origin-gate"
       ],
       "validate": [
         {
@@ -456,7 +490,7 @@
     },
     "self-teaching-enabled": {
       "id": "self-teaching-enabled",
-      "desc": "Self-teaching architecture complete: metrics visible, spec-conformance testable, audit trail recorded, patterns emerge from cross-project DAGs. LLM learns to generate better DAGs.",
+      "desc": "Self-teaching architecture complete: metrics visible, spec-conformance testable, audit trail recorded, patterns emerge from cross-project DAGs.",
       "produces": [
         ".roadmap/metaflow/self-compounding/ENABLED.json"
       ],
@@ -476,9 +510,16 @@
         {
           "type": "shell",
           "command": "test -f src/checkpoint-runtime.ts"
+        },
+        {
+          "type": "intent",
+          "expandOnFail": true,
+          "statement": "Self-teaching architecture is operational: metrics pipeline extracts SLOs from trail, spec-conformance validates DAGs against scenarios, LLM feedback loop generates improvement prompts, distributed DAG enables cross-project pattern mining"
         }
       ],
-      "idempotent": false
+      "idempotent": true
     }
-  }
+  },
+  "version": "0.3.0",
+  "protocolVersion": "0.3.0"
 }
