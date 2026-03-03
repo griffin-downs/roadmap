@@ -97,6 +97,28 @@ describe('Explore CLI - All Modes', () => {
     expect(output).toContain('Click with visibility');
   });
 
+  it('roadmap explore --api --json returns JSON', () => {
+    const output = execSync(`npx tsx bin/roadmap.ts explore --api --json`, {
+      encoding: 'utf-8',
+    });
+
+    const data = JSON.parse(output);
+    expect(data).toHaveProperty('import', 'roadmap/explore');
+    expect(data.observations).toHaveLength(17);
+    expect(data.interactions).toHaveLength(19);
+    expect(data.runtime).toBeDefined();
+    expect(data.types).toBeDefined();
+  });
+
+  it('roadmap explore --eval evaluates inline code', () => {
+    const output = execSync(`npx tsx bin/roadmap.ts explore --eval "typeof checkVisible" --json`, {
+      encoding: 'utf-8',
+    });
+
+    const data = JSON.parse(output);
+    expect(data).toHaveProperty('result');
+  });
+
   it('explore is a top-level core command', () => {
     const helpOutput = execSync(`npx tsx bin/roadmap.ts help`, {
       encoding: 'utf-8',
