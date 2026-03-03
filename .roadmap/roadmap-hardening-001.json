@@ -90,12 +90,39 @@
       "validate": [{"type": "shell", "command": "npm test tests/immutability.test.ts"}],
       "idempotent": true
     },
+    "document-branch-architecture": {
+      "id": "document-branch-architecture",
+      "desc": "Create .roadmap/BRANCHES.md: document main (canonical), archive/full-codebase (snapshot), develop (experimental) relationship.",
+      "produces": [".roadmap/BRANCHES.md"],
+      "consumes": [],
+      "deps": ["archive-full-codebase", "tree-shake-main"],
+      "validate": [{"type": "artifact-exists", "target": ".roadmap/BRANCHES.md"}],
+      "idempotent": true
+    },
+    "setup-git-refs": {
+      "id": "setup-git-refs",
+      "desc": "Create git tags (hardening-001-baseline) and refs marking canonical state, archive snapshot, branch relationships.",
+      "produces": [],
+      "consumes": [],
+      "deps": ["document-branch-architecture"],
+      "validate": [{"type": "shell", "command": "git rev-parse --verify hardening-001-baseline"}],
+      "idempotent": true
+    },
+    "enforce-main-reads": {
+      "id": "enforce-main-reads",
+      "desc": "Add CLI validation: verify all file reads are from main (not current branch). Update bin/roadmap.ts.",
+      "produces": ["bin/roadmap.ts"],
+      "consumes": [".roadmap/enforcement.json"],
+      "deps": ["integrate-gitsafe"],
+      "validate": [{"type": "shell", "command": "npx ts-node bin/roadmap.ts orient --note 'test' 2>&1 | jq -e '.ok'"}],
+      "idempotent": true
+    },
     "hardened-locked": {
       "id": "hardened-locked",
-      "desc": "Hardening complete: minimal main (15 files), gitsafe enforced, branch protections active, archive preserved.",
+      "desc": "Hardening complete: minimal main (15 files), gitsafe enforced, branch protections active, archive preserved, main-read enforced.",
       "produces": [".roadmap/metaflow/hardening/LOCKED.json"],
       "consumes": [],
-      "deps": ["tree-shake-main", "integrate-gitsafe", "test-gitsafe-enforcement", "verify-minimal-surface", "test-immutability"],
+      "deps": ["tree-shake-main", "integrate-gitsafe", "test-gitsafe-enforcement", "verify-minimal-surface", "test-immutability", "enforce-main-reads", "setup-git-refs"],
       "validate": [],
       "idempotent": false
     }
