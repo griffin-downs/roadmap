@@ -465,11 +465,6 @@ async function cmdAdvance(note: string) {
 }
 
 async function cmdMake(note: string) {
-  // Plan gate not required in minimal mode
-  if (!args.includes('--skip-plan-gate')) {
-    // Optional: could add plan gate check here if needed
-  }
-
   const specPath = args[1];
   if (!specPath) {
     throw new RoadmapError('VALIDATION_FAILED', {
@@ -497,21 +492,47 @@ async function cmdMake(note: string) {
     }, `Failed to parse spec: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Intake enforcement: reject raw DAG JSON, require spec format
+  if (parsed.nodes && typeof parsed.nodes === 'object' && !parsed.tasks) {
+    throw new RoadmapError('VALIDATION_FAILED', {
+      fix: [
+        'Cannot create DAG from raw JSON.',
+        'roadmap make expects a spec, not a DAG definition.',
+        '',
+        'Proper workflow:',
+        '  1. roadmap spec plan --from <requirements.md> --output spec.json',
+        '  2. roadmap make spec.json',
+        '  3. roadmap show <node-id> to inspect',
+      ].join('\n'),
+    }, 'Invalid spec: raw DAG detected. Use the spec pipeline to create a spec first.');
+  }
+
+  // Validate required spec fields
+  if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
+    throw new RoadmapError('VALIDATION_FAILED', {
+      fix: 'Spec must have a "tasks" array. Use: roadmap spec plan --from <requirements.md>',
+    }, 'Invalid spec: missing "tasks" array');
+  }
+
+  if (!parsed.metadata || typeof parsed.metadata !== 'object') {
+    throw new RoadmapError('VALIDATION_FAILED', {
+      fix: 'Spec must have a "metadata" object with "generated" and "compile_hash". Use the spec pipeline.',
+    }, 'Invalid spec: missing "metadata" object');
+  }
+
+  if (!parsed.schema_version) {
+    throw new RoadmapError('VALIDATION_FAILED', {
+      fix: 'Spec must have "schema_version". Use the spec pipeline to generate a valid spec.',
+    }, 'Invalid spec: missing "schema_version"');
+  }
+
   // Convert spec to DAG
   let dag: any;
   try {
-    // If parsed is a SpecIR (has tasks array), convert it
-    if (parsed.tasks && Array.isArray(parsed.tasks)) {
-      dag = tasksToDAG(parsed.tasks, parsed.id ?? 'ideal-dag');
-    } else if (parsed.nodes && typeof parsed.nodes === 'object') {
-      // Already a DAG
-      dag = parsed;
-    } else {
-      throw new Error('Spec must have "tasks" array or "nodes" object');
-    }
+    dag = tasksToDAG(parsed.tasks, { dagId: parsed.dag_id ?? parsed.id ?? 'ideal-dag', dagDesc: parsed.dag_desc });
   } catch (e) {
     throw new RoadmapError('VALIDATION_FAILED', {
-      fix: 'Ensure spec conforms to SpecIR or DAG format',
+      fix: 'Ensure spec conforms to SpecIR format',
     }, `Failed to convert spec: ${e instanceof Error ? e.message : String(e)}`);
   }
 
@@ -545,9 +566,24 @@ async function cmdMake(note: string) {
   if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
   writeFileSync(headPath, JSON.stringify(dag, null, 2) + '\n');
 
+  // Write spec-origin receipt for provenance tracking
+  const dagJson = JSON.stringify(dag);
+  const dagHash = createHash('sha256').update(dagJson).digest('hex');
+  const specHash = createHash('sha256').update(specContent).digest('hex');
+  const origin: SpecOrigin = {
+    schemaVersion: 1,
+    engine: parsed.engine?.name ?? 'spec-kit',
+    version: parsed.engine?.version ?? '0.0.0',
+    compile_hash: parsed.metadata?.compile_hash ?? dagHash,
+    spec_sha: specHash,
+    importedAt: new Date().toISOString(),
+    dagId: parsed.dag_id ?? parsed.id ?? 'ideal-dag',
+  };
+  writeSpecOrigin(repoRoot, origin);
+
   // Commit
   try {
-    execSync('git add .roadmap/head.json', { cwd: repoRoot, stdio: 'pipe' });
+    execSync('git add .roadmap/head.json .roadmap/spec-origin.json', { cwd: repoRoot, stdio: 'pipe' });
     execSync(`git commit -m "make: ideal DAG from ${specPath}"`, {
       cwd: repoRoot,
       stdio: 'pipe',
