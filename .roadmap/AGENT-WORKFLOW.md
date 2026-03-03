@@ -1,147 +1,93 @@
 # Agent Workflow
 
-Zero-git-management task execution for LLM agents.
+Pure integration via task system. No CLI commands.
 
 ## Lifecycle
 
 ```
-claim --> work --> complete --> (next task)
+TaskList --> TaskUpdate owner --> (worktree auto-created) --> work --> push --> TaskUpdate completed --> (worktree auto-cleaned)
 ```
 
-### 1. Claim
+### 1. Find Work
 
-```bash
-roadmap agent claim <task-id> --agent-id <id>
+```
+TaskList -> find task with status=pending, no owner, empty blockedBy
 ```
 
-Output:
-```json
-{
-  "claimed": true,
-  "taskId": "implement-auth",
-  "agentId": "agent-1",
-  "worktree": ".claude/worktrees/implement-auth",
-  "branch": "feat/agent-a1b2c3d4/implement-auth",
-  "cwd": "/absolute/path/to/worktree",
-  "produces": ["src/auth.ts", "src/auth.test.ts"],
-  "consumes": ["src/types.ts"],
-  "claimExpiry": "2026-03-03T04:00:00Z"
-}
+### 2. Claim (TaskUpdate)
+
+```
+TaskUpdate { taskId, owner: agent-id }
 ```
 
-What happens:
-- Claim token written (4h TTL, conflict-checked)
+Integration layer (`onTaskOwnerSet`) auto-triggers:
 - Git worktree created at `.claude/worktrees/<task-id>`
 - Feature branch `feat/agent-<uuid>/<task-id>` from HEAD
-- Brief JSON written into worktree for agent reference
+- Brief JSON loaded from DAG (produces, consumes, description)
 
-### 2. Work
+### 3. Work
 
 Agent works inside the worktree. Rules:
 - Edit only files listed in `produces`
 - Read only files listed in `consumes`
 - Commit message format: `<task-id>: <what was produced>`
-- No DAG edits (pre-commit hook blocks head.json changes)
+- Pre-commit hook (husky) blocks head.json edits on non-feat branches
 
-### 3. Complete
-
-```bash
-roadmap agent complete <task-id> --message "implemented auth module"
-```
-
-What happens:
-1. Verify all `produces` artifacts exist in worktree
-2. `git add <produces>` + `git commit -m "<task-id>: <message>"`
-3. `git push origin <branch>`
-4. Remove worktree + delete local branch
-5. Release claim token
-6. Trail entry logged
-
-Output:
-```json
-{
-  "completed": true,
-  "taskId": "implement-auth",
-  "commit": "abc1234",
-  "branch": "feat/agent-a1b2c3d4/implement-auth",
-  "pushed": true,
-  "cleaned": true
-}
-```
-
-### 4. Status
+### 4. Push
 
 ```bash
-roadmap agent status
+git push origin feat/agent-<uuid>/<task-id>
 ```
 
-Lists all active agent worktrees with their task IDs, branches, agents.
+Post-push hook auto-syncs production mirror (FF-only pull + SHA verify + gitsafe check).
 
-### 5. Cleanup (manual)
+### 5. Complete (TaskUpdate)
 
-```bash
-roadmap agent cleanup <task-id>
+```
+TaskUpdate { taskId, status: completed }
 ```
 
-Force-removes worktree + branch + claim. Use when agent crashed mid-task.
+Integration layer (`onTaskCompleted`) auto-triggers:
+- Verify all `produces` artifacts exist
+- Remove worktree + delete local branch
 
 ## Post-Push Mirror Sync
 
-When the development clone pushes to origin, the post-push hook:
-
-1. Pulls origin/main into production clone (fast-forward only)
+Husky hook at `.husky/post-push`:
+1. Pulls origin/main into production clone (FF-only)
 2. Verifies SHA match between clones
 3. Validates gitsafe enforcement.json
-4. Logs result to `.roadmap/mirror-sync-log.jsonl`
+4. Logs to `.roadmap/mirror-sync-log.jsonl`
 
-Install: `cp scripts/hooks/post-push ~/src/.dev/roadmap/.git/hooks/post-push`
+## Hooks (husky)
+
+| Hook | Location | Purpose |
+|------|----------|---------|
+| pre-commit | `.husky/pre-commit` | 5 gates: branch guard, head.json discipline, gitsafe denylist, tsc, DAG integrity |
+| commit-msg | `.husky/commit-msg` | Enforce node attribution in commit messages |
+| post-commit | `.husky/post-commit` | Record git state for recovery |
+| prepare-commit-msg | `.husky/prepare-commit-msg` | Auto-populate batch position |
+| post-push | `.husky/post-push` | Mirror sync after push |
 
 ## Isolation Guarantees
 
 | Concern | How it's handled |
 |---------|-----------------|
 | Branch conflicts | Each agent gets unique branch: `feat/agent-<uuid>/<task>` |
-| File conflicts | `produces` scoping — agents only touch their artifacts |
-| DAG corruption | Pre-commit hook blocks head.json edits on non-feat branches |
-| Stale claims | 4h TTL, auto-expires, `agent cleanup` for manual override |
+| File conflicts | `produces` scoping -- agents only touch their artifacts |
+| DAG corruption | Husky pre-commit blocks head.json edits on non-feat branches |
 | Mirror drift | Post-push hook auto-syncs production after dev push |
-| Orphan worktrees | `agent status` lists all, `agent cleanup` removes stale |
 
-## Agent Decision Tree
+## Infrastructure
 
-```
-"I need to work on a task"
-  --> roadmap agent claim <task-id>
-
-"I finished my task"
-  --> roadmap agent complete <task-id> --message "what I did"
-
-"My task is stuck / I crashed"
-  --> roadmap agent cleanup <task-id>
-  --> roadmap agent claim <task-id>  (re-claim)
-
-"What tasks are in progress?"
-  --> roadmap agent status
-
-"Where am I? Can I push from here?"
-  --> roadmap topology where
-  --> roadmap topology enforce --op push
-```
-
-## Full Swarm Pattern
-
-```bash
-# Orchestrator
-roadmap orient --note "dispatch batch"
-BATCH=$(roadmap orient --note "get batch" | jq -r '.data.position[]')
-
-for TASK in $BATCH; do
-  # Each agent (in parallel)
-  roadmap agent claim "$TASK" --agent-id "agent-$TASK"
-  cd .claude/worktrees/$TASK
-  # ... do work ...
-  roadmap agent complete "$TASK" --message "done"
-done
-
-roadmap advance --note "batch complete"
-```
+| File | Purpose |
+|------|---------|
+| `src/lib/agent-dispatch/task-worktree.ts` | onTaskOwnerSet / onTaskCompleted hooks |
+| `src/lib/agent-dispatch/orchestrator.ts` | Batch execution coordinator |
+| `src/lib/agent-dispatch/agent-executor.ts` | Sealed executor (consumes/produces boundaries) |
+| `src/lib/agent-dispatch/brief-gate.ts` | Brief validation (DAG leakage detection) |
+| `src/lib/brief.ts` | Sealed agent brief (position, produces, consumes) |
+| `src/lib/handoff.ts` | Checkpoint + advance (progress tracking) |
+| `src/index.agent.ts` | Agent entry point (sealed API surface) |
+| `.husky/pre-commit` | Branch discipline + gitsafe + tsc + DAG gates |
+| `.husky/post-push` | Mirror sync after push |

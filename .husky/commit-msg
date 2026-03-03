@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Commit-msg hook: enforce node attribution in commit messages.
+# Message must either reference a known node ID from head.json
+# or use the "roadmap:" prefix for structural commits.
+# Bypass: SKIP_NODE_CHECK=<reason> git commit
+
+COMMIT_MSG_FILE=$1
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+ROADMAP_FILE="${REPO_ROOT}/.roadmap/head.json"
+
+# Only if roadmap exists
+if [ ! -f "$ROADMAP_FILE" ]; then
+  exit 0
+fi
+
+# Bypass
+if [ -n "$SKIP_NODE_CHECK" ]; then
+  echo "[$(date +'%Y-%m-%d %H:%M:%S')] SKIP_NODE_CHECK: $SKIP_NODE_CHECK" >> "${REPO_ROOT}/.git/hooks.log"
+  exit 0
+fi
+
+MSG=$(cat "$COMMIT_MSG_FILE")
+
+# "roadmap:" prefix always passes
+if echo "$MSG" | grep -q '^roadmap:'; then
+  exit 0
+fi
+
+# Check if message contains any known node ID
+NODE_IDS=$(jq -r '.nodes | keys[]' "$ROADMAP_FILE" 2>/dev/null)
+for NODE_ID in $NODE_IDS; do
+  if echo "$MSG" | grep -qF "$NODE_ID"; then
+    exit 0
+  fi
+done
+
+echo ""
+echo "❌ commit-msg: Commit message must reference a roadmap node or use 'roadmap:' prefix."
+echo ""
+echo "  Use a node ID in the message:  git commit -m \"node-name: description\""
+echo "  Or use the roadmap prefix:     git commit -m \"roadmap: phase completion\""
+echo ""
+echo "  Node IDs are in .roadmap/head.json"
+echo "  Bypass (auditable): SKIP_NODE_CHECK='reason' git commit"
+echo ""
+exit 1

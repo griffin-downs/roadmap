@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Post-commit hook: record git state for recovery via gitArtifactAt().
+# Writes .roadmap/git-state.json with HEAD commit + timestamp.
+# Non-blocking — errors are swallowed to avoid failing commits.
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+ROADMAP_DIR="${REPO_ROOT}/.roadmap"
+
+# Only run if roadmap exists
+[ -d "$ROADMAP_DIR" ] || exit 0
+
+COMMIT=$(git rev-parse HEAD 2>/dev/null) || exit 0
+SUBJECT=$(git log -1 --pretty=%s 2>/dev/null) || SUBJECT=""
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Escape JSON string values
+SUBJECT=$(printf '%s' "$SUBJECT" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+cat > "${ROADMAP_DIR}/git-state.json" <<EOF
+{
+  "lastCommit": "${COMMIT}",
+  "timestamp": "${TIMESTAMP}",
+  "message": "${SUBJECT}"
+}
+EOF
