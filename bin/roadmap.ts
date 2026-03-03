@@ -315,6 +315,7 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     case 'orient':    return await cmdOrient(note);
     case 'advance':   return await cmdAdvance(note!);
     case 'make':      return await cmdMake(note!);
+    case 'status':    return await cmdStatus(note);
 
     // Spec pipeline
     case 'spec':      return await cmdSpecGroup(note);
@@ -330,7 +331,7 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     case '--help':
     case '-h':        return cmdHelp();
     default:
-      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance}. Group: {spec, dag}. Use 'roadmap help' for details.` });
+      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Use 'roadmap help' for details.` });
       process.exit(1);
   }
 }
@@ -828,6 +829,60 @@ async function cmdMake(note: string) {
     position: pos.position,
     level: pos.level,
     message: 'Ideal DAG created from spec',
+  });
+}
+
+async function cmdStatus(note: string | undefined) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap tracked in this repo', fix: 'Run `roadmap make <spec.json>`' });
+    return;
+  }
+
+  enforceMainBranch();
+
+  const dag = await loadDAGAsync();
+  const completion = CompletionStore.loadOrEmpty(repoRoot);
+  const pos = await crossOrientWithState(dag);
+
+  // Current batch is in pos.position
+  const batchNodeIds = pos.position || [];
+  const nodeMap = new Map(
+    Object.entries(dag.nodes).map(([id, node]) => [
+      id,
+      node as any,
+    ])
+  );
+
+  // Build status for each node in current batch
+  const status = batchNodeIds
+    .map(nodeId => {
+      const node = nodeMap.get(nodeId);
+      if (!node) return null;
+
+      const produces = (node.produces as string[]) || [];
+      const producesExist = produces.map(p => ({
+        file: p,
+        exists: existsSync(join(repoRoot, p)),
+      }));
+
+      const hasReceipt = completion.hasPassing(nodeId);
+      const validators = ((node.validate as any) || []).length;
+
+      return {
+        nodeId,
+        produces,
+        producesExist,
+        hasReceipt,
+        validators,
+      };
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null);
+
+  json({
+    batch: batchNodeIds,
+    nodes: status,
+    batchComplete: pos.batchComplete,
+    level: pos.level,
   });
 }
 
