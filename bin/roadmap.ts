@@ -207,10 +207,6 @@ if (cmd === 'compile-brief' && args.includes('--help')) {
 if ((cmd === 'dag' || cmd === 'team' || cmd === 'spec' || cmd === 'util') && (args[1] === 'help' || args[1] === '--help' || args[1] === '-h')) {
   NOTE_EXEMPT.add(cmd);
 }
-// util explore is read-only (--api dumps surface)
-if (cmd === 'util' && args[1] === 'explore' && args.includes('--api')) {
-  NOTE_EXEMPT.add('util');
-}
 // util trail, install, checkpoint --list/--restore are read-only
 if (cmd === 'util' && (args[1] === 'trail' || args[1] === 'install' || (args[1] === 'checkpoint' && (args.includes('--list') || args.includes('--restore'))))) {
   NOTE_EXEMPT.add('util');
@@ -357,6 +353,7 @@ async function main() {
       case 'complete':  return await cmdComplete(note!);
       case 'chart':     return cmdChart();
       case 'validate':  return cmdValidate(note!);
+      case 'explore':   return await cmdExplore();
 
       // Grouped commands
       case 'dag':       return await cmdDag(note!);
@@ -367,7 +364,7 @@ async function main() {
       case '--help':
       case '-h':        return cmdHelp();
       default:
-        json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {orient, advance, show, complete, chart, validate}. Groups: {dag, team, spec, util}. Use 'roadmap help' for details.` });
+        json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {orient, advance, show, complete, chart, validate, explore}. Groups: {dag, team, spec, util}. Use 'roadmap help' for details.` });
         process.exit(1);
     }
   } catch (e) {
@@ -4432,11 +4429,10 @@ async function cmdUtil(note?: string) {
       return cmdUtilHelp();
     case 'trail':       return cmdTrail();
     case 'checkpoint':  return cmdCheckpoint(note);
-    case 'explore':     return await cmdExplore();
     case 'install':     return cmdInstall();
     case 'federation':  return cmdFederation(note!);
     default:
-      json({ error: `Unknown util subcommand: ${sub}`, fix: 'roadmap util trail|checkpoint|explore|install|federation' });
+      json({ error: `Unknown util subcommand: ${sub}`, fix: 'roadmap util trail|checkpoint|install|federation' });
       process.exit(1);
   }
 }
@@ -4449,8 +4445,6 @@ Subcommands:
     Read invocation trail (local or global)
   checkpoint [--label <name>] [--list] [--restore]
     Save/restore state checkpoints
-  explore [--api] [--run <script>] [--launch <cmd>] [--port N]
-    Explore API surface and run exploration scripts
   install [path]
     Install protocol into CLAUDE.md
   federation
@@ -4461,7 +4455,6 @@ Examples:
   roadmap util trail --global
   roadmap util checkpoint --label "phase 1 done" --note "save"
   roadmap util checkpoint --restore
-  roadmap util explore --api
   roadmap util install
   roadmap util federation --note "sync repos"
 `);
@@ -6633,12 +6626,13 @@ Core commands (mainline execution loop):
   complete <node-id>  Atomic: claim → checkpoint → reorient → auto-advance if last in batch
   chart               Pretty-print progress chart with emoji bars
   validate [node]     Run validation rules (all nodes or specific)
+  explore [--api|--run|--eval]  Explore API surface or run explore scripts (roadmap/explore)
 
 Command groups (use 'roadmap <group> help' for details):
   dag <sub>           DAG manipulation: diff, expand, propagate, retire, optimize, switch, spawn
   team <sub>          Multi-agent coordination: claim, dispatch, strategy, assign
   spec <sub>          Spec pipeline: plan, import, intake, compile, init
-  util <sub>          Session utilities: trail, checkpoint, explore, install, federation
+  util <sub>          Session utilities: trail, checkpoint, install, federation
 
 Global flags:
   --quiet, -q         Suppress non-fatal output
