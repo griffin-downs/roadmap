@@ -53,3 +53,7 @@
 {"ts":"2026-03-03T11:52:34.904Z","cmd":"orient","note":"check batch state before commit","repo":"roadmap","position":["document-branch-architecture","enforce-main-reads","setup-branch-protections","test-gitsafe-enforcement","verify-minimal-surface"],"level":3}
 {"ts":"2026-03-03T11:52:58.466Z","cmd":"orient","note":"pre-commit batch check","repo":"roadmap","position":["setup-git-refs","test-immutability"],"level":4}
 {"ts":"2026-03-03T11:53:09.536Z","cmd":"orient","note":"check L4 status after batch commit","repo":"roadmap","position":["setup-git-refs","test-immutability"],"level":4}
+{"ts":"2026-03-03T11:53:24.763Z","cmd":"orient","note":"verify hardening-001 roadmap completion","repo":"roadmap","position":[],"level":6}
+{"ts":"2026-03-03T11:58:08.217Z","cmd":"orient","note":"branch-enforcer: setting up branch protections, pre-commit hooks, immutability docs","repo":"roadmap","position":[],"level":6}
+{"ts":"2026-03-03T11:59:39.272Z","cmd":"orient","note":"gitsafe integration test","repo":"roadmap","position":[],"level":6}
+{"ts":"2026-03-03T12:01:49.836Z","cmd":"orient","note":"enforcement hooks test","repo":"roadmap","position":[],"level":6}
