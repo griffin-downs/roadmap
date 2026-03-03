@@ -502,7 +502,10 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
 
   // Run validators via unified validation function
   const existsPredicate = (artifact: string) => existsSync(join(repoRoot, artifact));
-  const validationResult = await validateNode(dag, nodeId, existsPredicate);
+  const validationResult = await validateNode(dag, nodeId, existsPredicate, {
+    repoRoot,
+    branch: getCurrentBranch(),
+  });
 
   // Map ValidationCheck to EvidenceRecord format
   const checks: EvidenceRecord[] = validationResult.checks.map(c => ({

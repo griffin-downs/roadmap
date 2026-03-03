@@ -62,7 +62,16 @@ export async function validateNode<T extends string>(
       } else {
         try {
           const { execSync } = await import('node:child_process');
-          execSync(rule.fn, { stdio: 'pipe', env: { ...process.env, ROADMAP_VALIDATING: '1' } });
+          execSync(rule.fn, {
+            stdio: 'pipe',
+            env: {
+              ...process.env,
+              ROADMAP_VALIDATING: '1',
+              ROADMAP_NODE: nodeId,
+              ROADMAP_REPO: opts?.repoRoot ?? process.cwd(),
+              ROADMAP_BRANCH: opts?.branch ?? 'unknown',
+            }
+          });
           passed = true;
           evidence = `command passed: ${rule.fn}`;
         } catch (e: any) {
