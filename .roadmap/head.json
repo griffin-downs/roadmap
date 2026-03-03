@@ -45,7 +45,7 @@
       "desc": "Implement roadmap explore --run <script> [--launch <cmd>] [--port] [--build] [--keep-alive]",
       "produces": ["bin/roadmap.ts"],
       "consumes": [],
-      "deps": ["cli-api-mode"],
+      "deps": ["export-barrel"],
       "validate": [{"type": "shell", "command": "bin/roadmap explore --help | grep -q '\\-\\-run'"}],
       "idempotent": true
     },
@@ -54,7 +54,7 @@
       "desc": "Implement roadmap explore --eval '<inline script>': one-shot evaluation from CLI",
       "produces": ["bin/roadmap.ts"],
       "consumes": [],
-      "deps": ["cli-run-mode"],
+      "deps": ["export-barrel"],
       "validate": [{"type": "shell", "command": "bin/roadmap explore --help | grep -q '\\-\\-eval'"}],
       "idempotent": true
     },
@@ -108,7 +108,7 @@
       "desc": "Update docs/FR-EXPLORE-API.md with implementation status + usage examples",
       "produces": ["docs/FR-EXPLORE-API.md"],
       "consumes": [],
-      "deps": ["cli-eval-mode"],
+      "deps": ["cli-api-mode"],
       "validate": [{"type": "artifact-exists", "target": "docs/FR-EXPLORE-API.md"}],
       "idempotent": true
     },
