@@ -111,6 +111,22 @@ else
   echo -e "${GREEN}  + DAG integrity (skipped: feature branch)${NC}"
 fi
 
+# Gate 5: DAG origin validation (spec-origin.json must exist when head.json staged)
+echo -e "${YELLOW}  > DAG origin...${NC}"
+if [ -n "$STAGED_FILES" ] && echo "$STAGED_FILES" | grep -q '\.roadmap/head.*\.json'; then
+  if [ -f .git/MERGE_HEAD ]; then
+    echo -e "${GREEN}  + DAG origin (skipped: merge commit)${NC}"
+  elif npx tsx scripts/validate-dag-origin.ts "$PROJECT_ROOT" 2>/tmp/dag-origin.log; then
+    echo -e "${GREEN}  + DAG origin${NC}"
+  else
+    echo -e "${RED}  x DAG origin validation failed${NC}"
+    cat /tmp/dag-origin.log >&2
+    FAILED=$((FAILED + 1))
+  fi
+else
+  echo -e "${GREEN}  + DAG origin (no head.json staged)${NC}"
+fi
+
 # Result
 echo ""
 if [ $FAILED -eq 0 ]; then
