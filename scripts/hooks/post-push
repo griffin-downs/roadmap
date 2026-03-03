@@ -1,0 +1,89 @@
+#!/bin/bash
+# Post-push hook: Auto-sync production mirror after dev clone push.
+# Run context: development clone (~/src/.dev/roadmap) after successful push.
+#
+# Steps:
+#   1. cd to production clone
+#   2. git pull origin main
+#   3. Verify main == dev's main
+#   4. Run gitsafe verification
+#   5. Log result to .roadmap/mirror-sync-log.jsonl
+
+set -euo pipefail
+
+PROD_CLONE="/home/griffin/src/roadmap"
+DEV_CLONE="$HOME/src/.dev/roadmap"
+LOG_FILE="$PROD_CLONE/.roadmap/mirror-sync-log.jsonl"
+TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Only sync if pushing from dev clone
+CWD="$(pwd)"
+RESOLVED_DEV=$(cd "$DEV_CLONE" 2>/dev/null && pwd || echo "")
+if [[ "$CWD" != "$RESOLVED_DEV" ]]; then
+  exit 0
+fi
+
+# Only sync main branch pushes
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+PUSH_REF="${1:-}"
+if [[ -n "$PUSH_REF" ]] && [[ "$PUSH_REF" != *"main"* ]] && [[ "$PUSH_REF" != *"refs/heads/main"* ]]; then
+  # Non-main push — skip mirror sync
+  exit 0
+fi
+
+log_result() {
+  local status="$1"
+  local message="$2"
+  local dev_sha="$3"
+  local prod_sha="$4"
+  mkdir -p "$(dirname "$LOG_FILE")"
+  echo "{\"ts\":\"$TS\",\"status\":\"$status\",\"message\":\"$message\",\"devSha\":\"$dev_sha\",\"prodSha\":\"$prod_sha\",\"branch\":\"$BRANCH\"}" >> "$LOG_FILE"
+}
+
+echo "[mirror-sync] Syncing production clone..."
+
+# Step 1: Get dev clone's main SHA
+DEV_SHA=$(git -C "$DEV_CLONE" rev-parse main 2>/dev/null || echo "unknown")
+
+# Step 2: Pull in production clone
+if ! git -C "$PROD_CLONE" pull origin main --ff-only 2>/dev/null; then
+  PROD_SHA=$(git -C "$PROD_CLONE" rev-parse HEAD 2>/dev/null || echo "unknown")
+  log_result "failed" "pull --ff-only failed (diverged?)" "$DEV_SHA" "$PROD_SHA"
+  echo "[mirror-sync] FAILED: production clone pull failed (non-fast-forward)"
+  exit 1
+fi
+
+# Step 3: Verify SHA match
+PROD_SHA=$(git -C "$PROD_CLONE" rev-parse main 2>/dev/null || echo "unknown")
+if [[ "$DEV_SHA" != "$PROD_SHA" ]]; then
+  log_result "mismatch" "dev main ($DEV_SHA) != prod main ($PROD_SHA)" "$DEV_SHA" "$PROD_SHA"
+  echo "[mirror-sync] WARNING: SHA mismatch after pull (dev=$DEV_SHA, prod=$PROD_SHA)"
+  exit 1
+fi
+
+# Step 4: Gitsafe verification — check enforcement.json exists and is valid
+ENFORCEMENT="$PROD_CLONE/.roadmap/enforcement.json"
+if [[ ! -f "$ENFORCEMENT" ]]; then
+  log_result "warning" "enforcement.json missing in production" "$DEV_SHA" "$PROD_SHA"
+  echo "[mirror-sync] WARNING: enforcement.json missing in production clone"
+  exit 1
+fi
+
+# Validate enforcement.json is parseable
+if ! jq empty "$ENFORCEMENT" 2>/dev/null; then
+  log_result "warning" "enforcement.json is invalid JSON" "$DEV_SHA" "$PROD_SHA"
+  echo "[mirror-sync] WARNING: enforcement.json is not valid JSON"
+  exit 1
+fi
+
+# Step 5: Verify consumer can import (package.json exports exist)
+if [[ ! -f "$PROD_CLONE/package.json" ]]; then
+  log_result "warning" "package.json missing in production" "$DEV_SHA" "$PROD_SHA"
+  echo "[mirror-sync] WARNING: package.json missing"
+  exit 1
+fi
+
+# Step 6: Log success
+log_result "success" "production mirror synced" "$DEV_SHA" "$PROD_SHA"
+echo "[mirror-sync] OK: production clone synced (sha=$PROD_SHA)"
+exit 0

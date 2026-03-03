@@ -12,6 +12,7 @@ import { createHash } from 'node:crypto';
 import { createGitSafeLoader } from '../src/lib/gitsafe-loader.ts';
 import { detectCurrentClone, getArchitecture, getWhere, validateClone, enforceOperation } from '../src/lib/topology/topology-service.ts';
 import type { Operation } from '../src/lib/topology/enforcement-rules.ts';
+import { createAgentWorktree, cleanupAgentWorktree, listAgentWorktrees } from '../src/lib/topology/agent-worktree.ts';
 import {
   define, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, readyNodes, nextBatch, criticalPath, reconcile,
   validateNode, validateGraph, consumeArtifact,
@@ -147,7 +148,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 }
 
 // Commands that don't require a note
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec', 'topology']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec', 'topology', 'agent']);
 const isOrientCheck = (cmd === 'orient') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -224,7 +225,7 @@ async function main() {
   const note = _note;
 
   // Enforce main branch for all DAG-mutating commands
-  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'topology']);
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'topology', 'agent']);
   if (!BRANCH_EXEMPT.has(cmd)) {
     enforceMainBranch();
   }
@@ -257,6 +258,9 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
 
     // Topology group
     case 'topology':  return cmdTopologyGroup();
+
+    // Agent coordination
+    case 'agent':     return await cmdAgentGroup(note);
 
     // Help & unknown
     case 'help':
@@ -909,6 +913,284 @@ function cmdTopologyEnforce() {
   emit({ ok: true, cmd: 'topology.enforce', data: result }, _outputOpts);
 }
 
+// --- Agent group ---
+
+async function cmdAgentGroup(note: string | undefined) {
+  const sub = args[1];
+  switch (sub) {
+    case 'help':
+    case '--help':
+    case '-h':
+      return cmdAgentHelp();
+    case 'claim':
+      return await cmdAgentClaim(note);
+    case 'complete':
+      return await cmdAgentComplete(note);
+    case 'status':
+      return cmdAgentStatus();
+    case 'cleanup':
+      return cmdAgentCleanup();
+    default:
+      json({ error: `Unknown agent subcommand: ${sub}`, fix: 'roadmap agent claim|complete|status|cleanup' });
+      process.exit(1);
+  }
+}
+
+function cmdAgentHelp() {
+  json({
+    command: 'agent',
+    description: 'Agent task coordination: claim, work, complete (zero git management)',
+    subcommands: [
+      { name: 'claim', args: '<task-id> [--agent-id <id>]', description: 'Claim task + create isolated worktree' },
+      { name: 'complete', args: '<task-id> [--message "summary"]', description: 'Verify artifacts, commit, push, cleanup' },
+      { name: 'status', args: '', description: 'List active agent worktrees' },
+      { name: 'cleanup', args: '<task-id>', description: 'Remove worktree + delete agent branch' },
+    ],
+    examples: [
+      'roadmap agent claim my-task --agent-id agent-1',
+      'roadmap agent complete my-task --message "implemented auth module"',
+      'roadmap agent status',
+      'roadmap agent cleanup my-task',
+    ],
+    workflow: [
+      '1. roadmap agent claim <task-id>   -- get isolated worktree',
+      '2. (work in worktree, edit files)',
+      '3. roadmap agent complete <task-id> -- commit + push + cleanup',
+    ],
+  });
+}
+
+async function cmdAgentClaim(note: string | undefined) {
+  const taskId = args[2];
+  if (!taskId) {
+    json({ error: 'Missing task-id', fix: 'roadmap agent claim <task-id> [--agent-id <id>]' });
+    process.exit(1);
+    return;
+  }
+
+  const agentIdIdx = args.indexOf('--agent-id');
+  const agentId = agentIdIdx !== -1 ? args[agentIdIdx + 1] : `agent-${Date.now().toString(36)}`;
+
+  // Create claim in claims store
+  const claimStore = loadClaims(repoRoot);
+  const now = new Date();
+  const ttlHours = 4;
+  const claimExpiry = new Date(now.getTime() + ttlHours * 3600 * 1000).toISOString();
+
+  // Check for existing active claim
+  const existing = claimStore[taskId];
+  if (existing && !isExpired(existing, now)) {
+    json({
+      error: `Task ${taskId} already claimed by ${existing.owner}`,
+      claimedAt: existing.claimedAt,
+      expiresAt: existing.claimExpiry,
+      fix: `Wait for claim to expire or use: roadmap agent cleanup ${taskId}`,
+    });
+    process.exit(1);
+    return;
+  }
+
+  // Write claim
+  claimStore[taskId] = { owner: agentId, claimedAt: now.toISOString(), claimExpiry };
+  saveClaims(repoRoot, claimStore);
+
+  // Create worktree
+  let worktreeResult;
+  try {
+    worktreeResult = createAgentWorktree(repoRoot, agentId, taskId);
+  } catch (e) {
+    // Rollback claim on worktree failure
+    delete claimStore[taskId];
+    saveClaims(repoRoot, claimStore);
+    json({
+      error: `Failed to create worktree: ${e instanceof Error ? e.message : String(e)}`,
+      fix: 'Check disk space and git worktree state',
+    });
+    process.exit(1);
+    return;
+  }
+
+  recordTrail({
+    ts: now.toISOString(),
+    cmd: 'agent.claim',
+    note: note ?? `claim ${taskId}`,
+    repo: basename(repoRoot),
+    detail: { taskId, agentId, branch: worktreeResult.branch },
+  });
+
+  emit({ ok: true, cmd: 'agent.claim', data: {
+    claimed: true,
+    taskId,
+    agentId,
+    worktree: worktreeResult.worktreePath,
+    branch: worktreeResult.branch,
+    cwd: worktreeResult.cwd,
+    produces: worktreeResult.produces,
+    consumes: worktreeResult.consumes,
+    claimExpiry,
+    guidance: `cd ${worktreeResult.cwd} && work on produces: [${worktreeResult.produces.join(', ')}]`,
+  }}, _outputOpts);
+}
+
+async function cmdAgentComplete(note: string | undefined) {
+  const taskId = args[2];
+  if (!taskId) {
+    json({ error: 'Missing task-id', fix: 'roadmap agent complete <task-id> [--message "summary"]' });
+    process.exit(1);
+    return;
+  }
+
+  const msgIdx = args.indexOf('--message');
+  const commitMessage = msgIdx !== -1 ? args[msgIdx + 1] : `${taskId}: task complete`;
+
+  const worktreePath = join(repoRoot, '.claude', 'worktrees', taskId);
+  if (!existsSync(worktreePath)) {
+    json({ error: `No worktree found for ${taskId}`, fix: 'Claim the task first: roadmap agent claim ' + taskId });
+    process.exit(1);
+    return;
+  }
+
+  // Read brief to get produces list
+  const briefPath = join(worktreePath, '.roadmap', `brief-${taskId}.json`);
+  let produces: string[] = [];
+  let branch = '';
+  if (existsSync(briefPath)) {
+    const brief = JSON.parse(readFileSync(briefPath, 'utf-8'));
+    produces = brief.produces ?? [];
+    branch = brief.branch ?? '';
+  }
+
+  if (!branch) {
+    try {
+      branch = execSync('git rev-parse --abbrev-ref HEAD', { cwd: worktreePath, stdio: 'pipe' }).toString().trim();
+    } catch {
+      json({ error: 'Cannot determine branch in worktree', fix: 'Check worktree state' });
+      process.exit(1);
+      return;
+    }
+  }
+
+  // Verify produces artifacts exist in worktree
+  const missing: string[] = [];
+  for (const artifact of produces) {
+    const fullPath = join(worktreePath, artifact);
+    if (!existsSync(fullPath)) missing.push(artifact);
+  }
+
+  if (missing.length > 0) {
+    json({
+      error: 'Missing produce artifacts',
+      missing,
+      worktree: worktreePath,
+      fix: `Create the missing files in ${worktreePath}`,
+    });
+    process.exit(1);
+    return;
+  }
+
+  // Stage produces + commit
+  try {
+    if (produces.length > 0) {
+      execSync(`git add ${produces.map(p => `"${p}"`).join(' ')}`, { cwd: worktreePath, stdio: 'pipe' });
+    } else {
+      // No explicit produces — add all changes
+      execSync('git add -A', { cwd: worktreePath, stdio: 'pipe' });
+    }
+
+    // Check if there are staged changes
+    const status = execSync('git diff --cached --name-only', { cwd: worktreePath, stdio: 'pipe' }).toString().trim();
+    let commitSha = '';
+
+    if (status) {
+      execSync(`git commit -m "${taskId}: ${commitMessage}"`, { cwd: worktreePath, stdio: 'pipe' });
+      commitSha = execSync('git rev-parse --short HEAD', { cwd: worktreePath, stdio: 'pipe' }).toString().trim();
+    }
+
+    // Push to origin
+    let pushed = false;
+    try {
+      execSync(`git push origin "${branch}"`, { cwd: worktreePath, stdio: 'pipe', timeout: 30000 });
+      pushed = true;
+    } catch {
+      // Push may fail if no remote or network — non-fatal
+    }
+
+    // Cleanup worktree
+    const cleanup = cleanupAgentWorktree(repoRoot, taskId);
+
+    // Release claim
+    const claimStore = loadClaims(repoRoot);
+    delete claimStore[taskId];
+    saveClaims(repoRoot, claimStore);
+
+    recordTrail({
+      ts: new Date().toISOString(),
+      cmd: 'agent.complete',
+      note: note ?? `complete ${taskId}`,
+      repo: basename(repoRoot),
+      detail: { taskId, commit: commitSha, branch, pushed },
+    });
+
+    emit({ ok: true, cmd: 'agent.complete', data: {
+      completed: true,
+      taskId,
+      commit: commitSha || null,
+      branch,
+      pushed,
+      cleaned: cleanup.cleaned,
+      message: pushed
+        ? `Task ${taskId} completed, committed, pushed to ${branch}`
+        : `Task ${taskId} completed, committed locally on ${branch} (push failed — manual push needed)`,
+    }}, _outputOpts);
+
+  } catch (e) {
+    json({
+      error: `Completion failed: ${e instanceof Error ? e.message : String(e)}`,
+      worktree: worktreePath,
+      fix: 'Check git state in the worktree',
+    });
+    process.exit(1);
+  }
+}
+
+function cmdAgentStatus() {
+  const worktrees = listAgentWorktrees(repoRoot);
+  emit({ ok: true, cmd: 'agent.status', data: {
+    activeWorktrees: worktrees.length,
+    worktrees,
+    guidance: worktrees.length === 0
+      ? 'No active agent worktrees. Claim a task: roadmap agent claim <task-id>'
+      : `${worktrees.length} active worktree(s). Complete with: roadmap agent complete <task-id>`,
+  }}, _outputOpts);
+}
+
+function cmdAgentCleanup() {
+  const taskId = args[2];
+  if (!taskId) {
+    json({ error: 'Missing task-id', fix: 'roadmap agent cleanup <task-id>' });
+    process.exit(1);
+    return;
+  }
+
+  const result = cleanupAgentWorktree(repoRoot, taskId);
+
+  // Release claim
+  const claimStore = loadClaims(repoRoot);
+  if (taskId in claimStore) {
+    delete claimStore[taskId];
+    saveClaims(repoRoot, claimStore);
+  }
+
+  emit({ ok: true, cmd: 'agent.cleanup', data: {
+    taskId,
+    cleaned: result.cleaned,
+    branchDeleted: result.branch,
+    message: result.cleaned
+      ? `Worktree and branch cleaned for ${taskId}`
+      : `No worktree found for ${taskId}`,
+  }}, _outputOpts);
+}
+
 // --- Help ---
 function cmdHelp() {
   console.log(`roadmap — DAG expansion protocol CLI
@@ -921,8 +1203,9 @@ Core commands (mainline execution loop):
 Command groups (use 'roadmap <group> help' for details):
   spec <sub>         Spec planning and intake: plan, import, intake, compile, init
   topology <sub>     Git architecture topology: show, where, validate, enforce
+  agent <sub>        Agent coordination: claim, complete, status, cleanup
 
-All commands require --note "reason" (except help/orient/topology).
+All commands require --note "reason" (except help/orient/topology/agent).
 Output is JSON. Use jq for filtering.
 
 Examples:
@@ -930,7 +1213,8 @@ Examples:
   roadmap make spec.json --note "create ideal DAG"
   roadmap advance --note "move to next batch"
   roadmap topology where
-  roadmap topology enforce --op push --to origin
+  roadmap agent claim my-task --agent-id agent-1
+  roadmap agent complete my-task --message "done"
 `);
 }
 
