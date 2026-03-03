@@ -5412,49 +5412,130 @@ function cmdSpec(note: string) {
   const sub = args[1];
   switch (sub) {
     case 'init':     return cmdSpecInit(note);
+    case 'import':   return cmdSpecImport(note);
     case 'generate': return cmdSpecGenerate(note);
     case 'compile':  return cmdSpecCompile(note);
     default:
-      json({ error: `Unknown spec subcommand: ${sub}`, fix: 'roadmap spec init|generate|compile --note "..."' });
+      json({ error: `Unknown spec subcommand: ${sub}`, fix: 'roadmap spec init|import|generate|compile --note "..."' });
       process.exit(1);
   }
 }
 
 function cmdSpecInit(note: string) {
-  const idIdx = args.indexOf('--id');
-  const dagId = idIdx !== -1 ? args[idIdx + 1] : undefined;
-  if (!dagId) {
-    json({ error: 'Missing --id', fix: 'roadmap spec init --id <dag-id> --note "..."' });
-    process.exit(1);
+  const specifyDir = join(repoRoot, '.specify');
+  if (!existsSync(specifyDir)) mkdirSync(specifyDir, { recursive: true });
+
+  const templates = {
+    'constitution.md': '# Constitution\n\n## Principles\n\n## Constraints\n\n## Non-Goals\n\n## Definitions\n',
+    'spec.md': '# Specification\n\n## Problem\n\n## Proposal\n\n## Scenarios\n\n## Requirements\n',
+    'plan.md': '# Technical Plan\n\n## Architecture\n\n## Tech Stack\n\n## Design Decisions\n\n## Risks\n',
+    'tasks.md': '# Tasks\n\n',
+  };
+
+  for (const [file, content] of Object.entries(templates)) {
+    const path = join(specifyDir, file);
+    if (!existsSync(path)) writeFileSync(path, content);
   }
-
-  const specDir = join(repoRoot, '.roadmap', 'spec');
-  if (!existsSync(specDir)) mkdirSync(specDir, { recursive: true });
-
-  const configPath = join(specDir, 'spec.config.json');
-  const config = defaultConfig(dagId);
-
-  // Allow --engine override
-  const engineIdx = args.indexOf('--engine');
-  if (engineIdx !== -1) config.engine = args[engineIdx + 1];
-
-  const engineCmdIdx = args.indexOf('--engine-command');
-  if (engineCmdIdx !== -1) config.engine_command = args[engineCmdIdx + 1];
-
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
 
   recordTrail({
     ts: new Date().toISOString(), cmd: 'spec-init', note,
-    repo: basename(repoRoot), position: ['untracked'], level: 0, dagId,
+    repo: basename(repoRoot), position: ['untracked'], level: 0,
   });
 
   json({
     initialized: true,
-    dagId,
-    config: configPath,
-    engine: config.engine,
-    inputPaths: config.inputs,
+    directory: specifyDir,
+    files: Object.keys(templates),
+    nextStep: 'Fill in .specify/constitution.md, spec.md, plan.md, then run: roadmap spec import --from specify',
   });
+}
+
+async function cmdSpecImport(note: string) {
+  const fromIdx = args.indexOf('--from');
+  const source = fromIdx !== -1 ? args[fromIdx + 1] : 'specify';
+
+  if (source === 'specify') {
+    const specifyDir = join(repoRoot, '.specify');
+    if (!existsSync(specifyDir)) {
+      json({ error: '.specify/ not found', fix: 'Run: roadmap spec init --note "..."' });
+      process.exit(1);
+    }
+
+    const tasksPath = join(specifyDir, 'tasks.md');
+    if (!existsSync(tasksPath)) {
+      json({ error: 'tasks.md not found in .specify/', fix: 'Create or run spec-kit to generate tasks' });
+      process.exit(1);
+    }
+
+    // Parse tasks.md into roadmap nodes
+    const tasksContent = readFileSync(tasksPath, 'utf-8');
+    const nodes: Record<string, any> = {};
+    const tasks = parseTasksMarkdown(tasksContent);
+
+    for (const task of tasks) {
+      nodes[task.id] = {
+        id: task.id,
+        desc: task.title,
+        produces: task.produces || [],
+        consumes: [],
+        deps: task.depends || [],
+        validate: [
+          ...((task.produces || []).map((p: string) => ({ type: 'artifact-exists', target: p }))),
+          ...(task.acceptance ? [{ type: 'spec-conformance', spec: '.specify/spec.md', scenario: task.title }] : []),
+        ],
+        idempotent: true,
+      };
+    }
+
+    // Create DAG
+    const dagId = `spec-kit-${Date.now()}`;
+    const dag = {
+      id: dagId,
+      desc: 'Spec-kit generated DAG',
+      init: tasks[0]?.id || 'init',
+      term: tasks[tasks.length - 1]?.id || 'term',
+      nodes,
+    };
+
+    // Write head.json
+    const headPath = join(repoRoot, '.roadmap', 'head.json');
+    writeFileSync(headPath, JSON.stringify(dag, null, 2));
+
+    recordTrail({
+      ts: new Date().toISOString(), cmd: 'spec-import', note,
+      repo: basename(repoRoot), position: [dag.init], level: 0, dagId,
+      detail: { source, tasksCount: tasks.length },
+    });
+
+    json({
+      imported: true,
+      dagId,
+      nodeCount: tasks.length,
+      headPath,
+      nextStep: 'Run: roadmap chart',
+    });
+  }
+}
+
+function parseTasksMarkdown(content: string): Array<{ id: string; title: string; produces?: string[]; depends?: string[]; acceptance?: string[] }> {
+  const tasks = [];
+  const taskBlocks = content.split(/^## /m).slice(1);
+
+  for (const block of taskBlocks) {
+    const lines = block.split('\n');
+    const title = lines[0].trim();
+    const id = title.toLowerCase().replace(/\s+/g, '-');
+
+    tasks.push({
+      id,
+      title,
+      produces: [],
+      depends: [],
+      acceptance: [],
+    });
+  }
+
+  return tasks;
 }
 
 function cmdSpecGenerate(note: string) {
