@@ -1,0 +1,127 @@
+{
+  "id": "roadmap-canonical-state-flow-001",
+  "desc": "Canonical execution state flow: reconstruct authoritative system state from trail, resolve worktree conflicts, validate coherence, produce canonical manifest",
+  "init": "canonical-state-planning",
+  "term": "canonical-state-ready",
+  "baseSha": "0151a293",
+  "nodes": {
+    "canonical-state-planning": {
+      "id": "canonical-state-planning",
+      "desc": "Plan canonical state flow: design state reconstruction algorithm, conflict resolution strategy, coherence validation rules, manifest format",
+      "produces": [".roadmap/metaflow/canonical/DESIGN.md"],
+      "consumes": [".roadmap/flows/canonical-execution-state-flow.json"],
+      "deps": [],
+      "mode": "plan",
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/DESIGN.md"}],
+      "idempotent": true
+    },
+    "load-trail": {
+      "id": "load-trail",
+      "desc": "Load and parse .roadmap/trail.jsonl into normalized JSON format",
+      "produces": [".roadmap/metaflow/canonical/trail-raw.json"],
+      "consumes": [".roadmap/trail.jsonl"],
+      "deps": ["canonical-state-planning"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/trail-raw.json"}],
+      "idempotent": true
+    },
+    "validate-trail-entries": {
+      "id": "validate-trail-entries",
+      "desc": "Validate trail entry schemas, check temporal ordering, detect parsing gaps",
+      "produces": [".roadmap/metaflow/canonical/trail-validated.json"],
+      "consumes": [".roadmap/metaflow/canonical/trail-raw.json"],
+      "deps": ["load-trail"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/trail-validated.json"}],
+      "idempotent": true
+    },
+    "detect-worktree-mutations": {
+      "id": "detect-worktree-mutations",
+      "desc": "Scan git log per worktree branch: identify which files touched by which branches and timestamps",
+      "produces": [".roadmap/metaflow/canonical/worktree-mutations.json"],
+      "consumes": [".roadmap/metaflow/canonical/trail-validated.json"],
+      "deps": ["validate-trail-entries"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/worktree-mutations.json"}],
+      "idempotent": true
+    },
+    "resolve-conflicts": {
+      "id": "resolve-conflicts",
+      "desc": "For each artifact modified by multiple worktrees, determine canonical version via merge strategy",
+      "produces": [".roadmap/metaflow/canonical/conflict-resolution.json"],
+      "consumes": [".roadmap/metaflow/canonical/worktree-mutations.json"],
+      "deps": ["detect-worktree-mutations"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/conflict-resolution.json"}],
+      "idempotent": true
+    },
+    "reconstruct-state-timeline": {
+      "id": "reconstruct-state-timeline",
+      "desc": "Replay trail invocation-by-invocation to build state snapshot at each checkpoint, incorporating conflict resolutions",
+      "produces": [".roadmap/metaflow/canonical/state-timeline.json"],
+      "consumes": [".roadmap/metaflow/canonical/trail-validated.json", ".roadmap/metaflow/canonical/conflict-resolution.json"],
+      "deps": ["validate-trail-entries", "resolve-conflicts"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/state-timeline.json"}],
+      "idempotent": true
+    },
+    "validate-state-coherence": {
+      "id": "validate-state-coherence",
+      "desc": "Verify no impossible state transitions: forward + backward consistency checks against DAG rules",
+      "produces": [".roadmap/metaflow/canonical/coherence-validation.json"],
+      "consumes": [".roadmap/metaflow/canonical/state-timeline.json"],
+      "deps": ["reconstruct-state-timeline"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/coherence-validation.json"}],
+      "idempotent": true
+    },
+    "extract-completed-nodes": {
+      "id": "extract-completed-nodes",
+      "desc": "From final state snapshot, extract completed nodes, handoff decisions, node metadata, completion timestamps",
+      "produces": [".roadmap/metaflow/canonical/node-completion-manifest.json"],
+      "consumes": [".roadmap/metaflow/canonical/state-timeline.json"],
+      "deps": ["reconstruct-state-timeline"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/node-completion-manifest.json"}],
+      "idempotent": true
+    },
+    "produce-canonical-state": {
+      "id": "produce-canonical-state",
+      "desc": "Generate authoritative state manifest aggregating timeline, completion, and coherence validation - source of truth for all downstream validators",
+      "produces": [".roadmap/metaflow/canonical/canonical-state.json"],
+      "consumes": [".roadmap/metaflow/canonical/state-timeline.json", ".roadmap/metaflow/canonical/node-completion-manifest.json", ".roadmap/metaflow/canonical/coherence-validation.json"],
+      "deps": ["validate-state-coherence", "extract-completed-nodes"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/canonical-state.json"}],
+      "idempotent": true
+    },
+    "canonical-state-integration": {
+      "id": "canonical-state-integration",
+      "desc": "Integrate canonical state into verification pipeline: ensure all validators can query and depend on it",
+      "produces": ["src/lib/metaflow/canonical-state-provider.ts"],
+      "consumes": [".roadmap/metaflow/canonical/canonical-state.json"],
+      "deps": ["produce-canonical-state"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "idempotent": true
+    },
+    "canonical-state-tests": {
+      "id": "canonical-state-tests",
+      "desc": "Unit + integration tests: trail reconstruction, conflict resolution, state coherence validation, manifest accuracy",
+      "produces": ["tests/metaflow/canonical-state.test.ts"],
+      "consumes": ["src/lib/metaflow/canonical-state-provider.ts"],
+      "deps": ["canonical-state-integration"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}, {"type": "shell", "command": "npx vitest run tests/metaflow/canonical-state.test.ts 2>&1 | grep -q 'passed'"}],
+      "idempotent": true
+    },
+    "canonical-state-documentation": {
+      "id": "canonical-state-documentation",
+      "desc": "Document canonical state API: data format, query interface, conflict resolution strategy, integration points for downstream flows",
+      "produces": ["docs/CANONICAL-STATE.md"],
+      "consumes": [".roadmap/metaflow/canonical/DESIGN.md"],
+      "deps": ["canonical-state-tests"],
+      "validate": [{"type": "artifact-exists", "path": "docs/CANONICAL-STATE.md"}],
+      "idempotent": true
+    },
+    "canonical-state-ready": {
+      "id": "canonical-state-ready",
+      "desc": "Canonical state flow complete: all tests pass, documentation updated, integration verified, source of truth operational",
+      "produces": [".roadmap/metaflow/canonical/system-ready.json"],
+      "consumes": [],
+      "deps": ["canonical-state-documentation"],
+      "validate": [{"type": "artifact-exists", "path": ".roadmap/metaflow/canonical/system-ready.json"}],
+      "idempotent": true
+    }
+  }
+}

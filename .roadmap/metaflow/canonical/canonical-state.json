@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-03-03T09:04:12.691Z",
+  "trailChecksum": "sha256:...",
+  "completedNodes": [],
+  "conflictsResolved": 0,
+  "stateCoherent": true,
+  "stateTimelinePath": ".roadmap/metaflow/canonical/state-timeline.json",
+  "coherenceReportPath": ".roadmap/metaflow/canonical/coherence-validation.json",
+  "validationErrors": []
+}

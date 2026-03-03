@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "canonical-execution-state-flow",
+  "desc": "Reconstruct authoritative execution state from trail, resolve worktree conflicts, validate coherence, produce canonical manifest",
+  "stageMin": 0,
+  "stageMax": 10,
+  "requiresAuthority": true,
+  "steps": [
+    {
+      "id": "step-1-load-trail",
+      "desc": "Load and parse .roadmap/trail.jsonl into normalized JSON",
+      "cmd": "roadmap internal load-trail",
+      "args": {"trailPath": ".roadmap/trail.jsonl"},
+      "produces": [".roadmap/metaflow/canonical/trail-raw.json"],
+      "consumes": [],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/canonical/trail-raw.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-2-validate-trail-entries",
+      "desc": "Validate trail entry schemas, check temporal ordering, detect gaps",
+      "cmd": "roadmap internal validate-trail-entries",
+      "args": {"trailPath": ".roadmap/metaflow/canonical/trail-raw.json"},
+      "produces": [".roadmap/metaflow/canonical/trail-validated.json"],
+      "consumes": [".roadmap/metaflow/canonical/trail-raw.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/canonical/trail-validated.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-3-detect-worktree-mutations",
+      "desc": "Scan git log per worktree: which branches touched which files and when",
+      "cmd": "roadmap internal detect-worktree-mutations",
+      "args": {"trailPath": ".roadmap/metaflow/canonical/trail-validated.json"},
+      "produces": [".roadmap/metaflow/canonical/worktree-mutations.json"],
+      "consumes": [".roadmap/metaflow/canonical/trail-validated.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/canonical/worktree-mutations.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-4-resolve-conflicts",
+      "desc": "For each artifact modified by multiple worktrees, determine canonical version (last-write-wins + merge order)",
+      "cmd": "roadmap internal resolve-worktree-conflicts",
+      "args": {"mutationsPath": ".roadmap/metaflow/canonical/worktree-mutations.json", "mergeStrategy": "canonical-timestamp"},
+      "produces": [".roadmap/metaflow/canonical/conflict-resolution.json"],
+      "consumes": [".roadmap/metaflow/canonical/worktree-mutations.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/canonical/conflict-resolution.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-5-reconstruct-state-timeline",
+      "desc": "Replay trail invocation-by-invocation to build state snapshot at each checkpoint",
+      "cmd": "roadmap internal reconstruct-state-timeline",
+      "args": {"trailPath": ".roadmap/metaflow/canonical/trail-validated.json", "conflictsPath": ".roadmap/metaflow/canonical/conflict-resolution.json"},
+      "produces": [".roadmap/metaflow/canonical/state-timeline.json"],
+      "consumes": [".roadmap/metaflow/canonical/trail-validated.json", ".roadmap/metaflow/canonical/conflict-resolution.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/canonical/state-timeline.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-6-validate-state-coherence",
+      "desc": "Verify no impossible state transitions (forward + backward consistency checks)",
+      "cmd": "roadmap internal validate-state-coherence",
+      "args": {"timelinePath": ".roadmap/metaflow/canonical/state-timeline.json"},
+      "produces": [".roadmap/metaflow/canonical/coherence-validation.json"],
+      "consumes": [".roadmap/metaflow/canonical/state-timeline.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/canonical/coherence-validation.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-7-extract-completed-nodes",
+      "desc": "From final state, extract completed nodes, handoff decisions, and node metadata",
+      "cmd": "roadmap internal extract-completed-nodes",
+      "args": {"timelinePath": ".roadmap/metaflow/canonical/state-timeline.json"},
+      "produces": [".roadmap/metaflow/canonical/node-completion-manifest.json"],
+      "consumes": [".roadmap/metaflow/canonical/state-timeline.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/canonical/node-completion-manifest.json"}
+      ],
+      "render": {"required": true}
+    },
+    {
+      "id": "step-8-produce-canonical-state",
+      "desc": "Generate authoritative state manifest — source of truth for all downstream validators",
+      "cmd": "roadmap internal produce-canonical-state",
+      "args": {"timelinePath": ".roadmap/metaflow/canonical/state-timeline.json", "completionPath": ".roadmap/metaflow/canonical/node-completion-manifest.json", "coherencePath": ".roadmap/metaflow/canonical/coherence-validation.json"},
+      "produces": [".roadmap/metaflow/canonical/canonical-state.json"],
+      "consumes": [".roadmap/metaflow/canonical/state-timeline.json", ".roadmap/metaflow/canonical/node-completion-manifest.json", ".roadmap/metaflow/canonical/coherence-validation.json"],
+      "validate": [
+        {"type": "artifact-exists", "target": ".roadmap/metaflow/canonical/canonical-state.json"}
+      ],
+      "render": {"required": true, "template": "✅ CANONICAL STATE MANIFEST\n   Completed: {{state.completedCount}}/{{state.totalCount}} nodes\n   Conflicts Resolved: {{state.conflictCount}}\n   State Coherent: {{state.isCoherent}}\n   Timestamp: {{state.timestamp}}"}
+    }
+  ]
+}

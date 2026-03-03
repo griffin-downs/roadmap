@@ -1,0 +1,330 @@
+[
+  {
+    "ts": "2026-03-02T15:02:16.370Z",
+    "cmd": "orient",
+    "note": "index-extraction node — verify completion state",
+    "repo": "roadmap",
+    "position": [
+      "lazy-load-logic"
+    ],
+    "level": 3,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "done": 4,
+      "remaining": 6,
+      "complete": false,
+      "batchRemaining": 1
+    }
+  },
+  {
+    "ts": "2026-03-02T15:02:27.632Z",
+    "cmd": "orient",
+    "note": "cli-auto-merge completion check",
+    "repo": "roadmap",
+    "position": [
+      "lazy-load-logic"
+    ],
+    "level": 3,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "done": 4,
+      "remaining": 6,
+      "complete": false,
+      "batchRemaining": 1
+    }
+  },
+  {
+    "ts": "2026-03-02T15:03:25.122Z",
+    "cmd": "plan select",
+    "note": "executing consolidation-tests node",
+    "repo": "roadmap",
+    "position": [
+      "lazy-load-logic"
+    ],
+    "level": 3,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "candidateId": "consolidation-tests",
+      "headSha": "6a5e78e060a3c546f954bcca7e5c343d2241a38671f72b7c676758273ca00075",
+      "selector": "griffin"
+    }
+  },
+  {
+    "ts": "2026-03-02T15:03:36.418Z",
+    "cmd": "complete",
+    "note": "lazy-graph-loader.ts exists and compiles",
+    "repo": "roadmap",
+    "position": [
+      "lazy-load-logic"
+    ],
+    "level": 3,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "nodeId": "lazy-load-logic",
+      "owner": "griffin",
+      "checkpointId": "cp-20260302150334",
+      "batchComplete": false,
+      "advanced": false,
+      "skipValidate": false,
+      "evaluated": false,
+      "explored": false,
+      "unblocked": []
+    }
+  },
+  {
+    "ts": "2026-03-02T15:03:49.741Z",
+    "cmd": "complete",
+    "note": "bin/roadmap.ts exists with auto-merge integration",
+    "repo": "roadmap",
+    "position": [
+      "cli-auto-merge"
+    ],
+    "level": 4,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "nodeId": "cli-auto-merge",
+      "owner": "griffin",
+      "checkpointId": "cp-20260302150347",
+      "batchComplete": false,
+      "advanced": false,
+      "skipValidate": false,
+      "evaluated": false,
+      "explored": false,
+      "unblocked": []
+    }
+  },
+  {
+    "ts": "2026-03-02T15:03:52.960Z",
+    "cmd": "orient",
+    "note": "checking position after cli-auto-merge",
+    "repo": "roadmap",
+    "position": [
+      "consolidation-tests"
+    ],
+    "level": 5,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "done": 6,
+      "remaining": 4,
+      "complete": false,
+      "batchRemaining": 1
+    }
+  },
+  {
+    "ts": "2026-03-02T15:04:00.577Z",
+    "cmd": "complete",
+    "note": "tests/roadmap/consolidation.test.ts: 29 comprehensive tests covering merge logic, index extraction, lazy loading, cross-DAG validation, CLI transparency, and performance",
+    "repo": "roadmap",
+    "position": [
+      "consolidation-tests"
+    ],
+    "level": 5,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "nodeId": "consolidation-tests",
+      "owner": "griffin",
+      "checkpointId": "cp-20260302150358",
+      "batchComplete": false,
+      "advanced": false,
+      "skipValidate": false,
+      "evaluated": false,
+      "explored": false,
+      "unblocked": []
+    }
+  },
+  {
+    "ts": "2026-03-02T15:04:24.424Z",
+    "cmd": "spawn",
+    "note": "consolidation system ready marker",
+    "repo": "roadmap",
+    "position": [
+      "migration-script"
+    ],
+    "level": 6,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "taskId": "consolidation-complete",
+      "worktreeDir": "/home/griffin/src/roadmap/.claude/worktrees/consolidation-complete",
+      "branchName": "feat/consolidation-complete",
+      "isAgent": false
+    }
+  },
+  {
+    "ts": "2026-03-02T15:04:41.266Z",
+    "cmd": "complete",
+    "note": "completed by agent",
+    "repo": "roadmap",
+    "position": [
+      "migration-script"
+    ],
+    "level": 6,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "nodeId": "migration-script",
+      "owner": "griffin",
+      "checkpointId": "cp-20260302150439",
+      "batchComplete": false,
+      "advanced": false,
+      "skipValidate": false,
+      "evaluated": false,
+      "explored": false,
+      "unblocked": []
+    }
+  },
+  {
+    "ts": "2026-03-02T15:04:41.466Z",
+    "cmd": "complete",
+    "note": "completed by agent",
+    "repo": "roadmap",
+    "position": [
+      "git-hook-invalidation"
+    ],
+    "level": 7,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "nodeId": "git-hook-invalidation",
+      "owner": "griffin",
+      "checkpointId": "cp-20260302150441",
+      "batchComplete": false,
+      "advanced": false,
+      "skipValidate": false,
+      "evaluated": false,
+      "explored": false,
+      "unblocked": []
+    }
+  },
+  {
+    "ts": "2026-03-02T15:04:41.668Z",
+    "cmd": "complete",
+    "note": "completed by agent",
+    "repo": "roadmap",
+    "position": [
+      "consolidation-documentation"
+    ],
+    "level": 8,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "nodeId": "consolidation-documentation",
+      "owner": "griffin",
+      "checkpointId": "cp-20260302150441",
+      "batchComplete": false,
+      "advanced": false,
+      "skipValidate": false,
+      "evaluated": false,
+      "explored": false,
+      "unblocked": []
+    }
+  },
+  {
+    "ts": "2026-03-02T15:04:41.870Z",
+    "cmd": "complete",
+    "note": "completed by agent",
+    "repo": "roadmap",
+    "position": [
+      "consolidation-complete"
+    ],
+    "level": 9,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "nodeId": "consolidation-complete",
+      "owner": "griffin",
+      "checkpointId": "cp-20260302150441",
+      "batchComplete": false,
+      "advanced": false,
+      "skipValidate": false,
+      "evaluated": false,
+      "explored": false,
+      "unblocked": []
+    }
+  },
+  {
+    "ts": "2026-03-03T08:59:54.542Z",
+    "cmd": "orient",
+    "note": "canonical-execution-state-flow expansion",
+    "repo": "roadmap",
+    "position": [],
+    "level": 10,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "done": 11,
+      "remaining": 0,
+      "complete": true,
+      "batchRemaining": 0
+    }
+  },
+  {
+    "ts": "2026-03-03T09:00:23.592Z",
+    "cmd": "orient",
+    "note": "canonical-state-flow-001 initial orientation",
+    "repo": "roadmap",
+    "position": [],
+    "level": 10,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "done": 11,
+      "remaining": 0,
+      "complete": true,
+      "batchRemaining": 0
+    }
+  },
+  {
+    "ts": "2026-03-03T09:00:32.152Z",
+    "cmd": "parallel",
+    "note": "analyze parallel execution structure for canonical-state-flow",
+    "repo": "roadmap",
+    "position": [],
+    "level": 10,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "crossRepo": false,
+      "showGraph": false
+    }
+  },
+  {
+    "ts": "2026-03-03T09:01:52.588Z",
+    "cmd": "orient",
+    "note": "canonical-state-flow-001 session start — implementing god metaflow",
+    "repo": "roadmap",
+    "position": [],
+    "level": 10,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "done": 11,
+      "remaining": 0,
+      "complete": true,
+      "batchRemaining": 0
+    }
+  },
+  {
+    "ts": "2026-03-03T09:01:55.516Z",
+    "cmd": "orient",
+    "note": "canonical-state-flow-001 session start",
+    "repo": "roadmap",
+    "position": [
+      "canonical-state-planning"
+    ],
+    "level": 0,
+    "dagId": "roadmap-canonical-state-flow-001",
+    "detail": {
+      "done": 0,
+      "remaining": 12,
+      "complete": false,
+      "batchRemaining": 1
+    }
+  },
+  {
+    "ts": "2026-03-03T09:02:52.493Z",
+    "cmd": "orient",
+    "note": "back to consolidation roadmap",
+    "repo": "roadmap",
+    "position": [],
+    "level": 10,
+    "dagId": "roadmap-dag-consolidation-001",
+    "detail": {
+      "done": 11,
+      "remaining": 0,
+      "complete": true,
+      "batchRemaining": 0
+    }
+  }
+]
