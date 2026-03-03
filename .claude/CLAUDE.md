@@ -201,3 +201,33 @@ Every src/ file has structured headers for machine discovery:
 ```
 
 Grep for `@exports` across src/ to get the full API map without reading function bodies.
+
+---
+
+## CLI Consolidation (v0.3.0+)
+
+Consolidated 41 commands → **10 total** (6 core + 4 groups).
+
+### Mainline (6 Core Commands)
+Execute primary DAG operations in sequence:
+- `orient` — Batch position from filesystem
+- `advance` — Move to next batch (validates current)
+- `show <id>` — Full node spec
+- `complete <id>` — Claim → checkpoint → advance
+- `chart` — Progress visualization
+- `validate [id]` — Validation rule checks
+
+### Groups (4 Command Groups)
+Operational tasks clustered by domain:
+- `dag {diff,expand,propagate,retire,optimize,switch,spawn}` — DAG manipulation
+- `team {claim,dispatch,strategy,assign}` — Multi-agent coordination
+- `spec {plan,import,intake,compile,init}` — Spec pipeline
+- `util {trail,checkpoint,install,federation}` — Session utilities
+
+### Surface
+- **Help**: 33 lines (<40 target)
+- **No backward compat**: clean break from 41-command surface
+- **Enforcement**: pre-commit branch discipline + validation gates
+- **Status**: Minimal, production-ready
+
+Migrations: See `docs/MIGRATION.md` for command mappings.
