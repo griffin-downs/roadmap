@@ -121,4 +121,4 @@ npx tsc --noEmit  # type check
 
 ## License
 
-MIT
+Proprietary. All rights reserved.
