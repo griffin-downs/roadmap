@@ -48,7 +48,9 @@ function validSpec(overrides?: Partial<any>): any {
     engine: { name: 'spec-kit', version: '0.1.0', config_hash: null },
     dag_id: 'test-dag',
     dag_desc: 'Test DAG',
-    inputs: [],
+    inputs: [
+      { path: 'requirements.md', sha256: 'a'.repeat(64), role: 'spec' as const },
+    ],
     tasks: [
       {
         id: 'setup',

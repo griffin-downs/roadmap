@@ -370,7 +370,7 @@ Execute primary DAG operations in sequence:
 Operational tasks clustered by domain:
 - `dag {diff,expand,propagate,retire,optimize,switch,spawn}` — DAG manipulation
 - `team {claim,dispatch,strategy,assign}` — Multi-agent coordination
-- `spec {plan,import,intake,compile,init}` — Spec pipeline
+- `spec {plan}` — Spec planning (gallery, select, status)
 - `util {trail,checkpoint,install,federation}` — Session utilities
 
 ### Surface

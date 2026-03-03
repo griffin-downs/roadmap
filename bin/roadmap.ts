@@ -21,7 +21,6 @@ import { crossOrient } from '../src/lib/cross-orient.ts';
 import { discoverDependencies, resolveSiblingPath } from '../src/lib/utils/dependency-resolver.ts';
 import { loadClaims, saveClaims, isExpired, activeClaims, annotateWithClaims, assignBatch } from '../src/lib/claims/claims.ts';
 import { parseTasksMd, tasksToDAG } from '../src/lib/intake/speckit-import.ts';
-import { compileIR, parseIRFile, defaultConfig } from '../src/lib/intake/spec-ir.ts';
 import type { SpecConfig, SpecIR, SpecIRTask, SpecInput } from '../src/lib/intake/spec-ir.ts';
 import { enrichIntentGate } from '../src/lib/intent/intent-gate-enrichment.ts';
 import { loadCompletions, getCompletedNodeIds } from '../src/lib/completion/completion-tracker.ts';
@@ -34,11 +33,7 @@ import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } 
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/intake/spec-origin.ts';
 import { requireValidOrigin, checkSpecDrift } from '../src/lib/intake/runtime-gate.ts';
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/intake/spec-origin.ts';
-import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake/intake.ts';
 import { insertNode, removeNode, modifyNode, commitMutation, loadMutationLog, MutationError } from '../src/lib/dag-mutator.ts';
-import { runIntakeAbsorb } from '../src/lib/intake/intake-cmd.ts';
-import { buildPlanOverlay, writePlanOverlay, loadPlanOverlay, isOverlayValid } from '../src/lib/plan-overlay.ts';
-import { runOverlayFromIntake } from '../src/lib/recipes/overlay/overlay-cmd.ts';
 import { listNodeReceipts, completionDoctor, completionCompact } from '../src/lib/receipts-ux.ts';
 import { readPackageVersion } from '../src/lib/install-skills.ts';
 import { loadDAGWithAutoMerge, ensureIndexExists } from '../src/lib/roadmap/cli-auto-merge.ts';
@@ -51,7 +46,6 @@ import { render, renderDagLayers, type RenderOpts, type RenderModel, type Render
 import { resolveWidth } from '../src/lib/render/layout.ts';
 import { renderOrient, renderPlanGallery, renderPlanSelect, renderPlanStatus } from '../src/lib/cli-human.ts';
 import type { OrientData, GalleryData, PlanSelectData, PlanStatusData } from '../src/lib/cli-human.ts';
-import { specKitInit, SPEC_KIT_INIT_HELP } from '../src/commands/spec-init.ts';
 import { lookupSchema, listCommands, schemaToJsonSchema } from '../src/lib/schemas.ts';
 
 const rawArgs = process.argv.slice(2);
@@ -115,7 +109,6 @@ const cmd = args[0] || 'help';
 // --- Global output opts (FR-CLI-001) ---
 function deriveEnvelopeCmd(): string {
   if (cmd === 'spec') {
-    if (args[1] === 'init') return 'spec.init';
     if (args[1] === 'plan') {
       if (args.includes('--gallery')) return 'spec.plan.gallery';
       if (args[2] === 'select') return 'spec.plan.select';
@@ -603,6 +596,64 @@ async function cmdMake(note: string) {
     }, 'Invalid spec: missing "schema_version"');
   }
 
+  // Input artifact verification (skip with --skip-input-verification)
+  if (!args.includes('--skip-input-verification')) {
+    if (!Array.isArray(parsed.inputs) || parsed.inputs.length === 0) {
+      throw new RoadmapError('VALIDATION_FAILED', {
+        fix: [
+          'Spec must have a non-empty "inputs" array listing source files.',
+          'Each entry: { path: "<file>", sha256: "<hash>", role: "spec"|"tasks"|"plan"|... }',
+          'At least one input must have role "spec", "tasks", or "plan".',
+        ].join('\n'),
+      }, 'Invalid spec: missing or empty "inputs" array');
+    }
+
+    // Validate structure of each input
+    for (const inp of parsed.inputs) {
+      if (!inp || typeof inp !== 'object' || !inp.path || !inp.sha256 || !inp.role) {
+        throw new RoadmapError('VALIDATION_FAILED', {
+          fix: 'Each input must have: { path: string, sha256: string, role: string }',
+          entry: JSON.stringify(inp),
+        }, 'Invalid spec: malformed input entry');
+      }
+    }
+
+    // At least one input must have a spec-like role
+    const specRoles = new Set(['spec', 'tasks', 'plan']);
+    const hasSpecRole = parsed.inputs.some((inp: any) => specRoles.has(inp.role));
+    if (!hasSpecRole) {
+      throw new RoadmapError('VALIDATION_FAILED', {
+        fix: 'At least one input must have role "spec", "tasks", or "plan".',
+        roles: parsed.inputs.map((inp: any) => inp.role),
+      }, 'Invalid spec: no input with spec/tasks/plan role');
+    }
+
+    // Verify sha256 for inputs that exist on disk
+    const warnings: string[] = [];
+    for (const inp of parsed.inputs) {
+      const inputPath = resolve(repoRoot, inp.path);
+      if (!existsSync(inputPath)) {
+        warnings.push(`input not found (skipped): ${inp.path}`);
+        continue;
+      }
+      const content = readFileSync(inputPath, 'utf-8');
+      const actual = createHash('sha256').update(content).digest('hex');
+      if (actual !== inp.sha256) {
+        throw new RoadmapError('VALIDATION_FAILED', {
+          fix: `Hash mismatch for "${inp.path}". Expected: ${inp.sha256}, actual: ${actual}. Re-read the file and recompute the hash.`,
+          path: inp.path,
+          expected: inp.sha256,
+          actual,
+        }, `Input hash mismatch: ${inp.path}`);
+      }
+    }
+
+    if (warnings.length > 0) {
+      // Attach warnings to output (non-fatal)
+      (parsed as any)._inputWarnings = warnings;
+    }
+  }
+
   // Convert spec to DAG
   let dag: any;
   try {
@@ -698,12 +749,8 @@ async function cmdSpecGroup(note: string | undefined) {
     case '-h':
       return cmdSpecHelp();
     case 'plan':     return await cmdPlanRouter(note!);
-    case 'import':   return cmdSpecImport(note!);
-    case 'intake':   return cmdIntake(note!);
-    case 'compile':  return cmdSpecCompile(note!);
-    case 'init':     return cmdSpecInit(note!);
     default:
-      json({ error: `Unknown spec subcommand: ${sub}`, fix: 'roadmap spec plan|import|intake|compile|init' });
+      json({ error: `Unknown spec subcommand: ${sub}`, fix: 'roadmap spec plan [--gallery | select <id> | status]' });
       process.exit(1);
   }
 }
@@ -711,20 +758,14 @@ async function cmdSpecGroup(note: string | undefined) {
 function cmdSpecHelp() {
   json({
     command: 'spec',
-    description: 'Spec intake pipeline',
+    description: 'Spec planning pipeline',
     subcommands: [
       { name: 'plan', args: '[--gallery|select <id>|status]', description: 'Spec planning: gallery, selection, status' },
-      { name: 'import', args: '--from speckit <file.md> --id <dag-id>', description: 'Parse tasks.md → roadmap DAG' },
-      { name: 'intake', args: '[absorb|scan|import|certify]', description: 'Absorb git range → intake JSON' },
-      { name: 'compile', args: '', description: 'Parse tasks → spec-compiled.json (roadmap IR)' },
-      { name: 'init', args: '--id <dag-id> [--engine <name>]', description: 'Create spec workspace + config' },
     ],
     examples: [
       'roadmap spec plan --gallery --note "show gallery"',
-      'roadmap spec import --from speckit tasks.md --id phase-2 --note "import"',
       'roadmap spec plan select auth-spec --note "select spec"',
-      'roadmap spec compile --note "compile spec"',
-      'roadmap spec init --id phase-2 --note "init workspace"',
+      'roadmap spec plan status',
     ],
   });
 }
@@ -935,21 +976,6 @@ async function cmdPlanStatus() {
 
 // --- Spec import/intake/compile/init stubs ---
 
-function cmdSpecImport(note: string) {
-  json({ error: 'spec import not yet implemented in mainline', fix: 'roadmap spec import --from speckit <file.md> --id <dag-id> --note "..."' });
-}
-
-function cmdIntake(note: string) {
-  json({ error: 'spec intake not yet implemented in mainline', fix: 'roadmap spec intake [absorb|scan|import|certify] --note "..."' });
-}
-
-function cmdSpecCompile(note: string) {
-  json({ error: 'spec compile not yet implemented in mainline', fix: 'roadmap spec compile --note "..."' });
-}
-
-function cmdSpecInit(note: string) {
-  json({ error: 'spec init not yet implemented in mainline', fix: 'roadmap spec init --id <dag-id> --note "..."' });
-}
 
 // --- DAG group ---
 async function cmdDagGroup(note: string | undefined) {
@@ -1228,7 +1254,7 @@ Core commands (mainline execution loop):
   advance            Advance to next batch (requires batch complete)
 
 Command groups (use 'roadmap <group> help' for details):
-  spec <sub>         Spec planning and intake: plan, import, intake, compile, init
+  spec <sub>         Spec planning: plan (gallery, select, status)
   dag <sub>          DAG mutations: insert, remove, modify, log
 
 Discovery:

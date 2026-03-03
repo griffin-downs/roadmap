@@ -210,26 +210,45 @@ export const schemas: Record<string, CommandSchema> = {
     ],
   },
 
-  'spec.compile': {
-    description: 'Compile spec sources into SpecIR JSON',
-    input: z.object({
-      config: z.string().optional().describe('Path to spec-config.json (default: .roadmap/spec-config.json)'),
+  'spec.plan.gallery': {
+    description: 'Show Pareto-filtered plan candidates',
+    output: z.object({
+      candidates: z.array(z.object({
+        id: z.string(),
+        estimates: z.object({
+          nodes: z.number(),
+          wallClockMinutes: z.number(),
+          costUSD: z.number(),
+          risk: z.number(),
+        }),
+      })),
+      specSource: z.string(),
     }),
     examples: [{
-      input: { config: '.roadmap/spec-config.json' },
-      cli: 'roadmap spec compile --note "compile spec"',
+      cli: 'roadmap spec plan --gallery --note "show candidates"',
     }],
   },
 
-  'spec.init': {
-    description: 'Create spec workspace + config',
-    input: z.object({
-      id: z.string().describe('DAG identifier'),
-      engine: z.string().optional().describe('Engine name (default: spec-kit)'),
+  'spec.plan.select': {
+    description: 'Select a plan candidate and write as head.json',
+    output: z.object({
+      ok: z.literal(true),
+      selectedId: z.string(),
+      nodeCount: z.number(),
     }),
     examples: [{
-      input: { id: 'phase-2' },
-      cli: 'roadmap spec init --id phase-2 --note "init workspace"',
+      cli: 'roadmap spec plan select auth-plan --note "choose plan"',
+    }],
+  },
+
+  'spec.plan.status': {
+    description: 'Show current plan selection status',
+    output: z.object({
+      selected: z.string().nullable(),
+      specSource: z.string(),
+    }),
+    examples: [{
+      cli: 'roadmap spec plan status',
     }],
   },
 };
