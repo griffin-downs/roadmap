@@ -1,520 +1,210 @@
 {
-  "id": "self-compounding-001",
-  "desc": "Self-compounding architecture: hardened foundation → checkpoint/metrics/gitsafe → spec-conformance + LLM feedback → distributed DAG. Enables system self-teaching via cross-project pattern mining.",
-  "init": "start",
-  "term": "self-teaching-enabled",
+  "id": "reorientation-002",
+  "desc": "Fix three reorientation problems: post-completion dead end, validation error opacity, API schema invariant gap",
+  "init": "init",
+  "term": "integration-verified",
   "nodes": {
-    "start": {
-      "id": "start",
-      "desc": "Baseline: current recursive-locked state. Target: hardened main with gitsafe enforcement.",
+    "init": {
+      "id": "init",
+      "desc": "Synthetic init — roots all independent tasks",
       "produces": [
-        ".roadmap/tasks/start.artifact.json"
+        "init.marker"
       ],
       "consumes": [],
       "deps": [],
+      "validate": [],
+      "idempotent": true
+    },
+    "orient-forward-pointer": {
+      "id": "orient-forward-pointer",
+      "desc": "When orient returns complete:true, scan for unloaded specs (.roadmap/*-spec.json not yet in head.json) and surface them as pendingSpecs[] with path and dag_id",
+      "produces": [
+        "src/lib/orient-forward.ts",
+        "test/orient-forward.test.ts"
+      ],
+      "consumes": [
+        "init.marker"
+      ],
+      "deps": [
+        "init"
+      ],
       "validate": [
         {
           "type": "intent",
+          "statement": "Plan clarity: orient forward pointer is unambiguous — scan .roadmap/*-spec.json, compare to head.json dag id, return unloaded specs",
           "expandOnFail": true,
-          "statement": "Plan clarity: baseline state is unambiguous — hardened main with gitsafe enforcement as target"
-        }
-      ],
-      "idempotent": true
-    },
-    "archive-full-codebase": {
-      "id": "archive-full-codebase",
-      "desc": "Create archive/full-codebase branch from current HEAD. Preserves entire codebase for reference.",
-      "produces": [
-        ".roadmap/tasks/archive-full-codebase.artifact.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "start"
-      ],
-      "validate": [
+          "confidence": 0.9,
+          "evaluator": "self"
+        },
         {
-          "type": "shell",
-          "command": "git rev-parse --verify archive/full-codebase"
-        }
-      ],
-      "idempotent": true
-    },
-    "create-enforcement-config": {
-      "id": "create-enforcement-config",
-      "desc": "Create .roadmap/enforcement.json: gitsafe denylist, branch rules, allowed files, audit trail.",
-      "produces": [
-        ".roadmap/enforcement.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "start"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "jq '.version' .roadmap/enforcement.json"
-        }
-      ],
-      "idempotent": true
-    },
-    "tree-shake-main": {
-      "id": "tree-shake-main",
-      "desc": "Delete non-essential files from main: docs/, tests/, examples/, legacy src/lib/ subdirs. Keep only 10-15 core files.",
-      "produces": [
-        ".roadmap/tasks/tree-shake-main.artifact.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "archive-full-codebase"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "! test -d docs"
+          "type": "artifact-exists"
         },
         {
           "type": "shell",
-          "command": "! test -d tests"
-        },
-        {
-          "type": "shell",
-          "command": "test -f bin/roadmap.ts"
-        },
-        {
-          "type": "shell",
-          "command": "test -f src/protocol.ts"
+          "command": "npx tsx test/orient-forward.test.ts",
+          "expectExitCode": 0
         }
       ],
       "idempotent": true
     },
-    "integrate-gitsafe": {
-      "id": "integrate-gitsafe",
-      "desc": "Load enforcement.json in CLI. Route all file reads through gitsafe with denylist + size limits.",
+    "make-full-contract-errors": {
+      "id": "make-full-contract-errors",
+      "desc": "Collect ALL validation failures (define, verify, check, terminal-intent, init-intent) before throwing — emit them as errors[] array with node, message, fix for each",
       "produces": [
-        "bin/roadmap.ts",
-        "src/lib/gitsafe-loader.ts"
+        "src/lib/make-validation.ts",
+        "test/make-validation.test.ts"
       ],
       "consumes": [
-        ".roadmap/enforcement.json"
+        "init.marker"
       ],
       "deps": [
-        "create-enforcement-config"
+        "init"
       ],
       "validate": [
+        {
+          "type": "intent",
+          "statement": "Plan clarity: make validation is unambiguous — collect all errors, return array, never throw on first",
+          "expandOnFail": true,
+          "confidence": 0.9,
+          "evaluator": "self"
+        },
+        {
+          "type": "artifact-exists"
+        },
         {
           "type": "shell",
-          "command": "npx tsc --noEmit bin/roadmap.ts"
+          "command": "npx tsx test/make-validation.test.ts",
+          "expectExitCode": 0
         }
       ],
       "idempotent": true
     },
-    "test-gitsafe-enforcement": {
-      "id": "test-gitsafe-enforcement",
-      "desc": "Tests: gitsafe rejects denylist paths, enforces maxBytes, validates on main branch only.",
+    "api-invariants": {
+      "id": "api-invariants",
+      "desc": "Extend api make output with an 'invariants' section documenting: terminal-intent-gate (term needs intent+expandOnFail), init-boundary-gate (init-adjacent needs intent+expandOnFail+plan/clarity keyword), input-verification requirements",
       "produces": [
-        "tests/gitsafe-enforcement.test.ts"
+        "src/lib/api-invariants.ts",
+        "test/api-invariants.test.ts"
       ],
-      "consumes": [],
+      "consumes": [
+        "init.marker"
+      ],
       "deps": [
-        "integrate-gitsafe"
+        "init"
       ],
       "validate": [
+        {
+          "type": "intent",
+          "statement": "Plan clarity: api invariants are unambiguous — machine-readable invariant descriptions for every make validation rule",
+          "expandOnFail": true,
+          "confidence": 0.9,
+          "evaluator": "self"
+        },
+        {
+          "type": "artifact-exists"
+        },
         {
           "type": "shell",
-          "command": "npm test tests/gitsafe-enforcement.test.ts"
+          "command": "npx tsx test/api-invariants.test.ts",
+          "expectExitCode": 0
         }
       ],
       "idempotent": true
     },
-    "setup-branch-protections": {
-      "id": "setup-branch-protections",
-      "desc": "Configure GitHub: main immutable, require status checks, require reviews, auto-delete branches after merge.",
-      "produces": [
-        ".github/branch-protections.yml"
-      ],
-      "consumes": [],
-      "deps": [
-        "tree-shake-main"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".github/branch-protections.yml"
-        }
-      ],
-      "idempotent": true
-    },
-    "verify-minimal-surface": {
-      "id": "verify-minimal-surface",
-      "desc": "Verify main has only essential files (< 50 files total, gitsafe can enumerate all).",
-      "produces": [
-        ".roadmap/metaflow/hardening/SURFACE.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "tree-shake-main"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "test $(git ls-tree -r HEAD --name-only | wc -l) -lt 50"
-        }
-      ],
-      "idempotent": true
-    },
-    "enforce-main-reads": {
-      "id": "enforce-main-reads",
-      "desc": "Add CLI validation: verify all file reads are from main (not current branch). Update bin/roadmap.ts.",
+    "orient-wire-cli": {
+      "id": "orient-wire-cli",
+      "desc": "Wire orient-forward into cmdOrient — when complete:true, include pendingSpecs and nextAction hint in output",
       "produces": [
         "bin/roadmap.ts"
       ],
       "consumes": [
-        ".roadmap/enforcement.json"
+        "src/lib/orient-forward.ts"
       ],
       "deps": [
-        "integrate-gitsafe"
+        "orient-forward-pointer"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "npx tsc --noEmit bin/roadmap.ts"
+          "command": "bin/roadmap orient --note 'test' 2>&1 | grep -q 'pendingSpecs\\|complete'",
+          "expectExitCode": 0
         }
       ],
       "idempotent": true
     },
-    "document-branch-architecture": {
-      "id": "document-branch-architecture",
-      "desc": "Create .roadmap/BRANCHES.md: document main (canonical), archive/full-codebase (snapshot), develop (experimental) relationship.",
+    "make-wire-errors": {
+      "id": "make-wire-errors",
+      "desc": "Wire make-validation into cmdMake — replace sequential throws with collected errors[] in error payload",
       "produces": [
-        ".roadmap/BRANCHES.md"
+        "bin/roadmap.ts"
       ],
-      "consumes": [],
+      "consumes": [
+        "src/lib/make-validation.ts"
+      ],
       "deps": [
-        "archive-full-codebase",
-        "tree-shake-main"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/BRANCHES.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "test-immutability": {
-      "id": "test-immutability",
-      "desc": "Verify main cannot be pushed to directly, only via PR. Pre-commit hook blocks DAG edits outside feat/wip.",
-      "produces": [
-        "tests/immutability.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "setup-branch-protections"
+        "make-full-contract-errors"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "npm test tests/immutability.test.ts"
+          "command": "echo '{\"tasks\":[]}' > /tmp/bad-spec.json && bin/roadmap make /tmp/bad-spec.json --note test 2>&1 | grep -q 'errors'",
+          "expectExitCode": 0
         }
       ],
       "idempotent": true
     },
-    "setup-git-refs": {
-      "id": "setup-git-refs",
-      "desc": "Create git tags (hardening-001-baseline) and refs marking canonical state, archive snapshot, branch relationships.",
+    "api-wire-invariants": {
+      "id": "api-wire-invariants",
+      "desc": "Wire api-invariants into cmdApi — include invariants in api make output",
       "produces": [
-        ".roadmap/tasks/setup-git-refs.artifact.json"
+        "bin/roadmap.ts"
       ],
-      "consumes": [],
+      "consumes": [
+        "src/lib/api-invariants.ts"
+      ],
       "deps": [
-        "document-branch-architecture"
+        "api-invariants"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "git rev-parse --verify hardening-001-baseline"
+          "command": "bin/roadmap api make 2>&1 | grep -q 'invariants'",
+          "expectExitCode": 0
         }
       ],
       "idempotent": true
     },
-    "hardened-locked": {
-      "id": "hardened-locked",
-      "desc": "Hardening complete: minimal main, gitsafe enforced, branch protections active, archive preserved, main-read enforced.",
+    "integration-verified": {
+      "id": "integration-verified",
+      "desc": "All three fixes work end-to-end: orient surfaces pending specs on complete DAG, make returns full error array, api make includes invariants",
       "produces": [
-        ".roadmap/metaflow/hardening/LOCKED.json"
+        "test/reorientation-integration.test.ts"
       ],
-      "consumes": [],
+      "consumes": [
+        "src/lib/orient-forward.ts",
+        "src/lib/make-validation.ts",
+        "src/lib/api-invariants.ts"
+      ],
       "deps": [
-        "tree-shake-main",
-        "integrate-gitsafe",
-        "test-gitsafe-enforcement",
-        "verify-minimal-surface",
-        "test-immutability",
-        "enforce-main-reads",
-        "setup-git-refs"
-      ],
-      "validate": [],
-      "idempotent": true
-    },
-    "enrich-claude-md": {
-      "id": "enrich-claude-md",
-      "desc": "Add AGENT_GUIDE section to .claude/CLAUDE.md: 6 layers, gap intents, existing resources, integration patterns, quick reference mapping.",
-      "produces": [
-        ".claude/CLAUDE.md"
-      ],
-      "consumes": [],
-      "deps": [
-        "hardened-locked"
+        "orient-wire-cli",
+        "make-wire-errors",
+        "api-wire-invariants"
       ],
       "validate": [
         {
-          "type": "shell",
-          "command": "grep -q 'AGENT_GUIDE' .claude/CLAUDE.md"
+          "type": "artifact-exists"
         },
         {
           "type": "shell",
-          "command": "grep -q 'CheckpointManager' .claude/CLAUDE.md"
-        },
-        {
-          "type": "shell",
-          "command": "grep -q 'Layer 1.*DAG' .claude/CLAUDE.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "integrate-checkpoint-manager": {
-      "id": "integrate-checkpoint-manager",
-      "desc": "Wire CheckpointManager (recovery.ts) into roadmap runtime. Hook into complete() to create snapshots, record decisions, enable rollback.",
-      "produces": [
-        "src/checkpoint-runtime.ts",
-        "tests/checkpoint-integration.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "enrich-claude-md"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit src/checkpoint-runtime.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npm test tests/checkpoint-integration.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "extract-metrics-from-trail": {
-      "id": "extract-metrics-from-trail",
-      "desc": "Parse .roadmap/trail.jsonl retrospectively. Compute SLO metrics from existing data. Zero instrumentation cost.",
-      "produces": [
-        "src/metrics-extractor.ts",
-        ".roadmap/metrics.jsonl",
-        "tests/metrics-extractor.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "enrich-claude-md"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "test -f .roadmap/metrics.jsonl"
-        }
-      ],
-      "idempotent": true
-    },
-    "extend-gitsafe-multirepo": {
-      "id": "extend-gitsafe-multirepo",
-      "desc": "Extend gitsafe-loader.ts to support N repositories. Update glob patterns, enforce consistency across all repos.",
-      "produces": [
-        "src/lib/gitsafe-loader.ts",
-        "tests/gitsafe-multirepo.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "enrich-claude-md"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit src/lib/gitsafe-loader.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npm test tests/gitsafe-multirepo.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "enforce-dag-intake-pipeline": {
-      "id": "enforce-dag-intake-pipeline",
-      "desc": "Block manual DAG construction. All DAGs must originate from spec pipeline. Pre-commit + runtime enforcement.",
-      "produces": [
-        "scripts/validate-dag-origin.ts",
-        "src/lib/intake/index.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "enrich-claude-md"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit scripts/validate-dag-origin.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit src/lib/intake/index.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "implement-spec-conformance-validator": {
-      "id": "implement-spec-conformance-validator",
-      "desc": "Build spec-conformance validator: scenario (Given/When/Then) to node mapping engine. Validate DAGs against scenarios. Feed failures into audit trail.",
-      "produces": [
-        "src/validators/spec-conformance.ts",
-        "tests/spec-conformance.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "integrate-checkpoint-manager",
-        "extract-metrics-from-trail",
-        "extend-gitsafe-multirepo",
-        "enforce-dag-intake-pipeline"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit src/validators/spec-conformance.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npm test tests/spec-conformance.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "integrate-llm-feedback-loop": {
-      "id": "integrate-llm-feedback-loop",
-      "desc": "Parse metrics + audit trail into LLM-friendly feedback. Generate improvement prompts for agent iterations. Wire into agent brief generation.",
-      "produces": [
-        "src/llm-feedback.ts",
-        "tests/llm-feedback.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "integrate-checkpoint-manager",
-        "extract-metrics-from-trail",
-        "extend-gitsafe-multirepo",
-        "enforce-dag-intake-pipeline"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit src/llm-feedback.ts"
-        },
-        {
-          "type": "shell",
-          "command": "npm test tests/llm-feedback.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "dag-mutation-commands": {
-      "id": "dag-mutation-commands",
-      "desc": "CLI commands for DAG mutations: insert, remove, modify nodes with provenance receipts and validation.",
-      "produces": [
-        "src/lib/dag-mutator.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "integrate-checkpoint-manager",
-        "extract-metrics-from-trail",
-        "extend-gitsafe-multirepo",
-        "enforce-dag-intake-pipeline"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit src/lib/dag-mutator.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "runtime-origin-gate": {
-      "id": "runtime-origin-gate",
-      "desc": "Enforce valid spec origin on all DAG read commands. Reject DAGs without provenance.",
-      "produces": [
-        ".roadmap/tasks/runtime-origin-gate.artifact.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "enforce-dag-intake-pipeline"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit bin/roadmap.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "implement-distributed-dag": {
-      "id": "implement-distributed-dag",
-      "desc": "Extend core protocol for multi-repo DAG state. Support merging DAGs from multiple repositories. Aggregate patterns across projects for LLM learning.",
-      "produces": [
-        "src/protocol-distributed.ts",
-        "tests/distributed-dag.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "implement-spec-conformance-validator",
-        "integrate-llm-feedback-loop",
-        "dag-mutation-commands",
-        "runtime-origin-gate"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        },
-        {
-          "type": "shell",
-          "command": "npm test tests/distributed-dag.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "self-teaching-enabled": {
-      "id": "self-teaching-enabled",
-      "desc": "Self-teaching architecture complete: metrics visible, spec-conformance testable, audit trail recorded, patterns emerge from cross-project DAGs.",
-      "produces": [
-        ".roadmap/metaflow/self-compounding/ENABLED.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "implement-distributed-dag"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "test -f .roadmap/metrics.jsonl"
-        },
-        {
-          "type": "shell",
-          "command": "test -f src/validators/spec-conformance.ts"
-        },
-        {
-          "type": "shell",
-          "command": "test -f src/checkpoint-runtime.ts"
+          "command": "npx tsx test/reorientation-integration.test.ts",
+          "expectExitCode": 0
         },
         {
           "type": "intent",
+          "statement": "All three reorientation problems are resolved — agents can self-orient after DAG completion, understand full make contract on first error, and read invariants from api",
           "expandOnFail": true,
-          "statement": "Self-teaching architecture is operational: metrics pipeline extracts SLOs from trail, spec-conformance validates DAGs against scenarios, LLM feedback loop generates improvement prompts, distributed DAG enables cross-project pattern mining"
+          "confidence": 0.9,
+          "evaluator": "self"
         }
       ],
       "idempotent": true

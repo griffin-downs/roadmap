@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "dag_id": "reorientation-002",
+  "dag_desc": "Fix three reorientation problems: post-completion dead end, validation error opacity, API schema invariant gap",
+  "inputs": [
+    { "path": "bin/roadmap.ts", "sha256": "0236efa5e57e04f1e05c6aa667968ba56dfbdf87d5341e305bf29bb13695d902", "role": "spec" }
+  ],
+  "tasks": [
+    {
+      "id": "orient-forward-pointer",
+      "desc": "When orient returns complete:true, scan for unloaded specs (.roadmap/*-spec.json not yet in head.json) and surface them as pendingSpecs[] with path and dag_id",
+      "priority": 0,
+      "depends": [],
+      "produces": ["src/lib/orient-forward.ts", "test/orient-forward.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: orient forward pointer is unambiguous — scan .roadmap/*-spec.json, compare to head.json dag id, return unloaded specs", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "npx tsx test/orient-forward.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": ["bin/roadmap.ts", "src/lib/protocol/operations.ts"]
+    },
+    {
+      "id": "orient-wire-cli",
+      "desc": "Wire orient-forward into cmdOrient — when complete:true, include pendingSpecs and nextAction hint in output",
+      "priority": 1,
+      "depends": ["orient-forward-pointer"],
+      "produces": ["bin/roadmap.ts"],
+      "consumes": ["src/lib/orient-forward.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "bin/roadmap orient --note 'test' 2>&1 | grep -q 'pendingSpecs\\|complete'", "expectExitCode": 0 }
+      ],
+      "ambient": []
+    },
+    {
+      "id": "make-full-contract-errors",
+      "desc": "Collect ALL validation failures (define, verify, check, terminal-intent, init-intent) before throwing — emit them as errors[] array with node, message, fix for each",
+      "priority": 0,
+      "depends": [],
+      "produces": ["src/lib/make-validation.ts", "test/make-validation.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: make validation is unambiguous — collect all errors, return array, never throw on first", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "npx tsx test/make-validation.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": ["src/lib/validate-dag.ts", "bin/roadmap.ts"]
+    },
+    {
+      "id": "make-wire-errors",
+      "desc": "Wire make-validation into cmdMake — replace sequential throws with collected errors[] in error payload",
+      "priority": 1,
+      "depends": ["make-full-contract-errors"],
+      "produces": ["bin/roadmap.ts"],
+      "consumes": ["src/lib/make-validation.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "echo '{\"tasks\":[]}' > /tmp/bad-spec.json && bin/roadmap make /tmp/bad-spec.json --note test 2>&1 | grep -q 'errors'", "expectExitCode": 0 }
+      ],
+      "ambient": []
+    },
+    {
+      "id": "api-invariants",
+      "desc": "Extend api make output with an 'invariants' section documenting: terminal-intent-gate (term needs intent+expandOnFail), init-boundary-gate (init-adjacent needs intent+expandOnFail+plan/clarity keyword), input-verification requirements",
+      "priority": 0,
+      "depends": [],
+      "produces": ["src/lib/api-invariants.ts", "test/api-invariants.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: api invariants are unambiguous — machine-readable invariant descriptions for every make validation rule", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "npx tsx test/api-invariants.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": ["src/lib/validate-dag.ts", "bin/roadmap.ts"]
+    },
+    {
+      "id": "api-wire-invariants",
+      "desc": "Wire api-invariants into cmdApi — include invariants in api make output",
+      "priority": 1,
+      "depends": ["api-invariants"],
+      "produces": ["bin/roadmap.ts"],
+      "consumes": ["src/lib/api-invariants.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "bin/roadmap api make 2>&1 | grep -q 'invariants'", "expectExitCode": 0 }
+      ],
+      "ambient": []
+    },
+    {
+      "id": "integration-verified",
+      "desc": "All three fixes work end-to-end: orient surfaces pending specs on complete DAG, make returns full error array, api make includes invariants",
+      "priority": 2,
+      "depends": ["orient-wire-cli", "make-wire-errors", "api-wire-invariants"],
+      "produces": ["test/reorientation-integration.test.ts"],
+      "consumes": ["src/lib/orient-forward.ts", "src/lib/make-validation.ts", "src/lib/api-invariants.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "npx tsx test/reorientation-integration.test.ts", "expectExitCode": 0 },
+        { "type": "intent", "statement": "All three reorientation problems are resolved — agents can self-orient after DAG completion, understand full make contract on first error, and read invariants from api", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" }
+      ],
+      "ambient": []
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-03T00:00:00Z",
+    "compile_hash": "493956067a417a85b5db9e91ea16c77b307afcb99b4c94bd10e92c6f3c741e3d"
+  }
+}

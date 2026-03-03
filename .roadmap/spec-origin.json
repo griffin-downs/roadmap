@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "engine": "spec-kit",
-  "version": "0.3.0",
-  "compile_hash": "65b4148c934a73cb6085cd46825208a50e4a85c55ab67c7b15e8b8187efa8d08",
-  "spec_sha": "6faca194461a28b625d6d79b3b7f2e7f0d8214031650395e4e5aeb19cae25a41",
-  "importedAt": "2026-03-03T14:00:05.725Z",
-  "dagId": "self-compounding-001"
+  "version": "1.0.0",
+  "compile_hash": "493956067a417a85b5db9e91ea16c77b307afcb99b4c94bd10e92c6f3c741e3d",
+  "spec_sha": "5f3ddb6c6c3a1209ae48a8919a1e80feb85b86c84f167965207273872ad51484",
+  "importedAt": "2026-03-03T22:26:38.259Z",
+  "dagId": "reorientation-002"
 }
