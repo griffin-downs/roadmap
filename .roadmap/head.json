@@ -7,91 +7,192 @@
     "refactor-core-routing": {
       "id": "refactor-core-routing",
       "desc": "Refactor bin/roadmap.ts main switch: 6 core commands dispatch (orient, show, complete, advance, chart, validate)",
-      "produces": ["bin/roadmap.ts", "tests/routing.test.ts"],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/routing.test.ts"
+      ],
       "consumes": [],
       "deps": [],
-      "validate": [{"type": "shell", "command": "npx tsc --noEmit"}],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsc --noEmit"
+        }
+      ],
       "idempotent": true
     },
     "implement-dag-group": {
       "id": "implement-dag-group",
       "desc": "Implement dag group: diff, expand, propagate, retire, optimize, switch, spawn",
-      "produces": ["bin/roadmap.ts", "tests/dag-group.test.ts"],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/dag-group.test.ts"
+      ],
       "consumes": [],
-      "deps": ["refactor-core-routing"],
-      "validate": [{"type": "shell", "command": "bin/roadmap dag help | grep -q expand"}],
+      "deps": [
+        "refactor-core-routing"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "bin/roadmap dag help | grep -q expand"
+        }
+      ],
       "idempotent": true
     },
     "implement-team-group": {
       "id": "implement-team-group",
       "desc": "Implement team group: assign, claim, dispatch, strategy",
-      "produces": ["bin/roadmap.ts", "tests/team-group.test.ts"],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/team-group.test.ts"
+      ],
       "consumes": [],
-      "deps": ["refactor-core-routing"],
-      "validate": [{"type": "shell", "command": "bin/roadmap team help | grep -q assign"}],
+      "deps": [
+        "refactor-core-routing"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "bin/roadmap team help | grep -q assign"
+        }
+      ],
       "idempotent": true
     },
     "implement-spec-group": {
       "id": "implement-spec-group",
       "desc": "Implement spec group: plan, import, intake, compile",
-      "produces": ["bin/roadmap.ts", "tests/spec-group.test.ts"],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/spec-group.test.ts"
+      ],
       "consumes": [],
-      "deps": ["refactor-core-routing"],
-      "validate": [{"type": "shell", "command": "bin/roadmap spec help | grep -q import"}],
+      "deps": [
+        "refactor-core-routing"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "bin/roadmap spec help | grep -q import"
+        }
+      ],
       "idempotent": true
     },
     "implement-util-group": {
       "id": "implement-util-group",
       "desc": "Implement util group: trail, checkpoint, explore, install, health",
-      "produces": ["bin/roadmap.ts", "tests/util-group.test.ts"],
+      "produces": [
+        "bin/roadmap.ts",
+        "tests/util-group.test.ts"
+      ],
       "consumes": [],
-      "deps": ["refactor-core-routing"],
-      "validate": [{"type": "shell", "command": "bin/roadmap util help | grep -q trail"}],
+      "deps": [
+        "refactor-core-routing"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "bin/roadmap util help | grep -q trail"
+        }
+      ],
       "idempotent": true
     },
     "implement-deprecation": {
       "id": "implement-deprecation",
       "desc": "Add deprecation routing: old commands → new with warnings",
-      "produces": ["bin/roadmap.ts", "docs/DEPRECATIONS.md"],
+      "produces": [
+        "bin/roadmap.ts",
+        "docs/DEPRECATIONS.md"
+      ],
       "consumes": [],
-      "deps": ["implement-dag-group", "implement-team-group", "implement-spec-group", "implement-util-group"],
-      "validate": [{"type": "shell", "command": "bin/roadmap parallel 2>&1 | grep -q deprecat"}],
+      "deps": [
+        "implement-dag-group",
+        "implement-team-group",
+        "implement-spec-group",
+        "implement-util-group"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "bin/roadmap parallel 2>&1 | grep -q deprecat"
+        }
+      ],
       "idempotent": true
     },
     "add-enforcement-hooks": {
       "id": "add-enforcement-hooks",
       "desc": "Add enforcement: pre-commit blocks DAG edits, validation gates node claims, trail enforcement",
-      "produces": ["scripts/hooks/pre-commit", "src/lib/enforce.ts"],
+      "produces": [
+        "scripts/hooks/pre-commit",
+        "src/lib/enforce.ts"
+      ],
       "consumes": [],
-      "deps": ["implement-deprecation"],
-      "validate": [{"type": "artifact-exists", "target": "scripts/hooks/pre-commit"}],
+      "deps": [
+        "implement-deprecation"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "scripts/hooks/pre-commit"
+        }
+      ],
       "idempotent": true
     },
     "update-documentation": {
       "id": "update-documentation",
       "desc": "Update CLAUDE.md (mainline only), CLI-REFERENCE.md (consolidated), MIGRATION.md (mappings)",
-      "produces": [".claude/CLAUDE.md", "docs/MIGRATION.md"],
+      "produces": [
+        ".claude/CLAUDE.md",
+        "docs/MIGRATION.md"
+      ],
       "consumes": [],
-      "deps": ["implement-deprecation"],
-      "validate": [{"type": "artifact-exists", "target": "docs/MIGRATION.md"}],
+      "deps": [
+        "implement-deprecation"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/MIGRATION.md"
+        }
+      ],
       "idempotent": true
     },
     "add-consolidation-tests": {
       "id": "add-consolidation-tests",
       "desc": "Smoke-test all 41 old commands, coverage for 6 + 4 new structure",
-      "produces": ["tests/cli-consolidation.test.ts"],
+      "produces": [
+        "tests/cli-consolidation.test.ts"
+      ],
       "consumes": [],
-      "deps": ["implement-deprecation"],
-      "validate": [{"type": "shell", "command": "npm test tests/cli-consolidation.test.ts"}],
+      "deps": [
+        "implement-deprecation"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npm test tests/cli-consolidation.test.ts"
+        }
+      ],
       "idempotent": true
     },
     "verify-surface": {
       "id": "verify-surface",
       "desc": "Verify: help < 40 lines, group help discoverable, enforcement active",
-      "produces": [".roadmap/metaflow/cli-consolidation/VERIFICATION.json"],
+      "produces": [
+        ".roadmap/metaflow/cli-consolidation/VERIFICATION.json"
+      ],
       "consumes": [],
-      "deps": ["add-enforcement-hooks", "add-consolidation-tests", "update-documentation"],
-      "validate": [{"type": "shell", "command": "test $(bin/roadmap help | wc -l) -lt 50"}],
+      "deps": [
+        "add-enforcement-hooks",
+        "add-consolidation-tests",
+        "update-documentation"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test $(bin/roadmap help | wc -l) -lt 50"
+        }
+      ],
       "idempotent": true
     },
     "cli-ready": {
@@ -99,7 +200,9 @@
       "desc": "CLI consolidation complete: small surface, mainline enforced, ready for production",
       "produces": [],
       "consumes": [],
-      "deps": ["verify-surface"],
+      "deps": [
+        "verify-surface"
+      ],
       "validate": [],
       "idempotent": false
     }

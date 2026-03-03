@@ -1161,5 +1161,28 @@
     ],
     "gitSha": "48a8eaf0f4d29f1ffa46ff402cad75d7db1dc85b",
     "treeSha": "932119a8df5acff0034563c4d880d4739b14c5de"
+  },
+  {
+    "nodeId": "refactor-core-routing",
+    "completedAt": "2026-03-03T10:58:56.201Z",
+    "owner": "griffin",
+    "checkpointId": "cp-20260303105854",
+    "validationChecks": [
+      {
+        "rule": "shell",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      }
+    ],
+    "validatorResults": [
+      {
+        "id": "shell:npx tsc --noEmit",
+        "passed": true,
+        "exitCode": 0,
+        "artifactPaths": []
+      }
+    ],
+    "gitSha": "c85e83d9eaddc0a5c5fb82da0d3bd7830c81c5d4",
+    "treeSha": "6c4dc5e750134b8a25a768fb0eccd8f4c4647a6c"
   }
 ]
