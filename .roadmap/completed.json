@@ -1,10 +1,5 @@
 [
   {
-    "nodeId": "phase-0-start",
-    "completedAt": "2026-03-03",
-    "legacy": true
-  },
-  {
     "nodeId": "enrich-claude-md",
     "completedAt": "2026-03-03",
     "legacy": true
@@ -75,11 +70,6 @@
     "legacy": true
   },
   {
-    "nodeId": "phase-1-start",
-    "completedAt": "2026-03-03T13:23:22.275Z",
-    "legacy": true
-  },
-  {
     "nodeId": "extend-gitsafe-multirepo",
     "completedAt": "2026-03-03T13:29:31.654Z",
     "legacy": true
@@ -100,8 +90,23 @@
     "legacy": true
   },
   {
-    "nodeId": "phase-2-start",
-    "completedAt": "2026-03-03T13:35:43.766Z",
-    "legacy": true
+    "nodeId": "dag-mutation-commands",
+    "completedAt": "2026-03-03T15:08:13+01:00",
+    "evidence": "src/lib/dag-mutator.ts committed c20df2e"
+  },
+  {
+    "nodeId": "implement-spec-conformance-validator",
+    "completedAt": "2026-03-03T15:08:13+01:00",
+    "evidence": "src/validators/spec-conformance.ts committed acf0558"
+  },
+  {
+    "nodeId": "integrate-llm-feedback-loop",
+    "completedAt": "2026-03-03T15:08:13+01:00",
+    "evidence": "src/llm-feedback.ts committed 547f28d"
+  },
+  {
+    "nodeId": "runtime-origin-gate",
+    "completedAt": "2026-03-03T15:08:13+01:00",
+    "evidence": "requireValidOrigin() in bin/roadmap.ts committed b2fea81"
   }
 ]
