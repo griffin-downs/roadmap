@@ -1,0 +1,28 @@
+{
+  "verification_id": "cli-consolidation-surface",
+  "timestamp": "2026-03-03T12:06:00Z",
+  "checks": {
+    "help_lines": {
+      "requirement": "< 40 lines",
+      "actual": 33,
+      "passed": true
+    },
+    "core_commands": {
+      "requirement": "6 commands: orient, advance, show, complete, chart, validate",
+      "actual": 6,
+      "passed": true
+    },
+    "groups": {
+      "requirement": "4 groups: dag, team, spec, util",
+      "actual": 4,
+      "passed": true
+    },
+    "minimal_surface": {
+      "requirement": "Help discoverable, no old commands exposed",
+      "actual": "Clean 10-command surface",
+      "passed": true
+    }
+  },
+  "verdict": "READY FOR PRODUCTION",
+  "phase_complete": "cli-consolidation-001"
+}
