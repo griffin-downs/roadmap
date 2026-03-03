@@ -10,9 +10,6 @@ import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createGitSafeLoader } from '../src/lib/gitsafe-loader.ts';
-import { detectCurrentClone, getArchitecture, getWhere, validateClone, enforceOperation } from '../src/lib/topology/topology-service.ts';
-import type { Operation } from '../src/lib/topology/enforcement-rules.ts';
-import { createAgentWorktree, cleanupAgentWorktree, listAgentWorktrees } from '../src/lib/topology/agent-worktree.ts';
 import {
   define, check, verify, order, parallelOrder, batchConflicts, orient, advanceBatch, readyNodes, nextBatch, criticalPath, reconcile,
   validateNode, validateGraph, consumeArtifact,
@@ -35,8 +32,10 @@ import { buildScaffold } from '../src/lib/scaffold.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } from '../src/lib/validate-dag.ts';
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/intake/spec-origin.ts';
+import { requireValidOrigin, checkSpecDrift } from '../src/lib/intake/runtime-gate.ts';
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/intake/spec-origin.ts';
 import { scanIntake, importIntake, certifyIntake } from '../src/lib/intake/intake.ts';
+import { insertNode, removeNode, modifyNode, commitMutation, loadMutationLog, MutationError } from '../src/lib/dag-mutator.ts';
 import { runIntakeAbsorb } from '../src/lib/intake/intake-cmd.ts';
 import { buildPlanOverlay, writePlanOverlay, loadPlanOverlay, isOverlayValid } from '../src/lib/plan-overlay.ts';
 import { runOverlayFromIntake } from '../src/lib/recipes/overlay/overlay-cmd.ts';
@@ -148,7 +147,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 }
 
 // Commands that don't require a note
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec', 'topology', 'agent']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec', 'dag']);
 const isOrientCheck = (cmd === 'orient') && args.includes('--check');
 if (isOrientCheck) {
   NOTE_EXEMPT.add('orient');
@@ -225,7 +224,7 @@ async function main() {
   const note = _note;
 
   // Enforce main branch for all DAG-mutating commands
-  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'topology', 'agent']);
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h']);
   if (!BRANCH_EXEMPT.has(cmd)) {
     enforceMainBranch();
   }
@@ -256,18 +255,15 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     // Spec pipeline
     case 'spec':      return await cmdSpecGroup(note);
 
-    // Topology group
-    case 'topology':  return cmdTopologyGroup();
-
-    // Agent coordination
-    case 'agent':     return await cmdAgentGroup(note);
+    // DAG mutation group
+    case 'dag':       return await cmdDagGroup(note);
 
     // Help & unknown
     case 'help':
     case '--help':
     case '-h':        return cmdHelp();
     default:
-      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance}. Group: {spec}. Use 'roadmap help' for details.` });
+      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance}. Group: {spec, dag}. Use 'roadmap help' for details.` });
       process.exit(1);
   }
 }
@@ -315,6 +311,10 @@ async function cmdOrient(note: string | undefined) {
     return;
   }
 
+  // Runtime origin gate: reject DAGs without valid spec origin
+  const origin = requireValidOrigin(repoRoot);
+  const drift = checkSpecDrift(repoRoot);
+
   const dag = await loadDAGAsync();
 
   const pos = await crossOrientWithState(dag);
@@ -347,6 +347,11 @@ async function cmdOrient(note: string | undefined) {
     complete: pos.remaining.length === 0,
   };
 
+  // Include spec drift warning if detected
+  if (drift.drifted) {
+    result.specDrift = { drifted: true, message: drift.message };
+  }
+
   if (!isCheck) {
     recordTrail({
       ts: new Date().toISOString(),
@@ -368,6 +373,9 @@ async function cmdAdvance(note: string) {
     process.exit(1);
     return;
   }
+
+  // Runtime origin gate: reject DAGs without valid spec origin
+  requireValidOrigin(repoRoot);
 
   const dag = await loadDAGAsync();
   const pos = await crossOrientWithState(dag);
@@ -874,357 +882,214 @@ function cmdSpecInit(note: string) {
   json({ error: 'spec init not yet implemented in mainline', fix: 'roadmap spec init --id <dag-id> --note "..."' });
 }
 
-// --- Topology group ---
-
-function cmdTopologyGroup() {
+// --- DAG group ---
+async function cmdDagGroup(note: string | undefined) {
   const sub = args[1];
+  if (!sub || sub === 'help') {
+    console.log(`roadmap dag — DAG mutation commands
+
+  insert   Insert a new node into the DAG
+  remove   Remove a node (--cascade to remove dependents)
+  modify   Modify an existing node's fields
+  log      Show mutation history
+
+All mutations validate the DAG (define/verify/check) before committing.
+Provenance receipts are appended to .roadmap/mutations.jsonl.
+
+Examples:
+  roadmap dag insert --node '{"id":"x","desc":"...","produces":[],"consumes":[],"deps":["init"]}' --note "why"
+  roadmap dag remove my-node --note "why" --cascade
+  roadmap dag modify my-node --set '{"desc":"new desc"}' --note "why"
+  roadmap dag log
+`);
+    return;
+  }
+
+  if (!note && sub !== 'log') {
+    json({ error: 'Missing --note "reason"', fix: `roadmap dag ${sub} --note "why"` });
+    process.exit(1);
+    return;
+  }
+
   switch (sub) {
-    case 'help':
-    case '--help':
-    case '-h':
-      return cmdTopologyHelp();
-    case 'show':
-      return cmdTopologyShow();
-    case 'where':
-      return cmdTopologyWhere();
-    case 'validate':
-      return cmdTopologyValidate();
-    case 'enforce':
-      return cmdTopologyEnforce();
+    case 'insert': return await cmdDagInsert(note!);
+    case 'remove': return await cmdDagRemove(note!);
+    case 'modify': return await cmdDagModify(note!);
+    case 'log':    return cmdDagLog();
     default:
-      json({ error: `Unknown topology subcommand: ${sub}`, fix: 'roadmap topology show|where|validate|enforce' });
+      json({ error: `Unknown dag subcommand: ${sub}`, fix: 'roadmap dag help' });
       process.exit(1);
   }
 }
 
-function cmdTopologyHelp() {
-  json({
-    command: 'topology',
-    description: 'Git architecture topology for LLM agents',
-    subcommands: [
-      { name: 'show', args: '', description: 'Full architecture: clones, branches, contracts' },
-      { name: 'where', args: '', description: 'Current position: clone, branch, sync status' },
-      { name: 'validate', args: '', description: 'Verify clone state matches expected topology' },
-      { name: 'enforce', args: '--op <operation> [--branch <branch>] [--to <target>]', description: 'Check if operation is allowed in current context' },
-    ],
-    examples: [
-      'roadmap topology show',
-      'roadmap topology where',
-      'roadmap topology validate',
-      'roadmap topology enforce --op push --to origin',
-      'roadmap topology enforce --op work --branch feat/new',
-    ],
-  });
-}
-
-function cmdTopologyShow() {
-  const result = getArchitecture(repoRoot);
-  emit({ ok: true, cmd: 'topology.show', data: result }, _outputOpts);
-}
-
-function cmdTopologyWhere() {
-  const result = getWhere(repoRoot);
-  emit({ ok: true, cmd: 'topology.where', data: result }, _outputOpts);
-}
-
-function cmdTopologyValidate() {
-  const result = validateClone(repoRoot);
-  emit({ ok: true, cmd: 'topology.validate', data: result }, _outputOpts);
-}
-
-function cmdTopologyEnforce() {
-  const opIdx = args.indexOf('--op');
-  if (opIdx === -1 || !args[opIdx + 1]) {
-    json({ error: 'Missing --op <operation>', fix: 'roadmap topology enforce --op push|merge|fetch|checkout|commit|work|read [--branch X] [--to Y]' });
-    process.exit(1);
-    return;
-  }
-  const op = args[opIdx + 1] as Operation;
-  const branchIdx = args.indexOf('--branch');
-  const branch = branchIdx !== -1 ? args[branchIdx + 1] : undefined;
-  const toIdx = args.indexOf('--to');
-  const to = toIdx !== -1 ? args[toIdx + 1] : undefined;
-
-  const result = enforceOperation(repoRoot, op, branch, to);
-  emit({ ok: true, cmd: 'topology.enforce', data: result }, _outputOpts);
-}
-
-// --- Agent group ---
-
-async function cmdAgentGroup(note: string | undefined) {
-  const sub = args[1];
-  switch (sub) {
-    case 'help':
-    case '--help':
-    case '-h':
-      return cmdAgentHelp();
-    case 'claim':
-      return await cmdAgentClaim(note);
-    case 'complete':
-      return await cmdAgentComplete(note);
-    case 'status':
-      return cmdAgentStatus();
-    case 'cleanup':
-      return cmdAgentCleanup();
-    default:
-      json({ error: `Unknown agent subcommand: ${sub}`, fix: 'roadmap agent claim|complete|status|cleanup' });
-      process.exit(1);
-  }
-}
-
-function cmdAgentHelp() {
-  json({
-    command: 'agent',
-    description: 'Agent task coordination: claim, work, complete (zero git management)',
-    subcommands: [
-      { name: 'claim', args: '<task-id> [--agent-id <id>]', description: 'Claim task + create isolated worktree' },
-      { name: 'complete', args: '<task-id> [--message "summary"]', description: 'Verify artifacts, commit, push, cleanup' },
-      { name: 'status', args: '', description: 'List active agent worktrees' },
-      { name: 'cleanup', args: '<task-id>', description: 'Remove worktree + delete agent branch' },
-    ],
-    examples: [
-      'roadmap agent claim my-task --agent-id agent-1',
-      'roadmap agent complete my-task --message "implemented auth module"',
-      'roadmap agent status',
-      'roadmap agent cleanup my-task',
-    ],
-    workflow: [
-      '1. roadmap agent claim <task-id>   -- get isolated worktree',
-      '2. (work in worktree, edit files)',
-      '3. roadmap agent complete <task-id> -- commit + push + cleanup',
-    ],
-  });
-}
-
-async function cmdAgentClaim(note: string | undefined) {
-  const taskId = args[2];
-  if (!taskId) {
-    json({ error: 'Missing task-id', fix: 'roadmap agent claim <task-id> [--agent-id <id>]' });
+async function cmdDagInsert(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap tracked in this repo', fix: 'Initialize with: roadmap make <spec> --note "..."' });
     process.exit(1);
     return;
   }
 
-  const agentIdIdx = args.indexOf('--agent-id');
-  const agentId = agentIdIdx !== -1 ? args[agentIdIdx + 1] : `agent-${Date.now().toString(36)}`;
+  // Runtime origin gate
+  requireValidOrigin(repoRoot);
 
-  // Create claim in claims store
-  const claimStore = loadClaims(repoRoot);
-  const now = new Date();
-  const ttlHours = 4;
-  const claimExpiry = new Date(now.getTime() + ttlHours * 3600 * 1000).toISOString();
-
-  // Check for existing active claim
-  const existing = claimStore[taskId];
-  if (existing && !isExpired(existing, now)) {
-    json({
-      error: `Task ${taskId} already claimed by ${existing.owner}`,
-      claimedAt: existing.claimedAt,
-      expiresAt: existing.claimExpiry,
-      fix: `Wait for claim to expire or use: roadmap agent cleanup ${taskId}`,
-    });
+  const nodeIdx = args.indexOf('--node');
+  if (nodeIdx === -1 || !args[nodeIdx + 1]) {
+    json({ error: 'Missing --node', fix: 'roadmap dag insert --node \'{"id":"x","desc":"...","produces":[],"consumes":[],"deps":["y"]}\' --note "why"' });
     process.exit(1);
     return;
   }
 
-  // Write claim
-  claimStore[taskId] = { owner: agentId, claimedAt: now.toISOString(), claimExpiry };
-  saveClaims(repoRoot, claimStore);
-
-  // Create worktree
-  let worktreeResult;
+  let nodeSpec: any;
   try {
-    worktreeResult = createAgentWorktree(repoRoot, agentId, taskId);
+    nodeSpec = JSON.parse(args[nodeIdx + 1]);
   } catch (e) {
-    // Rollback claim on worktree failure
-    delete claimStore[taskId];
-    saveClaims(repoRoot, claimStore);
-    json({
-      error: `Failed to create worktree: ${e instanceof Error ? e.message : String(e)}`,
-      fix: 'Check disk space and git worktree state',
-    });
+    json({ error: 'Invalid JSON for --node', fix: 'Ensure --node value is valid JSON' });
     process.exit(1);
     return;
   }
 
-  recordTrail({
-    ts: now.toISOString(),
-    cmd: 'agent.claim',
-    note: note ?? `claim ${taskId}`,
-    repo: basename(repoRoot),
-    detail: { taskId, agentId, branch: worktreeResult.branch },
-  });
-
-  emit({ ok: true, cmd: 'agent.claim', data: {
-    claimed: true,
-    taskId,
-    agentId,
-    worktree: worktreeResult.worktreePath,
-    branch: worktreeResult.branch,
-    cwd: worktreeResult.cwd,
-    produces: worktreeResult.produces,
-    consumes: worktreeResult.consumes,
-    claimExpiry,
-    guidance: `cd ${worktreeResult.cwd} && work on produces: [${worktreeResult.produces.join(', ')}]`,
-  }}, _outputOpts);
-}
-
-async function cmdAgentComplete(note: string | undefined) {
-  const taskId = args[2];
-  if (!taskId) {
-    json({ error: 'Missing task-id', fix: 'roadmap agent complete <task-id> [--message "summary"]' });
+  if (!nodeSpec.id || !nodeSpec.desc) {
+    json({ error: 'Node spec requires at least "id" and "desc"', fix: 'Include id and desc in the node JSON' });
     process.exit(1);
     return;
   }
 
-  const msgIdx = args.indexOf('--message');
-  const commitMessage = msgIdx !== -1 ? args[msgIdx + 1] : `${taskId}: task complete`;
+  const dag = await loadDAGAsync();
 
-  const worktreePath = join(repoRoot, '.claude', 'worktrees', taskId);
-  if (!existsSync(worktreePath)) {
-    json({ error: `No worktree found for ${taskId}`, fix: 'Claim the task first: roadmap agent claim ' + taskId });
-    process.exit(1);
-    return;
-  }
-
-  // Read brief to get produces list
-  const briefPath = join(worktreePath, '.roadmap', `brief-${taskId}.json`);
-  let produces: string[] = [];
-  let branch = '';
-  if (existsSync(briefPath)) {
-    const brief = JSON.parse(readFileSync(briefPath, 'utf-8'));
-    produces = brief.produces ?? [];
-    branch = brief.branch ?? '';
-  }
-
-  if (!branch) {
-    try {
-      branch = execSync('git rev-parse --abbrev-ref HEAD', { cwd: worktreePath, stdio: 'pipe' }).toString().trim();
-    } catch {
-      json({ error: 'Cannot determine branch in worktree', fix: 'Check worktree state' });
-      process.exit(1);
-      return;
-    }
-  }
-
-  // Verify produces artifacts exist in worktree
-  const missing: string[] = [];
-  for (const artifact of produces) {
-    const fullPath = join(worktreePath, artifact);
-    if (!existsSync(fullPath)) missing.push(artifact);
-  }
-
-  if (missing.length > 0) {
-    json({
-      error: 'Missing produce artifacts',
-      missing,
-      worktree: worktreePath,
-      fix: `Create the missing files in ${worktreePath}`,
-    });
-    process.exit(1);
-    return;
-  }
-
-  // Stage produces + commit
   try {
-    if (produces.length > 0) {
-      execSync(`git add ${produces.map(p => `"${p}"`).join(' ')}`, { cwd: worktreePath, stdio: 'pipe' });
-    } else {
-      // No explicit produces — add all changes
-      execSync('git add -A', { cwd: worktreePath, stdio: 'pipe' });
-    }
-
-    // Check if there are staged changes
-    const status = execSync('git diff --cached --name-only', { cwd: worktreePath, stdio: 'pipe' }).toString().trim();
-    let commitSha = '';
-
-    if (status) {
-      execSync(`git commit -m "${taskId}: ${commitMessage}"`, { cwd: worktreePath, stdio: 'pipe' });
-      commitSha = execSync('git rev-parse --short HEAD', { cwd: worktreePath, stdio: 'pipe' }).toString().trim();
-    }
-
-    // Push to origin
-    let pushed = false;
-    try {
-      execSync(`git push origin "${branch}"`, { cwd: worktreePath, stdio: 'pipe', timeout: 30000 });
-      pushed = true;
-    } catch {
-      // Push may fail if no remote or network — non-fatal
-    }
-
-    // Cleanup worktree
-    const cleanup = cleanupAgentWorktree(repoRoot, taskId);
-
-    // Release claim
-    const claimStore = loadClaims(repoRoot);
-    delete claimStore[taskId];
-    saveClaims(repoRoot, claimStore);
+    const { dag: mutated, receipt } = insertNode(dag, nodeSpec, note);
+    commitMutation(repoRoot, mutated, receipt);
 
     recordTrail({
       ts: new Date().toISOString(),
-      cmd: 'agent.complete',
-      note: note ?? `complete ${taskId}`,
+      cmd: 'dag.insert',
+      note,
       repo: basename(repoRoot),
-      detail: { taskId, commit: commitSha, branch, pushed },
+      detail: { nodeId: nodeSpec.id },
     });
 
-    emit({ ok: true, cmd: 'agent.complete', data: {
-      completed: true,
-      taskId,
-      commit: commitSha || null,
-      branch,
-      pushed,
-      cleaned: cleanup.cleaned,
-      message: pushed
-        ? `Task ${taskId} completed, committed, pushed to ${branch}`
-        : `Task ${taskId} completed, committed locally on ${branch} (push failed — manual push needed)`,
-    }}, _outputOpts);
-
+    json({ ok: true, op: 'insert', nodeId: nodeSpec.id, receipt });
   } catch (e) {
-    json({
-      error: `Completion failed: ${e instanceof Error ? e.message : String(e)}`,
-      worktree: worktreePath,
-      fix: 'Check git state in the worktree',
-    });
-    process.exit(1);
+    if (e instanceof MutationError) {
+      json({ error: e.message, errors: e.errors, receipt: e.receipt });
+      process.exit(1);
+    }
+    throw e;
   }
 }
 
-function cmdAgentStatus() {
-  const worktrees = listAgentWorktrees(repoRoot);
-  emit({ ok: true, cmd: 'agent.status', data: {
-    activeWorktrees: worktrees.length,
-    worktrees,
-    guidance: worktrees.length === 0
-      ? 'No active agent worktrees. Claim a task: roadmap agent claim <task-id>'
-      : `${worktrees.length} active worktree(s). Complete with: roadmap agent complete <task-id>`,
-  }}, _outputOpts);
-}
-
-function cmdAgentCleanup() {
-  const taskId = args[2];
-  if (!taskId) {
-    json({ error: 'Missing task-id', fix: 'roadmap agent cleanup <task-id>' });
+async function cmdDagRemove(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap tracked in this repo', fix: 'Initialize with: roadmap make <spec> --note "..."' });
     process.exit(1);
     return;
   }
 
-  const result = cleanupAgentWorktree(repoRoot, taskId);
+  // Runtime origin gate
+  requireValidOrigin(repoRoot);
 
-  // Release claim
-  const claimStore = loadClaims(repoRoot);
-  if (taskId in claimStore) {
-    delete claimStore[taskId];
-    saveClaims(repoRoot, claimStore);
+  const nodeId = args[2];
+  if (!nodeId || nodeId.startsWith('--')) {
+    json({ error: 'Missing node-id', fix: 'roadmap dag remove <node-id> --note "why"' });
+    process.exit(1);
+    return;
   }
 
-  emit({ ok: true, cmd: 'agent.cleanup', data: {
-    taskId,
-    cleaned: result.cleaned,
-    branchDeleted: result.branch,
-    message: result.cleaned
-      ? `Worktree and branch cleaned for ${taskId}`
-      : `No worktree found for ${taskId}`,
-  }}, _outputOpts);
+  const cascade = args.includes('--cascade');
+  const dag = await loadDAGAsync();
+
+  try {
+    const { dag: mutated, receipt } = removeNode(dag, nodeId, note, { cascade });
+    commitMutation(repoRoot, mutated, receipt);
+
+    recordTrail({
+      ts: new Date().toISOString(),
+      cmd: 'dag.remove',
+      note,
+      repo: basename(repoRoot),
+      detail: { nodeId, cascade },
+    });
+
+    json({ ok: true, op: 'remove', nodeId, cascade, receipt });
+  } catch (e) {
+    if (e instanceof MutationError) {
+      json({ error: e.message, errors: e.errors, receipt: e.receipt });
+      process.exit(1);
+    }
+    if (e instanceof Error) {
+      json({ error: e.message });
+      process.exit(1);
+    }
+    throw e;
+  }
+}
+
+async function cmdDagModify(note: string) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap tracked in this repo', fix: 'Initialize with: roadmap make <spec> --note "..."' });
+    process.exit(1);
+    return;
+  }
+
+  // Runtime origin gate
+  requireValidOrigin(repoRoot);
+
+  const nodeId = args[2];
+  if (!nodeId || nodeId.startsWith('--')) {
+    json({ error: 'Missing node-id', fix: 'roadmap dag modify <node-id> --set \'{"desc":"..."}\' --note "why"' });
+    process.exit(1);
+    return;
+  }
+
+  const setIdx = args.indexOf('--set');
+  if (setIdx === -1 || !args[setIdx + 1]) {
+    json({ error: 'Missing --set', fix: 'roadmap dag modify <node-id> --set \'{"desc":"new desc"}\' --note "why"' });
+    process.exit(1);
+    return;
+  }
+
+  let changes: any;
+  try {
+    changes = JSON.parse(args[setIdx + 1]);
+  } catch {
+    json({ error: 'Invalid JSON for --set', fix: 'Ensure --set value is valid JSON' });
+    process.exit(1);
+    return;
+  }
+
+  const dag = await loadDAGAsync();
+
+  try {
+    const { dag: mutated, receipt } = modifyNode(dag, nodeId, changes, note);
+    commitMutation(repoRoot, mutated, receipt);
+
+    recordTrail({
+      ts: new Date().toISOString(),
+      cmd: 'dag.modify',
+      note,
+      repo: basename(repoRoot),
+      detail: { nodeId, changes },
+    });
+
+    json({ ok: true, op: 'modify', nodeId, receipt });
+  } catch (e) {
+    if (e instanceof MutationError) {
+      json({ error: e.message, errors: e.errors, receipt: e.receipt });
+      process.exit(1);
+    }
+    if (e instanceof Error) {
+      json({ error: e.message });
+      process.exit(1);
+    }
+    throw e;
+  }
+}
+
+function cmdDagLog() {
+  const log = loadMutationLog(repoRoot);
+  const lastN = args.includes('--last') ? parseInt(args[args.indexOf('--last') + 1] || '10', 10) : undefined;
+  const mutations = lastN ? log.mutations.slice(-lastN) : log.mutations;
+  json({ ok: true, count: mutations.length, total: log.mutations.length, mutations });
 }
 
 // --- Help ---
@@ -1238,19 +1103,15 @@ Core commands (mainline execution loop):
 
 Command groups (use 'roadmap <group> help' for details):
   spec <sub>         Spec planning and intake: plan, import, intake, compile, init
-  topology <sub>     Git architecture topology: show, where, validate, enforce
-  agent <sub>        Agent coordination: claim, complete, status, cleanup
+  dag <sub>          DAG mutations: insert, remove, modify, log
 
-All commands require --note "reason" (except help/orient/topology/agent).
+All commands require --note "reason" (except help/orient).
 Output is JSON. Use jq for filtering.
 
 Examples:
   roadmap orient --note "check position"
   roadmap make spec.json --note "create ideal DAG"
   roadmap advance --note "move to next batch"
-  roadmap topology where
-  roadmap agent claim my-task --agent-id agent-1
-  roadmap agent complete my-task --message "done"
 `);
 }
 

@@ -15,7 +15,9 @@ export type ErrorCode =
   | 'BRANCH_INVALID'
   | 'VALIDATION_FAILED'
   | 'HANDOFF_MISSING'
-  | 'DAG_DISCONNECTED';
+  | 'DAG_DISCONNECTED'
+  | 'NO_ORIGIN'
+  | 'ORIGIN_INVALID';
 
 export interface RoadmapErrorContext {
   /** What was attempted */
