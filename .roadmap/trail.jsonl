@@ -13,3 +13,39 @@
 {"ts":"2026-03-03T11:05:37.814Z","cmd":"optimize","note":"test","repo":"roadmap","position":["implement-dag-group","implement-spec-group","implement-team-group","implement-util-group"],"level":1,"dagId":"cli-consolidation-001"}
 {"ts":"2026-03-03T11:05:43.618Z","cmd":"orient","note":"test","repo":"roadmap","position":["implement-dag-group","implement-spec-group","implement-team-group","implement-util-group"],"level":1,"dagId":"cli-consolidation-001","detail":{"done":1,"remaining":6,"complete":false,"batchRemaining":4}}
 {"ts":"2026-03-03T11:05:48.117Z","cmd":"spec-init","note":"test","repo":"roadmap","position":["untracked"],"level":0}
+{"ts":"2026-03-03T11:37:05.303Z","cmd":"orient","note":"test fix","repo":"roadmap","position":["baseline"],"level":0}
+{"ts":"2026-03-03T11:46:29.417Z","cmd":"orient","note":"hardening sprint start","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:48:07.109Z","cmd":"orient","note":"updated hardening roadmap","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:48:17.387Z","cmd":"orient","note":"verify updated roadmap","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:48:51.395Z","cmd":"orient","note":"hardening-001 execution start — complete 13-node minimal+secure DAG","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:25.491Z","cmd":"orient","note":"integration test orient","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:26.061Z","cmd":"orient","note":"perf-test-0","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:26.227Z","cmd":"orient","note":"perf-test-1","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:26.449Z","cmd":"orient","note":"perf-test-2","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:26.637Z","cmd":"orient","note":"perf-test-3","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:26.806Z","cmd":"orient","note":"perf-test-4","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:26.959Z","cmd":"orient","note":"perf-test-5","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:27.139Z","cmd":"orient","note":"perf-test-6","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:27.383Z","cmd":"orient","note":"perf-test-7","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:27.572Z","cmd":"orient","note":"perf-test-8","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:27.749Z","cmd":"orient","note":"perf-test-9","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:29.577Z","cmd":"orient","note":"contract test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:29.993Z","cmd":"orient","note":"schema check","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:30.571Z","cmd":"orient","note":"json-output compliance test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:31.014Z","cmd":"orient","note":"concurrent test 1","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:31.242Z","cmd":"orient","note":"concurrent test 2","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:31.373Z","cmd":"orient","note":"human test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:31.439Z","cmd":"orient","note":"instrumented by metaflow","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:31.641Z","cmd":"orient","note":"headSha check","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:31.803Z","cmd":"orient","note":"override test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:31.929Z","cmd":"orient","note":"no error field check","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:31.987Z","cmd":"orient","note":"stderr test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:32.408Z","cmd":"orient","note":"schema version check","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:32.469Z","cmd":"orient","note":"exit test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:32.499Z","cmd":"orient","note":"mining persistence test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:32.691Z","cmd":"orient","note":"workflow sequence test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:33.046Z","cmd":"orient","note":"consistency check","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:33.517Z","cmd":"orient","note":"json default test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:33.748Z","cmd":"orient","note":"no json flag test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:49:33.860Z","cmd":"orient","note":"quiet test","repo":"roadmap","position":["start"],"level":0}
+{"ts":"2026-03-03T11:51:11.865Z","cmd":"orient","note":"check if start batch is now complete","repo":"roadmap","position":["archive-full-codebase","create-enforcement-config"],"level":1}

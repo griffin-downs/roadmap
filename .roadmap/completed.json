@@ -1,5 +1,11 @@
 [
   {
+    "nodeId": "start",
+    "completedAt": "2026-03-03T11:50:53.271Z",
+    "owner": "griffin",
+    "checkpointId": "hardening-001-baseline"
+  },
+  {
     "nodeId": "init",
     "completedAt": "2026-03-02T11:25:00Z",
     "owner": "griffin",
