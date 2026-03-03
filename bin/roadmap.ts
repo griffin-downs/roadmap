@@ -766,31 +766,13 @@ async function cmdMake(note: string) {
     }, `Failed to convert spec: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  // Validate the DAG
-  try {
-    define(dag);
-    const verifyErrors = verify(dag);
-    const checkResult = check(dag);
-
-    if (verifyErrors.length > 0) {
-      throw new Error(`${verifyErrors.length} verification errors: ${verifyErrors.map((e: any) => e.message ?? e).join('; ')}`);
-    }
-    if (!checkResult.done) {
-      throw new Error(`Reachability check failed: ${checkResult.orphans.join('; ')}`);
-    }
-  } catch (e) {
+  // Validate the DAG — collect all errors before reporting
+  const errors = collectMakeErrors(dag, { skipTerminalIntent: args.includes('--skip-terminal-intent') });
+  if (errors.length > 0) {
     throw new RoadmapError('VALIDATION_FAILED', {
-      fix: 'Fix the spec and re-run',
-    }, `Spec validation failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
-
-  // Terminal intent gate invariant
-  const terminalError = validateTerminalIntentGate(dag);
-  if (terminalError && !args.includes('--skip-terminal-intent')) {
-    throw new RoadmapError('VALIDATION_FAILED', {
-      node: terminalError.node,
-      fix: terminalError.fix,
-    }, terminalError.message);
+      errors,
+      fix: errors.map(e => `[${e.gate}] ${e.fix}`).join('\n'),
+    }, `${errors.length} validation error(s) found`);
   }
 
   // Write to head.json
