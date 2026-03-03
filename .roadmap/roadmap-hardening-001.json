@@ -1,141 +1,103 @@
 {
-  "id": "roadmap-hardening-001",
-  "desc": "Fix roadmap state sync failures: auto-recovery, pre-flight validation, atomic metadata, artifact gates",
-  "init": "headsha-recovery",
-  "term": "hardening-complete",
+  "id": "hardening-001",
+  "desc": "Minimal + Safe: tree-shake main, enforce via gitsafe + branch protections, archive full codebase.",
+  "init": "start",
+  "term": "hardened-locked",
   "nodes": {
-    "headsha-recovery": {
-      "id": "headsha-recovery",
-      "desc": "Auto-detect and recover from headSha mismatches without manual intervention",
-      "produces": [
-        "src/lib/roadmap/headsha-recovery.ts",
-        "tests/headsha-recovery.test.ts"
-      ],
-      "consumes": [
-        ".roadmap/head.json",
-        ".git/HEAD"
-      ],
-      "deps": [],
-      "validate": [
-        {"type": "artifact-exists", "path": "src/lib/roadmap/headsha-recovery.ts"},
-        {"type": "build-produces", "path": "src/lib/roadmap/headsha-recovery.ts"}
-      ],
-      "idempotent": true,
-      "mode": "execute",
-      "level": 1
-    },
-    "preflight-validation": {
-      "id": "preflight-validation",
-      "desc": "Pre-flight checks before roadmap operations: state coherence, artifact existence, typecheck",
-      "produces": [
-        "src/lib/roadmap/preflight-validator.ts",
-        "tests/preflight-validator.test.ts"
-      ],
-      "consumes": [
-        ".roadmap/head.json",
-        "src/lib/roadmap/headsha-recovery.ts"
-      ],
-      "deps": ["headsha-recovery"],
-      "validate": [
-        {"type": "artifact-exists", "path": "src/lib/roadmap/preflight-validator.ts"}
-      ],
-      "idempotent": true,
-      "mode": "execute",
-      "level": 2
-    },
-    "trail-management": {
-      "id": "trail-management",
-      "desc": "Atomic trail.jsonl handling: auto-gitignore or auto-commit without manual friction",
-      "produces": [
-        "src/lib/roadmap/trail-manager.ts",
-        "tests/trail-manager.test.ts",
-        ".gitignore.trail"
-      ],
-      "consumes": [
-        ".roadmap/trail.jsonl"
-      ],
-      "deps": ["headsha-recovery"],
-      "validate": [
-        {"type": "artifact-exists", "path": "src/lib/roadmap/trail-manager.ts"}
-      ],
-      "idempotent": true,
-      "mode": "execute",
-      "level": 2
-    },
-    "dag-switching": {
-      "id": "dag-switching",
-      "desc": "Proper CLI for DAG switching (no symlinks): roadmap switch <dag-id>",
-      "produces": [
-        "src/lib/roadmap/dag-switcher.ts",
-        "tests/dag-switcher.test.ts"
-      ],
-      "consumes": [
-        ".roadmap/head.*.json",
-        "src/lib/roadmap/headsha-recovery.ts"
-      ],
-      "deps": ["headsha-recovery"],
-      "validate": [
-        {"type": "artifact-exists", "path": "src/lib/roadmap/dag-switcher.ts"}
-      ],
-      "idempotent": true,
-      "mode": "execute",
-      "level": 2
-    },
-    "artifact-gates": {
-      "id": "artifact-gates",
-      "desc": "Validation gates: artifact existence, typecheck, schema compliance on completion",
-      "produces": [
-        "src/lib/roadmap/artifact-gates.ts",
-        "tests/artifact-gates.test.ts"
-      ],
-      "consumes": [
-        "src/lib/roadmap/preflight-validator.ts"
-      ],
-      "deps": ["preflight-validation"],
-      "validate": [
-        {"type": "artifact-exists", "path": "src/lib/roadmap/artifact-gates.ts"}
-      ],
-      "idempotent": true,
-      "mode": "execute",
-      "level": 3
-    },
-    "integration-tests": {
-      "id": "integration-tests",
-      "desc": "Integration tests: verify headSha recovery, atomic commits, DAG switching all work together",
-      "produces": [
-        "tests/roadmap-hardening-integration.test.ts",
-        "hardening-validation.json"
-      ],
-      "consumes": [
-        "src/lib/roadmap/headsha-recovery.ts",
-        "src/lib/roadmap/preflight-validator.ts",
-        "src/lib/roadmap/trail-manager.ts",
-        "src/lib/roadmap/dag-switcher.ts",
-        "src/lib/roadmap/artifact-gates.ts"
-      ],
-      "deps": ["artifact-gates", "dag-switching", "trail-management"],
-      "validate": [
-        {"type": "artifact-exists", "path": "tests/roadmap-hardening-integration.test.ts"},
-        {"type": "artifact-exists", "path": "hardening-validation.json"}
-      ],
-      "idempotent": false,
-      "mode": "execute",
-      "level": 4
-    },
-    "hardening-complete": {
-      "id": "hardening-complete",
-      "desc": "Terminal: all roadmap state sync issues resolved, system hardened",
+    "start": {
+      "id": "start",
+      "desc": "Baseline: current recursive-locked state. Target: hardened main with gitsafe enforcement.",
       "produces": [],
-      "consumes": [
-        "hardening-validation.json"
-      ],
-      "deps": ["integration-tests"],
+      "consumes": [],
+      "deps": [],
+      "validate": [],
+      "idempotent": false
+    },
+    "archive-full-codebase": {
+      "id": "archive-full-codebase",
+      "desc": "Create archive/full-codebase branch from current HEAD. Preserves entire codebase for reference.",
+      "produces": [],
+      "consumes": [],
+      "deps": ["start"],
+      "validate": [{"type": "shell", "command": "git rev-parse --verify archive/full-codebase"}],
+      "idempotent": true
+    },
+    "create-enforcement-config": {
+      "id": "create-enforcement-config",
+      "desc": "Create .roadmap/enforcement.json: gitsafe denylist, branch rules, allowed files, audit trail.",
+      "produces": [".roadmap/enforcement.json"],
+      "consumes": [],
+      "deps": ["start"],
+      "validate": [{"type": "shell", "command": "jq '.version' .roadmap/enforcement.json"}],
+      "idempotent": true
+    },
+    "tree-shake-main": {
+      "id": "tree-shake-main",
+      "desc": "Delete non-essential files from main: docs/, tests/, examples/, legacy src/lib/ subdirs. Keep only 10-15 core files.",
+      "produces": [],
+      "consumes": [],
+      "deps": ["archive-full-codebase"],
       "validate": [
-        {"type": "artifact-exists", "path": "hardening-validation.json"}
+        {"type": "shell", "command": "! test -d docs"},
+        {"type": "shell", "command": "! test -d tests"},
+        {"type": "shell", "command": "test -f bin/roadmap.ts"},
+        {"type": "shell", "command": "test -f src/protocol.ts"}
       ],
-      "idempotent": false,
-      "mode": "execute",
-      "level": 5
+      "idempotent": true
+    },
+    "integrate-gitsafe": {
+      "id": "integrate-gitsafe",
+      "desc": "Load enforcement.json in CLI. Route all file reads through gitsafe with denylist + size limits.",
+      "produces": ["bin/roadmap.ts", "src/lib/gitsafe-loader.ts"],
+      "consumes": [".roadmap/enforcement.json"],
+      "deps": ["create-enforcement-config"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit bin/roadmap.ts"}],
+      "idempotent": true
+    },
+    "test-gitsafe-enforcement": {
+      "id": "test-gitsafe-enforcement",
+      "desc": "Tests: gitsafe rejects denylist paths, enforces maxBytes, validates on main branch only.",
+      "produces": ["tests/gitsafe-enforcement.test.ts"],
+      "consumes": [],
+      "deps": ["integrate-gitsafe"],
+      "validate": [{"type": "shell", "command": "npm test tests/gitsafe-enforcement.test.ts"}],
+      "idempotent": true
+    },
+    "setup-branch-protections": {
+      "id": "setup-branch-protections",
+      "desc": "Configure GitHub: main immutable, require status checks, require reviews, auto-delete branches after merge.",
+      "produces": [".github/branch-protections.yml"],
+      "consumes": [],
+      "deps": ["tree-shake-main"],
+      "validate": [{"type": "artifact-exists", "target": ".github/branch-protections.yml"}],
+      "idempotent": true
+    },
+    "verify-minimal-surface": {
+      "id": "verify-minimal-surface",
+      "desc": "Verify main has only essential files (< 50 files total, gitsafe can enumerate all).",
+      "produces": [".roadmap/metaflow/hardening/SURFACE.json"],
+      "consumes": [],
+      "deps": ["tree-shake-main"],
+      "validate": [{"type": "shell", "command": "test $(git ls-tree -r HEAD --name-only | wc -l) -lt 50"}],
+      "idempotent": true
+    },
+    "test-immutability": {
+      "id": "test-immutability",
+      "desc": "Verify main cannot be pushed to directly, only via PR. Pre-commit hook blocks DAG edits outside feat/wip.",
+      "produces": ["tests/immutability.test.ts"],
+      "consumes": [],
+      "deps": ["setup-branch-protections"],
+      "validate": [{"type": "shell", "command": "npm test tests/immutability.test.ts"}],
+      "idempotent": true
+    },
+    "hardened-locked": {
+      "id": "hardened-locked",
+      "desc": "Hardening complete: minimal main (15 files), gitsafe enforced, branch protections active, archive preserved.",
+      "produces": [".roadmap/metaflow/hardening/LOCKED.json"],
+      "consumes": [],
+      "deps": ["tree-shake-main", "integrate-gitsafe", "test-gitsafe-enforcement", "verify-minimal-surface", "test-immutability"],
+      "validate": [],
+      "idempotent": false
     }
   }
 }
