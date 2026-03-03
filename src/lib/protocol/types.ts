@@ -1,5 +1,5 @@
 // @module protocol/types
-// @exports ValidationRule, IntentJudgment, ObservationSpec, ObservationResult, ExploreResult, ValidationCheck, ValidationResult, IntentFailure, ConvergenceLimits, EscalationResult, IntentDiagnosis, ConsumeSpec, consumeArtifact, consumeResolvedBy, NodeSpec, EmitGalleryNodeSpec, graph, TermGate, SpecMeta, Graph, Connection, Gap
+// @exports ValidationRule, IntentJudgment, ObservationSpec, ObservationResult, ExploreResult, ValidationCheck, ValidationResult, IntentFailure, ConvergenceLimits, EscalationResult, IntentDiagnosis, ConsumeSpec, consumeArtifact, consumeResolvedBy, NodeSpec, EmitGalleryNodeSpec, graph, TermGate, SpecMeta, Graph, OptimizeResult, LevelEntry, BottleneckEntry, Connection, Gap
 // @types All protocol types
 // @entry roadmap/protocol
 
@@ -193,6 +193,32 @@ export interface Graph<T extends string> {
   readonly nodes: { readonly [N in T]: NodeSpec<T, N> };
   readonly termGates?: readonly TermGate[];  // stacked term gates (optional, for new DAGs)
   readonly spec?: SpecMeta;  // FR-SPEC-003: compiled spec provenance
+}
+
+// Optimizer types — hallucinate-validate dependency minimization
+export interface OptimizeResult {
+  removable: Array<{ from: string; to: string }>;
+  levelsBefore: number;
+  levelsAfter: number;
+  maxParallelismBefore: number;
+  maxParallelismAfter: number;
+  utilizationBefore: number;
+  utilizationAfter: number;
+  enforcement: { nodesCovered: number; nodesUncovered: number };
+}
+
+export interface LevelEntry {
+  level: number;
+  nodes: string[];
+  width: number;
+  onCriticalPath: boolean;
+}
+
+export interface BottleneckEntry {
+  id: string;
+  level: number;
+  fanIn: number;
+  fanOut: number;
 }
 
 export type Connection = { forward: string; backward: string; artifact: string };

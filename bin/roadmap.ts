@@ -11,7 +11,7 @@ import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   define, check, verify, order, parallelOrder, batchConflicts, orient, readyNodes, nextBatch, criticalPath, reconcile,
-  validateNode, validateGraph, consumeArtifact,
+  validateNode, validateGraph, consumeArtifact, optimize,
 } from '../src/protocol.ts';
 import type { ConsumeSpec } from '../src/protocol.ts';
 import { fileExists } from '../src/predicates.ts';
@@ -349,6 +349,7 @@ async function main() {
       case 'spawn':     return cmdSpawn(note!);
       case 'position':  return cmdOrient(note); // alias
       case 'parallel':  return cmdParallel(note!);
+      case 'optimize':  return cmdOptimize(note!);
       case 'locate':    return cmdLocate(note!);
       case 'sync':      return cmdSync(note!);
       case 'trail':     return cmdTrail();
@@ -1417,6 +1418,58 @@ function cmdParallel(note: string) {
   }
 
   json(result);
+}
+
+function cmdOptimize(note: string) {
+  const dag = loadDAG();
+  const pos = orientWithState(dag);
+
+  recordTrail({
+    ts: new Date().toISOString(),
+    cmd: 'optimize',
+    note,
+    repo: basename(repoRoot),
+    position: pos.position,
+    level: pos.level,
+    dagId: dag.id,
+  });
+
+  const result = optimize(dag);
+
+  // Build render output with metrics table and edge list
+  const lines: string[] = [
+    `Optimize: ${dag.id}`,
+    `  Levels:        ${result.levelsBefore} → ${result.levelsAfter}   (${result.levelsAfter - result.levelsBefore > 0 ? '+' : ''}${result.levelsAfter - result.levelsBefore})`,
+    `  Max parallel:  ${result.maxParallelismBefore} →  ${result.maxParallelismAfter}   (${result.maxParallelismAfter - result.maxParallelismBefore > 0 ? '+' : ''}${result.maxParallelismAfter - result.maxParallelismBefore})`,
+    `  Utilization:   ${Math.round(result.utilizationBefore * 100)}% → ${Math.round(result.utilizationAfter * 100)}%  (${Math.round((result.utilizationAfter - result.utilizationBefore) * 100) > 0 ? '+' : ''}${Math.round((result.utilizationAfter - result.utilizationBefore) * 100)}pp)`,
+    `  Removable deps: ${result.removable.length}`,
+    '',
+    result.removable.length > 0 ? 'Removable edges:' : 'No removable dependencies found.',
+  ];
+
+  if (result.removable.length > 0) {
+    for (const edge of result.removable.slice(0, 10)) {
+      lines.push(`  ${edge.from} → ${edge.to}`);
+    }
+    if (result.removable.length > 10) {
+      lines.push(`  ... and ${result.removable.length - 10} more`);
+    }
+  }
+
+  lines.push('');
+  const coveredText = result.enforcement.nodesCovered > 0
+    ? `${result.enforcement.nodesCovered} nodes have consumes declared (full validation)`
+    : 'No nodes have consumes declared (structural validation only)';
+  lines.push(`Enforcement: ${coveredText}`);
+
+  json(result, {
+    kind: 'generic',
+    title: `optimize: ${dag.id}`,
+    nodes: [
+      { t: 'h2', s: `${dag.id} Analysis` },
+      { t: 'text', s: lines.join('\n') },
+    ],
+  });
 }
 
 function cmdTrail() {

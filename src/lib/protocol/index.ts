@@ -6,7 +6,7 @@ export type {
   ValidationRule, IntentJudgment, ObservationSpec, ObservationResult, ExploreResult,
   ValidationCheck, ValidationResult, IntentFailure, ConvergenceLimits, EscalationResult,
   IntentDiagnosis, ConsumeSpec, NodeSpec, EmitGalleryNodeSpec, TermGate, SpecMeta,
-  Graph, Connection, Gap,
+  Graph, Connection, Gap, OptimizeResult, LevelEntry, BottleneckEntry,
 } from './types.ts';
 export { consumeArtifact, consumeResolvedBy, graph, CompletionStore } from './types.ts';
 

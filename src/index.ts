@@ -26,6 +26,14 @@ export {
   validateGraph,
 } from './protocol.ts';
 
+// Optimizer
+export {
+  optimize,
+  utilizationRatio,
+  levelReport,
+  bottleneckNodes,
+} from './lib/optimize.ts';
+
 // Predicates for orient()
 export { fileExists, gitArtifactExists, gitArtifactAt, siblingArtifactExists, compound, any } from './predicates.ts';
 
@@ -95,6 +103,9 @@ export type {
   ConvergenceLimits,
   EscalationResult,
   IntentDiagnosis,
+  OptimizeResult,
+  LevelEntry,
+  BottleneckEntry,
 } from './protocol.ts';
 
 // Intent-driven expansion
