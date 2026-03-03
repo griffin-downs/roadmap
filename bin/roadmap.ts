@@ -30,6 +30,7 @@ import type { EvidenceRecord } from '../src/lib/evidence/completion-evidence.ts'
 import { buildScaffold } from '../src/lib/scaffold.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } from '../src/lib/validate-dag.ts';
+import { collectMakeErrors } from '../src/lib/make-validation.ts';
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/intake/spec-origin.ts';
 import { requireValidOrigin, checkSpecDrift } from '../src/lib/intake/runtime-gate.ts';
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/intake/spec-origin.ts';
@@ -47,6 +48,7 @@ import { resolveWidth } from '../src/lib/render/layout.ts';
 import { renderOrient, renderPlanGallery, renderPlanSelect, renderPlanStatus } from '../src/lib/cli-human.ts';
 import type { OrientData, GalleryData, PlanSelectData, PlanStatusData } from '../src/lib/cli-human.ts';
 import { lookupSchema, listCommands, schemaToJsonSchema } from '../src/lib/schemas.ts';
+import { getMakeInvariants } from '../src/lib/api-invariants.ts';
 
 const rawArgs = process.argv.slice(2);
 const repoRoot = process.cwd();
@@ -268,7 +270,7 @@ async function main() {
   const note = _note;
 
   // Enforce main branch for all DAG-mutating commands
-  const BRANCH_EXEMPT = new Set(['help', '--help', '-h']);
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient']);
   if (!BRANCH_EXEMPT.has(cmd)) {
     enforceMainBranch();
   }
@@ -1338,13 +1340,19 @@ function cmdApi() {
     return;
   }
 
-  emit({ ok: true, cmd: 'api', data: {
+  const data: any = {
     command: target,
     description: schema.description,
     input: schema.input ? schemaToJsonSchema(schema.input) : null,
     output: schema.output ? schemaToJsonSchema(schema.output) : null,
     examples: schema.examples,
-  }}, _outputOpts);
+  };
+
+  if (target === 'make') {
+    data.invariants = getMakeInvariants();
+  }
+
+  emit({ ok: true, cmd: 'api', data }, _outputOpts);
 }
 
 // --- Help ---
