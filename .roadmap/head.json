@@ -1,208 +1,96 @@
 {
-  "id": "cli-consolidation-001",
-  "desc": "CLI Consolidation: 41 commands → 6 core + 4 groups. Enforce mainline workflows.",
-  "init": "refactor-core-routing",
-  "term": "cli-ready",
+  "id": "dag-recursion-001",
+  "desc": "Recursive DAG pattern: every DAG level enforces make→validate→brief→execute→advance loop. Mainline: 3 commands (make, orient, advance).",
+  "init": "baseline",
+  "term": "recursive-locked",
   "nodes": {
-    "refactor-core-routing": {
-      "id": "refactor-core-routing",
-      "desc": "Refactor bin/roadmap.ts main switch: 6 core commands dispatch (orient, show, complete, advance, chart, validate)",
-      "produces": [
-        "bin/roadmap.ts",
-        "tests/routing.test.ts"
-      ],
-      "consumes": [],
-      "deps": [],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ],
-      "idempotent": true
-    },
-    "implement-dag-group": {
-      "id": "implement-dag-group",
-      "desc": "Implement dag group: diff, expand, propagate, retire, optimize, switch, spawn",
-      "produces": [
-        "bin/roadmap.ts",
-        "tests/dag-group.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "refactor-core-routing"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "bin/roadmap dag help | grep -q expand"
-        }
-      ],
-      "idempotent": true
-    },
-    "implement-team-group": {
-      "id": "implement-team-group",
-      "desc": "Implement team group: assign, claim, dispatch, strategy",
-      "produces": [
-        "bin/roadmap.ts",
-        "tests/team-group.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "refactor-core-routing"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "bin/roadmap team help | grep -q assign"
-        }
-      ],
-      "idempotent": true
-    },
-    "implement-spec-group": {
-      "id": "implement-spec-group",
-      "desc": "Implement spec group: plan, import, intake, compile",
-      "produces": [
-        "bin/roadmap.ts",
-        "tests/spec-group.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "refactor-core-routing"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "bin/roadmap spec help | grep -q import"
-        }
-      ],
-      "idempotent": true
-    },
-    "implement-util-group": {
-      "id": "implement-util-group",
-      "desc": "Implement util group: trail, checkpoint, explore, install, health",
-      "produces": [
-        "bin/roadmap.ts",
-        "tests/util-group.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "refactor-core-routing"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "bin/roadmap util help | grep -q trail"
-        }
-      ],
-      "idempotent": true
-    },
-    "implement-deprecation": {
-      "id": "implement-deprecation",
-      "desc": "Add deprecation routing: old commands → new with warnings",
-      "produces": [
-        "bin/roadmap.ts",
-        "docs/DEPRECATIONS.md"
-      ],
-      "consumes": [],
-      "deps": [
-        "implement-dag-group",
-        "implement-team-group",
-        "implement-spec-group",
-        "implement-util-group"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "bin/roadmap parallel 2>&1 | grep -q deprecat"
-        }
-      ],
-      "idempotent": true
-    },
-    "add-enforcement-hooks": {
-      "id": "add-enforcement-hooks",
-      "desc": "Add enforcement: pre-commit blocks DAG edits, validation gates node claims, trail enforcement",
-      "produces": [
-        "scripts/hooks/pre-commit",
-        "src/lib/enforce.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "implement-deprecation"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": "scripts/hooks/pre-commit"
-        }
-      ],
-      "idempotent": true
-    },
-    "update-documentation": {
-      "id": "update-documentation",
-      "desc": "Update CLAUDE.md (mainline only), CLI-REFERENCE.md (consolidated), MIGRATION.md (mappings)",
-      "produces": [
-        ".claude/CLAUDE.md",
-        "docs/MIGRATION.md"
-      ],
-      "consumes": [],
-      "deps": [
-        "implement-deprecation"
-      ],
-      "validate": [
-        {
-          "type": "artifact-exists",
-          "target": "docs/MIGRATION.md"
-        }
-      ],
-      "idempotent": true
-    },
-    "add-consolidation-tests": {
-      "id": "add-consolidation-tests",
-      "desc": "Smoke-test all 41 old commands, coverage for 6 + 4 new structure",
-      "produces": [
-        "tests/cli-consolidation.test.ts"
-      ],
-      "consumes": [],
-      "deps": [
-        "implement-deprecation"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npm test tests/cli-consolidation.test.ts"
-        }
-      ],
-      "idempotent": true
-    },
-    "verify-surface": {
-      "id": "verify-surface",
-      "desc": "Verify: help < 40 lines, group help discoverable, enforcement active",
-      "produces": [
-        ".roadmap/metaflow/cli-consolidation/VERIFICATION.json"
-      ],
-      "consumes": [],
-      "deps": [
-        "add-enforcement-hooks",
-        "add-consolidation-tests",
-        "update-documentation"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "test $(bin/roadmap help | wc -l) -lt 50"
-        }
-      ],
-      "idempotent": true
-    },
-    "cli-ready": {
-      "id": "cli-ready",
-      "desc": "CLI consolidation complete: small surface, mainline enforced, ready for production",
+    "baseline": {
+      "id": "baseline",
+      "desc": "Current: 5-core + spec. Target: 3-core with recursive DAG enforcement.",
       "produces": [],
       "consumes": [],
-      "deps": [
-        "verify-surface"
-      ],
+      "deps": [],
+      "validate": [],
+      "idempotent": false
+    },
+    "redesign-dag-schema": {
+      "id": "redesign-dag-schema",
+      "desc": "Update DAG schema: every node/DAG must declare phase (make|validate|brief|execute|term). Cycles forbidden. Init↔term mandatory.",
+      "produces": [".roadmap/dag-schema.json", "src/protocol.ts"],
+      "consumes": [],
+      "deps": ["baseline"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit src/protocol.ts"}],
+      "idempotent": true
+    },
+    "implement-brief-sealing": {
+      "id": "implement-brief-sealing",
+      "desc": "Seal node briefs: agent gets deterministic, read-only spec (produces, validate rules, mode). No DAG introspection.",
+      "produces": ["src/lib/compile-brief.ts", "tests/brief-sealing.test.ts"],
+      "consumes": [],
+      "deps": ["redesign-dag-schema"],
+      "validate": [{"type": "shell", "command": "npm test tests/brief-sealing.test.ts"}],
+      "idempotent": true
+    },
+    "implement-recursive-validation": {
+      "id": "implement-recursive-validation",
+      "desc": "Validate at every DAG level: cycles, init↔term, reachability, phase ordering (make→validate→brief→execute→term).",
+      "produces": ["src/lib/validate-dag.ts", "tests/recursive-validation.test.ts"],
+      "consumes": [],
+      "deps": ["redesign-dag-schema"],
+      "validate": [{"type": "shell", "command": "npm test tests/recursive-validation.test.ts"}],
+      "idempotent": true
+    },
+    "refactor-mainline-cli": {
+      "id": "refactor-mainline-cli",
+      "desc": "Mainline: make, orient, advance. Remove: expand, spawn, switch, diff, retire, optimize, complete, chart, validate, hallucinate. Keep: spec group.",
+      "produces": ["bin/roadmap.ts"],
+      "consumes": [],
+      "deps": ["implement-brief-sealing"],
+      "validate": [{"type": "shell", "command": "npx tsc --noEmit bin/roadmap.ts"}],
+      "idempotent": true
+    },
+    "update-help-surface": {
+      "id": "update-help-surface",
+      "desc": "Update help: 3 core commands (make, orient, advance) + spec group. Help < 20 lines.",
+      "produces": ["bin/roadmap.ts"],
+      "consumes": [],
+      "deps": ["refactor-mainline-cli"],
+      "validate": [{"type": "shell", "command": "test $(npx ts-node bin/roadmap.ts help | wc -l) -lt 20"}],
+      "idempotent": true
+    },
+    "test-make": {
+      "id": "test-make",
+      "desc": "Test make: LLM generates DAG from spec, validation rules enforced, briefs sealed.",
+      "produces": ["tests/make.test.ts"],
+      "consumes": [],
+      "deps": ["refactor-mainline-cli"],
+      "validate": [{"type": "shell", "command": "npm test tests/make.test.ts"}],
+      "idempotent": true
+    },
+    "test-orient-briefs": {
+      "id": "test-orient-briefs",
+      "desc": "Test orient: returns batch position + sealed briefs only (no DAG introspection).",
+      "produces": ["tests/orient-briefs.test.ts"],
+      "consumes": [],
+      "deps": ["refactor-mainline-cli"],
+      "validate": [{"type": "shell", "command": "npm test tests/orient-briefs.test.ts"}],
+      "idempotent": true
+    },
+    "test-advance-loop": {
+      "id": "test-advance-loop",
+      "desc": "Test advance: validates work, checks phase gates, moves through make→validate→brief→execute→term.",
+      "produces": ["tests/advance-loop.test.ts"],
+      "consumes": [],
+      "deps": ["refactor-mainline-cli"],
+      "validate": [{"type": "shell", "command": "npm test tests/advance-loop.test.ts"}],
+      "idempotent": true
+    },
+    "recursive-locked": {
+      "id": "recursive-locked",
+      "desc": "Recursive DAG pattern locked: 3-core mainline (make, orient, advance), mandatory validation, briefs sealed, no escapes.",
+      "produces": [".roadmap/metaflow/recursion/LOCKED.json"],
+      "consumes": [],
+      "deps": ["implement-recursive-validation", "update-help-surface", "test-make", "test-orient-briefs", "test-advance-loop"],
       "validate": [],
       "idempotent": false
     }
