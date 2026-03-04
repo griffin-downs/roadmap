@@ -9,12 +9,13 @@ import { define, verify, check } from './protocol/operations.ts';
 import {
   validateTerminalIntentGate,
   validateInitIntentGate,
+  findTerminalNodes,
 } from './validate-dag.ts';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export interface MakeError {
-  gate: 'define' | 'verify' | 'check' | 'terminal-intent' | 'init-intent';
+  gate: 'define' | 'verify' | 'check' | 'terminal-intent' | 'init-intent' | 'terminal-shell';
   node?: string;
   message: string;
   fix: string;
@@ -119,6 +120,31 @@ export function collectMakeErrors(
       gate: 'init-intent',
       message: e instanceof Error ? e.message : String(e),
       fix: 'Fix init intent gate errors',
+    });
+  }
+
+  // 6. Terminal shell validator gate
+  try {
+    const terminals = findTerminalNodes(dag);
+    for (const termId of terminals) {
+      const node = dag.nodes?.[termId];
+      if (!node) continue;
+      const validate = node.validate ?? [];
+      const hasShell = validate.some((r: any) => r.type === 'shell');
+      if (!hasShell) {
+        errors.push({
+          gate: 'terminal-shell',
+          node: termId,
+          message: `Terminal node '${termId}' requires at least one shell validator. artifact-exists alone is insufficient.`,
+          fix: `Add a shell validator to node '${termId}': { type: 'shell', command: '<test command>' }`,
+        });
+      }
+    }
+  } catch (e) {
+    errors.push({
+      gate: 'terminal-shell',
+      message: e instanceof Error ? e.message : String(e),
+      fix: 'Fix terminal shell validator gate errors',
     });
   }
 
