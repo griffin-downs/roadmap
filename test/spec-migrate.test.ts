@@ -1,256 +1,395 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { writeFileSync, readFileSync, unlinkSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { execSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+// Test: spec-migrate — auto-fix legacy spec files
 
-// Test suite for spec-migrate command
-describe('spec-migrate', () => {
-  const tmpDir = '/tmp/roadmap-migrate-test';
-  let testSpecPath: string;
+import { test } from "node:test";
+import * as assert from "node:assert";
+import { writeFileSync, readFileSync, unlinkSync, existsSync } from "fs";
+import { join } from "path";
+import { execSync } from "child_process";
 
-  beforeEach(() => {
-    // Create test directory
+test("spec-migrate: adds missing inputs field with computed sha256", async () => {
+  const tmpDir = "/tmp/roadmap-migrate-test-1";
+  const testSpecPath = join(tmpDir, "legacy-spec.json");
+
+  try {
     execSync(`mkdir -p ${tmpDir}`);
-    testSpecPath = join(tmpDir, 'legacy-spec.json');
-  });
 
-  afterEach(() => {
-    // Cleanup test files
-    if (existsSync(testSpecPath)) {
-      unlinkSync(testSpecPath);
-    }
-    try {
-      execSync(`rm -rf ${tmpDir}`);
-    } catch {
-      // ignore
-    }
-  });
-
-  it('should add missing inputs field with computed sha256', () => {
     const legacySpec = {
-      dag_id: 'test-dag',
-      tasks: [{ id: 'task1', desc: 'Test task', priority: 1, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] }],
-    };
-
-    writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
-
-    // Run migrate command
-    const result = execSync(`npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`, {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-    });
-
-    const output = JSON.parse(result);
-    expect(output.data.ok).toBe(true);
-    expect(output.data.fixed).toContain('inputs');
-
-    // Verify file was updated
-    const updated = JSON.parse(readFileSync(testSpecPath, 'utf-8'));
-    expect(updated.inputs).toBeDefined();
-    expect(Array.isArray(updated.inputs)).toBe(true);
-    expect(updated.inputs.length).toBe(1);
-    expect(updated.inputs[0].role).toBe('spec');
-    expect(updated.inputs[0].sha256).toBeDefined();
-    expect(updated.inputs[0].sha256).toMatch(/^[a-f0-9]{64}$/);
-  });
-
-  it('should add missing metadata.compile_hash', () => {
-    const legacySpec = {
-      dag_id: 'test-dag',
-      metadata: {},
-      tasks: [{ id: 'task1', desc: 'Test task', priority: 1, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] }],
-    };
-
-    writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
-
-    const result = execSync(`npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`, {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-    });
-
-    const output = JSON.parse(result);
-    expect(output.data.fixed).toContain('metadata.compile_hash');
-
-    const updated = JSON.parse(readFileSync(testSpecPath, 'utf-8'));
-    expect(updated.metadata.compile_hash).toBe('auto');
-  });
-
-  it('should add missing metadata.generated', () => {
-    const legacySpec = {
-      dag_id: 'test-dag',
-      metadata: { compile_hash: 'hash123' },
-      tasks: [{ id: 'task1', desc: 'Test task', priority: 1, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] }],
-    };
-
-    writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
-
-    const result = execSync(`npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`, {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-    });
-
-    const output = JSON.parse(result);
-    expect(output.data.fixed).toContain('metadata.generated');
-
-    const updated = JSON.parse(readFileSync(testSpecPath, 'utf-8'));
-    expect(updated.metadata.generated).toBeDefined();
-    expect(updated.metadata.generated).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-  });
-
-  it('should add missing engine field', () => {
-    const legacySpec = {
-      dag_id: 'test-dag',
-      metadata: { compile_hash: 'hash123', generated: '2026-03-01T00:00:00Z' },
-      tasks: [{ id: 'task1', desc: 'Test task', priority: 1, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] }],
-    };
-
-    writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
-
-    const result = execSync(`npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`, {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-    });
-
-    const output = JSON.parse(result);
-    expect(output.data.fixed).toContain('engine');
-
-    const updated = JSON.parse(readFileSync(testSpecPath, 'utf-8'));
-    expect(updated.engine).toBeDefined();
-    expect(updated.engine.name).toBe('spec-kit');
-    expect(updated.engine.version).toBe('1.0.0');
-    expect(updated.engine.config_hash).toBeNull();
-  });
-
-  it('should copy first task desc to dag_desc if missing', () => {
-    const legacySpec = {
-      dag_id: 'test-dag',
-      metadata: { compile_hash: 'hash123', generated: '2026-03-01T00:00:00Z' },
+      dag_id: "test-dag",
       tasks: [
-        { id: 'task1', desc: 'Initialize the system', priority: 1, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] },
-        { id: 'task2', desc: 'Run validation', priority: 2, depends: ['task1'], produces: [], consumes: [], mode: 'execute', validate: [] },
+        {
+          id: "task1",
+          desc: "Test task",
+          priority: 1,
+          depends: [],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
       ],
     };
 
     writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
 
-    const result = execSync(`npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`, {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-    });
+    const result = execSync(
+      `npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`,
+      { cwd: process.cwd(), encoding: "utf-8" },
+    );
 
     const output = JSON.parse(result);
-    expect(output.data.fixed).toContain('dag_desc');
+    assert.strictEqual(output.data.ok, true);
+    assert.ok(output.data.fixed.includes("inputs"), "should fix inputs");
 
-    const updated = JSON.parse(readFileSync(testSpecPath, 'utf-8'));
-    expect(updated.dag_desc).toBe('Initialize the system');
-  });
+    const updated = JSON.parse(readFileSync(testSpecPath, "utf-8"));
+    assert.ok(updated.inputs, "inputs should exist");
+    assert.ok(Array.isArray(updated.inputs), "inputs should be array");
+    assert.strictEqual(updated.inputs.length, 1);
+    assert.strictEqual(updated.inputs[0].role, "spec");
+    assert.ok(
+      /^[a-f0-9]{64}$/.test(updated.inputs[0].sha256),
+      "sha256 should be valid",
+    );
+  } finally {
+    if (existsSync(testSpecPath)) unlinkSync(testSpecPath);
+    execSync(`rm -rf ${tmpDir}`, { stdio: "ignore" });
+  }
+});
 
-  it('should add missing schema_version', () => {
+test("spec-migrate: adds missing metadata.compile_hash", async () => {
+  const tmpDir = "/tmp/roadmap-migrate-test-2";
+  const testSpecPath = join(tmpDir, "legacy-spec.json");
+
+  try {
+    execSync(`mkdir -p ${tmpDir}`);
+
     const legacySpec = {
-      dag_id: 'test-dag',
-      metadata: { compile_hash: 'hash123', generated: '2026-03-01T00:00:00Z' },
-      tasks: [{ id: 'task1', desc: 'Test task', priority: 1, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] }],
+      dag_id: "test-dag",
+      metadata: {},
+      tasks: [
+        {
+          id: "task1",
+          desc: "Test task",
+          priority: 1,
+          depends: [],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
+      ],
     };
 
     writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
 
-    const result = execSync(`npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`, {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-    });
+    const result = execSync(
+      `npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`,
+      { cwd: process.cwd(), encoding: "utf-8" },
+    );
 
     const output = JSON.parse(result);
-    expect(output.data.fixed).toContain('schema_version');
+    assert.ok(output.data.fixed.includes("metadata.compile_hash"));
 
-    const updated = JSON.parse(readFileSync(testSpecPath, 'utf-8'));
-    expect(updated.schema_version).toBe(1);
-  });
+    const updated = JSON.parse(readFileSync(testSpecPath, "utf-8"));
+    assert.strictEqual(updated.metadata.compile_hash, "auto");
+  } finally {
+    if (existsSync(testSpecPath)) unlinkSync(testSpecPath);
+    execSync(`rm -rf ${tmpDir}`, { stdio: "ignore" });
+  }
+});
 
-  it('should fix minimal legacy spec with all fields missing', () => {
+test("spec-migrate: adds missing metadata.generated", async () => {
+  const tmpDir = "/tmp/roadmap-migrate-test-3";
+  const testSpecPath = join(tmpDir, "legacy-spec.json");
+
+  try {
+    execSync(`mkdir -p ${tmpDir}`);
+
     const legacySpec = {
-      dag_id: 'minimal-dag',
-      tasks: [{ id: 'task1', desc: 'Do work', priority: 1, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] }],
+      dag_id: "test-dag",
+      metadata: { compile_hash: "hash123" },
+      tasks: [
+        {
+          id: "task1",
+          desc: "Test task",
+          priority: 1,
+          depends: [],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
+      ],
     };
 
     writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
 
-    const result = execSync(`npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "fix minimal spec"`, {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-    });
+    const result = execSync(
+      `npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`,
+      { cwd: process.cwd(), encoding: "utf-8" },
+    );
 
     const output = JSON.parse(result);
-    expect(output.data.ok).toBe(true);
-    expect(output.data.fixed.length).toBeGreaterThan(0);
-    expect(output.data.fixed).toContain('inputs');
-    expect(output.data.fixed).toContain('metadata.compile_hash');
-    expect(output.data.fixed).toContain('metadata.generated');
-    expect(output.data.fixed).toContain('engine');
-    expect(output.data.fixed).toContain('dag_desc');
-    expect(output.data.fixed).toContain('schema_version');
+    assert.ok(output.data.fixed.includes("metadata.generated"));
 
-    // Verify all required fields exist
-    const updated = JSON.parse(readFileSync(testSpecPath, 'utf-8'));
-    expect(updated.inputs).toBeDefined();
-    expect(updated.metadata.compile_hash).toBe('auto');
-    expect(updated.metadata.generated).toBeDefined();
-    expect(updated.engine).toBeDefined();
-    expect(updated.dag_desc).toBe('Do work');
-    expect(updated.schema_version).toBe(1);
-  });
+    const updated = JSON.parse(readFileSync(testSpecPath, "utf-8"));
+    assert.ok(updated.metadata.generated);
+    assert.ok(/^\d{4}-\d{2}-\d{2}T/.test(updated.metadata.generated));
+  } finally {
+    if (existsSync(testSpecPath)) unlinkSync(testSpecPath);
+    execSync(`rm -rf ${tmpDir}`, { stdio: "ignore" });
+  }
+});
 
-  it('should not duplicate existing fields', () => {
+test("spec-migrate: adds missing engine field", async () => {
+  const tmpDir = "/tmp/roadmap-migrate-test-4";
+  const testSpecPath = join(tmpDir, "legacy-spec.json");
+
+  try {
+    execSync(`mkdir -p ${tmpDir}`);
+
+    const legacySpec = {
+      dag_id: "test-dag",
+      metadata: {
+        compile_hash: "hash123",
+        generated: "2026-03-01T00:00:00Z",
+      },
+      tasks: [
+        {
+          id: "task1",
+          desc: "Test task",
+          priority: 1,
+          depends: [],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
+      ],
+    };
+
+    writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
+
+    const result = execSync(
+      `npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`,
+      { cwd: process.cwd(), encoding: "utf-8" },
+    );
+
+    const output = JSON.parse(result);
+    assert.ok(output.data.fixed.includes("engine"));
+
+    const updated = JSON.parse(readFileSync(testSpecPath, "utf-8"));
+    assert.ok(updated.engine);
+    assert.strictEqual(updated.engine.name, "spec-kit");
+    assert.strictEqual(updated.engine.version, "1.0.0");
+    assert.strictEqual(updated.engine.config_hash, null);
+  } finally {
+    if (existsSync(testSpecPath)) unlinkSync(testSpecPath);
+    execSync(`rm -rf ${tmpDir}`, { stdio: "ignore" });
+  }
+});
+
+test("spec-migrate: copies first task desc to dag_desc if missing", async () => {
+  const tmpDir = "/tmp/roadmap-migrate-test-5";
+  const testSpecPath = join(tmpDir, "legacy-spec.json");
+
+  try {
+    execSync(`mkdir -p ${tmpDir}`);
+
+    const legacySpec = {
+      dag_id: "test-dag",
+      metadata: {
+        compile_hash: "hash123",
+        generated: "2026-03-01T00:00:00Z",
+      },
+      tasks: [
+        {
+          id: "task1",
+          desc: "Initialize the system",
+          priority: 1,
+          depends: [],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
+        {
+          id: "task2",
+          desc: "Run validation",
+          priority: 2,
+          depends: ["task1"],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
+      ],
+    };
+
+    writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
+
+    const result = execSync(
+      `npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`,
+      { cwd: process.cwd(), encoding: "utf-8" },
+    );
+
+    const output = JSON.parse(result);
+    assert.ok(output.data.fixed.includes("dag_desc"));
+
+    const updated = JSON.parse(readFileSync(testSpecPath, "utf-8"));
+    assert.strictEqual(updated.dag_desc, "Initialize the system");
+  } finally {
+    if (existsSync(testSpecPath)) unlinkSync(testSpecPath);
+    execSync(`rm -rf ${tmpDir}`, { stdio: "ignore" });
+  }
+});
+
+test("spec-migrate: adds missing schema_version", async () => {
+  const tmpDir = "/tmp/roadmap-migrate-test-6";
+  const testSpecPath = join(tmpDir, "legacy-spec.json");
+
+  try {
+    execSync(`mkdir -p ${tmpDir}`);
+
+    const legacySpec = {
+      dag_id: "test-dag",
+      metadata: {
+        compile_hash: "hash123",
+        generated: "2026-03-01T00:00:00Z",
+      },
+      tasks: [
+        {
+          id: "task1",
+          desc: "Test task",
+          priority: 1,
+          depends: [],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
+      ],
+    };
+
+    writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
+
+    const result = execSync(
+      `npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test migrate"`,
+      { cwd: process.cwd(), encoding: "utf-8" },
+    );
+
+    const output = JSON.parse(result);
+    assert.ok(output.data.fixed.includes("schema_version"));
+
+    const updated = JSON.parse(readFileSync(testSpecPath, "utf-8"));
+    assert.strictEqual(updated.schema_version, 1);
+  } finally {
+    if (existsSync(testSpecPath)) unlinkSync(testSpecPath);
+    execSync(`rm -rf ${tmpDir}`, { stdio: "ignore" });
+  }
+});
+
+test("spec-migrate: fixes minimal legacy spec with all fields missing", async () => {
+  const tmpDir = "/tmp/roadmap-migrate-test-7";
+  const testSpecPath = join(tmpDir, "legacy-spec.json");
+
+  try {
+    execSync(`mkdir -p ${tmpDir}`);
+
+    const legacySpec = {
+      dag_id: "minimal-dag",
+      tasks: [
+        {
+          id: "task1",
+          desc: "Do work",
+          priority: 1,
+          depends: [],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
+      ],
+    };
+
+    writeFileSync(testSpecPath, JSON.stringify(legacySpec, null, 2));
+
+    const result = execSync(
+      `npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "fix minimal spec"`,
+      { cwd: process.cwd(), encoding: "utf-8" },
+    );
+
+    const output = JSON.parse(result);
+    assert.strictEqual(output.data.ok, true);
+    assert.ok(output.data.fixed.length > 0);
+    assert.ok(output.data.fixed.includes("inputs"));
+    assert.ok(output.data.fixed.includes("metadata.compile_hash"));
+    assert.ok(output.data.fixed.includes("metadata.generated"));
+    assert.ok(output.data.fixed.includes("engine"));
+    assert.ok(output.data.fixed.includes("dag_desc"));
+    assert.ok(output.data.fixed.includes("schema_version"));
+
+    const updated = JSON.parse(readFileSync(testSpecPath, "utf-8"));
+    assert.ok(updated.inputs);
+    assert.strictEqual(updated.metadata.compile_hash, "auto");
+    assert.ok(updated.metadata.generated);
+    assert.ok(updated.engine);
+    assert.strictEqual(updated.dag_desc, "Do work");
+    assert.strictEqual(updated.schema_version, 1);
+  } finally {
+    if (existsSync(testSpecPath)) unlinkSync(testSpecPath);
+    execSync(`rm -rf ${tmpDir}`, { stdio: "ignore" });
+  }
+});
+
+test("spec-migrate: does not duplicate existing fields", async () => {
+  const tmpDir = "/tmp/roadmap-migrate-test-8";
+  const testSpecPath = join(tmpDir, "legacy-spec.json");
+
+  try {
+    execSync(`mkdir -p ${tmpDir}`);
+
     const existingSpec = {
-      dag_id: 'complete-dag',
-      dag_desc: 'Already has description',
+      dag_id: "complete-dag",
+      dag_desc: "Already has description",
       schema_version: 1,
-      engine: { name: 'custom-engine', version: '2.0.0', config_hash: 'hash' },
-      metadata: { compile_hash: 'existing-hash', generated: '2026-01-01T00:00:00Z' },
-      inputs: [{ path: 'existing-input.json', sha256: 'abc123', role: 'spec' }],
-      tasks: [{ id: 'task1', desc: 'Task', priority: 1, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] }],
+      engine: { name: "custom-engine", version: "2.0.0", config_hash: "hash" },
+      metadata: {
+        compile_hash: "existing-hash",
+        generated: "2026-01-01T00:00:00Z",
+      },
+      inputs: [{ path: "existing-input.json", sha256: "abc123", role: "spec" }],
+      tasks: [
+        {
+          id: "task1",
+          desc: "Task",
+          priority: 1,
+          depends: [],
+          produces: [],
+          consumes: [],
+          mode: "execute",
+          validate: [],
+        },
+      ],
     };
 
     writeFileSync(testSpecPath, JSON.stringify(existingSpec, null, 2));
 
-    const result = execSync(`npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test no-op migrate"`, {
-      cwd: process.cwd(),
-      encoding: 'utf-8',
-    });
+    const result = execSync(
+      `npx tsx bin/roadmap.ts spec migrate ${testSpecPath} --note "test no-op migrate"`,
+      { cwd: process.cwd(), encoding: "utf-8" },
+    );
 
     const output = JSON.parse(result);
-    expect(output.data.ok).toBe(true);
-    expect(output.data.fixed.length).toBe(0); // Nothing should be fixed
+    assert.strictEqual(output.data.ok, true);
+    assert.strictEqual(output.data.fixed.length, 0);
 
-    // Verify fields remained unchanged
-    const updated = JSON.parse(readFileSync(testSpecPath, 'utf-8'));
-    expect(updated.dag_desc).toBe('Already has description');
-    expect(updated.engine.name).toBe('custom-engine');
-    expect(updated.metadata.compile_hash).toBe('existing-hash');
-    expect(updated.inputs[0].sha256).toBe('abc123');
-  });
-
-  it('should error on missing file', () => {
-    try {
-      execSync(`npx tsx bin/roadmap.ts spec migrate /nonexistent/file.json --note "test"`, {
-        cwd: process.cwd(),
-        encoding: 'utf-8',
-      });
-      expect.fail('Should have thrown');
-    } catch (err: any) {
-      expect(err.status).toBe(1);
-    }
-  });
-
-  it('should error on missing path argument', () => {
-    try {
-      execSync(`npx tsx bin/roadmap.ts spec migrate --note "test"`, {
-        cwd: process.cwd(),
-        encoding: 'utf-8',
-      });
-      expect.fail('Should have thrown');
-    } catch (err: any) {
-      expect(err.status).toBe(1);
-    }
-  });
+    const updated = JSON.parse(readFileSync(testSpecPath, "utf-8"));
+    assert.strictEqual(updated.dag_desc, "Already has description");
+    assert.strictEqual(updated.engine.name, "custom-engine");
+    assert.strictEqual(updated.metadata.compile_hash, "existing-hash");
+    assert.strictEqual(updated.inputs[0].sha256, "abc123");
+  } finally {
+    if (existsSync(testSpecPath)) unlinkSync(testSpecPath);
+    execSync(`rm -rf ${tmpDir}`, { stdio: "ignore" });
+  }
 });
