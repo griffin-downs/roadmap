@@ -287,7 +287,7 @@ async function main() {
   const note = _note;
 
   // Enforce main branch for all DAG-mutating commands
-  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient', 'advance', 'status']);
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient', 'advance', 'status', 'spec']);
   // --dry-run flag exempts make from branch enforcement
   if (!BRANCH_EXEMPT.has(cmd) && !(cmd === 'make' && args.includes('--dry-run'))) {
     enforceMainBranch();
