@@ -255,11 +255,14 @@ async function crossOrientWithState(dag: Graph<string>) {
   const completion = CompletionStore.loadOrEmpty(repoRoot);
   const retired = retiredSet();
 
-  const pos = orient(dag, completion, retired);
+  // Filter completion records by current DAG ID to avoid cross-DAG leakage
+  const dagFiltered = completion.filterByDagId(dag.id);
 
-  // Recompute remaining based on completion store
+  const pos = orient(dag, dagFiltered, retired);
+
+  // Recompute remaining based on filtered completion store (DAG-scoped)
   const allNodeIds = Object.keys(dag.nodes);
-  const remainingIds = allNodeIds.filter(nid => !retired.has(nid) && !completion.hasPassing(nid));
+  const remainingIds = allNodeIds.filter(nid => !retired.has(nid) && !dagFiltered.hasPassing(nid));
 
   return {
     ...pos,
@@ -325,6 +328,7 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     case 'orient':    return await cmdOrient(note);
     case 'advance':   return await cmdAdvance(note!);
     case 'make':      return await cmdMake(note!);
+    case 'status':    return await cmdStatus(note);
 
     // Spec pipeline
     case 'spec':      return await cmdSpecGroup(note);
@@ -340,7 +344,7 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     case '--help':
     case '-h':        return cmdHelp();
     default:
-      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance}. Group: {spec, dag}. Use 'roadmap help' for details.` });
+      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Use 'roadmap help' for details.` });
       process.exit(1);
   }
 }
@@ -428,9 +432,9 @@ async function cmdOrient(note: string | undefined) {
 
   // When DAG is complete, surface unloaded specs as next action
   if (result.complete) {
-    const { findPendingSpecs } = await import('../src/lib/orient-forward.ts');
+    const { scanPendingSpecs } = await import('../src/lib/orient-forward.ts');
     const dagId = dag.id ?? '';
-    const pending = findPendingSpecs(repoRoot, dagId);
+    const pending = scanPendingSpecs(repoRoot, dagId);
     if (pending.length > 0) {
       result.pendingSpecs = pending;
       result.nextAction = `Load next spec: roadmap make ${pending[0].path} --note "..."`;
@@ -548,6 +552,30 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
   // Attribution safety: warn if branch has changes outside this node's produces
   const attributionWarning = checkAttribution(repoRoot, produces);
 
+  // Parallel-edit guard: warn if another agent advanced on same branch within 60s
+  let parallelEditWarning: string | undefined;
+  try {
+    const completion = CompletionStore.loadOrEmpty(repoRoot);
+    const currentBranch = getCurrentBranch();
+    const now = Date.now();
+    const sixtySecsAgo = now - (60 * 1000);
+
+    // Check for other agents' recent advances on same branch
+    for (const [id, record] of completion.allIds().entries()) {
+      if (id === nodeId) continue; // skip self
+      const rec = completion.record(id);
+      if (!rec || !rec.branch || rec.branch !== currentBranch) continue;
+
+      const completedTime = new Date(rec.completedAt).getTime();
+      if (completedTime > sixtySecsAgo) {
+        parallelEditWarning = `Concurrent edits detected: ${id} completed ${Math.round((now - completedTime) / 1000)}s ago on same branch. Recommend using worktree isolation for parallel agents.`;
+        break;
+      }
+    }
+  } catch {
+    // If completion check fails, continue silently
+  }
+
   // Record completion with evidence
   saveCompletionWithEvidence(repoRoot, nodeId, checks);
 
@@ -560,6 +588,7 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     batchComplete: newPos.batchComplete,
     remaining: newPos.batchRemaining,
     ...(attributionWarning ? { attributionWarning } : {}),
+    ...(parallelEditWarning ? { parallelEditWarning } : {}),
   };
 
   // If batch is now complete, auto-advance
@@ -853,11 +882,19 @@ async function cmdMake(note: string) {
   const dagJson = JSON.stringify(dag);
   const dagHash = createHash('sha256').update(dagJson).digest('hex');
   const specHash = createHash('sha256').update(specContent).digest('hex');
+
+  // Auto-compute compile_hash from tasks if missing or set to 'auto'
+  let compileHash = parsed.metadata?.compile_hash;
+  if (!compileHash || compileHash === 'auto') {
+    const tasksJson = JSON.stringify(parsed.tasks || []);
+    compileHash = createHash('sha256').update(tasksJson).digest('hex');
+  }
+
   const origin: SpecOrigin = {
     schemaVersion: 1,
     engine: parsed.engine?.name ?? 'spec-kit',
     version: parsed.engine?.version ?? '0.0.0',
-    compile_hash: normalizeHash(parsed.metadata?.compile_hash ?? dagHash),
+    compile_hash: compileHash,
     spec_sha: specHash,
     importedAt: new Date().toISOString(),
     dagId: parsed.dag_id ?? parsed.id ?? 'ideal-dag',
@@ -896,6 +933,60 @@ async function cmdMake(note: string) {
     level: pos.level,
     message: 'Ideal DAG created from spec',
     ...(commitWarning ? { commitWarning } : {}),
+  });
+}
+
+async function cmdStatus(note: string | undefined) {
+  if (!hasLocalDAG) {
+    json({ error: 'No roadmap tracked in this repo', fix: 'Run `roadmap make <spec.json>`' });
+    return;
+  }
+
+  enforceMainBranch();
+
+  const dag = await loadDAGAsync();
+  const completion = CompletionStore.loadOrEmpty(repoRoot);
+  const pos = await crossOrientWithState(dag);
+
+  // Current batch is in pos.position
+  const batchNodeIds = pos.position || [];
+  const nodeMap = new Map(
+    Object.entries(dag.nodes).map(([id, node]) => [
+      id,
+      node as any,
+    ])
+  );
+
+  // Build status for each node in current batch
+  const status = batchNodeIds
+    .map(nodeId => {
+      const node = nodeMap.get(nodeId);
+      if (!node) return null;
+
+      const produces = (node.produces as string[]) || [];
+      const producesExist = produces.map(p => ({
+        file: p,
+        exists: existsSync(join(repoRoot, p)),
+      }));
+
+      const hasReceipt = completion.hasPassing(nodeId);
+      const validators = ((node.validate as any) || []).length;
+
+      return {
+        nodeId,
+        produces,
+        producesExist,
+        hasReceipt,
+        validators,
+      };
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null);
+
+  json({
+    batch: batchNodeIds,
+    nodes: status,
+    batchComplete: pos.batchComplete,
+    level: pos.level,
   });
 }
 

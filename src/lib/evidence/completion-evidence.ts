@@ -16,6 +16,7 @@ export interface EvidenceRecord {
 export interface CompletionRecordWithEvidence {
   nodeId: string;
   completedAt: string;
+  dagId?: string;
   owner?: string;
   checkpointId?: string;
   legacy?: boolean;
@@ -23,6 +24,7 @@ export interface CompletionRecordWithEvidence {
   validatorResults?: ValidatorResult[];
   gitSha?: string;
   treeSha?: string;
+  branch?: string;
 }
 
 // Type guard: validates that an entry conforms to CompletionRecordWithEvidence
@@ -102,15 +104,32 @@ export function saveCompletionWithEvidence(
   owner?: string,
   checkpointId?: string,
   validatorResults?: ValidatorResult[],
+  dagId?: string,
 ): void {
   const dirPath = join(repoRoot, '.roadmap');
   if (!existsSync(dirPath)) mkdirSync(dirPath, { recursive: true });
 
+  // Read current dag_id from head.json if not provided
+  let currentDagId = dagId;
+  if (!currentDagId) {
+    try {
+      const headJsonPath = join(dirPath, 'head.json');
+      if (existsSync(headJsonPath)) {
+        const headData = JSON.parse(readFileSync(headJsonPath, 'utf-8'));
+        currentDagId = headData.id;
+      }
+    } catch {
+      // If head.json doesn't exist or can't be parsed, continue without dagId
+    }
+  }
+
   let gitSha: string | undefined;
   let treeSha: string | undefined;
+  let branch: string | undefined;
   try {
     gitSha = execSync('git rev-parse HEAD', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
     treeSha = execSync('git rev-parse HEAD^{tree}', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+    branch = execSync('git rev-parse --abbrev-ref HEAD', { cwd: repoRoot, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
   } catch {
     // Not a git repo or git not available
   }
@@ -119,12 +138,14 @@ export function saveCompletionWithEvidence(
   const newEntry: CompletionRecordWithEvidence = {
     nodeId,
     completedAt: new Date().toISOString(),
+    ...(currentDagId ? { dagId: currentDagId } : {}),
     owner,
     checkpointId,
     validationChecks: checks,
     ...(validatorResults && validatorResults.length > 0 ? { validatorResults } : {}),
     ...(gitSha ? { gitSha } : {}),
     ...(treeSha ? { treeSha } : {}),
+    ...(branch ? { branch } : {}),
   };
 
   // Validate before setting

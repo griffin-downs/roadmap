@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "engine": "spec-kit",
   "version": "1.0.0",
-  "compile_hash": "fd3e9724bd469bc1a47cd08b865d45763e56971a0662b0ed52da9f4b99a785b9",
-  "spec_sha": "941d96774904cc9818e4e248da2a46dcc5462d805d9216979d6652bf5efe2cd8",
-  "importedAt": "2026-03-03T22:57:54.253Z",
-  "dagId": "hardening-004"
+  "compile_hash": "929260ad9b9ea9fe0f3553dd964f4ff3deb5792efd031a2b90f573fe91f012bb",
+  "spec_sha": "081b7d9eb4bbf78e4de0b89cc848b0bcaada63118dca9cb1f4090c8b01b8e9b2",
+  "importedAt": "2026-03-03T23:18:22.438Z",
+  "dagId": "pipeline-005"
 }

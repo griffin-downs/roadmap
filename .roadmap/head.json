@@ -1,8 +1,8 @@
 {
-  "id": "hardening-004",
-  "desc": "Fix 6 pipeline hardening issues: compile_hash validation, orient branch info, make commit failure reporting, validator env vars, agent attribution safety, completed.json schema",
+  "id": "pipeline-005",
+  "desc": "Fix 6 pipeline issues from hardening-004 session: DAG-scoped completion, agent retry noise, artifact status command, evidence branch awareness, compile_hash self-reference, parallel edit safety",
   "init": "init",
-  "term": "hardening-verified",
+  "term": "pipeline-verified",
   "nodes": {
     "init": {
       "id": "init",
@@ -15,128 +15,13 @@
       "validate": [],
       "idempotent": true
     },
-    "compile-hash-gate": {
-      "id": "compile-hash-gate",
-      "desc": "make should validate compile_hash format before writing spec-origin.json. If compile_hash is not a 64-char hex string, hash it with sha256. This prevents the trap where make accepts bad input but pre-commit rejects the commit later.",
-      "produces": [
-        "bin/roadmap.ts",
-        "test/compile-hash-gate.test.ts"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "intent",
-          "statement": "Plan clarity: make normalizes compile_hash to sha256 hex — non-hex strings get hashed, pre-commit never rejects valid make output",
-          "expandOnFail": true,
-          "confidence": 0.9,
-          "evaluator": "self"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsx test/compile-hash-gate.test.ts",
-          "expectExitCode": 0
-        }
-      ],
-      "idempotent": true
-    },
-    "orient-branch-info": {
-      "id": "orient-branch-info",
-      "desc": "Add 'branch' field to orient output — current git branch name. Agents can verify they're on the expected branch before committing. Also add 'worktree' boolean (true if in a git worktree).",
-      "produces": [
-        "bin/roadmap.ts",
-        "test/orient-branch.test.ts"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "intent",
-          "statement": "Plan clarity: orient output includes branch name and worktree flag — agents can assert branch before committing",
-          "expandOnFail": true,
-          "confidence": 0.9,
-          "evaluator": "self"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsx test/orient-branch.test.ts",
-          "expectExitCode": 0
-        }
-      ],
-      "idempotent": true
-    },
-    "make-commit-failure": {
-      "id": "make-commit-failure",
-      "desc": "make silently catches commit failures (line ~811 catch(e){}). Instead: if commit fails, include a warning in the output JSON { commitFailed: true, reason: string }. Don't throw — head.json is already written — but surface the failure so agents know git state is dirty.",
-      "produces": [
-        "bin/roadmap.ts",
-        "test/make-commit-warn.test.ts"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "intent",
-          "statement": "Plan clarity: make reports commit failure as warning in output — never silently swallows",
-          "expandOnFail": true,
-          "confidence": 0.9,
-          "evaluator": "self"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsx test/make-commit-warn.test.ts",
-          "expectExitCode": 0
-        }
-      ],
-      "idempotent": true
-    },
-    "validator-env-vars": {
-      "id": "validator-env-vars",
-      "desc": "Shell validators in advance should receive env vars: ROADMAP_BRANCH (current branch), ROADMAP_NODE (node being validated), ROADMAP_REPO (repo root). This lets validator commands adapt to runtime context instead of being fully static.",
-      "produces": [
-        "src/lib/protocol/validation.ts",
-        "test/validator-env.test.ts"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "validate": [
-        {
-          "type": "intent",
-          "statement": "Plan clarity: shell validators get ROADMAP_BRANCH, ROADMAP_NODE, ROADMAP_REPO env vars — commands can branch on runtime state",
-          "expandOnFail": true,
-          "confidence": 0.9,
-          "evaluator": "self"
-        },
-        {
-          "type": "shell",
-          "command": "npx tsx test/validator-env.test.ts",
-          "expectExitCode": 0
-        }
-      ],
-      "idempotent": true
-    },
-    "completed-json-schema": {
-      "id": "completed-json-schema",
-      "desc": "Validate completed.json entries on write in saveCompletionWithEvidence. Every entry must have { nodeId: string, completedAt: string, evidence: Array<{ rule: string, passed: boolean, evidence: string }> }. Reject malformed entries. Migrate legacy entries on read.",
+    "dag-scoped-completion": {
+      "id": "dag-scoped-completion",
+      "desc": "Scope completion receipts by dag_id. completed.json entries must include dagId field. orient() should only count receipts matching current head.json dag id. Old receipts from prior DAGs are ignored (not deleted). saveCompletionWithEvidence writes dagId from current head.json.",
       "produces": [
         "src/lib/evidence/completion-evidence.ts",
-        "test/completed-schema.test.ts"
+        "src/lib/protocol/operations.ts",
+        "test/dag-scoped-completion.test.ts"
       ],
       "consumes": [
         "init.marker"
@@ -147,25 +32,25 @@
       "validate": [
         {
           "type": "intent",
-          "statement": "Plan clarity: completed.json has enforced schema — write rejects malformed, read migrates legacy entries",
+          "statement": "Plan clarity: completion receipts are scoped by dagId — orient ignores receipts from other DAGs, no cross-DAG leakage",
           "expandOnFail": true,
           "confidence": 0.9,
           "evaluator": "self"
         },
         {
           "type": "shell",
-          "command": "npx tsx test/completed-schema.test.ts",
+          "command": "npx tsx test/dag-scoped-completion.test.ts",
           "expectExitCode": 0
         }
       ],
       "idempotent": true
     },
-    "agent-attribution-warn": {
-      "id": "agent-attribution-warn",
-      "desc": "When advanceNode detects that the branch has uncommitted changes not by the current process (check git status for untracked/modified files outside the node's produces), emit a warning in advance output: { attribution_warning: 'Branch has changes outside this node produces' }. Non-blocking but visible.",
+    "agent-retry-dedup": {
+      "id": "agent-retry-dedup",
+      "desc": "When pre-commit or commit-msg hook fails and agent retries, the duplicate commits create noise. Add a git helper that checks if HEAD already contains the same tree diff before committing — if so, skip the commit and return success. Export as deduplicatedCommit(message, files) from a new module.",
       "produces": [
-        "bin/roadmap.ts",
-        "test/attribution-warn.test.ts"
+        "src/lib/git-helpers.ts",
+        "test/git-dedup.test.ts"
       ],
       "consumes": [
         "init.marker"
@@ -176,47 +61,164 @@
       "validate": [
         {
           "type": "intent",
-          "statement": "Plan clarity: advance warns when branch has changes outside node produces — attribution safety net",
+          "statement": "Plan clarity: deduplicatedCommit skips commit when HEAD already has identical changes — prevents retry noise",
           "expandOnFail": true,
           "confidence": 0.9,
           "evaluator": "self"
         },
         {
           "type": "shell",
-          "command": "npx tsx test/attribution-warn.test.ts",
+          "command": "npx tsx test/git-dedup.test.ts",
           "expectExitCode": 0
         }
       ],
       "idempotent": true
     },
-    "hardening-verified": {
-      "id": "hardening-verified",
-      "desc": "Integration: all 6 hardening fixes verified end-to-end. make normalizes hashes, orient shows branch, commit failures surface, validators get env, completed.json has schema, attribution warnings fire.",
+    "roadmap-status-command": {
+      "id": "roadmap-status-command",
+      "desc": "Add 'roadmap status' command: for each node in current batch, show { nodeId, produces, producesExist (bool per file), hasReceipt (bool), validators (count) }. Quick artifact check without running advance. Wire into CLI router + api registry.",
       "produces": [
-        "test/hardening-integration.test.ts"
+        "bin/roadmap.ts",
+        "test/roadmap-status.test.ts"
+      ],
+      "consumes": [
+        "init.marker"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "intent",
+          "statement": "Plan clarity: roadmap status shows per-node artifact existence and receipt status for current batch — no side effects",
+          "expandOnFail": true,
+          "confidence": 0.9,
+          "evaluator": "self"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx test/roadmap-status.test.ts",
+          "expectExitCode": 0
+        }
+      ],
+      "idempotent": true
+    },
+    "evidence-branch-aware": {
+      "id": "evidence-branch-aware",
+      "desc": "saveCompletionWithEvidence should record the branch name in the receipt. advanceNode on a feature branch writes evidence to .roadmap/completed.json on that branch. After merge to main, receipts are available. orient reads receipts from the current branch's completed.json — no merge needed to see evidence.",
+      "produces": [
+        "src/lib/evidence/completion-evidence.ts",
+        "test/evidence-branch.test.ts"
+      ],
+      "consumes": [
+        "init.marker"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "intent",
+          "statement": "Plan clarity: completion receipts include branch field — evidence is written wherever advance runs, merges naturally via git",
+          "expandOnFail": true,
+          "confidence": 0.9,
+          "evaluator": "self"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx test/evidence-branch.test.ts",
+          "expectExitCode": 0
+        }
+      ],
+      "idempotent": true
+    },
+    "compile-hash-auto": {
+      "id": "compile-hash-auto",
+      "desc": "Eliminate the compile_hash circular dependency. If metadata.compile_hash is missing or the literal string 'auto', make computes it as sha256(JSON.stringify(tasks)) — hashing the tasks array, not the whole spec file. This is stable (tasks don't change when compile_hash changes) and removes the two-step dance.",
+      "produces": [
+        "bin/roadmap.ts",
+        "test/compile-hash-auto.test.ts"
+      ],
+      "consumes": [
+        "init.marker"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "intent",
+          "statement": "Plan clarity: compile_hash='auto' or missing → computed from sha256(tasks JSON) — no circular dependency, single-step spec creation",
+          "expandOnFail": true,
+          "confidence": 0.9,
+          "evaluator": "self"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx test/compile-hash-auto.test.ts",
+          "expectExitCode": 0
+        }
+      ],
+      "idempotent": true
+    },
+    "parallel-edit-guard": {
+      "id": "parallel-edit-guard",
+      "desc": "When multiple agents share a branch, git auto-merge can silently combine their changes. Add a pre-advance check: if completed.json shows another agent advanced a different node within the last 60s on the same branch, emit a warning about potential merge conflicts. Also document the worktree protocol as the recommended pattern for parallel agents.",
+      "produces": [
+        "bin/roadmap.ts",
+        "test/parallel-edit-guard.test.ts"
+      ],
+      "consumes": [
+        "init.marker"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "intent",
+          "statement": "Plan clarity: advance warns when concurrent agents share a branch — nudges toward worktree isolation",
+          "expandOnFail": true,
+          "confidence": 0.9,
+          "evaluator": "self"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx test/parallel-edit-guard.test.ts",
+          "expectExitCode": 0
+        }
+      ],
+      "idempotent": true
+    },
+    "pipeline-verified": {
+      "id": "pipeline-verified",
+      "desc": "Integration: all 6 pipeline fixes verified. Completion is DAG-scoped, retries are deduped, status command works, evidence records branch, compile_hash is auto-computable, parallel edits warn.",
+      "produces": [
+        "test/pipeline-integration.test.ts"
       ],
       "consumes": [
         "bin/roadmap.ts",
-        "src/lib/protocol/validation.ts",
-        "src/lib/evidence/completion-evidence.ts"
+        "src/lib/evidence/completion-evidence.ts",
+        "src/lib/protocol/operations.ts",
+        "src/lib/git-helpers.ts"
       ],
       "deps": [
-        "compile-hash-gate",
-        "orient-branch-info",
-        "make-commit-failure",
-        "validator-env-vars",
-        "completed-json-schema",
-        "agent-attribution-warn"
+        "dag-scoped-completion",
+        "agent-retry-dedup",
+        "roadmap-status-command",
+        "evidence-branch-aware",
+        "compile-hash-auto",
+        "parallel-edit-guard"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "npx tsx test/hardening-integration.test.ts",
+          "command": "npx tsx test/pipeline-integration.test.ts",
           "expectExitCode": 0
         },
         {
           "type": "intent",
-          "statement": "All 6 hardening issues resolved — make→orient→advance pipeline has no silent failures and agents have full runtime context",
+          "statement": "All 6 pipeline issues resolved — completion is DAG-scoped, agents don't create retry noise, status shows artifact state, evidence is branch-aware, compile_hash has no circular dep, parallel edits are guarded",
           "expandOnFail": true,
           "confidence": 0.9,
           "evaluator": "self"
