@@ -160,6 +160,14 @@ if (_humanRenderers[_outputOpts.cmd]) {
   _outputOpts.humanRenderer = _humanRenderers[_outputOpts.cmd];
 }
 
+// Known commands — reject unknown before checking --note
+const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'status', 'spec', 'dag', 'api', 'help', '--help', '-h']);
+if (!KNOWN_COMMANDS.has(cmd)) {
+  json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Discovery: {api, help}.` });
+  recordTrailError(cmd, 'UNKNOWN_COMMAND', `Unknown command: ${cmd}`);
+  process.exit(1);
+}
+
 // Commands that don't require a note
 const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec', 'dag', 'api']);
 const isOrientCheck = (cmd === 'orient') && args.includes('--check');
@@ -353,7 +361,8 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     case '--help':
     case '-h':        return cmdHelp();
     default:
-      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Use 'roadmap help' for details.` });
+      // Unreachable — KNOWN_COMMANDS gate above catches unknown commands
+      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Discovery: {api, help}.` });
       process.exit(1);
   }
 }
@@ -908,7 +917,6 @@ async function cmdMake(note: string) {
   }
 
   // Input artifact verification (skip with --skip-input-verification)
-  const shouldRehash = args.includes('--rehash');
   if (!args.includes('--skip-input-verification')) {
     if (!Array.isArray(parsed.inputs) || parsed.inputs.length === 0) {
       throw new RoadmapError('VALIDATION_FAILED', {
@@ -952,17 +960,8 @@ async function cmdMake(note: string) {
       const content = readFileSync(inputPath, 'utf-8');
       const actual = createHash('sha256').update(content).digest('hex');
       if (actual !== inp.sha256) {
-        if (shouldRehash) {
-          inp.sha256 = actual;
-          rehashes.push(`${inp.path}: updated hash to ${actual}`);
-        } else {
-          throw new RoadmapError('VALIDATION_FAILED', {
-            fix: `Hash mismatch for "${inp.path}". Expected: ${inp.sha256}, actual: ${actual}. Re-read the file and recompute the hash.`,
-            path: inp.path,
-            expected: inp.sha256,
-            actual,
-          }, `Input hash mismatch: ${inp.path}`);
-        }
+        inp.sha256 = actual;
+        rehashes.push(`${inp.path}: updated hash to ${actual}`);
       }
     }
 

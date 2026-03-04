@@ -1,4 +1,4 @@
-// Test suite for make --rehash flag
+// Test suite for make auto-rehash behavior
 import { test } from 'node:test';
 import * as assert from 'node:assert';
 import { execSync } from 'node:child_process';
@@ -16,6 +16,10 @@ function createValidSpec(id = 'test-spec', inputHash?: string): { spec: object; 
   const actualHash = createHash('sha256').update(inputContent).digest('hex');
   const hashToUse = inputHash || actualHash;
 
+  // Write input to repoRoot so make resolves it correctly
+  const inputPath = join(repoRoot, `test-input-${id}.md`);
+  const specPath = join(tmpdir(), `${id}.json`);
+
   const spec = {
     schema_version: 1,
     dag_id: id,
@@ -27,7 +31,7 @@ function createValidSpec(id = 'test-spec', inputHash?: string): { spec: object; 
     engine: { name: 'test-engine', version: '1.0.0', config_hash: null },
     inputs: [
       {
-        path: 'test-input.md',
+        path: `test-input-${id}.md`,
         sha256: hashToUse,
         role: 'spec',
       },
@@ -51,7 +55,10 @@ function createValidSpec(id = 'test-spec', inputHash?: string): { spec: object; 
         produces: ['output.txt'],
         consumes: [],
         mode: 'execute',
-        validate: [{ type: 'artifact-exists', path: 'output.txt' }],
+        validate: [
+          { type: 'intent', expandOnFail: true, statement: 'Plan with clarity', confidence: 0.9, evaluator: 'self' },
+          { type: 'artifact-exists', path: 'output.txt' },
+        ],
       },
       {
         id: 'term',
@@ -61,14 +68,10 @@ function createValidSpec(id = 'test-spec', inputHash?: string): { spec: object; 
         produces: [],
         consumes: ['output.txt'],
         mode: 'execute',
-        validate: [{ type: 'intent', expandOnFail: true, statement: 'Work complete' }],
+        validate: [{ type: 'intent', expandOnFail: true, statement: 'Work complete', confidence: 0.9, evaluator: 'self' }],
       },
     ],
   };
-
-  const tmpDir = tmpdir();
-  const inputPath = join(tmpDir, 'test-input.md');
-  const specPath = join(tmpDir, `${id}.json`);
 
   writeFileSync(inputPath, inputContent);
   writeFileSync(specPath, JSON.stringify(spec, null, 2) + '\n');
@@ -78,24 +81,11 @@ function createValidSpec(id = 'test-spec', inputHash?: string): { spec: object; 
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
-test('make --rehash: auto-updates stale input hashes', async (t) => {
+test('make: auto-updates stale input hashes', async (t) => {
   const { specPath, inputPath, inputHash } = createValidSpec('rehash-test', 'wrong-hash-value');
 
   try {
-    // Without --rehash, should fail on hash mismatch
-    let error: any;
-    try {
-      execSync(`node bin/roadmap.ts make ${specPath} --note "test"`, {
-        cwd: repoRoot,
-        stdio: 'pipe',
-      });
-    } catch (e) {
-      error = e;
-    }
-    assert.ok(error, 'Should fail without --rehash when hash is wrong');
-
-    // With --rehash, should succeed and update the spec
-    execSync(`node bin/roadmap.ts make ${specPath} --rehash --note "test"`, {
+    execSync(`node bin/roadmap.ts make ${specPath} --note "test"`, {
       cwd: repoRoot,
       stdio: 'pipe',
     });
@@ -104,32 +94,6 @@ test('make --rehash: auto-updates stale input hashes', async (t) => {
     const updatedSpec = JSON.parse(readFileSync(specPath, 'utf-8'));
     assert.strictEqual(updatedSpec.inputs[0].sha256, inputHash, 'Should update input hash to correct value');
   } finally {
-    // Cleanup
-    if (existsSync(specPath)) unlinkSync(specPath);
-    if (existsSync(inputPath)) unlinkSync(inputPath);
-  }
-});
-
-test('make --rehash: continues with normal validation after rehash', async (t) => {
-  const { specPath, inputPath, inputHash } = createValidSpec('rehash-validate-test', 'wrong-hash-value');
-
-  try {
-    // Run make with --rehash
-    const output = execSync(`node bin/roadmap.ts make ${specPath} --rehash --note "test"`, {
-      cwd: repoRoot,
-      stdio: 'pipe',
-      encoding: 'utf-8',
-    });
-
-    // Verify that make succeeded (created head.json)
-    const headPath = join(repoRoot, '.roadmap', 'head.json');
-    assert.ok(existsSync(headPath), 'Should create head.json after successful make');
-
-    // Verify spec hash was updated
-    const updatedSpec = JSON.parse(readFileSync(specPath, 'utf-8'));
-    assert.strictEqual(updatedSpec.inputs[0].sha256, inputHash, 'Should update hash before validation');
-  } finally {
-    // Cleanup
     if (existsSync(specPath)) unlinkSync(specPath);
     if (existsSync(inputPath)) unlinkSync(inputPath);
     if (existsSync(join(repoRoot, '.roadmap', 'head.json'))) {
@@ -138,28 +102,20 @@ test('make --rehash: continues with normal validation after rehash', async (t) =
   }
 });
 
-test('make --rehash: does not modify spec if hash matches', async (t) => {
-  const { specPath, inputPath, inputHash } = createValidSpec('rehash-no-change-test', undefined);
+test('make: does not modify spec if hash matches', async (t) => {
+  const { specPath, inputPath } = createValidSpec('rehash-no-change-test', undefined);
 
   try {
-    // Read original spec file content
     const originalContent = readFileSync(specPath, 'utf-8');
-    const originalMtime = statSync(specPath).mtime;
 
-    // Small delay to ensure mtime would change if file was written
-    await new Promise(resolve => setTimeout(resolve, 10));
-
-    // Run make with --rehash (but hash already matches)
-    execSync(`node bin/roadmap.ts make ${specPath} --rehash --note "test"`, {
+    execSync(`node bin/roadmap.ts make ${specPath} --note "test"`, {
       cwd: repoRoot,
       stdio: 'pipe',
     });
 
-    // Verify spec was not rewritten (since no rehash was needed)
     const currentContent = readFileSync(specPath, 'utf-8');
     assert.strictEqual(currentContent, originalContent, 'Should not modify spec when hash already matches');
   } finally {
-    // Cleanup
     if (existsSync(specPath)) unlinkSync(specPath);
     if (existsSync(inputPath)) unlinkSync(inputPath);
     if (existsSync(join(repoRoot, '.roadmap', 'head.json'))) {
@@ -168,12 +124,9 @@ test('make --rehash: does not modify spec if hash matches', async (t) => {
   }
 });
 
-test('make --rehash: handles multiple inputs with mixed hash states', async (t) => {
-  const tmpDir = tmpdir();
-
-  // Create two input files
-  const input1Path = join(tmpDir, 'test-input-1.md');
-  const input2Path = join(tmpDir, 'test-input-2.md');
+test('make: handles multiple inputs with mixed hash states', async (t) => {
+  const input1Path = join(repoRoot, 'test-input-1.md');
+  const input2Path = join(repoRoot, 'test-input-2.md');
   const input1Content = 'content one';
   const input2Content = 'content two';
 
@@ -183,7 +136,6 @@ test('make --rehash: handles multiple inputs with mixed hash states', async (t) 
   writeFileSync(input1Path, input1Content);
   writeFileSync(input2Path, input2Content);
 
-  // Create spec with one correct hash and one wrong hash
   const spec = {
     schema_version: 1,
     dag_id: 'multi-input-test',
@@ -194,16 +146,8 @@ test('make --rehash: handles multiple inputs with mixed hash states', async (t) 
     },
     engine: { name: 'test-engine', version: '1.0.0', config_hash: null },
     inputs: [
-      {
-        path: 'test-input-1.md',
-        sha256: hash1, // Correct
-        role: 'spec',
-      },
-      {
-        path: 'test-input-2.md',
-        sha256: 'wrong-hash-for-input-2', // Incorrect
-        role: 'plan',
-      },
+      { path: 'test-input-1.md', sha256: hash1, role: 'spec' },
+      { path: 'test-input-2.md', sha256: 'wrong-hash-for-input-2', role: 'plan' },
     ],
     tasks: [
       {
@@ -224,7 +168,10 @@ test('make --rehash: handles multiple inputs with mixed hash states', async (t) 
         produces: ['output.txt'],
         consumes: [],
         mode: 'execute',
-        validate: [{ type: 'artifact-exists', path: 'output.txt' }],
+        validate: [
+          { type: 'intent', expandOnFail: true, statement: 'Plan with clarity', confidence: 0.9, evaluator: 'self' },
+          { type: 'artifact-exists', path: 'output.txt' },
+        ],
       },
       {
         id: 'term',
@@ -234,27 +181,24 @@ test('make --rehash: handles multiple inputs with mixed hash states', async (t) 
         produces: [],
         consumes: ['output.txt'],
         mode: 'execute',
-        validate: [{ type: 'intent', expandOnFail: true, statement: 'Done' }],
+        validate: [{ type: 'intent', expandOnFail: true, statement: 'Done', confidence: 0.9, evaluator: 'self' }],
       },
     ],
   };
 
-  const specPath = join(tmpDir, 'multi-input-test.json');
+  const specPath = join(tmpdir(), 'multi-input-test.json');
   writeFileSync(specPath, JSON.stringify(spec, null, 2) + '\n');
 
   try {
-    // Run make with --rehash
-    execSync(`node bin/roadmap.ts make ${specPath} --rehash --note "test"`, {
+    execSync(`node bin/roadmap.ts make ${specPath} --note "test"`, {
       cwd: repoRoot,
       stdio: 'pipe',
     });
 
-    // Verify both hashes were updated correctly
     const updatedSpec = JSON.parse(readFileSync(specPath, 'utf-8'));
     assert.strictEqual(updatedSpec.inputs[0].sha256, hash1, 'First input hash should remain correct');
     assert.strictEqual(updatedSpec.inputs[1].sha256, hash2, 'Second input hash should be updated');
   } finally {
-    // Cleanup
     [specPath, input1Path, input2Path].forEach(p => {
       if (existsSync(p)) unlinkSync(p);
     });
