@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "dag_id": "swarm-friction-006",
+  "dag_desc": "Fix 7 friction points from swarm-dispatch session: sub-DAG dead-end, stale input hashes, single-DAG head.json, haiku gitsafe confusion, advance on feature branches, completed.json main-branch commit block, legacy spec migration",
+  "inputs": [
+    { "path": "bin/roadmap.ts", "sha256": "438d4d4075586b20a35be9ce7e361c2522635db01a6aec54aaafdeca44798b12", "role": "spec" }
+  ],
+  "tasks": [
+    {
+      "id": "orient-parent-dag",
+      "desc": "When orient returns complete:true on a sub-DAG, scan .roadmap/head.*.json for parent/sibling DAGs and surface them in orient output as 'parentDags[]' with path, dagId, completionStatus. Currently orient only shows pendingSpecs (unloaded spec files) — it misses alternate head.json files that represent larger DAGs. Agent in donjon session hit dead-end: sub-DAG complete, no forward pointer to head.donjon-main-final.json.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["src/lib/orient-forward.ts", "test/orient-parent-dag.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: orient surfaces sibling head.*.json DAGs when current DAG is complete — agents never hit dead-end", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "shell", "command": "npx tsx test/orient-parent-dag.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": ["bin/roadmap.ts"]
+    },
+    {
+      "id": "make-rehash",
+      "desc": "Add --rehash flag to 'roadmap make'. When set, auto-update input sha256 hashes to match current file contents instead of failing on mismatch. Every code change to bin/roadmap.ts invalidates all specs referencing it — agents can't load specs without manual hash fixup. Rehash computes sha256 of each input.path, updates the in-memory spec, then proceeds with normal validation. Also write updated hashes back to the spec file.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["bin/roadmap.ts", "test/make-rehash.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: make --rehash auto-fixes stale input hashes — no manual sha256 fixup needed", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "shell", "command": "npx tsx test/make-rehash.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": [".roadmap/friction-fix-spec.json"]
+    },
+    {
+      "id": "multi-dag-head",
+      "desc": "Support multiple active DAGs. Replace single .roadmap/head.json with .roadmap/heads/<dagId>.json. orient() unions across all head files (or accepts --dag <id> filter). make writes to heads/<dagId>.json instead of overwriting head.json. Backward compat: if head.json exists and no heads/ dir, migrate on first access. This unblocks true parallel DAG execution — loading spec A then B no longer destroys A.",
+      "priority": 1,
+      "depends": ["orient-parent-dag"],
+      "produces": ["src/lib/multi-dag.ts", "bin/roadmap.ts", "test/multi-dag.test.ts"],
+      "consumes": ["src/lib/orient-forward.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: multiple DAGs coexist in heads/ dir — make doesn't overwrite, orient unions or filters", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "shell", "command": "npx tsx test/multi-dag.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": [".roadmap/head.json"]
+    },
+    {
+      "id": "gitsafe-worktree-context",
+      "desc": "gitsafe main-branch gate should detect worktree context and adjust error messages. When running in a git worktree (git rev-parse --git-common-dir != .git), the 'only allowed from main' error should instead say 'you are in a worktree on branch X — this is expected, proceed with your feature branch workflow.' Also: make should be allowed from worktrees (worktrees ARE the isolation mechanism). The enforceMainBranch check should pass when isWorktree() returns true.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["bin/roadmap.ts", "test/gitsafe-worktree.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: gitsafe exempts worktrees from main-branch gate — make/advance work in worktrees without confusion", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "shell", "command": "npx tsx test/gitsafe-worktree.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": ["src/lib/gitsafe-loader.ts"]
+    },
+    {
+      "id": "advance-feature-branch",
+      "desc": "Allow 'roadmap advance' on feat/* and wip/* branches. advance is read-only (validates + records evidence to completed.json) — it should not be gated to main. Only make and dag-mutate commands need the main-branch gate. Check if friction-fix-003 advance-on-branches node already shipped this fix; if so, verify it works in worktree context too. If not shipped, implement: exempt 'advance' from enforceMainBranch in bin/roadmap.ts.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["bin/roadmap.ts", "test/advance-feature-branch.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: advance works on feat/wip branches and in worktrees — only make/dag-mutate require main", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "shell", "command": "npx tsx test/advance-feature-branch.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": [".husky/pre-commit"]
+    },
+    {
+      "id": "completed-json-exempt",
+      "desc": "Exempt .roadmap/completed.json from the main-branch pre-commit write guard. completed.json is written by 'advance' as evidence — it must be committable on main without creating a throwaway feature branch. The pre-commit hook should allow staging completed.json on main (alongside head.json which remains protected). Modify scripts/hooks/pre-commit to whitelist completed.json.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["scripts/hooks/pre-commit", "test/completed-json-commit.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: completed.json is committable on main — only head.json remains write-protected", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "shell", "command": "npx tsx test/completed-json-commit.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": [".husky/pre-commit"]
+    },
+    {
+      "id": "spec-migrate",
+      "desc": "Add 'roadmap spec migrate <path>' command. Detects missing/outdated fields in spec files and fixes them: adds empty inputs[] with role 'spec' if missing, adds metadata.compile_hash as 'auto' if missing, adds engine block with defaults if missing, adds dag_desc if missing (copies from first task desc). Reports what was fixed. Allows legacy specs like spec-rebuild.json to load without manual editing.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["bin/roadmap.ts", "test/spec-migrate.test.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "intent", "statement": "Plan clarity: spec migrate auto-fixes legacy specs — adds missing required fields with sensible defaults", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" },
+        { "type": "shell", "command": "npx tsx test/spec-migrate.test.ts", "expectExitCode": 0 }
+      ],
+      "ambient": [".roadmap/spec-rebuild.json"]
+    },
+    {
+      "id": "swarm-friction-verified",
+      "desc": "Integration: all 7 friction fixes work together. orient surfaces parent DAGs, make --rehash fixes hashes, multiple DAGs coexist, worktrees bypass gitsafe, advance works on feature branches, completed.json commits on main, legacy specs migrate.",
+      "priority": 2,
+      "depends": ["orient-parent-dag", "make-rehash", "multi-dag-head", "gitsafe-worktree-context", "advance-feature-branch", "completed-json-exempt", "spec-migrate"],
+      "produces": ["test/swarm-friction-integration.test.ts"],
+      "consumes": ["bin/roadmap.ts", "src/lib/orient-forward.ts", "src/lib/multi-dag.ts", "scripts/hooks/pre-commit"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx tsx test/swarm-friction-integration.test.ts", "expectExitCode": 0 },
+        { "type": "intent", "statement": "All 7 swarm friction points resolved — agents can execute parallel DAGs in worktrees without manual intervention", "expandOnFail": true, "confidence": 0.9, "evaluator": "self" }
+      ]
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-04T00:00:00Z",
+    "compile_hash": "auto"
+  }
+}
