@@ -1,17 +1,18 @@
 // @module orient-forward
 // @exports scanPendingSpecs, PendingSpec, scanSiblingDags, SiblingDag
-// @types PendingSpec, SiblingDag
 
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync, existsSync } from "fs";
 import { resolve } from "path";
 
 /**
- * PendingSpec — A spec file (.roadmap/*-spec.json) that hasn't been loaded into head.json yet.
+ * PendingSpec — A spec file that hasn't been executed yet, or a follow-on spec
+ * declared by a completed DAG's `next` pointer that hasn't been created yet.
  */
 export interface PendingSpec {
   path: string;
   dagId: string;
   desc?: string;
+  status?: 'not-created'; // only set for follow-on specs declared via `next` but not yet on disk
 }
 
 /**
@@ -24,10 +25,36 @@ export interface SiblingDag {
 }
 
 /**
+ * Collect all DAG IDs that have ever been loaded into heads/.
+ * Used to exclude already-executed specs from pendingSpecs.
+ */
+function loadedDagIds(repoRoot: string): Set<string> {
+  const ids = new Set<string>();
+  const headsDir = resolve(repoRoot, ".roadmap", "heads");
+
+  if (!existsSync(headsDir)) return ids;
+
+  try {
+    for (const file of readdirSync(headsDir)) {
+      if (!file.endsWith(".json")) continue;
+      try {
+        const dag = JSON.parse(readFileSync(resolve(headsDir, file), "utf-8"));
+        if (dag?.id) ids.add(dag.id);
+      } catch { /* skip unparseable */ }
+    }
+  } catch { /* heads dir unreadable */ }
+
+  return ids;
+}
+
+/**
  * Scan .roadmap directory for unloaded specs.
  *
- * Compares DAG IDs in spec files with the current head.json dag_id.
- * Returns array of specs not yet loaded.
+ * A spec is pending only if its dag_id has never been loaded into heads/.
+ * Specs whose dag_id matches any entry in heads/ are already executed — skip them.
+ *
+ * Also surfaces follow-on specs declared via `spec.next` on the current DAG's spec
+ * that don't exist on disk yet.
  *
  * @param repoRoot — repository root (contains .roadmap/)
  * @param currentHeadDagId — current DAG ID from head.json
@@ -38,6 +65,7 @@ export function scanPendingSpecs(
   currentHeadDagId: string,
 ): PendingSpec[] {
   const roadmapDir = resolve(repoRoot, ".roadmap");
+  const knownDagIds = loadedDagIds(repoRoot);
   const pending: PendingSpec[] = [];
 
   try {
@@ -49,29 +77,38 @@ export function scanPendingSpecs(
     for (const file of specFiles) {
       const specPath = resolve(roadmapDir, file);
       try {
-        const content = readFileSync(specPath, "utf-8");
-        const spec = JSON.parse(content);
+        const spec = JSON.parse(readFileSync(specPath, "utf-8"));
+        if (typeof spec !== "object" || spec === null || !("dag_id" in spec)) continue;
 
-        // Only consider valid spec format
-        if (typeof spec === "object" && spec !== null && "dag_id" in spec) {
-          const dagId = spec.dag_id;
+        const dagId = spec.dag_id;
 
-          // Only include if not already in head.json
-          if (dagId !== currentHeadDagId) {
-            pending.push({
-              path: `.roadmap/${file}`,
-              dagId,
-              desc: spec.dag_desc || undefined,
-            });
+        if (dagId === currentHeadDagId) {
+          // This is the current DAG's spec — check for follow-on work via `next`
+          if (typeof spec.next === "string") {
+            const nextPath = resolve(repoRoot, spec.next);
+            if (!existsSync(nextPath)) {
+              pending.push({
+                path: spec.next,
+                dagId: spec.next.replace(/.*\//, '').replace(/-spec\.json$/, '').replace(/\.json$/, ''),
+                desc: spec.nextDesc || `Follow-on: ${spec.next}`,
+                status: 'not-created',
+              });
+            }
           }
+          continue;
         }
-      } catch (e) {
-        // Skip specs that can't be parsed
-      }
+
+        // Skip if this dagId has already been loaded/executed
+        if (knownDagIds.has(dagId)) continue;
+
+        pending.push({
+          path: `.roadmap/${file}`,
+          dagId,
+          desc: spec.dag_desc || undefined,
+        });
+      } catch { /* skip unparseable */ }
     }
-  } catch (e) {
-    // If .roadmap dir doesn't exist or can't be read, return empty
-  }
+  } catch { /* .roadmap unreadable */ }
 
   return pending;
 }
@@ -104,35 +141,25 @@ export function scanSiblingDags(
     for (const file of headFiles) {
       const dagPath = resolve(roadmapDir, file);
       try {
-        const content = readFileSync(dagPath, "utf-8");
-        const dag = JSON.parse(content);
+        const dag = JSON.parse(readFileSync(dagPath, "utf-8"));
 
-        // Validate it's a Graph shape: has id and nodes
         if (
           typeof dag === "object" &&
           dag !== null &&
           typeof dag.id === "string" &&
           typeof dag.nodes === "object"
         ) {
-          const dagId = dag.id;
-
-          // Exclude the current DAG
-          if (dagId !== currentDagId) {
-            const nodeCount = Object.keys(dag.nodes).length;
+          if (dag.id !== currentDagId) {
             siblings.push({
               path: `.roadmap/${file}`,
-              dagId,
-              nodeCount,
+              dagId: dag.id,
+              nodeCount: Object.keys(dag.nodes).length,
             });
           }
         }
-      } catch (e) {
-        // Skip DAGs that can't be parsed
-      }
+      } catch { /* skip unparseable */ }
     }
-  } catch (e) {
-    // If .roadmap dir doesn't exist or can't be read, return empty
-  }
+  } catch { /* .roadmap unreadable */ }
 
   return siblings;
 }

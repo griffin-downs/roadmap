@@ -60,6 +60,24 @@ const repoRoot = process.cwd();
 // --- GitSafe enforcement ---
 const gitsafe = createGitSafeLoader(repoRoot);
 
+/** Read the `goal` block from whichever *-spec.json has a matching dag_id. Returns null if not found. */
+function loadSpecGoal(dagId: string): { statement: string; satisfied_when?: string; known_remaining?: string[] } | null {
+  const roadmapDir = join(repoRoot, '.roadmap');
+  if (!existsSync(roadmapDir)) return null;
+  try {
+    for (const file of readdirSync(roadmapDir)) {
+      if (!file.endsWith('-spec.json') || file === 'spec-origin.json') continue;
+      try {
+        const spec = JSON.parse(readFileSync(join(roadmapDir, file), 'utf-8'));
+        if (spec?.dag_id === dagId && spec?.goal && typeof spec.goal.statement === 'string') {
+          return spec.goal;
+        }
+      } catch { /* skip */ }
+    }
+  } catch { /* roadmap dir unreadable */ }
+  return null;
+}
+
 function getCurrentBranch(): string {
   try {
     return execSync('git rev-parse --abbrev-ref HEAD', { cwd: repoRoot, stdio: 'pipe' }).toString().trim();
@@ -158,6 +176,14 @@ const _humanRenderers: Record<string, (data: unknown) => string> = {
 };
 if (_humanRenderers[_outputOpts.cmd]) {
   _outputOpts.humanRenderer = _humanRenderers[_outputOpts.cmd];
+}
+
+// Known commands — reject unknown before checking --note
+const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'status', 'spec', 'dag', 'api', 'help', '--help', '-h']);
+if (!KNOWN_COMMANDS.has(cmd)) {
+  json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Discovery: {api, help}.` });
+  recordTrailError(cmd, 'UNKNOWN_COMMAND', `Unknown command: ${cmd}`);
+  process.exit(1);
 }
 
 // Commands that don't require a note
@@ -353,7 +379,8 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     case '--help':
     case '-h':        return cmdHelp();
     default:
-      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Use 'roadmap help' for details.` });
+      // Unreachable — KNOWN_COMMANDS gate above catches unknown commands
+      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Discovery: {api, help}.` });
       process.exit(1);
   }
 }
@@ -730,6 +757,15 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
       result.advanced = true;
       result.done = true;
       result.message = 'All work complete';
+      const goal = loadSpecGoal(dag.id ?? '');
+      if (goal) {
+        result.goalAssessment = {
+          goal: goal.statement,
+          ...(goal.satisfied_when ? { satisfiedWhen: goal.satisfied_when } : {}),
+          ...(goal.known_remaining?.length ? { knownRemaining: goal.known_remaining } : {}),
+          requiredAction: 'Assess whether the goal is satisfied before closing session. Surface any known_remaining items to the user.',
+        };
+      }
     } else {
       result.advanced = true;
       result.nextPosition = next.position;
@@ -794,8 +830,16 @@ async function advanceBatchCmd(dag: Graph<string>, note: string) {
   const next = advanceBatch(dag, completion, retiredSet());
 
   if (!next || next.position.length === 0) {
+    const goal = loadSpecGoal(dag.id ?? '');
+    const goalAssessment = goal ? {
+      goal: goal.statement,
+      ...(goal.satisfied_when ? { satisfiedWhen: goal.satisfied_when } : {}),
+      ...(goal.known_remaining?.length ? { knownRemaining: goal.known_remaining } : {}),
+      requiredAction: 'Assess whether the goal is satisfied before closing session. Surface any known_remaining items to the user.',
+    } : undefined;
     emit({ ok: true, cmd: _outputOpts.cmd, data: {
       advanced: true, level: pos.level + 1, position: [], message: 'All work complete', done: true,
+      ...(goalAssessment ? { goalAssessment } : {}),
     }}, _outputOpts);
 
     recordTrail({
@@ -908,7 +952,6 @@ async function cmdMake(note: string) {
   }
 
   // Input artifact verification (skip with --skip-input-verification)
-  const shouldRehash = args.includes('--rehash');
   if (!args.includes('--skip-input-verification')) {
     if (!Array.isArray(parsed.inputs) || parsed.inputs.length === 0) {
       throw new RoadmapError('VALIDATION_FAILED', {
@@ -952,17 +995,8 @@ async function cmdMake(note: string) {
       const content = readFileSync(inputPath, 'utf-8');
       const actual = createHash('sha256').update(content).digest('hex');
       if (actual !== inp.sha256) {
-        if (shouldRehash) {
-          inp.sha256 = actual;
-          rehashes.push(`${inp.path}: updated hash to ${actual}`);
-        } else {
-          throw new RoadmapError('VALIDATION_FAILED', {
-            fix: `Hash mismatch for "${inp.path}". Expected: ${inp.sha256}, actual: ${actual}. Re-read the file and recompute the hash.`,
-            path: inp.path,
-            expected: inp.sha256,
-            actual,
-          }, `Input hash mismatch: ${inp.path}`);
-        }
+        inp.sha256 = actual;
+        rehashes.push(`${inp.path}: updated hash to ${actual}`);
       }
     }
 

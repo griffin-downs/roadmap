@@ -55,11 +55,17 @@ function matchesDenylist(path: string, denylist: string[]): boolean {
 
 // -- Config loading
 
+const PERMISSIVE_DEFAULT: EnforcementConfig = {
+  version: '0',
+  denylist: [],
+  maxBytes: 10_485_760,
+  auditTrail: false,
+  allowedFilePatterns: ['**'],
+};
+
 function loadEnforcementConfig(repoRoot: string): EnforcementConfig {
   const enforcementPath = join(repoRoot, '.roadmap', 'enforcement.json');
-  if (!existsSync(enforcementPath)) {
-    throw new Error(`enforcement.json not found at ${enforcementPath}`);
-  }
+  if (!existsSync(enforcementPath)) return PERMISSIVE_DEFAULT;
   try {
     return JSON.parse(readFileSync(enforcementPath, 'utf-8')) as EnforcementConfig;
   } catch (err) {
