@@ -31,7 +31,6 @@ import { buildScaffold } from '../src/lib/scaffold.ts';
 import { buildGallery } from '../src/lib/gallery-templates/index.ts';
 import { validateTerminalIntentGate, validateInitIntentGate, findInitBoundary } from '../src/lib/validate-dag.ts';
 import { collectMakeErrors } from '../src/lib/make-validation.ts';
-import { optimize } from '../src/lib/optimize.ts';
 import { writeSpecOrigin, writeSpecImportReceipt, requireSpecOriginForEdit } from '../src/lib/intake/spec-origin.ts';
 import { requireValidOrigin, checkSpecDrift } from '../src/lib/intake/runtime-gate.ts';
 import type { SpecOrigin, SpecImportReceipt } from '../src/lib/intake/spec-origin.ts';
@@ -40,7 +39,7 @@ import { listNodeReceipts, completionDoctor, completionCompact } from '../src/li
 import { readPackageVersion } from '../src/lib/install-skills.ts';
 import { loadDAGWithAutoMerge, ensureIndexExists } from '../src/lib/roadmap/cli-auto-merge.ts';
 import { ensureConsolidated } from '../src/lib/roadmap/cli-consolidation-init.ts';
-import { saveDagHead, migrateSingleHead, loadDag, loadAllDags } from '../src/lib/multi-dag.ts';
+import { saveDagHead, migrateSingleHead } from '../src/lib/multi-dag.ts';
 import { getBrief } from '../src/lib/brief.ts';
 import type { FinalHandoff, InterimHandoff } from '../src/lib/brief.ts';
 import { saveFinal, saveInterim } from '../src/lib/agent-dispatch/handoff-journal.ts';
@@ -122,14 +121,6 @@ function hasFlag(flags: string[], haystack: string[]): boolean {
     if (haystack.includes(flag)) return true;
   }
   return false;
-}
-
-function getFlagValue(flag: string, haystack: string[]): string | undefined {
-  const idx = haystack.indexOf(flag);
-  if (idx >= 0 && idx + 1 < haystack.length) {
-    return haystack[idx + 1];
-  }
-  return undefined;
 }
 
 const { note: _note, positional: args } = extractNote(rawArgs);
@@ -301,7 +292,7 @@ async function main() {
   const note = _note;
 
   // Enforce main branch for all DAG-mutating commands
-  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient', 'advance', 'status', 'spec', 'optimize']);
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient', 'advance', 'status', 'spec']);
   // --dry-run flag exempts make from branch enforcement
   if (!BRANCH_EXEMPT.has(cmd) && !(cmd === 'make' && args.includes('--dry-run'))) {
     enforceMainBranch();
@@ -348,8 +339,6 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     case 'advance':   return await cmdAdvance(note!);
     case 'make':      return await cmdMake(note!);
     case 'status':    return await cmdStatus(note);
-    case 'optimize':  return await cmdOptimize(note);
-
     // Spec pipeline
     case 'spec':      return await cmdSpecGroup(note);
 
@@ -364,7 +353,7 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
     case '--help':
     case '-h':        return cmdHelp();
     default:
-      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status, optimize}. Group: {spec, dag}. Use 'roadmap help' for details.` });
+      json({ error: `Unknown command: ${cmd}`, fix: `Mainline: {make, orient, advance, status}. Group: {spec, dag}. Use 'roadmap help' for details.` });
       process.exit(1);
   }
 }
@@ -374,9 +363,6 @@ async function routeCommand(cmd: string, note: string | undefined): Promise<void
 async function cmdOrient(note: string | undefined) {
   // Migrate single head.json to heads/ if needed
   migrateSingleHead(repoRoot);
-
-  // Support --dag <id> filter
-  const dagFilter = getFlagValue('--dag', args);
 
   const isCheck = args.includes('--check');
   if (!hasLocalDAG) {
@@ -422,19 +408,7 @@ async function cmdOrient(note: string | undefined) {
   const origin = requireValidOrigin(repoRoot);
   const drift = checkSpecDrift(repoRoot);
 
-  // Load DAG: if --dag filter specified, load from heads/, otherwise use default
-  let dag: Graph<string>;
-  if (dagFilter) {
-    const filteredDag = loadDag(repoRoot, dagFilter);
-    if (!filteredDag) {
-      const available = Array.from(loadAllDags(repoRoot).keys());
-      json({ error: `DAG not found: ${dagFilter}`, available });
-      return;
-    }
-    dag = filteredDag;
-  } else {
-    dag = await loadDAGAsync();
-  }
+  const dag = await loadDAGAsync();
 
   const pos = await crossOrientWithState(dag);
 
@@ -1119,45 +1093,6 @@ async function cmdStatus(note: string | undefined) {
     nodes: status,
     batchComplete: pos.batchComplete,
     level: pos.level,
-  });
-}
-
-async function cmdOptimize(note: string | undefined) {
-  if (!hasLocalDAG) {
-    json({ error: 'No roadmap tracked in this repo', fix: 'Initialize with: roadmap make <spec.json> --note "..."' });
-    process.exit(1);
-    return;
-  }
-
-  const dag = await loadDAGAsync();
-  const result = optimize(dag);
-
-  recordTrail({
-    ts: new Date().toISOString(),
-    cmd: 'optimize',
-    note,
-    repo: basename(repoRoot),
-    detail: {
-      removable: result.removable.length,
-      levelsBefore: result.levelsBefore,
-      levelsAfter: result.levelsAfter,
-      utilizationBefore: result.utilizationBefore,
-      utilizationAfter: result.utilizationAfter,
-    },
-  });
-
-  json({
-    ok: true,
-    removable: result.removable,
-    metrics: {
-      levelsBefore: result.levelsBefore,
-      levelsAfter: result.levelsAfter,
-      maxParallelismBefore: result.maxParallelismBefore,
-      maxParallelismAfter: result.maxParallelismAfter,
-      utilizationBefore: result.utilizationBefore,
-      utilizationAfter: result.utilizationAfter,
-    },
-    enforcement: result.enforcement,
   });
 }
 
