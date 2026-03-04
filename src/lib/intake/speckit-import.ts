@@ -383,6 +383,26 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
   // Thread spec-kit materials into gates for spec-conformance validation
   enrichGatesWithSpecKit(nodes, opts.dagId, initId, termId);
 
+  // Auto-inject expandOnFail: true on intent validators for init-boundary and terminal nodes.
+  // The init-intent and terminal-intent gates require expandOnFail but the SpecIR schema doesn't
+  // expose it — so we derive it here during compilation rather than requiring the spec author to know.
+  const initBoundaryIds = new Set(
+    Object.values(nodes)
+      .filter((n: any) => (n.deps ?? []).includes(initId))
+      .map((n: any) => n.id)
+  );
+  const gatedIds = new Set([...initBoundaryIds, termId]);
+  for (const nodeId of gatedIds) {
+    const node = nodes[nodeId] as any;
+    if (!node) continue;
+    const patched = (node.validate ?? []).map((r: any) =>
+      r.type === 'intent' && !r.expandOnFail ? { ...r, expandOnFail: true } : r
+    );
+    if (patched.some((r: any, i: number) => r !== (node.validate ?? [])[i])) {
+      nodes[nodeId] = { ...node, validate: patched };
+    }
+  }
+
   return {
     id: opts.dagId,
     desc: opts.dagDesc || `Imported from spec-kit`,
