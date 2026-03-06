@@ -19,7 +19,7 @@ export type ValidationRule =
   | { type: 'build-produces'; command: string; outputs: string[] }
   | { type: 'launch-check'; command: string; timeout?: number; successSignal?: string }
   | { type: 'spec-conformance'; spec: string; stories: number[]; criteria?: number[] }
-  | { type: 'intent'; statement: string; confidence: number; evaluator: 'self' | 'council'; context?: string[]; expandOnFail?: boolean; maxExpansionDepth?: number }
+  | { type: 'intent'; statement: string; confidence: number; evaluator: 'self' | 'council'; context?: string[]; expandOnFail?: boolean; maxExpansionDepth?: number; prompt?: string[]; minResponseLength?: number }
   | { type: 'runtime-explore'; script: string; launch?: string; port?: number; timeout?: number; observations: ObservationSpec[] };
 
 // LLM-provided judgment for one intent statement.
@@ -29,6 +29,7 @@ export interface IntentJudgment {
   confidence: number;  // 0.0–1.0
   reasoning: string;   // one paragraph
   evidence?: string[]; // file:line references (optional)
+  promptAnswers?: string[]; // responses to rule.prompt[] — required when rule has prompts
 }
 
 // Runtime exploration types — CDP-based behavioral observation

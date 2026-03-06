@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "engine": "spec-kit",
   "version": "1.0.0",
-  "compile_hash": "c2d819c9f629675affad35aac95eaae97088b9f6691a69dfbf8020aa2626edbd",
-  "spec_sha": "4ada1761294c0d495f063aa22bb070a1c79b85e3577d50f69be514780592e907",
-  "importedAt": "2026-03-04T00:25:10.063Z",
-  "dagId": "swarm-friction-006"
+  "compile_hash": "96d5bedf01dd43d73bc9433e66f0c0ea2a34251a41f138df502226ebe78b063d",
+  "spec_sha": "bdd6da08f062ab92ae8e230ae4a90e302eae51cf937d45f1ff56d2ad4165a81a",
+  "importedAt": "2026-03-06T12:35:18.353Z",
+  "dagId": "intent-gate-hardening"
 }

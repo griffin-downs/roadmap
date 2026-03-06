@@ -569,11 +569,25 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     return;
   }
 
+  // Parse --evaluate for intent judgments
+  const evalIdx = args.indexOf('--evaluate');
+  let intentJudgments: import('../src/protocol.ts').IntentJudgment[] | undefined;
+  if (evalIdx !== -1 && args[evalIdx + 1]) {
+    try {
+      intentJudgments = JSON.parse(args[evalIdx + 1]);
+    } catch {
+      json({ error: 'Invalid --evaluate JSON', fix: 'Pass valid JSON array: --evaluate \'[{"statement":"...","confidence":0.9,"reasoning":"..."}]\'' });
+      process.exit(1);
+      return;
+    }
+  }
+
   // Run validators via unified validation function
   const existsPredicate = (artifact: string) => existsSync(join(repoRoot, artifact));
   const validationResult = await validateNode(dag, nodeId, existsPredicate, {
     repoRoot,
     branch: getCurrentBranch(),
+    intentJudgments,
   });
 
   // Map ValidationCheck to EvidenceRecord format

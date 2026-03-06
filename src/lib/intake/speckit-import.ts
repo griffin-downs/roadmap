@@ -361,7 +361,13 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
       produces: [],
       consumes: termConsumes,
       deps: leafTasks.map(t => t.id),
-      validate: [],
+      validate: [{
+        type: 'intent',
+        statement: 'All leaf nodes complete — DAG converges at terminal',
+        confidence: 0.9,
+        evaluator: 'self',
+        expandOnFail: true,
+      }],
       idempotent: false,
     } as any;
   }
@@ -383,21 +389,43 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
   // Thread spec-kit materials into gates for spec-conformance validation
   enrichGatesWithSpecKit(nodes, opts.dagId, initId, termId);
 
-  // Auto-inject expandOnFail: true on intent validators for init-boundary and terminal nodes.
-  // The init-intent and terminal-intent gates require expandOnFail but the SpecIR schema doesn't
-  // expose it — so we derive it here during compilation rather than requiring the spec author to know.
+  // Auto-inject expandOnFail on intent validators for init-boundary and terminal nodes.
+  // Terminal node gets a structured reflection prompt — one comprehensive completion report.
+  // This prompt doubles as the deliberationRequest question when evaluator is 'council'.
   const initBoundaryIds = new Set(
     Object.values(nodes)
       .filter((n: any) => (n.deps ?? []).includes(initId))
       .map((n: any) => n.id)
   );
+
+  // Terminal reflection prompt: unified god-engineer + council + audit trail concerns.
+  // Same prompt serves both evaluator:'self' (agent answers) and evaluator:'council'
+  // (fanned out as deliberationRequest.question to chancellor → fool/inquisitor/griffinProxy).
+  const TERMINAL_REPORT_PROMPT = [
+    'Provide a completion report:\n' +
+    '1. COMMIT STATUS: Are all produces committed? List each file and its commit SHA.\n' +
+    '2. TEST EVIDENCE: What tests ran and passed? What is untested?\n' +
+    '3. UNVALIDATED ASSUMPTIONS: What did this DAG rely on that has no shell or artifact-exists validator?\n' +
+    '4. FAILURE SURFACE: What input would break the weakest node? Name the node and failure mode.\n' +
+    '5. SCOPE DECISIONS: What was intentionally excluded and why?\n' +
+    '6. AUDIT TRAIL: What artifacts exist for a human reviewer to verify this work?',
+  ];
+
   const gatedIds = new Set([...initBoundaryIds, termId]);
   for (const nodeId of gatedIds) {
     const node = nodes[nodeId] as any;
     if (!node) continue;
-    const patched = (node.validate ?? []).map((r: any) =>
-      r.type === 'intent' && !r.expandOnFail ? { ...r, expandOnFail: true } : r
-    );
+    const isTerminal = nodeId === termId;
+    const patched = (node.validate ?? []).map((r: any) => {
+      if (r.type !== 'intent') return r;
+      const updates: any = {};
+      if (!r.expandOnFail) updates.expandOnFail = true;
+      if (isTerminal && (!r.prompt || r.prompt.length === 0)) {
+        updates.prompt = TERMINAL_REPORT_PROMPT;
+        updates.minResponseLength = 200;
+      }
+      return Object.keys(updates).length > 0 ? { ...r, ...updates } : r;
+    });
     if (patched.some((r: any, i: number) => r !== (node.validate ?? [])[i])) {
       nodes[nodeId] = { ...node, validate: patched };
     }

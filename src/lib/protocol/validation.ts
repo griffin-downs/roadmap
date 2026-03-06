@@ -263,19 +263,41 @@ export async function validateNode<T extends string>(
     } else if (rule.type === 'intent') {
       // Intent constraints require LLM judgment. The calling LLM reads the
       // context files and provides its evaluation via --evaluate '[{...}]'.
-      // Without judgments: non-blocking (signals what needs evaluation in output).
-      // With judgments: validates confidence >= rule.confidence.
+      // Without judgments: BLOCKING — agent must provide judgment to proceed.
+      // With judgments: validates confidence >= rule.confidence + prompt answers.
       const judgment = opts?.intentJudgments?.find(j => j.statement === rule.statement);
       if (judgment) {
         passed = judgment.confidence >= rule.confidence;
         evidence = `confidence=${judgment.confidence.toFixed(2)} (threshold=${rule.confidence}) — ${judgment.reasoning.slice(0, 120)}`;
+
+        // Validate structured reflection prompts if rule defines them
+        if (passed && rule.prompt && rule.prompt.length > 0) {
+          const answers = judgment.promptAnswers ?? [];
+          const minLen = rule.minResponseLength ?? 50;
+
+          if (answers.length < rule.prompt.length) {
+            passed = false;
+            evidence += ` | BLOCKED: ${rule.prompt.length} reflection prompts required, ${answers.length} answered`;
+          } else {
+            const tooShort = answers.filter((a, i) => i < rule.prompt.length && a.trim().length < minLen);
+            if (tooShort.length > 0) {
+              passed = false;
+              evidence += ` | BLOCKED: ${tooShort.length} prompt answer(s) below minimum length (${minLen} chars)`;
+            }
+          }
+        }
+
         checks.push({ rule, passed, evidence, judgment, intentStatus: 'evaluated' });
         if (!passed) allPassed = false;
       } else {
-        // Unevaluated — non-blocking; output signals what the LLM must judge
-        passed = true;
-        evidence = `unevaluated`;
+        // Unevaluated — BLOCKING. Agent must provide judgment via --evaluate.
+        passed = false;
+        const promptHint = rule.prompt && rule.prompt.length > 0
+          ? ` Reflection prompts: ${JSON.stringify(rule.prompt)}`
+          : '';
+        evidence = `unevaluated — judgment required via --evaluate.${promptHint}`;
         checks.push({ rule, passed, evidence, intentStatus: 'unevaluated' });
+        allPassed = false;
       }
       continue;
     }
