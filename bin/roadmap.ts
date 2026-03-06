@@ -43,6 +43,7 @@ import { saveDagHead, migrateSingleHead } from '../src/lib/multi-dag.ts';
 import { getBrief } from '../src/lib/brief.ts';
 import { writeNodeCache } from '../src/lib/brief-cache.ts';
 import { validateTerminalAudit, type AuditResponse, type TerminalAuditResult } from '../src/lib/terminal-audit/validator.ts';
+import { expandGaps } from '../src/lib/terminal-audit/gap-expansion.ts';
 import type { FinalHandoff, InterimHandoff } from '../src/lib/brief.ts';
 import { saveFinal, saveInterim } from '../src/lib/agent-dispatch/handoff-journal.ts';
 import type { Graph, Orientation } from '../src/protocol.ts';
@@ -709,7 +710,33 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     terminalAuditResult = validateTerminalAudit(dag, auditRecords, existsPredicate, changedFiles, auditResponses);
 
     if (!terminalAuditResult.passed) {
-      // Return context packet so agent knows what to address
+      // Gap expansion: convert detected gaps into fix nodes instead of asking for narrative.
+      // If gaps are actionable, insert fix nodes as terminal deps and reject advance.
+      // Agent executes fix nodes, then retries terminal advance (re-audit will pass).
+      const expansion = expandGaps(dag, terminalAuditResult.detected, repoRoot);
+
+      if (expansion.expanded) {
+        // DAG mutated — fix nodes inserted. Reload for accurate orient.
+        const contextPacket: any = {
+          error: `Terminal audit: ${expansion.fixNodes.length} gap(s) detected, fix nodes inserted`,
+          terminalAudit: {
+            computed: terminalAuditResult.computed,
+            detected: terminalAuditResult.detected.summary,
+          },
+          gapExpansion: {
+            fixNodes: expansion.fixNodes.map(n => ({ id: n.id, desc: n.desc, gapType: n.gapType, artifact: n.gapArtifact })),
+            reason: expansion.reason,
+          },
+          fix: `Execute the ${expansion.fixNodes.length} fix node(s) above, then retry: roadmap advance ${nodeId} --note "gaps fixed"`,
+          checks,
+        };
+        emit({ ok: false, cmd: _outputOpts.cmd, error: contextPacket }, _outputOpts);
+        recordTrailError('advance', 'TERMINAL_AUDIT_EXPANDED', `Node ${nodeId}: ${expansion.reason}`, note);
+        process.exit(1);
+        return;
+      }
+
+      // No actionable gaps for expansion — fall back to evaluate-file prompt
       const contextPacket: any = {
         error: `Terminal audit: ${terminalAuditResult.reason}`,
         terminalAudit: {
