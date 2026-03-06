@@ -1039,8 +1039,14 @@ async function cmdMake(note: string) {
       const content = readFileSync(inputPath, 'utf-8');
       const actual = createHash('sha256').update(content).digest('hex');
       if (actual !== inp.sha256) {
-        inp.sha256 = actual;
-        rehashes.push(`${inp.path}: updated hash to ${actual}`);
+        if (args.includes('--rehash')) {
+          inp.sha256 = actual;
+          rehashes.push(`${inp.path}: updated hash to ${actual}`);
+        } else {
+          throw new RoadmapError('VALIDATION_FAILED', {
+            fix: `Input "${inp.path}" hash mismatch. Expected ${inp.sha256}, got ${actual}. Use --rehash to auto-update.`,
+          }, `Input hash mismatch for ${inp.path}`);
+        }
       }
     }
 

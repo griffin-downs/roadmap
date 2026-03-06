@@ -109,7 +109,7 @@ describe('CLI intake enforcement', () => {
 
     const result = runRoadmap(repo, `make bad.json --note "test"`);
     expect(result.exitCode).not.toBe(0);
-    expect(result.stdout).toContain('missing \\"tasks\\" array');
+    expect(result.stdout).toContain('Missing \\"tasks\\" array');
   });
 
   it('rejects spec missing metadata', () => {
@@ -118,7 +118,7 @@ describe('CLI intake enforcement', () => {
 
     const result = runRoadmap(repo, `make bad.json --note "test"`);
     expect(result.exitCode).not.toBe(0);
-    expect(result.stdout).toContain('missing \\"metadata\\" object');
+    expect(result.stdout).toContain('Missing \\"metadata\\" object');
   });
 
   it('rejects spec missing schema_version', () => {
@@ -127,7 +127,7 @@ describe('CLI intake enforcement', () => {
 
     const result = runRoadmap(repo, `make bad.json --note "test"`);
     expect(result.exitCode).not.toBe(0);
-    expect(result.stdout).toContain('missing \\"schema_version\\"');
+    expect(result.stdout).toContain('Missing \\"schema_version\\"');
   });
 
   it('accepts valid SpecIR and creates DAG + spec-origin', () => {

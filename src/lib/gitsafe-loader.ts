@@ -65,7 +65,7 @@ const PERMISSIVE_DEFAULT: EnforcementConfig = {
 
 function loadEnforcementConfig(repoRoot: string): EnforcementConfig {
   const enforcementPath = join(repoRoot, '.roadmap', 'enforcement.json');
-  if (!existsSync(enforcementPath)) return PERMISSIVE_DEFAULT;
+  if (!existsSync(enforcementPath)) throw new Error(`enforcement.json not found at ${enforcementPath}`);
   try {
     return JSON.parse(readFileSync(enforcementPath, 'utf-8')) as EnforcementConfig;
   } catch (err) {

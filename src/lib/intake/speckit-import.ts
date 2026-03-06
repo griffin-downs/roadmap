@@ -411,24 +411,35 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
     '6. AUDIT TRAIL: What artifacts exist for a human reviewer to verify this work?',
   ];
 
-  const gatedIds = new Set([...initBoundaryIds, termId]);
-  for (const nodeId of gatedIds) {
+  // Enrich init-boundary nodes: ensure expandOnFail on existing intent rules
+  for (const nodeId of initBoundaryIds) {
     const node = nodes[nodeId] as any;
     if (!node) continue;
-    const isTerminal = nodeId === termId;
     const patched = (node.validate ?? []).map((r: any) => {
       if (r.type !== 'intent') return r;
-      const updates: any = {};
-      if (!r.expandOnFail) updates.expandOnFail = true;
-      if (isTerminal && (!r.prompt || r.prompt.length === 0)) {
-        updates.prompt = TERMINAL_REPORT_PROMPT;
-        updates.minResponseLength = 200;
-      }
-      return Object.keys(updates).length > 0 ? { ...r, ...updates } : r;
+      if (!r.expandOnFail) return { ...r, expandOnFail: true };
+      return r;
     });
     if (patched.some((r: any, i: number) => r !== (node.validate ?? [])[i])) {
       nodes[nodeId] = { ...node, validate: patched };
     }
+  }
+
+  // Terminal node: always inject the structured report intent gate.
+  // This is the canonical completion checkpoint — agents must answer all 6 sections.
+  const termNode = nodes[termId] as any;
+  if (termNode) {
+    const termValidate = (termNode.validate ?? []).filter((r: any) => r.type !== 'intent');
+    termValidate.push({
+      type: 'intent',
+      statement: 'All work complete — structured completion report required',
+      confidence: 0.9,
+      evaluator: 'self',
+      expandOnFail: true,
+      prompt: TERMINAL_REPORT_PROMPT,
+      minResponseLength: 200,
+    });
+    nodes[termId] = { ...termNode, validate: termValidate };
   }
 
   return {

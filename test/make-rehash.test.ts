@@ -85,7 +85,7 @@ test('make: auto-updates stale input hashes', async (t) => {
   const { specPath, inputPath, inputHash } = createValidSpec('rehash-test', 'wrong-hash-value');
 
   try {
-    execSync(`node bin/roadmap.ts make ${specPath} --note "test"`, {
+    execSync(`node bin/roadmap.ts make ${specPath} --rehash --note "test"`, {
       cwd: repoRoot,
       stdio: 'pipe',
     });
@@ -190,7 +190,7 @@ test('make: handles multiple inputs with mixed hash states', async (t) => {
   writeFileSync(specPath, JSON.stringify(spec, null, 2) + '\n');
 
   try {
-    execSync(`node bin/roadmap.ts make ${specPath} --note "test"`, {
+    execSync(`node bin/roadmap.ts make ${specPath} --rehash --note "test"`, {
       cwd: repoRoot,
       stdio: 'pipe',
     });
