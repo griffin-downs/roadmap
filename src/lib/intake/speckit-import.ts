@@ -437,7 +437,6 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
       evaluator: 'self',
       expandOnFail: true,
       prompt: TERMINAL_REPORT_PROMPT,
-      minResponseLength: 200,
     });
     nodes[termId] = { ...termNode, validate: termValidate };
   }

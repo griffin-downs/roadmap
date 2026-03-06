@@ -19,7 +19,7 @@ export type ValidationRule =
   | { type: 'build-produces'; command: string; outputs: string[] }
   | { type: 'launch-check'; command: string; timeout?: number; successSignal?: string }
   | { type: 'spec-conformance'; spec: string; stories: number[]; criteria?: number[] }
-  | { type: 'intent'; statement: string; confidence: number; evaluator: 'self' | 'council'; context?: string[]; expandOnFail?: boolean; maxExpansionDepth?: number; prompt?: string[]; minResponseLength?: number }
+  | { type: 'intent'; statement: string; confidence: number; evaluator: 'self' | 'council'; context?: string[]; expandOnFail?: boolean; maxExpansionDepth?: number; prompt?: string[] }
   | { type: 'runtime-explore'; script: string; launch?: string; port?: number; timeout?: number; observations: ObservationSpec[] };
 
 // LLM-provided judgment for one intent statement.

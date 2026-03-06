@@ -11,7 +11,7 @@ export type ValidatorRule =
   | { type: 'expanded'; minNodes?: number }
   | { type: 'build-produces'; path: string }
   | { type: 'launch-check'; description?: string }
-  | { type: 'intent'; statement: string; expandOnFail?: boolean; prompt?: string[]; minResponseLength?: number };
+  | { type: 'intent'; statement: string; expandOnFail?: boolean; prompt?: string[] };
 
 export interface PerfReceipt {
   schema_version: 1;

@@ -16,7 +16,7 @@ const validationRule = z.union([
   z.object({ type: z.literal('build-produces'), command: z.string(), outputs: z.array(z.string()) }),
   z.object({ type: z.literal('launch-check'), command: z.string(), timeout: z.number().optional(), successSignal: z.string().optional() }),
   z.object({ type: z.literal('spec-conformance'), spec: z.string(), stories: z.array(z.number()), criteria: z.array(z.number()).optional() }),
-  z.object({ type: z.literal('intent'), statement: z.string(), confidence: z.number(), evaluator: z.enum(['self', 'council']), expandOnFail: z.boolean().optional(), prompt: z.array(z.string()).optional(), minResponseLength: z.number().optional() }),
+  z.object({ type: z.literal('intent'), statement: z.string(), confidence: z.number(), evaluator: z.enum(['self', 'council']), expandOnFail: z.boolean().optional(), prompt: z.array(z.string()).optional() }),
 ]).describe('Validation rule for a node');
 
 const specIRTask = z.object({
