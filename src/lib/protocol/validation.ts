@@ -273,16 +273,36 @@ export async function validateNode<T extends string>(
         // Validate structured reflection prompts if rule defines them
         if (passed && rule.prompt && rule.prompt.length > 0) {
           const answers = judgment.promptAnswers ?? [];
-          const minLen = rule.minResponseLength ?? 50;
 
           if (answers.length < rule.prompt.length) {
             passed = false;
             evidence += ` | BLOCKED: ${rule.prompt.length} reflection prompts required, ${answers.length} answered`;
           } else {
-            const tooShort = answers.filter((a, i) => i < rule.prompt.length && a.trim().length < minLen);
-            if (tooShort.length > 0) {
-              passed = false;
-              evidence += ` | BLOCKED: ${tooShort.length} prompt answer(s) below minimum length (${minLen} chars)`;
+            // Structured report validation replaces minResponseLength.
+            // Report prompts (containing section headers) get section-level validation.
+            // Non-report prompts get a non-empty check.
+            const { validateReport, isReportPrompt } = await import('../intent/report-validation.ts');
+            for (let i = 0; i < rule.prompt.length; i++) {
+              const answer = answers[i] ?? '';
+              if (isReportPrompt(rule.prompt[i])) {
+                const result = validateReport(answer);
+                if (!result.valid) {
+                  passed = false;
+                  const issues: string[] = [];
+                  if (result.missingSections.length > 0) {
+                    issues.push(`missing: ${result.missingSections.join(', ')}`);
+                  }
+                  if (result.emptySections.length > 0) {
+                    issues.push(`empty: ${result.emptySections.join(', ')}`);
+                  }
+                  evidence += ` | BLOCKED: report validation failed — ${issues.join('; ')}`;
+                  break;
+                }
+              } else if (answer.trim().length === 0) {
+                passed = false;
+                evidence += ` | BLOCKED: prompt ${i + 1} answer is empty`;
+                break;
+              }
             }
           }
         }
