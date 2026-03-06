@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "dag_id": "brief-enrichment",
+  "dag_desc": "Three-layer brief enrichment: spec context preserved at make, convention cache written at advance, backward cone slice assembled at orient. Agents get why/how/what with zero exploration tool calls.",
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "inputs": [],
+  "tasks": [
+    {
+      "id": "brief-cache",
+      "desc": "Convention cache: on advance, read node's produced files, extract bounded summary (imports, exports, function signatures, first 20 lines). Write to .roadmap/.cache/<node-id>.context.json. Budget: 500 tokens max per node. Two functions: writeNodeCache(nodeId, dag, repoRoot) and readNodeCache(nodeId, repoRoot). Cache is plain JSON, no LLM in the loop.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["src/lib/brief-cache.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/brief-cache.ts" },
+        { "type": "shell", "command": "npx tsc --noEmit" }
+      ]
+    },
+    {
+      "id": "brief-slice",
+      "desc": "Backward cone slice: walk DAG backward from current node, read cached contexts from .roadmap/.cache/, contract by distance. Depth 1 (immediate deps) = full cached context. Depth 2+ = one-line convention summary. Returns BriefSlice object with three layers: specContext (full task desc + ambient), ancestorContext (contracted cone), nodeContract (produces/consumes/validate). Single function: briefSlice(nodeId, dag, repoRoot) → BriefSlice.",
+      "priority": 1,
+      "depends": ["brief-cache"],
+      "produces": ["src/lib/brief-slice.ts"],
+      "consumes": ["src/lib/brief-cache.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/brief-slice.ts" },
+        { "type": "shell", "command": "npx tsc --noEmit" }
+      ]
+    },
+    {
+      "id": "enrich-getbrief",
+      "desc": "Replace getBrief's 150-char truncation with briefSlice assembly. getBrief calls briefSlice, returns enriched Brief with full spec context, ancestor code samples, and node contract. Brief.description becomes full task desc (no truncation). Add Brief.codeContext (ancestor samples) and Brief.specContext (ambient/inputs from spec). Preserve backward compat: existing Brief fields keep same names, new fields are additive.",
+      "priority": 2,
+      "depends": ["brief-slice"],
+      "produces": ["src/lib/brief.ts"],
+      "consumes": ["src/lib/brief-slice.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "path": "src/lib/brief.ts" },
+        { "type": "shell", "command": "npx tsc --noEmit" }
+      ]
+    },
+    {
+      "id": "wire-advance-cache",
+      "desc": "In bin/roadmap.ts advance path: after successful node advance (validators pass, evidence recorded), call writeNodeCache(nodeId, dag, repoRoot) to cache convention fingerprint. Must happen after validation succeeds but before the advance result JSON is emitted. Non-blocking: cache write failure is a warning, not an error.",
+      "priority": 2,
+      "depends": ["brief-cache"],
+      "produces": ["bin/roadmap.ts"],
+      "consumes": ["src/lib/brief-cache.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx tsc --noEmit" }
+      ]
+    },
+    {
+      "id": "spec-context-at-make",
+      "desc": "In cmdMake's normalization step (bin/roadmap.ts), propagate spec-level inputs[] as ambient references onto nodes. Each node gets ambient: [...spec.inputs.map(i => i.path)] so the spec source documents are discoverable at orient time. Also preserve any per-task ambient[] from the spec. This is additive to the existing normalization fix.",
+      "priority": 2,
+      "depends": ["brief-cache"],
+      "produces": ["bin/roadmap.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx tsc --noEmit" }
+      ]
+    },
+    {
+      "id": "test-brief-enrichment",
+      "desc": "Test suite for brief enrichment: (1) writeNodeCache produces bounded JSON under 500 tokens, (2) readNodeCache returns null for uncached nodes, (3) briefSlice contracts by distance (depth 1 full, depth 2+ summary), (4) getBrief returns full desc not truncated, (5) getBrief includes ancestor codeContext when cache exists. Use vitest. Create a small test DAG with 3 nodes, mock filesystem.",
+      "priority": 3,
+      "depends": ["enrich-getbrief", "wire-advance-cache", "spec-context-at-make"],
+      "produces": ["test/brief-enrichment.test.ts"],
+      "consumes": [
+        "src/lib/brief-cache.ts",
+        "src/lib/brief-slice.ts",
+        "src/lib/brief.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "path": "test/brief-enrichment.test.ts" },
+        { "type": "shell", "command": "npx vitest run test/brief-enrichment.test.ts" }
+      ]
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-06T23:15:00Z",
+    "compile_hash": "auto"
+  }
+}

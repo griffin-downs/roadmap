@@ -1134,10 +1134,21 @@ async function cmdMake(note: string) {
     }
   }
 
+  // Normalize spec tasks → ParsedTask shape before conversion.
+  // Spec JSON may use `deps` (short form) vs `depends` (ParsedTask field),
+  // and may omit `priority` and `mode` which tasksToDAG requires.
+  const normalizedTasks = (parsed.tasks as any[]).map((t: any, i: number) => ({
+    ...t,
+    depends: t.depends ?? t.deps ?? [],
+    priority: t.priority ?? i,
+    mode: t.mode ?? 'execute',
+    desc: t.desc ?? t.description ?? '',
+  }));
+
   // Convert spec to DAG
   let dag: any;
   try {
-    dag = tasksToDAG(parsed.tasks, { dagId: parsed.dag_id ?? parsed.id ?? 'ideal-dag', dagDesc: parsed.dag_desc });
+    dag = tasksToDAG(normalizedTasks, { dagId: parsed.dag_id ?? parsed.id ?? 'ideal-dag', dagDesc: parsed.dag_desc });
   } catch (e) {
     throw new RoadmapError('VALIDATION_FAILED', {
       fix: 'Ensure spec conforms to SpecIR format',
