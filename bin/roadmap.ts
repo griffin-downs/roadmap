@@ -41,6 +41,7 @@ import { loadDAGWithAutoMerge, ensureIndexExists } from '../src/lib/roadmap/cli-
 import { ensureConsolidated } from '../src/lib/roadmap/cli-consolidation-init.ts';
 import { saveDagHead, migrateSingleHead } from '../src/lib/multi-dag.ts';
 import { getBrief } from '../src/lib/brief.ts';
+import { writeNodeCache } from '../src/lib/brief-cache.ts';
 import { validateTerminalAudit, type AuditResponse, type TerminalAuditResult } from '../src/lib/terminal-audit/validator.ts';
 import type { FinalHandoff, InterimHandoff } from '../src/lib/brief.ts';
 import { saveFinal, saveInterim } from '../src/lib/agent-dispatch/handoff-journal.ts';
@@ -838,6 +839,14 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     ...(parallelEditWarning ? { parallelEditWarning } : {}),
   };
 
+  // Cache convention fingerprint for backward cone assembly.
+  // Non-blocking: failure is a warning, not an error.
+  try {
+    writeNodeCache(nodeId, dag, repoRoot);
+  } catch {
+    // Cache write is best-effort
+  }
+
   // Include next node's brief if batch has remaining work
   if (newPos.batchRemaining.length > 0) {
     try {
@@ -1137,12 +1146,18 @@ async function cmdMake(note: string) {
   // Normalize spec tasks → ParsedTask shape before conversion.
   // Spec JSON may use `deps` (short form) vs `depends` (ParsedTask field),
   // and may omit `priority` and `mode` which tasksToDAG requires.
+  // Also propagate spec-level inputs[] as ambient references so spec source
+  // documents are discoverable at orient time via the brief slice.
+  const specAmbient = Array.isArray(parsed.inputs)
+    ? parsed.inputs.map((inp: any) => inp.path).filter(Boolean)
+    : [];
   const normalizedTasks = (parsed.tasks as any[]).map((t: any, i: number) => ({
     ...t,
     depends: t.depends ?? t.deps ?? [],
     priority: t.priority ?? i,
     mode: t.mode ?? 'execute',
     desc: t.desc ?? t.description ?? '',
+    ambient: [...(t.ambient ?? []), ...specAmbient],
   }));
 
   // Convert spec to DAG
