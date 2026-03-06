@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-06T13:30:39.978Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "completion store warning on malformed JSON — 1d5ec06",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "src/lib/evidence/completion-evidence.ts"
+    ],
+    "ready": true
+  }
+}

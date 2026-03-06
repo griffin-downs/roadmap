@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-06T13:30:37.915Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "evaluate-file flag wired — 1d5ec06",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "bin/roadmap.ts"
+    ],
+    "ready": true
+  }
+}

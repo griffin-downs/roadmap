@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-06T13:29:08.413Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "synthetic init — all foundation changes committed at 05af631",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "init.marker"
+    ],
+    "ready": true
+  }
+}
