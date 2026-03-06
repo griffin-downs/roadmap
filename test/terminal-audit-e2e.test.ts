@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { validateTerminalAudit, runAudit, evaluateResponses } from '../src/lib/terminal-audit/validator.ts';
 import { computeReport } from '../src/lib/terminal-audit/computed.ts';
 import { detectGaps } from '../src/lib/terminal-audit/detected.ts';
+import { tasksToDAG, parseTasksMd } from '../src/lib/intake/speckit-import.ts';
 import type { Graph, NodeSpec } from '../src/lib/protocol/types.ts';
 import type { CompletionRecordWithEvidence } from '../src/lib/evidence/completion-evidence.ts';
 
@@ -123,6 +124,39 @@ describe('E2E: terminal audit full pipeline', () => {
       expect(result.computed.testEvidence).toHaveLength(1);
       expect(result.computed.auditTrail).toHaveLength(1);
       expect(result.computed.auditTrail[0].gitSha).toBe('sha1');
+    });
+  });
+
+  describe('speckit import: terminal node clean', () => {
+    it('tasksToDAG does not inject propagated validators or intent gate on term', () => {
+      const tasks = [
+        { id: 'setup', desc: 'Setup', priority: 0, depends: [], produces: ['setup.txt'], consumes: [], mode: 'execute' as const, validate: [{ type: 'shell' as const, command: 'echo ok' }] },
+        { id: 'build', desc: 'Build', priority: 1, depends: ['setup'], produces: ['build.txt'], consumes: ['setup.txt'], mode: 'execute' as const, validate: [{ type: 'shell' as const, command: 'echo build' }] },
+      ];
+      const dag = tasksToDAG(tasks, { dagId: 'test-import' });
+      const termNode = dag.nodes[dag.term as keyof typeof dag.nodes] as any;
+
+      // No propagated artifact-exists or shell validators
+      const propagated = (termNode.validate ?? []).filter((v: any) => v._propagatedFrom);
+      expect(propagated).toHaveLength(0);
+
+      // No intent gate
+      const intents = (termNode.validate ?? []).filter((v: any) => v.type === 'intent');
+      expect(intents).toHaveLength(0);
+    });
+
+    it('terminal audit auto-passes on DAG from tasksToDAG when produces are tested', () => {
+      const tasks = [
+        { id: 'setup', desc: 'Setup', priority: 0, depends: [], produces: ['setup.txt'], consumes: [], mode: 'execute' as const, validate: [{ type: 'artifact-exists' as const, path: 'setup.txt' }, { type: 'shell' as const, command: 'cat setup.txt' }] },
+        { id: 'build', desc: 'Build', priority: 1, depends: ['setup'], produces: ['build.txt'], consumes: ['setup.txt'], mode: 'execute' as const, validate: [{ type: 'artifact-exists' as const, path: 'build.txt' }, { type: 'shell' as const, command: 'cat build.txt' }] },
+      ];
+      const dag = tasksToDAG(tasks, { dagId: 'test-audit' });
+      const records = makeRecords(
+        { nodeId: 'setup', checks: [{ rule: 'shell:cat setup.txt', passed: true, evidence: 'ok' }] },
+        { nodeId: 'build', checks: [{ rule: 'shell:cat build.txt', passed: true, evidence: 'ok' }] },
+      );
+      const result = validateTerminalAudit(dag, records, () => true, ['setup.txt', 'build.txt']);
+      expect(result.passed).toBe(true);
     });
   });
 
