@@ -318,14 +318,18 @@ export async function validateNode<T extends string>(
           reasoning: '<one paragraph: does the completed work satisfy this intent?>',
         };
         if (rule.prompt && rule.prompt.length > 0) {
-          template.promptAnswers = rule.prompt.map((_p: string, i: number) =>
-            `<answer prompt ${i + 1} here — include all required section headers>`
+          template.promptAnswers = rule.prompt.map((p: string) =>
+            `<YOUR ANSWER TO: ${p.split('\n')[0]}>`
           );
         }
+        const promptBlock = (rule.prompt && rule.prompt.length > 0)
+          ? ` PROMPTS YOU MUST ANSWER (one promptAnswers entry per prompt): ${JSON.stringify(rule.prompt)}`
+          : '';
         evidence = [
           `unevaluated — write a JSON file and pass via --evaluate-file <path>.`,
           `Template: ${JSON.stringify([template])}`,
-        ].join(' ');
+          promptBlock,
+        ].filter(Boolean).join(' ');
         checks.push({ rule, passed, evidence, intentStatus: 'unevaluated' });
         allPassed = false;
       }

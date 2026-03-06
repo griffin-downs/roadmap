@@ -490,7 +490,7 @@ async function cmdOrient(note: string | undefined) {
             reasoning: '<one paragraph: does the completed work satisfy this intent?>',
           };
           if (r.prompt && r.prompt.length > 0) {
-            t.promptAnswers = r.prompt.map(() => '<answer here>');
+            t.promptAnswers = r.prompt.map((p: string) => `<YOUR ANSWER TO: ${p.split('\n')[0]}>`);
           }
           return t;
         });
