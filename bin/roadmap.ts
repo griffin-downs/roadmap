@@ -41,6 +41,7 @@ import { loadDAGWithAutoMerge, ensureIndexExists } from '../src/lib/roadmap/cli-
 import { ensureConsolidated } from '../src/lib/roadmap/cli-consolidation-init.ts';
 import { saveDagHead, migrateSingleHead } from '../src/lib/multi-dag.ts';
 import { getBrief } from '../src/lib/brief.ts';
+import { validateTerminalAudit, type AuditResponse, type TerminalAuditResult } from '../src/lib/terminal-audit/validator.ts';
 import type { FinalHandoff, InterimHandoff } from '../src/lib/brief.ts';
 import { saveFinal, saveInterim } from '../src/lib/agent-dispatch/handoff-journal.ts';
 import type { Graph, Orientation } from '../src/protocol.ts';
@@ -687,6 +688,46 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     return;
   }
 
+  // Terminal audit gate: for terminal nodes, run computed+detected audit
+  let terminalAuditResult: TerminalAuditResult | undefined;
+  if (nodeId === dag.term) {
+    const auditRecords = loadCompletionsWithEvidence(repoRoot);
+    const changedFiles = getBranchChangedFiles(repoRoot);
+    const existsPredicate = (artifact: string) => existsSync(join(repoRoot, artifact));
+
+    // Parse --evaluate-file as AuditResponse[] if it looks like audit responses
+    let auditResponses: AuditResponse[] | undefined;
+    if (intentJudgments && Array.isArray(intentJudgments) && intentJudgments.length > 0) {
+      const first = intentJudgments[0] as any;
+      if (first.promptId && typeof first.answer === 'string') {
+        auditResponses = intentJudgments as unknown as AuditResponse[];
+        intentJudgments = undefined; // consumed as audit responses, not intent judgments
+      }
+    }
+
+    terminalAuditResult = validateTerminalAudit(dag, auditRecords, existsPredicate, changedFiles, auditResponses);
+
+    if (!terminalAuditResult.passed) {
+      // Return context packet so agent knows what to address
+      const contextPacket: any = {
+        error: `Terminal audit: ${terminalAuditResult.reason}`,
+        terminalAudit: {
+          computed: terminalAuditResult.computed,
+          detected: terminalAuditResult.detected.summary,
+          prompts: terminalAuditResult.prompts,
+        },
+        fix: terminalAuditResult.prompts.length > 0
+          ? 'Write a JSON file with audit responses and pass via --evaluate-file <path>. Format: [{"promptId":"gap-0-...","answer":"..."},...]'
+          : 'Fix detected gaps and retry',
+        checks,
+      };
+      emit({ ok: false, cmd: _outputOpts.cmd, error: contextPacket }, _outputOpts);
+      recordTrailError('advance', 'TERMINAL_AUDIT_FAILED', `Node ${nodeId}: ${terminalAuditResult.reason}`, note);
+      process.exit(1);
+      return;
+    }
+  }
+
   // Attribution safety: warn if branch has changes outside this node's produces
   const attributionWarning = checkAttribution(repoRoot, produces);
 
@@ -792,6 +833,7 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     batchComplete: newPos.batchComplete,
     remaining: newPos.batchRemaining,
     ...(intentGates.length > 0 ? { intentGates } : {}),
+    ...(terminalAuditResult ? { terminalAudit: { computed: terminalAuditResult.computed, detected: terminalAuditResult.detected.summary, passed: true } } : {}),
     ...(attributionWarning ? { attributionWarning } : {}),
     ...(parallelEditWarning ? { parallelEditWarning } : {}),
   };
@@ -937,6 +979,24 @@ function checkAttribution(root: string, produces: string[]): string | undefined 
     return undefined;
   } catch {
     return undefined;
+  }
+}
+
+// Get all files changed on the current branch relative to main/master
+function getBranchChangedFiles(root: string): string[] {
+  try {
+    // Try main, then master as base
+    let base = 'main';
+    try { execSync(`git rev-parse --verify ${base}`, { cwd: root, stdio: 'pipe' }); }
+    catch { base = 'master'; }
+    const diff = execSync(`git diff --name-only ${base}...HEAD`, { cwd: root, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+    return diff ? diff.split('\n').filter(f => f.length > 0) : [];
+  } catch {
+    // Fallback: uncommitted changes only
+    try {
+      const status = execSync('git diff --name-only HEAD', { cwd: root, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+      return status ? status.split('\n').filter(f => f.length > 0) : [];
+    } catch { return []; }
   }
 }
 
