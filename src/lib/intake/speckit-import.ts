@@ -425,11 +425,44 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
     }
   }
 
-  // Terminal node: always inject the structured report intent gate.
-  // This is the canonical completion checkpoint — agents must answer all 6 sections.
+  // Terminal node: inject mechanical verification + structured report intent gate.
+  // Mechanical layer runs first (artifact-exists, shell re-runs), intent gate last.
   const termNode = nodes[termId] as any;
   if (termNode) {
-    const termValidate = (termNode.validate ?? []).filter((r: any) => r.type !== 'intent');
+    const termValidate: any[] = [];
+
+    // 1. Collect all produces from every node (except term) → artifact-exists checks
+    const allProduces = new Set<string>();
+    for (const [nid, n] of Object.entries(nodes) as [string, any][]) {
+      if (nid === termId) continue;
+      for (const p of (n.produces ?? [])) {
+        if (p && !p.endsWith('.marker')) allProduces.add(p);
+      }
+    }
+    for (const artifact of allProduces) {
+      termValidate.push({ type: 'artifact-exists', path: artifact, _propagatedFrom: 'terminal-verification' });
+    }
+
+    // 2. Collect unique shell commands from non-term nodes → re-run at terminal
+    const seenCommands = new Set<string>();
+    for (const [nid, n] of Object.entries(nodes) as [string, any][]) {
+      if (nid === termId) continue;
+      for (const v of (n.validate ?? [])) {
+        if (v.type === 'shell' && v.command && !seenCommands.has(v.command)) {
+          seenCommands.add(v.command);
+          termValidate.push({ type: 'shell', command: v.command, _propagatedFrom: 'terminal-verification' });
+        }
+      }
+    }
+
+    // 3. Keep term node's own non-intent validators, deduplicating shell commands
+    for (const v of (termNode.validate ?? [])) {
+      if (v.type === 'intent') continue;
+      if (v.type === 'shell' && seenCommands.has(v.command)) continue;
+      termValidate.push(v);
+    }
+
+    // 4. Intent gate last — agent must reflect AFTER mechanical checks pass
     termValidate.push({
       type: 'intent',
       statement: 'All work complete — structured completion report required',
@@ -438,6 +471,7 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
       expandOnFail: true,
       prompt: TERMINAL_REPORT_PROMPT,
     });
+
     nodes[termId] = { ...termNode, validate: termValidate };
   }
 
