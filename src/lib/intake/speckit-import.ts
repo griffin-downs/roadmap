@@ -398,19 +398,6 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
       .map((n: any) => n.id)
   );
 
-  // Terminal reflection prompt: unified god-engineer + council + audit trail concerns.
-  // Same prompt serves both evaluator:'self' (agent answers) and evaluator:'council'
-  // (fanned out as deliberationRequest.question to chancellor → fool/inquisitor/griffinProxy).
-  const TERMINAL_REPORT_PROMPT = [
-    'Provide a completion report:\n' +
-    '1. COMMIT STATUS: Are all produces committed? List each file and its commit SHA.\n' +
-    '2. TEST EVIDENCE: What tests ran and passed? What is untested?\n' +
-    '3. UNVALIDATED ASSUMPTIONS: What did this DAG rely on that has no shell or artifact-exists validator?\n' +
-    '4. FAILURE SURFACE: What input would break the weakest node? Name the node and failure mode.\n' +
-    '5. SCOPE DECISIONS: What was intentionally excluded and why?\n' +
-    '6. AUDIT TRAIL: What artifacts exist for a human reviewer to verify this work?',
-  ];
-
   // Enrich init-boundary nodes: ensure expandOnFail on existing intent rules
   for (const nodeId of initBoundaryIds) {
     const node = nodes[nodeId] as any;
@@ -425,53 +412,14 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
     }
   }
 
-  // Terminal node: inject mechanical verification + structured report intent gate.
-  // Mechanical layer runs first (artifact-exists, shell re-runs), intent gate last.
+  // Terminal node: keep its own validators only.
+  // The terminal-audit gate (computed sections + gap detection + targeted prompts)
+  // runs automatically in bin/roadmap.ts when advancing the terminal node.
+  // No need to propagate artifact-exists, shell commands, or inject intent gates here.
   const termNode = nodes[termId] as any;
   if (termNode) {
-    const termValidate: any[] = [];
-
-    // 1. Collect all produces from every node (except term) → artifact-exists checks
-    const allProduces = new Set<string>();
-    for (const [nid, n] of Object.entries(nodes) as [string, any][]) {
-      if (nid === termId) continue;
-      for (const p of (n.produces ?? [])) {
-        if (p && !p.endsWith('.marker')) allProduces.add(p);
-      }
-    }
-    for (const artifact of allProduces) {
-      termValidate.push({ type: 'artifact-exists', path: artifact, _propagatedFrom: 'terminal-verification' });
-    }
-
-    // 2. Collect unique shell commands from non-term nodes → re-run at terminal
-    const seenCommands = new Set<string>();
-    for (const [nid, n] of Object.entries(nodes) as [string, any][]) {
-      if (nid === termId) continue;
-      for (const v of (n.validate ?? [])) {
-        if (v.type === 'shell' && v.command && !seenCommands.has(v.command)) {
-          seenCommands.add(v.command);
-          termValidate.push({ type: 'shell', command: v.command, _propagatedFrom: 'terminal-verification' });
-        }
-      }
-    }
-
-    // 3. Keep term node's own non-intent validators, deduplicating shell commands
-    for (const v of (termNode.validate ?? [])) {
-      if (v.type === 'intent') continue;
-      if (v.type === 'shell' && seenCommands.has(v.command)) continue;
-      termValidate.push(v);
-    }
-
-    // 4. Intent gate last — agent must reflect AFTER mechanical checks pass
-    termValidate.push({
-      type: 'intent',
-      statement: 'All work complete — structured completion report required',
-      confidence: 0.9,
-      evaluator: 'self',
-      expandOnFail: true,
-      prompt: TERMINAL_REPORT_PROMPT,
-    });
-
+    // Strip any pre-existing intent validators — the terminal audit replaces them
+    const termValidate = (termNode.validate ?? []).filter((v: any) => v.type !== 'intent');
     nodes[termId] = { ...termNode, validate: termValidate };
   }
 

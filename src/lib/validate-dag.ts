@@ -444,27 +444,10 @@ export function findInitBoundary<T extends string>(g: Graph<T>): string[] {
     .sort();
 }
 
-export function validateTerminalIntentGate<T extends string>(g: Graph<T>): TerminalIntentError | null {
-  const terminals = findTerminalNodes(g);
-
-  for (const termId of terminals) {
-    const node = (g.nodes as Record<string, { validate: readonly ValidationRule[] }>)[termId];
-    if (!node) continue;
-
-    const hasIntentGate = node.validate?.some(
-      (r: ValidationRule) => r.type === 'intent' && (r as any).expandOnFail === true
-    );
-
-    if (!hasIntentGate) {
-      return {
-        type: 'missing-terminal-intent',
-        node: termId,
-        message: `Terminal node '${termId}' requires at least one intent rule with expandOnFail: true`,
-        fix: 'Add an intent gate that describes what "done" looks like for this roadmap',
-      };
-    }
-  }
-
+export function validateTerminalIntentGate<T extends string>(_g: Graph<T>): TerminalIntentError | null {
+  // Terminal audit gate (computed sections + gap detection) runs automatically
+  // in bin/roadmap.ts when advancing terminal nodes. Explicit intent rules
+  // on terminal nodes are no longer required.
   return null;
 }
 
