@@ -640,21 +640,9 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
       ? `intent:${c.rule.statement?.slice(0, 60) || 'ok'}`
       : `${c.rule.type}:${(c.rule as any).target || (c.rule as any).command || 'unknown'}`;
 
-    // Replace "unevaluated" with structured context for intent validators
+    // For unevaluated intents, validation.ts already emits a template with --evaluate-file instructions.
+    // Pass it through as-is so agents see the concrete JSON template.
     let evidence = c.evidence ?? (c.passed ? 'passed' : 'failed');
-    if (c.rule.type === 'intent' && (evidence === 'unevaluated' || (c as any).intentStatus === 'unevaluated')) {
-      const stmt = (c.rule as any).statement ?? '';
-      const shellPassing = validationResult.checks
-        .filter(sc => sc.rule.type === 'shell' && sc.passed)
-        .map(sc => (sc.rule as any).command ?? 'unknown');
-      evidence = [
-        `INTENT GATE: "${stmt}"`,
-        `Node: ${nodeId} — ${node.desc ?? ''}`,
-        `Shell evidence: ${shellPassing.length > 0 ? shellPassing.join('; ') : 'none'}`,
-        `Produces: ${(node.produces ?? []).join(', ') || 'none'}`,
-        `Agent must evaluate: does the completed work satisfy this intent?`,
-      ].join(' | ');
-    }
 
     return { rule: ruleKey, passed: c.passed, evidence };
   });
