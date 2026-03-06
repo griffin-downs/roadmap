@@ -864,5 +864,175 @@
     "gitSha": "07742fd7587f8598ec45970176cbf093a0bc092a",
     "treeSha": "2c09d8984dd49601d46d9e6c968de6f75cd27aad",
     "branch": "main"
+  },
+  {
+    "nodeId": "brief-cache",
+    "completedAt": "2026-03-06T22:41:07.943Z",
+    "dagId": "brief-enrichment",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/brief-cache.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/brief-cache.ts"
+      },
+      {
+        "rule": "shell:npx tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:src/lib/brief-cache.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "afbb487c124602a82e321b3bb4474896951b0697",
+    "treeSha": "61760a925437a298daa0296eaa8298b71d980e1d",
+    "branch": "feat/brief-enrichment"
+  },
+  {
+    "nodeId": "brief-slice",
+    "completedAt": "2026-03-06T22:42:56.364Z",
+    "dagId": "brief-enrichment",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/brief-slice.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/brief-slice.ts"
+      },
+      {
+        "rule": "shell:npx tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:src/lib/brief-slice.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "5fdd0e24c949f2c1da37c9ed0e902fa75ca0bc3e",
+    "treeSha": "8d59c50a5ef96d37bdacc2c82f46dcbe12e74e2e",
+    "branch": "feat/brief-enrichment"
+  },
+  {
+    "nodeId": "wire-advance-cache",
+    "completedAt": "2026-03-06T22:42:57.867Z",
+    "dagId": "brief-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:npx tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "5fdd0e24c949f2c1da37c9ed0e902fa75ca0bc3e",
+    "treeSha": "8d59c50a5ef96d37bdacc2c82f46dcbe12e74e2e",
+    "branch": "feat/brief-enrichment"
+  },
+  {
+    "nodeId": "spec-context-at-make",
+    "completedAt": "2026-03-06T22:42:59.415Z",
+    "dagId": "brief-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:npx tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "5fdd0e24c949f2c1da37c9ed0e902fa75ca0bc3e",
+    "treeSha": "8d59c50a5ef96d37bdacc2c82f46dcbe12e74e2e",
+    "branch": "feat/brief-enrichment"
+  },
+  {
+    "nodeId": "enrich-getbrief",
+    "completedAt": "2026-03-06T22:43:51.983Z",
+    "dagId": "brief-enrichment",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/brief.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/brief.ts"
+      },
+      {
+        "rule": "shell:npx tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:src/lib/brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "57b898342463048475344c95511438bfe2d2cdd3",
+    "treeSha": "4fa9bc7a48c39bcd25ad945bfae494bd7c30cc60",
+    "branch": "feat/brief-enrichment"
+  },
+  {
+    "nodeId": "test-brief-enrichment",
+    "completedAt": "2026-03-06T22:46:54.297Z",
+    "dagId": "brief-enrichment",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/brief-cache.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/brief-cache.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/brief-slice.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/brief-slice.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/brief.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/brief.ts"
+      },
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "artifact exists: bin/roadmap.ts"
+      },
+      {
+        "rule": "shell:npx tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:test/brief-enrichment.test.ts",
+        "passed": true,
+        "evidence": "artifact exists: test/brief-enrichment.test.ts"
+      },
+      {
+        "rule": "shell:npx vitest run test/brief-enrichment.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest run test/brief-enrichment.test.ts"
+      },
+      {
+        "rule": "intent:All work complete — structured completion report required",
+        "passed": true,
+        "evidence": "confidence=0.95 (threshold=0.9) — All 6 DAG nodes completed: brief-cache (convention cache), brief-slice (backward cone walk), enrich-getbrief (150-char t"
+      },
+      {
+        "rule": "artifact-exists:test/brief-enrichment.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "8292fb4b0dfbeaeb4ed2c16782364f4c08db5bd3",
+    "treeSha": "7f9255318aa9f10fd7d596338bd19bc0aa4f5f30",
+    "branch": "feat/brief-enrichment"
   }
 ]

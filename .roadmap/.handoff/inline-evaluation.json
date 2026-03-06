@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-06T21:49:53.497Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "bin/roadmap.ts wired, tsc clean, 8 e2e tests pass",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "bin/roadmap.ts"
+    ],
+    "ready": true
+  }
+}

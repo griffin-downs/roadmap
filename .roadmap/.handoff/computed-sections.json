@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-06T20:02:31.001Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "computed.ts exists, tsc clean, 7 vitest pass",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "src/lib/terminal-audit/computed.ts"
+    ],
+    "ready": true
+  }
+}
