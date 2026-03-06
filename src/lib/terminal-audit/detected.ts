@@ -75,9 +75,12 @@ export function detectGaps(
     }
   }
 
-  // Pass 2: Scope leaks — changed files outside any produces[]
+  // Collect files referenced in shell commands (test files, etc.) — not scope leaks
+  const shellReferencedFiles = extractShellReferencedFiles(shellCommands);
+
+  // Pass 2: Scope leaks — changed files outside any produces[] or shell-referenced files
   for (const file of changedFiles) {
-    if (!allProduces.has(file) && !isInfraFile(file)) {
+    if (!allProduces.has(file) && !isInfraFile(file) && !shellReferencedFiles.has(file)) {
       gaps.push({
         type: 'scope-leak',
         nodeId: '',
@@ -150,9 +153,51 @@ function isInfraFile(file: string): boolean {
     file === 'pnpm-lock.yaml' || file === 'tsconfig.json';
 }
 
-/** Check if a produce file is referenced (by path basename) in any shell command */
+/** Extract file paths referenced in shell commands (e.g. test files passed to vitest/jest) */
+function extractShellReferencedFiles(shellCommands: string[]): Set<string> {
+  const files = new Set<string>();
+  for (const cmd of shellCommands) {
+    // Extract paths: tokens containing / and ending in known extensions
+    for (const token of cmd.split(/\s+/)) {
+      if (token.includes('/') && /\.\w+$/.test(token)) {
+        files.add(token);
+      }
+    }
+  }
+  return files;
+}
+
+/**
+ * Check if a produce file is tested by any shell command.
+ *
+ * Three matching strategies:
+ * 1. Direct: command contains the full produce path or basename
+ * 2. Blanket: `tsc --noEmit` (no file args) covers all .ts produces
+ * 3. Test-file mapping: `vitest run test/foo-bar.test.ts` covers `src/.../foo-bar.ts`
+ *    (strip test/ prefix, .test.ts suffix, match against produce basename sans extension)
+ */
 function isReferencedByShell(produce: string, shellCommands: string[]): boolean {
-  // Match on the full path or the filename portion
   const basename = produce.split('/').pop() ?? produce;
-  return shellCommands.some(cmd => cmd.includes(produce) || cmd.includes(basename));
+  const stemNoExt = basename.replace(/\.[^.]+$/, '');
+
+  for (const cmd of shellCommands) {
+    // Strategy 1: direct path or basename match
+    if (cmd.includes(produce) || cmd.includes(basename)) return true;
+
+    // Strategy 2: blanket tsc --noEmit (no specific file) covers all .ts
+    if (/tsc\s+--noEmit\s*$/.test(cmd) && produce.endsWith('.ts')) return true;
+
+    // Strategy 3: test file basename → produce basename mapping
+    // e.g. "vitest run test/terminal-audit-computed.test.ts" → stem "terminal-audit-computed"
+    //       produce "src/lib/terminal-audit/computed.ts" → stem "computed"
+    for (const token of cmd.split(/\s+/)) {
+      if (!token.includes('.test.')) continue;
+      const testFile = token.split('/').pop() ?? '';
+      const testStem = testFile.replace(/\.test\.\w+$/, '');
+      // Match if produce stem is a suffix of the test stem (e.g. "computed" in "terminal-audit-computed")
+      if (testStem.endsWith(stemNoExt) || testStem === stemNoExt) return true;
+    }
+  }
+
+  return false;
 }

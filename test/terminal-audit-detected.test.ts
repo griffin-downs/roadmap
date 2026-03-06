@@ -100,6 +100,21 @@ describe('detectGaps', () => {
       const leaks = result.gaps.filter(g => g.type === 'scope-leak');
       expect(leaks).toHaveLength(0);
     });
+
+    it('does not flag test files referenced in shell validators', () => {
+      const dag = buildDAG({
+        init: { produces: ['init.marker'] },
+        work: {
+          produces: ['src/a.ts'], deps: ['init'],
+          validate: [{ type: 'shell', command: 'npx vitest run test/a.test.ts' }],
+        },
+        term: { deps: ['work'] },
+      });
+
+      const result = detectGaps(dag, ['test/a.test.ts']);
+      const leaks = result.gaps.filter(g => g.type === 'scope-leak');
+      expect(leaks).toHaveLength(0);
+    });
   });
 
   describe('untested-produce detection', () => {
@@ -145,6 +160,51 @@ describe('detectGaps', () => {
       const result = detectGaps(dag, []);
       const untested = result.gaps.filter(g => g.type === 'untested-produce');
       expect(untested).toHaveLength(0);
+    });
+
+    it('blanket tsc --noEmit covers all .ts produces', () => {
+      const dag = buildDAG({
+        init: { produces: ['init.marker'] },
+        work: {
+          produces: ['src/deep/nested/module.ts'], deps: ['init'],
+          validate: [{ type: 'shell', command: 'npx tsc --noEmit' }],
+        },
+        term: { deps: ['work'] },
+      });
+
+      const result = detectGaps(dag, []);
+      const untested = result.gaps.filter(g => g.type === 'untested-produce' && g.artifact === 'src/deep/nested/module.ts');
+      expect(untested).toHaveLength(0);
+    });
+
+    it('test file basename maps to produce basename', () => {
+      const dag = buildDAG({
+        init: { produces: ['init.marker'] },
+        work: {
+          produces: ['src/lib/terminal-audit/computed.ts'], deps: ['init'],
+          validate: [{ type: 'shell', command: 'npx vitest run test/terminal-audit-computed.test.ts' }],
+        },
+        term: { deps: ['work'] },
+      });
+
+      const result = detectGaps(dag, []);
+      const untested = result.gaps.filter(g => g.type === 'untested-produce' && g.artifact === 'src/lib/terminal-audit/computed.ts');
+      expect(untested).toHaveLength(0);
+    });
+
+    it('still flags produces with no matching test or blanket validator', () => {
+      const dag = buildDAG({
+        init: { produces: ['init.marker'] },
+        work: {
+          produces: ['src/orphan.ts'], deps: ['init'],
+          validate: [{ type: 'shell', command: 'npx vitest run test/unrelated.test.ts' }],
+        },
+        term: { deps: ['work'] },
+      });
+
+      const result = detectGaps(dag, []);
+      const untested = result.gaps.filter(g => g.type === 'untested-produce' && g.artifact === 'src/orphan.ts');
+      expect(untested).toHaveLength(1);
     });
   });
 
