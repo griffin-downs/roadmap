@@ -29,7 +29,8 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists"
+          "type": "artifact-exists",
+          "path": "src/lib/terminal-audit/computed.ts"
         },
         {
           "type": "shell",
@@ -56,7 +57,8 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists"
+          "type": "artifact-exists",
+          "path": "src/lib/terminal-audit/detected.ts"
         },
         {
           "type": "shell",
@@ -85,7 +87,8 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists"
+          "type": "artifact-exists",
+          "path": "src/lib/terminal-audit/validator.ts"
         },
         {
           "type": "shell",
