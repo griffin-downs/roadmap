@@ -1,0 +1,38 @@
+{
+  "nodeId": "inline-map-observations",
+  "timestamp": "2026-03-07T12:35:12.690Z",
+  "files": [
+    {
+      "path": "src/lib/protocol/validation.ts",
+      "headLines": [
+        "// @module protocol/validation",
+        "// @exports validateNode, validateBatch, validateGraph",
+        "",
+        "import type {",
+        "  Graph, ValidationCheck, ValidationResult, IntentFailure,",
+        "  IntentJudgment, ExploreResult,",
+        "} from './types.ts';",
+        "import { define, check, verify } from './operations.ts';",
+        "",
+        "// --- Validation: Proof of delivery ---",
+        "",
+        "/**",
+        " * Execute validation rules for a node",
+        " * Validates that the node delivered what it claimed (produces)",
+        " */",
+        "export async function validateNode<T extends string>(",
+        "  g: Graph<T>,",
+        "  nodeId: string,",
+        "  exists: (artifact: string) => boolean,",
+        "  opts?: { intentJudgments?: IntentJudgment[]; exploreResults?: Array<{ script: string; success: boolean; result?: ExploreResult; error?: string }>; validating?: boolean; repoRoot?: string; branch?: string },"
+      ],
+      "exports": [],
+      "signatures": []
+    }
+  ],
+  "conventions": {
+    "importStyle": "type-import",
+    "exportStyle": null,
+    "namingHint": null
+  }
+}

@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-03-06T13:30:39.978Z",
+  "timestamp": "2026-03-07T12:35:18.063Z",
   "progress": 1,
   "discovered": [],
   "blockers": [],
   "currentFile": "",
-  "summary": "completion store warning on malformed JSON — 1d5ec06",
+  "summary": "re-advance",
   "keyDecisions": [],
   "gotchas": [],
   "nextNodeEntry": {
     "consumes": [
-      "src/lib/evidence/completion-evidence.ts"
+      ".roadmap/tasks/delete-exploration-module.artifact.json"
     ],
     "ready": true
   }

@@ -1034,5 +1034,99 @@
     "gitSha": "8292fb4b0dfbeaeb4ed2c16782364f4c08db5bd3",
     "treeSha": "7f9255318aa9f10fd7d596338bd19bc0aa4f5f30",
     "branch": "feat/brief-enrichment"
+  },
+  {
+    "nodeId": "inline-map-observations",
+    "completedAt": "2026-03-07T12:35:12.688Z",
+    "dagId": "explore-cleanup-001",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/protocol/validation.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/protocol/validation.ts"
+      },
+      {
+        "rule": "shell:npm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm run check"
+      },
+      {
+        "rule": "artifact-exists:src/lib/protocol/validation.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "63ebeee4e4020081e0cc497be1fded2793cec5f3",
+    "treeSha": "c6eb979c7105b352c9409664284678c8ebddeaf1",
+    "branch": "feat/explore-cleanup-001"
+  },
+  {
+    "nodeId": "delete-exploration-module",
+    "completedAt": "2026-03-07T12:35:18.062Z",
+    "dagId": "explore-cleanup-001",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/tasks/delete-exploration-module.artifact.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/tasks/delete-exploration-module.artifact.json"
+      },
+      {
+        "rule": "shell:npm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): npm run check"
+      },
+      {
+        "rule": "shell:! test -d src/lib/exploration",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! test -d src/lib/exploration"
+      },
+      {
+        "rule": "shell:! test -f src/index.explore.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! test -f src/index.explore.ts"
+      },
+      {
+        "rule": "shell:node -e const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); if(p.devDependencies?.['@playwright/test']) throw 'still has playwright'; if(p.exports?.['./explore']) throw 'still has explore export'",
+        "passed": true,
+        "evidence": "argv passed (exit 0, expected 0): node -e const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); if(p.devDependencies?.['@playwright/test']) throw 'still has playwright'; if(p.exports?.['./explore']) throw 'still has explore export'"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/tasks/delete-exploration-module.artifact.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "63ebeee4e4020081e0cc497be1fded2793cec5f3",
+    "treeSha": "c6eb979c7105b352c9409664284678c8ebddeaf1",
+    "branch": "feat/explore-cleanup-001"
+  },
+  {
+    "nodeId": "verify-type-surface",
+    "completedAt": "2026-03-07T12:37:04.723Z",
+    "evidence": {
+      "checks": [
+        {
+          "rule": "artifact-exists",
+          "passed": true,
+          "evidence": ".roadmap/tasks/verify-type-surface.artifact.json exists"
+        },
+        {
+          "rule": "shell:npm run check",
+          "passed": true,
+          "evidence": "tsc passes"
+        },
+        {
+          "rule": "shell:npx vitest run tests/",
+          "passed": true,
+          "evidence": "261 tests pass, 0 failures"
+        },
+        {
+          "rule": "shell:type-surface-check",
+          "passed": true,
+          "evidence": "ObservationSpec, ObservationResult, ExploreResult, runtime-explore all present in types.ts"
+        }
+      ],
+      "note": "Manual completion — roadmap advance blocked by pre-existing gap-expansion cycle bug on terminal node"
+    }
   }
 ]

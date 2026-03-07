@@ -1,15 +1,15 @@
 {
-  "timestamp": "2026-03-06T21:49:53.497Z",
+  "timestamp": "2026-03-07T12:35:12.689Z",
   "progress": 1,
   "discovered": [],
   "blockers": [],
   "currentFile": "",
-  "summary": "bin/roadmap.ts wired, tsc clean, 8 e2e tests pass",
+  "summary": "re-advance",
   "keyDecisions": [],
   "gotchas": [],
   "nextNodeEntry": {
     "consumes": [
-      "bin/roadmap.ts"
+      "src/lib/protocol/validation.ts"
     ],
     "ready": true
   }

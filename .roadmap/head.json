@@ -85,7 +85,7 @@
         },
         {
           "type": "shell",
-          "command": "npx vitest run"
+          "command": "npx vitest run tests/"
         },
         {
           "type": "shell",

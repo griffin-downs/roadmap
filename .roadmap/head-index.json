@@ -1,157 +1,116 @@
 {
-  "id": "intent-gate-hardening",
-  "desc": "Fix intent gate friction: init-intent softening, evaluate-file, completion store warnings, structured report validation",
+  "id": "explore-cleanup-001",
+  "desc": "Remove explore implementation from roadmap. Keep runtime-explore as a first-class validator type (types, handler, intent attribution). Delete src/lib/exploration/, src/index.explore.ts, ./explore export, @playwright/test dep. Inline mapObservationsToChecks in validation handler.",
   "sourceDAGs": [
     "head.json"
   ],
-  "timestamp": "2026-03-06T12:33:50.251Z",
+  "timestamp": "2026-03-07T12:35:11.443Z",
   "entries": [
     {
-      "id": "init",
-      "phase": "intent-gate-hardening",
+      "id": "inline-map-observations",
+      "phase": "explore-cleanup-001",
       "produces": [
-        "init.marker"
+        "src/lib/protocol/validation.ts"
       ],
       "consumes": [],
       "deps": [],
-      "desc": "Synthetic init — roots all independent tasks",
-      "validate": []
-    },
-    {
-      "id": "soften-init-intent",
-      "phase": "intent-gate-hardening",
-      "produces": [
-        "src/lib/make-validation.ts"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "desc": "Downgrade init-intent gate from hard error to warning in collectMakeErrors. Specs without hand-authored init-boundary intent rules should not be blocked at make time.",
+      "desc": "Inline mapObservationsToChecks into the runtime-explore handler in src/lib/protocol/validation.ts (line 223). Replace `await import('../exploration/runtime.ts')` with the 7-line inline mapping. This severs the only import from protocol into exploration implementation.",
       "validate": [
         {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        },
-        {
-          "type": "intent",
-          "statement": "Plan clarity: init-intent gate change is scoped and unambiguous",
-          "confidence": 0.9,
-          "evaluator": "self",
-          "expandOnFail": true
-        }
-      ]
-    },
-    {
-      "id": "evaluate-file-flag",
-      "phase": "intent-gate-hardening",
-      "produces": [
-        "bin/roadmap.ts"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "desc": "Add --evaluate-file <path> flag to advance command. Reads intent judgments from a JSON file instead of inline CLI arg. Keeps --evaluate for backwards compat.",
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ]
-    },
-    {
-      "id": "completion-store-warning",
-      "phase": "intent-gate-hardening",
-      "produces": [
-        "src/lib/evidence/completion-evidence.ts"
-      ],
-      "consumes": [
-        "init.marker"
-      ],
-      "deps": [
-        "init"
-      ],
-      "desc": "Log a warning when completed.json exists but is not a JSON array. Currently silently returns empty map, making orient think nothing is done.",
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
-        }
-      ]
-    },
-    {
-      "id": "structured-report-validation",
-      "phase": "intent-gate-hardening",
-      "produces": [
-        "src/lib/intent/report-validation.ts",
-        "src/lib/protocol/validation.ts"
-      ],
-      "consumes": [
-        "src/lib/make-validation.ts",
-        "bin/roadmap.ts",
-        "src/lib/evidence/completion-evidence.ts"
-      ],
-      "deps": [
-        "soften-init-intent",
-        "evaluate-file-flag",
-        "completion-store-warning"
-      ],
-      "desc": "Replace minResponseLength with structured report validation. Prompt answers for terminal intent must parse as a completion report with required sections (COMMIT STATUS, TEST EVIDENCE, UNVALIDATED ASSUMPTIONS, FAILURE SURFACE, SCOPE DECISIONS, AUDIT TRAIL). Validate section headers present and each section non-empty.",
-      "validate": [
-        {
-          "type": "shell",
-          "command": "npx tsc --noEmit"
+          "type": "artifact-exists",
+          "path": "src/lib/protocol/validation.ts"
         },
         {
           "type": "shell",
-          "command": "npx vitest run test/intent-report-validation.test.ts"
+          "command": "npm run check"
         }
       ]
     },
     {
-      "id": "integration-test",
-      "phase": "intent-gate-hardening",
+      "id": "delete-exploration-module",
+      "phase": "explore-cleanup-001",
       "produces": [
-        "test/intent-report-validation.test.ts",
-        "test/intent-gate-e2e.test.ts"
+        ".roadmap/tasks/delete-exploration-module.artifact.json"
       ],
       "consumes": [
-        "src/lib/intent/report-validation.ts",
         "src/lib/protocol/validation.ts"
       ],
       "deps": [
-        "structured-report-validation"
+        "inline-map-observations"
       ],
-      "desc": "End-to-end test: make a spec without init-boundary intent rules (passes), advance term with --evaluate-file pointing to a structured report (passes), advance term with malformed report (fails with section-level errors).",
+      "desc": "Delete src/lib/exploration/ directory (10 files: click, drag, size, style, text, type, visibility, wait, runtime, index). Delete src/index.explore.ts. Remove the ./explore export from package.json exports map. Remove launchApp/runExploreScript/mapObservationsToChecks/teardown re-exports and LaunchHandle/ExploreScriptResult type re-exports from src/index.ts (lines 123-125). Remove @playwright/test from devDependencies in package.json.",
       "validate": [
         {
+          "type": "artifact-exists",
+          "path": ".roadmap/tasks/delete-exploration-module.artifact.json"
+        },
+        {
           "type": "shell",
-          "command": "npx vitest run test/intent-report-validation.test.ts test/intent-gate-e2e.test.ts"
+          "command": "npm run check"
+        },
+        {
+          "type": "shell",
+          "command": "! test -d src/lib/exploration"
+        },
+        {
+          "type": "shell",
+          "command": "! test -f src/index.explore.ts"
+        },
+        {
+          "type": "shell",
+          "argv": [
+            "node",
+            "-e",
+            "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); if(p.devDependencies?.['@playwright/test']) throw 'still has playwright'; if(p.exports?.['./explore']) throw 'still has explore export'"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "verify-type-surface",
+      "phase": "explore-cleanup-001",
+      "produces": [
+        ".roadmap/tasks/verify-type-surface.artifact.json"
+      ],
+      "consumes": [],
+      "deps": [
+        "delete-exploration-module"
+      ],
+      "desc": "Verify the protocol type surface is intact: ObservationSpec, ObservationResult, ExploreResult exported from protocol. runtime-explore remains in ValidationRule union. ValidationCheck.observations field present. IntentFailure.informedBy includes 'runtime-explore'. Full test suite passes.",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": ".roadmap/tasks/verify-type-surface.artifact.json"
+        },
+        {
+          "type": "shell",
+          "command": "npm run check"
+        },
+        {
+          "type": "shell",
+          "command": "npx vitest run tests/"
+        },
+        {
+          "type": "shell",
+          "argv": [
+            "node",
+            "-e",
+            "const fs=require('fs'); const src=fs.readFileSync('src/lib/protocol/types.ts','utf8'); ['ObservationSpec','ObservationResult','ExploreResult','runtime-explore'].forEach(t => { if(!src.includes(t)) throw 'missing type: '+t })"
+          ]
         }
       ]
     }
   ],
   "phaseMap": {
-    "intent-gate-hardening": [
-      "init",
-      "soften-init-intent",
-      "evaluate-file-flag",
-      "completion-store-warning",
-      "structured-report-validation",
-      "integration-test"
+    "explore-cleanup-001": [
+      "inline-map-observations",
+      "delete-exploration-module",
+      "verify-type-surface"
     ]
   },
   "nodeToPhase": {
-    "init": "intent-gate-hardening",
-    "soften-init-intent": "intent-gate-hardening",
-    "evaluate-file-flag": "intent-gate-hardening",
-    "completion-store-warning": "intent-gate-hardening",
-    "structured-report-validation": "intent-gate-hardening",
-    "integration-test": "intent-gate-hardening"
+    "inline-map-observations": "explore-cleanup-001",
+    "delete-exploration-module": "explore-cleanup-001",
+    "verify-type-surface": "explore-cleanup-001"
   }
 }
