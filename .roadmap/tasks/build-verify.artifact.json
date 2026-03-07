@@ -1,0 +1,1 @@
+{"node":"build-verify","verified":"2026-03-07T17:12:00Z","checks":["pnpm run build","dist/roadmap.js exists","dist/src/protocol.js exists","dist/src/protocol.d.ts exists","node dist/roadmap.js help"]}

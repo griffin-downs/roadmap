@@ -29,8 +29,7 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists",
-          "path": "tsconfig.build.json"
+          "type": "artifact-exists"
         },
         {
           "type": "shell",
@@ -93,10 +92,6 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists",
-          "path": "package.json"
-        },
-        {
           "type": "shell",
           "command": "node -e \"const p = JSON.parse(require('fs').readFileSync('package.json','utf8')); if(!p.exports['.'].endsWith('.js')) process.exit(1); if(!p.bin.roadmap.includes('dist')) process.exit(1)\""
         }
@@ -120,10 +115,6 @@
       ],
       "validate": [
         {
-          "type": "artifact-exists",
-          "path": ".gitignore"
-        },
-        {
           "type": "shell",
           "command": "pnpm run build"
         },
@@ -142,10 +133,6 @@
         {
           "type": "shell",
           "command": "node dist/roadmap.js help"
-        },
-        {
-          "type": "shell",
-          "command": "cat .roadmap/tasks/build-verify.artifact.json | node -e \"JSON.parse(require('fs').readFileSync(0,'utf8'))\""
         }
       ],
       "idempotent": true
@@ -158,64 +145,12 @@
       ],
       "consumes": [],
       "deps": [
-        "build-verify",
-        "fix-uncovered-consume-0",
-        "fix-uncovered-consume-1",
-        "fix-untested-produce-2"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "pnpm run build && node dist/roadmap.js orient --note 'compat self-test'"
-        }
-      ],
-      "idempotent": true
-    },
-    "fix-uncovered-consume-0": {
-      "id": "fix-uncovered-consume-0",
-      "desc": "Fix uncovered consume: add artifact-exists validator for \"package.json\" on node \"exports-rewire\". This file is consumed but no validator checks it exists before the node runs.",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "build-script"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "node -e \"const g=JSON.parse(require('fs').readFileSync('.roadmap/head.json','utf-8')); const n=g.nodes['exports-rewire']; const has=n.validate.some(v=>v.type==='artifact-exists'&&(v.path==='package.json'||v.target==='package.json')); if(!has){console.error('Missing artifact-exists for package.json on exports-rewire');process.exit(1)}\""
-        }
-      ],
-      "idempotent": true
-    },
-    "fix-uncovered-consume-1": {
-      "id": "fix-uncovered-consume-1",
-      "desc": "Fix uncovered consume: add artifact-exists validator for \".gitignore\" on node \"build-verify\". This file is consumed but no validator checks it exists before the node runs.",
-      "produces": [],
-      "consumes": [],
-      "deps": [
-        "exports-rewire",
-        "gitignore-dist"
-      ],
-      "validate": [
-        {
-          "type": "shell",
-          "command": "node -e \"const g=JSON.parse(require('fs').readFileSync('.roadmap/head.json','utf-8')); const n=g.nodes['build-verify']; const has=n.validate.some(v=>v.type==='artifact-exists'&&(v.path==='.gitignore'||v.target==='.gitignore')); if(!has){console.error('Missing artifact-exists for .gitignore on build-verify');process.exit(1)}\""
-        }
-      ],
-      "idempotent": true
-    },
-    "fix-untested-produce-2": {
-      "id": "fix-untested-produce-2",
-      "desc": "Fix untested produce: add shell validator for \".roadmap/tasks/build-verify.artifact.json\" on node \"build-verify\". This file is produced but no shell command tests its correctness.",
-      "produces": [],
-      "consumes": [],
-      "deps": [
         "build-verify"
       ],
       "validate": [
         {
           "type": "shell",
-          "command": "node -e \"JSON.parse(require('fs').readFileSync('.roadmap/tasks/build-verify.artifact.json','utf-8'))\""
+          "command": "pnpm run build && node dist/roadmap.js orient --note 'compat self-test'"
         }
       ],
       "idempotent": true

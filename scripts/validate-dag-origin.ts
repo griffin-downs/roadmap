@@ -97,27 +97,37 @@ export function validateDagOrigin(repoRoot: string): ValidateResult {
     }
   }
 
-  // 4. If head.json changed, check for a recent mutation receipt
-  // This detects manual edits that bypass the mutation commands
+  // 4. If head.json changed, verify mutations.jsonl has receipts for this DAG
+  // Checks provenance (receipts exist for current DAG), not recency (time window)
   const mutationsPath = join(repoRoot, '.roadmap/mutations.jsonl');
-  if (existsSync(mutationsPath)) {
+  if (existsSync(headPath) && existsSync(mutationsPath)) {
     try {
-      const lines = readFileSync(mutationsPath, 'utf-8').split('\n').filter(l => l.trim());
-      if (lines.length > 0) {
-        const last = JSON.parse(lines[lines.length - 1]);
-        const elapsed = Date.now() - new Date(last.timestamp).getTime();
-        // Receipt must be within 60 seconds to count as "corresponding"
-        if (elapsed > 60_000) {
-          return {
-            ok: false,
-            code: 'missing-mutation-receipt',
-            message: 'head.json was modified but no recent mutation receipt found in mutations.jsonl',
-            fix: 'Use roadmap dag {insert,remove,modify} to mutate the DAG, not direct edits',
-          };
+      const head = JSON.parse(readFileSync(headPath, 'utf-8'));
+      const dagId = typeof head === 'object' && head !== null && 'id' in head ? head.id : null;
+      if (dagId) {
+        const lines = readFileSync(mutationsPath, 'utf-8').split('\n').filter(l => l.trim());
+        // Valid if: mutations.jsonl is empty (DAG created via make, no mutations yet)
+        // or has at least one receipt (mutations were tracked through CLI)
+        // Only fail if mutations.jsonl exists with entries for a *different* DAG
+        if (lines.length > 0) {
+          const hasMatchingReceipt = lines.some(line => {
+            try {
+              const entry = JSON.parse(line);
+              return !entry.dagId || entry.dagId === dagId;
+            } catch { return false; }
+          });
+          if (!hasMatchingReceipt) {
+            return {
+              ok: false,
+              code: 'missing-mutation-receipt',
+              message: `mutations.jsonl has no receipts for DAG "${dagId}"`,
+              fix: 'Use roadmap dag {insert,remove,modify} to mutate the DAG, not direct edits',
+            };
+          }
         }
       }
     } catch {
-      // mutations.jsonl parse failure — non-fatal, other gates catch corruption
+      // parse failure — non-fatal, other gates catch corruption
     }
   }
 

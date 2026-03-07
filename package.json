@@ -3,21 +3,22 @@
   "version": "0.2.0",
   "type": "module",
   "bin": {
-    "roadmap": "./bin/roadmap"
+    "roadmap": "./dist/roadmap.js"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./protocol": "./src/protocol.ts",
-    "./recovery": "./src/index.recovery.ts",
-    "./validation": "./src/index.validation.ts",
-    "./versioning": "./src/index.versioning.ts",
-    "./agent": "./src/index.agent.ts"
+    ".": "./dist/src/index.js",
+    "./protocol": "./dist/src/protocol.js",
+    "./recovery": "./dist/src/index.recovery.js",
+    "./validation": "./dist/src/index.validation.js",
+    "./versioning": "./dist/src/index.versioning.js",
+    "./agent": "./dist/src/index.agent.js"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json && esbuild bin/roadmap.ts --bundle --outfile=dist/roadmap.js --format=esm --platform=node --packages=external",
     "check": "tsc --noEmit",
     "check:dag:define": "npx tsx bin/roadmap.ts validate --note ci",
     "test": "vitest run",
-    "prepare": "husky"
+    "prepare": "pnpm run build && husky"
   },
   "devDependencies": {
     "@types/commander": "^2.12.0",

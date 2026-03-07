@@ -1,0 +1,1 @@
+{"node":"compat-verified","verified":"2026-03-07T17:12:30Z","summary":"Node 25 compat complete — CLI bundled via esbuild, library emitted via tsc with rewriteRelativeImportExtensions"}

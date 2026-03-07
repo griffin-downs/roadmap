@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "dag_id": "node25-compat",
+  "dag_desc": "Add build step for Node 25 compatibility — bundle CLI via esbuild, emit library via tsc, update package.json exports/bin/scripts",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "path": "specs/node25-compat.json",
+      "sha256": "e4211da098b322bc9f4e2dfad05296738a7c295d1e88dbe298eeb9cf7203f6d8",
+      "role": "spec"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-07T00:00:00Z",
+    "compile_hash": "a1818c8af3b160d4680fef90759a7434507d4a8a2aa83fd21b4e930b09e0e017"
+  },
+  "tasks": [
+    {
+      "id": "tsconfig-emit",
+      "desc": "Configure tsc to emit JS + declarations to dist/",
+      "priority": 1,
+      "depends": [],
+      "produces": [
+        "tsconfig.build.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists"
+        },
+        {
+          "type": "shell",
+          "command": "node -e \"const c = JSON.parse(require('fs').readFileSync('tsconfig.build.json','utf8')); if(c.compilerOptions.noEmit !== false) process.exit(1); if(c.compilerOptions.outDir !== 'dist') process.exit(1); if(!c.compilerOptions.declaration) process.exit(1)\""
+        }
+      ]
+    },
+    {
+      "id": "gitignore-dist",
+      "desc": "Add dist/ to .gitignore",
+      "priority": 1,
+      "depends": [],
+      "produces": [
+        ".gitignore"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q '^dist/' .gitignore"
+        }
+      ]
+    },
+    {
+      "id": "build-script",
+      "desc": "Add build script to package.json — tsc for library emit, esbuild for CLI bundle",
+      "priority": 2,
+      "depends": [
+        "tsconfig-emit"
+      ],
+      "produces": [
+        "package.json"
+      ],
+      "consumes": [
+        "tsconfig.build.json"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "node -e \"const p = JSON.parse(require('fs').readFileSync('package.json','utf8')); if(!p.scripts.build) process.exit(1)\""
+        }
+      ]
+    },
+    {
+      "id": "exports-rewire",
+      "desc": "Update package.json exports to point at dist/ JS outputs, update bin to dist/roadmap.js",
+      "priority": 3,
+      "depends": [
+        "build-script"
+      ],
+      "produces": [
+        "package.json"
+      ],
+      "consumes": [
+        "package.json"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "node -e \"const p = JSON.parse(require('fs').readFileSync('package.json','utf8')); if(!p.exports['.'].endsWith('.js')) process.exit(1); if(!p.bin.roadmap.includes('dist')) process.exit(1)\""
+        }
+      ]
+    },
+    {
+      "id": "build-verify",
+      "desc": "Run build, verify dist/ outputs exist and CLI executes",
+      "priority": 4,
+      "depends": [
+        "exports-rewire",
+        "gitignore-dist"
+      ],
+      "produces": [],
+      "consumes": [
+        "tsconfig.build.json",
+        "package.json",
+        ".gitignore"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run build"
+        },
+        {
+          "type": "shell",
+          "command": "test -f dist/roadmap.js"
+        },
+        {
+          "type": "shell",
+          "command": "test -f dist/src/protocol.js"
+        },
+        {
+          "type": "shell",
+          "command": "test -f dist/src/protocol.d.ts"
+        },
+        {
+          "type": "shell",
+          "command": "node dist/roadmap.js help"
+        }
+      ]
+    },
+    {
+      "id": "compat-verified",
+      "desc": "Terminal — full build pipeline works, CLI runs from dist/, library exports resolve to JS",
+      "priority": 5,
+      "depends": [
+        "build-verify"
+      ],
+      "produces": [],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run build && node dist/roadmap.js orient --note 'compat self-test'"
+        }
+      ]
+    }
+  ]
+}

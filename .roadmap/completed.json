@@ -1128,5 +1128,195 @@
       ],
       "note": "Manual completion — roadmap advance blocked by pre-existing gap-expansion cycle bug on terminal node"
     }
+  },
+  {
+    "nodeId": "gitignore-dist",
+    "completedAt": "2026-03-07T17:10:33.386Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "shell:grep -q '^dist/' .gitignore",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q '^dist/' .gitignore"
+      },
+      {
+        "rule": "artifact-exists:.gitignore",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "tsconfig-emit",
+    "completedAt": "2026-03-07T17:11:08.330Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:tsconfig.build.json",
+        "passed": true,
+        "evidence": "artifact exists: tsconfig.build.json"
+      },
+      {
+        "rule": "shell:node -e \"const c = JSON.parse(require('fs').readFileSync('tsconfig.build.json','utf8')); if(c.compilerOptions.noEmit !== false) process.exit(1); if(c.compilerOptions.outDir !== 'dist') process.exit(1); if(!c.compilerOptions.declaration) process.exit(1)\"",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"const c = JSON.parse(require('fs').readFileSync('tsconfig.build.json','utf8')); if(c.compilerOptions.noEmit !== false) process.exit(1); if(c.compilerOptions.outDir !== 'dist') process.exit(1); if(!c.compilerOptions.declaration) process.exit(1)\""
+      },
+      {
+        "rule": "artifact-exists:tsconfig.build.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "build-script",
+    "completedAt": "2026-03-07T17:11:26.453Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "shell:node -e \"const p = JSON.parse(require('fs').readFileSync('package.json','utf8')); if(!p.scripts.build) process.exit(1)\"",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"const p = JSON.parse(require('fs').readFileSync('package.json','utf8')); if(!p.scripts.build) process.exit(1)\""
+      },
+      {
+        "rule": "artifact-exists:package.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "exports-rewire",
+    "completedAt": "2026-03-07T17:11:39.904Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "shell:node -e \"const p = JSON.parse(require('fs').readFileSync('package.json','utf8')); if(!p.exports['.'].endsWith('.js')) process.exit(1); if(!p.bin.roadmap.includes('dist')) process.exit(1)\"",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"const p = JSON.parse(require('fs').readFileSync('package.json','utf8')); if(!p.exports['.'].endsWith('.js')) process.exit(1); if(!p.bin.roadmap.includes('dist')) process.exit(1)\""
+      },
+      {
+        "rule": "artifact-exists:package.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "build-verify",
+    "completedAt": "2026-03-07T17:12:57.763Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run build"
+      },
+      {
+        "rule": "shell:test -f dist/roadmap.js",
+        "passed": true,
+        "evidence": "command passed (exit 0): test -f dist/roadmap.js"
+      },
+      {
+        "rule": "shell:test -f dist/src/protocol.js",
+        "passed": true,
+        "evidence": "command passed (exit 0): test -f dist/src/protocol.js"
+      },
+      {
+        "rule": "shell:test -f dist/src/protocol.d.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test -f dist/src/protocol.d.ts"
+      },
+      {
+        "rule": "shell:node dist/roadmap.js help",
+        "passed": true,
+        "evidence": "command passed (exit 0): node dist/roadmap.js help"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/tasks/build-verify.artifact.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "fix-uncovered-consume-0",
+    "completedAt": "2026-03-07T17:13:51.247Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "shell:node -e \"const g=JSON.parse(require('fs').readFileSync('.roadmap/head.json','utf-8')); const n=g.nodes['exports-rewire']; const has=n.validate.some(v=>v.type==='artifact-exists'&&(v.path==='package.json'||v.target==='package.json')); if(!has){console.error('Missing artifact-exists for package.json on exports-rewire');process.exit(1)}\"",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"const g=JSON.parse(require('fs').readFileSync('.roadmap/head.json','utf-8')); const n=g.nodes['exports-rewire']; const has=n.validate.some(v=>v.type==='artifact-exists'&&(v.path==='package.json'||v.target==='package.json')); if(!has){console.error('Missing artifact-exists for package.json on exports-rewire');process.exit(1)}\""
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "fix-uncovered-consume-1",
+    "completedAt": "2026-03-07T17:13:55.756Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "shell:node -e \"const g=JSON.parse(require('fs').readFileSync('.roadmap/head.json','utf-8')); const n=g.nodes['build-verify']; const has=n.validate.some(v=>v.type==='artifact-exists'&&(v.path==='.gitignore'||v.target==='.gitignore')); if(!has){console.error('Missing artifact-exists for .gitignore on build-verify');process.exit(1)}\"",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"const g=JSON.parse(require('fs').readFileSync('.roadmap/head.json','utf-8')); const n=g.nodes['build-verify']; const has=n.validate.some(v=>v.type==='artifact-exists'&&(v.path==='.gitignore'||v.target==='.gitignore')); if(!has){console.error('Missing artifact-exists for .gitignore on build-verify');process.exit(1)}\""
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "fix-untested-produce-2",
+    "completedAt": "2026-03-07T17:14:00.478Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "shell:node -e \"JSON.parse(require('fs').readFileSync('.roadmap/tasks/build-verify.artifact.json','utf-8'))\"",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"JSON.parse(require('fs').readFileSync('.roadmap/tasks/build-verify.artifact.json','utf-8'))\""
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "compat-verified",
+    "completedAt": "2026-03-07T17:14:22.416Z",
+    "dagId": "node25-compat",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run build && node dist/roadmap.js orient --note 'compat self-test'",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run build && node dist/roadmap.js orient --note 'compat self-test'"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/tasks/compat-verified.artifact.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "91b865818f6068fe5b78ee621368be9247c756ec",
+    "treeSha": "cc32fee6bf4b1ec18502cd558975860031bdec9e",
+    "branch": "main"
   }
 ]
