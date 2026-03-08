@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "gallery_id": "roadmap-futures",
+  "gallery_desc": "Three roadmaps from the same inflection point. Convergence is prerequisite to both futures.",
+  "roadmaps": [
+    {
+      "id": "convergence",
+      "spec": "specs/convergence.json",
+      "desc": "Refactor to layered architecture: pure core, IO runtime, thin CLI",
+      "nodes": 12,
+      "type": "execute",
+      "prerequisites": [],
+      "estimates": {
+        "batches": 9,
+        "parallelizable": 3,
+        "risk": "low — mechanical refactoring, all tests gate every node"
+      }
+    },
+    {
+      "id": "protocol-standard",
+      "spec": "specs/protocol-standard.json",
+      "desc": "Extract the algebra as a stable protocol — wire format, properties, cross-repo, economics",
+      "nodes": 8,
+      "type": "mixed",
+      "prerequisites": ["convergence"],
+      "estimates": {
+        "batches": 4,
+        "parallelizable": 4,
+        "risk": "medium — plan nodes need decomposition, cross-repo is uncharted"
+      }
+    },
+    {
+      "id": "programs-as-graphs",
+      "spec": "specs/programs-as-graphs.json",
+      "desc": "The DAG is the program — dissolve spec/code/test/governance into one artifact",
+      "nodes": 8,
+      "type": "mixed",
+      "prerequisites": ["convergence"],
+      "estimates": {
+        "batches": 5,
+        "parallelizable": 4,
+        "risk": "high — graph-rewriting is a plan node, self-reference is philosophically deep"
+      }
+    }
+  ],
+  "topology": {
+    "ascii": [
+      "            [[ convergence ]]",
+      "               /        \\",
+      "              /          \\",
+      " [[ protocol-standard ]]  [[ programs-as-graphs ]]"
+    ],
+    "note": "Both futures fork from convergence. They are independent and can be pursued in parallel or sequentially. They reconverge if the protocol standard's compilation target meets programs-as-graphs' inversion of control."
+  }
+}
