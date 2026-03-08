@@ -8,15 +8,18 @@ import { join } from 'node:path';
 import type { Graph } from '../protocol.ts';
 import type { ChainLink, ExecutionReport } from './chain.ts';
 import { loadChain, currentIteration, getRootIntent } from './chain.ts';
-import { loadCompletionsWithEvidence } from './evidence/completion-evidence.ts';
-import type { CompletionRecordWithEvidence } from './evidence/completion-evidence.ts';
+import { computeReport } from './terminal-audit/computed.ts';
+import type { ComputedReport } from './terminal-audit/computed.ts';
+import { detectGaps } from './terminal-audit/detected.ts';
+import type { DetectedGaps } from './terminal-audit/detected.ts';
 
 export interface TerminalBrief {
   rootIntent: string;
   iteration: number;
   chainHistory: ChainLink[];
-  completionEvidence: Map<string, CompletionRecordWithEvidence>;
+  completionEvidence: ComputedReport;
   handoffSummaries: HandoffSummary[];
+  detectedGaps: DetectedGaps;
   executionReport?: ExecutionReport;
 }
 
@@ -30,19 +33,16 @@ export interface HandoffSummary {
 
 /**
  * Build a TerminalBrief aggregating context layers.
- * Called during terminal node advance to give the planning agent
- * full context for generating the successor spec.
- *
- * Note: computed audit summary and gap detection were removed
- * (dead code after chain-terminal refactor).
+ * Called during terminal node advance or orient-time enrichment
+ * to give agents full context for writing successor specs.
  */
 export function buildTerminalBrief(
   dag: Graph<string>,
   repoRoot: string,
   executionReport?: ExecutionReport,
 ): TerminalBrief {
-  // Layer 1: completion evidence
-  const completionEvidence = loadCompletionsWithEvidence(repoRoot);
+  // Layer 1: completion evidence (per-node commit status, test results, audit trail)
+  const completionEvidence = computeReport(dag, repoRoot);
 
   // Layer 2: handoff journals
   const handoffSummaries = loadHandoffSummaries(repoRoot);
@@ -58,8 +58,8 @@ export function buildTerminalBrief(
     rootIntent = dag.desc;
   }
 
-  // Layer 4: execution report (passed in from --evaluate-file)
-  // Already provided as parameter
+  // Layer 4: gap detection (uncovered consumes, untested produces)
+  const detectedGaps = detectGaps(dag);
 
   return {
     rootIntent,
@@ -67,6 +67,7 @@ export function buildTerminalBrief(
     chainHistory,
     completionEvidence,
     handoffSummaries,
+    detectedGaps,
     executionReport,
   };
 }

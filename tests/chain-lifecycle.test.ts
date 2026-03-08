@@ -321,9 +321,13 @@ describe('buildTerminalBrief', () => {
     // Layer 3: chainHistory
     expect(brief.chainHistory).toEqual([]);
 
-    // Layer 4: completionEvidence
-    expect(brief.completionEvidence).toBeInstanceOf(Map);
-    expect(brief.completionEvidence.has('init')).toBe(true);
+    // Layer 4: completionEvidence (ComputedReport)
+    expect(brief.completionEvidence.commitStatus).toBeDefined();
+    expect(brief.completionEvidence.commitStatus.find(s => s.nodeId === 'init')).toBeDefined();
+
+    // Layer 4b: detectedGaps
+    expect(brief.detectedGaps).toBeDefined();
+    expect(brief.detectedGaps.gaps).toBeInstanceOf(Array);
 
     // Layer 5: handoffSummaries
     expect(brief.handoffSummaries).toHaveLength(1);
