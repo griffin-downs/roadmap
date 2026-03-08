@@ -26,7 +26,7 @@ describe('detectGaps', () => {
         term: { consumes: ['src/b.ts'], deps: ['b'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
 
       const uncovered = result.gaps.filter(g => g.type === 'uncovered-consume');
       // src/a.ts is consumed by 'b' but no node has artifact-exists validating it
@@ -44,7 +44,7 @@ describe('detectGaps', () => {
         term: { deps: ['b'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
       const uncovered = result.gaps.filter(g => g.type === 'uncovered-consume' && g.artifact === 'src/a.ts');
       expect(uncovered).toHaveLength(0);
     });
@@ -56,64 +56,9 @@ describe('detectGaps', () => {
         term: { deps: ['a'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
       const uncovered = result.gaps.filter(g => g.type === 'uncovered-consume');
       expect(uncovered).toHaveLength(0);
-    });
-  });
-
-  describe('scope-leak detection', () => {
-    it('flags changed files outside any produces[]', () => {
-      const dag = buildDAG({
-        init: { produces: ['init.marker'] },
-        work: { produces: ['src/a.ts'], deps: ['init'] },
-        term: { deps: ['work'] },
-      });
-
-      const result = detectGaps(dag, ['src/a.ts', 'src/stray.ts']);
-
-      const leaks = result.gaps.filter(g => g.type === 'scope-leak');
-      expect(leaks).toHaveLength(1);
-      expect(leaks[0].artifact).toBe('src/stray.ts');
-    });
-
-    it('does not flag infrastructure files', () => {
-      const dag = buildDAG({
-        init: { produces: ['init.marker'] },
-        work: { produces: ['src/a.ts'], deps: ['init'] },
-        term: { deps: ['work'] },
-      });
-
-      const result = detectGaps(dag, ['package.json', '.roadmap/completed.json', 'tsconfig.json']);
-      const leaks = result.gaps.filter(g => g.type === 'scope-leak');
-      expect(leaks).toHaveLength(0);
-    });
-
-    it('reports no leaks when all changes are in produces', () => {
-      const dag = buildDAG({
-        init: { produces: ['init.marker'] },
-        work: { produces: ['src/a.ts', 'src/b.ts'], deps: ['init'] },
-        term: { deps: ['work'] },
-      });
-
-      const result = detectGaps(dag, ['src/a.ts', 'src/b.ts']);
-      const leaks = result.gaps.filter(g => g.type === 'scope-leak');
-      expect(leaks).toHaveLength(0);
-    });
-
-    it('does not flag test files referenced in shell validators', () => {
-      const dag = buildDAG({
-        init: { produces: ['init.marker'] },
-        work: {
-          produces: ['src/a.ts'], deps: ['init'],
-          validate: [{ type: 'shell', command: 'npx vitest run test/a.test.ts' }],
-        },
-        term: { deps: ['work'] },
-      });
-
-      const result = detectGaps(dag, ['test/a.test.ts']);
-      const leaks = result.gaps.filter(g => g.type === 'scope-leak');
-      expect(leaks).toHaveLength(0);
     });
   });
 
@@ -128,7 +73,7 @@ describe('detectGaps', () => {
         term: { deps: ['work'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
       const untested = result.gaps.filter(g => g.type === 'untested-produce');
       // src/b.ts is not referenced in any shell command
       expect(untested.some(g => g.artifact === 'src/b.ts')).toBe(true);
@@ -146,7 +91,7 @@ describe('detectGaps', () => {
         term: { deps: ['work'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
       const untested = result.gaps.filter(g => g.type === 'untested-produce' && g.artifact === 'src/foo.ts');
       expect(untested).toHaveLength(0);
     });
@@ -157,7 +102,7 @@ describe('detectGaps', () => {
         term: { deps: ['init'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
       const untested = result.gaps.filter(g => g.type === 'untested-produce');
       expect(untested).toHaveLength(0);
     });
@@ -172,7 +117,7 @@ describe('detectGaps', () => {
         term: { deps: ['work'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
       const untested = result.gaps.filter(g => g.type === 'untested-produce' && g.artifact === 'src/deep/nested/module.ts');
       expect(untested).toHaveLength(0);
     });
@@ -187,7 +132,7 @@ describe('detectGaps', () => {
         term: { deps: ['work'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
       const untested = result.gaps.filter(g => g.type === 'untested-produce' && g.artifact === 'src/lib/terminal-audit/computed.ts');
       expect(untested).toHaveLength(0);
     });
@@ -202,7 +147,7 @@ describe('detectGaps', () => {
         term: { deps: ['work'] },
       });
 
-      const result = detectGaps(dag, []);
+      const result = detectGaps(dag);
       const untested = result.gaps.filter(g => g.type === 'untested-produce' && g.artifact === 'src/orphan.ts');
       expect(untested).toHaveLength(1);
     });
@@ -220,12 +165,11 @@ describe('detectGaps', () => {
         term: { deps: ['b'] },
       });
 
-      const result = detectGaps(dag, ['src/stray.ts']);
+      const result = detectGaps(dag);
 
       expect(result.summary.uncoveredConsumes).toBeGreaterThanOrEqual(1);
-      expect(result.summary.scopeLeaks).toBe(1);
       expect(result.summary.total).toBe(
-        result.summary.uncoveredConsumes + result.summary.scopeLeaks + result.summary.untestedProduces,
+        result.summary.uncoveredConsumes + result.summary.untestedProduces,
       );
     });
 
@@ -245,7 +189,7 @@ describe('detectGaps', () => {
         },
       });
 
-      const result = detectGaps(dag, ['src/a.ts']);
+      const result = detectGaps(dag);
       expect(result.summary.total).toBe(0);
     });
   });

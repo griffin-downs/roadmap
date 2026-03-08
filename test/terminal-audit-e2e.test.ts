@@ -60,7 +60,7 @@ describe('E2E: terminal audit full pipeline', () => {
         ]},
       );
       const result = validateTerminalAudit(
-        pipelineDAG, records, () => true, ['src/impl.ts'],
+        pipelineDAG, records, () => true,
       );
       expect(result.passed).toBe(true);
       expect(result.prompts).toHaveLength(0);
@@ -77,39 +77,30 @@ describe('E2E: terminal audit full pipeline', () => {
     });
 
     it('gaps detected → fails without responses', () => {
-      const result = validateTerminalAudit(gappyDAG, new Map(), () => true, []);
+      const result = validateTerminalAudit(gappyDAG, new Map(), () => true);
       expect(result.passed).toBe(false);
       expect(result.prompts.length).toBeGreaterThan(0);
       expect(result.reason).toContain('gap(s) detected');
     });
 
     it('gaps detected → passes with substantive responses', () => {
-      const ctx = runAudit(gappyDAG, new Map(), () => true, []);
+      const ctx = runAudit(gappyDAG, new Map(), () => true);
       const responses = ctx.prompts.map(p => ({
         promptId: p.id,
         answer: 'This dependency is guaranteed by the DAG ordering — a always runs before b.',
       }));
-      const result = validateTerminalAudit(gappyDAG, new Map(), () => true, [], responses);
+      const result = validateTerminalAudit(gappyDAG, new Map(), () => true, responses);
       expect(result.passed).toBe(true);
     });
 
     it('gaps detected → fails with placeholder responses', () => {
-      const ctx = runAudit(gappyDAG, new Map(), () => true, []);
+      const ctx = runAudit(gappyDAG, new Map(), () => true);
       const responses = ctx.prompts.map(p => ({
         promptId: p.id,
         answer: '<TODO>',
       }));
-      const result = validateTerminalAudit(gappyDAG, new Map(), () => true, [], responses);
+      const result = validateTerminalAudit(gappyDAG, new Map(), () => true, responses);
       expect(result.passed).toBe(false);
-    });
-  });
-
-  describe('scope leak detection in pipeline', () => {
-    it('stray file triggers scope-leak prompt', () => {
-      const ctx = runAudit(pipelineDAG, new Map(), () => true, ['src/impl.ts', 'src/orphan.ts']);
-      const leaks = ctx.prompts.filter(p => p.type === 'scope-leak');
-      expect(leaks).toHaveLength(1);
-      expect(leaks[0].artifact).toBe('src/orphan.ts');
     });
   });
 
@@ -121,7 +112,7 @@ describe('E2E: terminal audit full pipeline', () => {
           { rule: 'artifact-exists:src/impl.ts', passed: true, evidence: 'exists' },
         ]},
       );
-      const result = validateTerminalAudit(pipelineDAG, records, () => true, ['src/impl.ts']);
+      const result = validateTerminalAudit(pipelineDAG, records, () => true);
       expect(result.computed.testEvidence).toHaveLength(1);
       expect(result.computed.auditTrail).toHaveLength(1);
       expect(result.computed.auditTrail[0].gitSha).toBe('sha1');
@@ -156,7 +147,7 @@ describe('E2E: terminal audit full pipeline', () => {
         { nodeId: 'setup', checks: [{ rule: 'shell:cat setup.txt', passed: true, evidence: 'ok' }] },
         { nodeId: 'build', checks: [{ rule: 'shell:cat build.txt', passed: true, evidence: 'ok' }] },
       );
-      const result = validateTerminalAudit(dag, records, () => true, ['setup.txt', 'build.txt']);
+      const result = validateTerminalAudit(dag, records, () => true);
       expect(result.passed).toBe(true);
     });
   });
@@ -169,7 +160,7 @@ describe('E2E: terminal audit full pipeline', () => {
     });
 
     it('phase 1: get context packet with prompts', () => {
-      const ctx = runAudit(dag, new Map(), () => true, ['src/extra.ts']);
+      const ctx = runAudit(dag, new Map(), () => true);
       expect(ctx.prompts.length).toBeGreaterThan(0);
       // Each prompt has id, type, artifact, question
       for (const p of ctx.prompts) {
@@ -181,7 +172,7 @@ describe('E2E: terminal audit full pipeline', () => {
     });
 
     it('phase 2: evaluate responses → pass', () => {
-      const ctx = runAudit(dag, new Map(), () => true, ['src/extra.ts']);
+      const ctx = runAudit(dag, new Map(), () => true);
       const responses = ctx.prompts.map(p => ({
         promptId: p.id,
         answer: 'The extra file is a test helper that supports the main implementation.',
@@ -206,7 +197,7 @@ describe('E2E: terminal audit full pipeline', () => {
         },
       });
 
-      const detected = detectGaps(dag, []);
+      const detected = detectGaps(dag);
       // There should be a gap on term (untested-produce for .roadmap/tasks/done.json)
       const termGaps = detected.gaps.filter(g => g.nodeId === 'term');
 

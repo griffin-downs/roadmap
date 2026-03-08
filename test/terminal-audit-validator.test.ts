@@ -55,7 +55,7 @@ const cleanDAG = buildDAG({
 
 describe('runAudit', () => {
   it('detects gaps and generates prompts', () => {
-    const ctx = runAudit(gappyDAG, new Map(), () => true, []);
+    const ctx = runAudit(gappyDAG, new Map(), () => true);
     expect(ctx.detected.gaps.length).toBeGreaterThan(0);
     expect(ctx.prompts.length).toBeGreaterThan(0);
     // Each prompt has a question
@@ -66,21 +66,14 @@ describe('runAudit', () => {
   });
 
   it('returns empty prompts for clean DAG', () => {
-    const ctx = runAudit(cleanDAG, new Map(), () => true, ['src/out.ts']);
+    const ctx = runAudit(cleanDAG, new Map(), () => true);
     expect(ctx.prompts).toHaveLength(0);
-  });
-
-  it('includes scope-leak prompts for stray files', () => {
-    const ctx = runAudit(cleanDAG, new Map(), () => true, ['src/out.ts', 'src/stray.ts']);
-    const leakPrompts = ctx.prompts.filter(p => p.type === 'scope-leak');
-    expect(leakPrompts).toHaveLength(1);
-    expect(leakPrompts[0].artifact).toBe('src/stray.ts');
   });
 });
 
 describe('evaluateResponses', () => {
   it('passes when all prompts are addressed', () => {
-    const ctx = runAudit(gappyDAG, new Map(), () => true, []);
+    const ctx = runAudit(gappyDAG, new Map(), () => true);
     const responses = ctx.prompts.map(p => ({
       promptId: p.id,
       answer: 'This is validated by the upstream producer node which always creates the file.',
@@ -91,7 +84,7 @@ describe('evaluateResponses', () => {
   });
 
   it('fails when a prompt has no response', () => {
-    const ctx = runAudit(gappyDAG, new Map(), () => true, []);
+    const ctx = runAudit(gappyDAG, new Map(), () => true);
     // Only answer the first prompt
     const responses = ctx.prompts.length > 0
       ? [{ promptId: ctx.prompts[0].id, answer: 'Addressed with a real explanation here.' }]
@@ -104,7 +97,7 @@ describe('evaluateResponses', () => {
   });
 
   it('fails when response is a placeholder', () => {
-    const ctx = runAudit(gappyDAG, new Map(), () => true, []);
+    const ctx = runAudit(gappyDAG, new Map(), () => true);
     if (ctx.prompts.length === 0) return;
     const responses = ctx.prompts.map(p => ({
       promptId: p.id,
@@ -115,7 +108,7 @@ describe('evaluateResponses', () => {
   });
 
   it('fails when response is too short', () => {
-    const ctx = runAudit(gappyDAG, new Map(), () => true, []);
+    const ctx = runAudit(gappyDAG, new Map(), () => true);
     if (ctx.prompts.length === 0) return;
     const responses = ctx.prompts.map(p => ({
       promptId: p.id,
@@ -129,7 +122,7 @@ describe('evaluateResponses', () => {
 describe('validateTerminalAudit', () => {
   it('auto-passes when no gaps detected', () => {
     const result = validateTerminalAudit(
-      cleanDAG, new Map(), () => true, ['src/out.ts'],
+      cleanDAG, new Map(), () => true,
     );
     expect(result.passed).toBe(true);
     expect(result.prompts).toHaveLength(0);
@@ -137,7 +130,7 @@ describe('validateTerminalAudit', () => {
 
   it('fails with prompts when gaps exist and no responses given', () => {
     const result = validateTerminalAudit(
-      gappyDAG, new Map(), () => true, [],
+      gappyDAG, new Map(), () => true,
     );
     expect(result.passed).toBe(false);
     expect(result.prompts.length).toBeGreaterThan(0);
@@ -146,13 +139,13 @@ describe('validateTerminalAudit', () => {
 
   it('passes when gaps exist and all responses address them', () => {
     // First get the prompts
-    const ctx = runAudit(gappyDAG, new Map(), () => true, []);
+    const ctx = runAudit(gappyDAG, new Map(), () => true);
     const responses = ctx.prompts.map(p => ({
       promptId: p.id,
       answer: 'This artifact is created by the predecessor and guaranteed by DAG ordering.',
     }));
     const result = validateTerminalAudit(
-      gappyDAG, new Map(), () => true, [], responses,
+      gappyDAG, new Map(), () => true, responses,
     );
     expect(result.passed).toBe(true);
   });
@@ -161,24 +154,8 @@ describe('validateTerminalAudit', () => {
     const records = makeRecords(
       { nodeId: 'work', checks: [{ rule: 'shell:npm test', passed: true, evidence: 'ok' }] },
     );
-    const result = validateTerminalAudit(cleanDAG, records, () => true, ['src/out.ts']);
+    const result = validateTerminalAudit(cleanDAG, records, () => true);
     expect(result.computed.testEvidence.length).toBeGreaterThan(0);
     expect(result.computed.commitStatus.length).toBeGreaterThan(0);
-  });
-
-  it('reports unaddressed gaps in result', () => {
-    const ctx = runAudit(gappyDAG, new Map(), () => true, ['src/stray.ts']);
-    // Answer only uncovered-consume gaps, not scope-leak
-    const responses = ctx.prompts
-      .filter(p => p.type !== 'scope-leak')
-      .map(p => ({
-        promptId: p.id,
-        answer: 'Addressed — the dependency is guaranteed by DAG structure.',
-      }));
-    const result = validateTerminalAudit(
-      gappyDAG, new Map(), () => true, ['src/stray.ts'], responses,
-    );
-    expect(result.passed).toBe(false);
-    expect(result.unaddressed.some(p => p.type === 'scope-leak')).toBe(true);
   });
 });

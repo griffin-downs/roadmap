@@ -694,7 +694,6 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
   let terminalAuditResult: TerminalAuditResult | undefined;
   if (nodeId === dag.term) {
     const auditRecords = loadCompletionsWithEvidence(repoRoot);
-    const changedFiles = getBranchChangedFiles(repoRoot);
     const existsPredicate = (artifact: string) => existsSync(join(repoRoot, artifact));
 
     // Parse --evaluate-file as AuditResponse[] if it looks like audit responses
@@ -707,7 +706,7 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
       }
     }
 
-    terminalAuditResult = validateTerminalAudit(dag, auditRecords, existsPredicate, changedFiles, auditResponses);
+    terminalAuditResult = validateTerminalAudit(dag, auditRecords, existsPredicate, auditResponses);
 
     if (!terminalAuditResult.passed) {
       // Gap expansion: convert detected gaps into fix nodes instead of asking for narrative.
@@ -1015,24 +1014,6 @@ function checkAttribution(root: string, produces: string[]): string | undefined 
     return undefined;
   } catch {
     return undefined;
-  }
-}
-
-// Get all files changed on the current branch relative to main/master
-function getBranchChangedFiles(root: string): string[] {
-  try {
-    // Try main, then master as base
-    let base = 'main';
-    try { execSync(`git rev-parse --verify ${base}`, { cwd: root, stdio: 'pipe' }); }
-    catch { base = 'master'; }
-    const diff = execSync(`git diff --name-only ${base}...HEAD`, { cwd: root, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
-    return diff ? diff.split('\n').filter(f => f.length > 0) : [];
-  } catch {
-    // Fallback: uncommitted changes only
-    try {
-      const status = execSync('git diff --name-only HEAD', { cwd: root, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
-      return status ? status.split('\n').filter(f => f.length > 0) : [];
-    } catch { return []; }
   }
 }
 

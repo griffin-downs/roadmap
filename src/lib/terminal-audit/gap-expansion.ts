@@ -35,8 +35,6 @@ export interface GapExpansionResult {
  *   validator to the consuming node
  * - untested-produce: insert a fix node that adds a shell test
  *   covering the untested artifact
- * - scope-leak: insert a fix node that either adds the file to a
- *   node's produces or removes it
  *
  * Fix nodes are inserted as deps of the terminal node, blocking
  * terminal completion until all gaps are addressed.
@@ -131,8 +129,6 @@ function gapToFixNode(
       return uncoveredConsumeFixNode(gap, index, dag);
     case 'untested-produce':
       return untestedProduceFixNode(gap, index, dag);
-    case 'scope-leak':
-      return scopeLeakFixNode(gap, index, dag);
     default:
       return null;
   }
@@ -207,36 +203,6 @@ function untestedProduceFixNode(
     gapType: gap.type,
     gapArtifact: artifact,
     sourceNodeId: sourceNode,
-  };
-}
-
-/**
- * scope-leak: a changed file is outside all produces[]. Either add it
- * to the right node's produces or verify it should be excluded.
- */
-function scopeLeakFixNode(
-  gap: DetectedGap,
-  index: number,
-  dag: Graph<string>,
-): GapFixNode {
-  const id = `fix-scope-leak-${index}`;
-
-  return {
-    id,
-    desc: `Fix scope leak: "${gap.artifact}" was changed but is not in any node's produces[]. ` +
-      `Either add it to the correct node via dag.modify or revert the change.`,
-    produces: [],
-    consumes: [],
-    deps: [dag.init],
-    validate: [
-      {
-        type: 'shell',
-        command: `node -e "const g=JSON.parse(require('fs').readFileSync('.roadmap/head.json','utf-8')); const all=Object.values(g.nodes).flatMap(n=>n.produces||[]); if(!all.includes('${gap.artifact}')){console.error('${gap.artifact} still not in any produces[]');process.exit(1)}"`,
-      },
-    ],
-    gapType: gap.type,
-    gapArtifact: gap.artifact,
-    sourceNodeId: '',
   };
 }
 

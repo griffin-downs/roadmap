@@ -50,10 +50,9 @@ export function runAudit(
   dag: Graph<string>,
   records: Map<string, CompletionRecordWithEvidence>,
   exists: (artifact: string) => boolean,
-  changedFiles: string[],
 ): TerminalAuditContext {
   const computed = computeReport(dag, records, exists);
-  const detected = detectGaps(dag, changedFiles);
+  const detected = detectGaps(dag);
   const prompts = generatePrompts(detected.gaps);
   return { computed, detected, prompts };
 }
@@ -108,10 +107,9 @@ export function validateTerminalAudit(
   dag: Graph<string>,
   records: Map<string, CompletionRecordWithEvidence>,
   exists: (artifact: string) => boolean,
-  changedFiles: string[],
   responses?: AuditResponse[],
 ): TerminalAuditResult {
-  const context = runAudit(dag, records, exists, changedFiles);
+  const context = runAudit(dag, records, exists);
 
   // No gaps → auto-pass
   if (context.prompts.length === 0) {
@@ -147,9 +145,6 @@ const PROMPT_TEMPLATES: Record<DetectedGap['type'], (gap: DetectedGap) => string
   'uncovered-consume': (gap) =>
     `Node "${gap.nodeId}" consumes "${gap.artifact}" but no validator checks it exists. ` +
     `How is this dependency guaranteed to be satisfied?`,
-  'scope-leak': (gap) =>
-    `File "${gap.artifact}" was changed but is not in any node's produces[]. ` +
-    `Is this change intentional? What node should own it?`,
   'untested-produce': (gap) =>
     `Node "${gap.nodeId}" produces "${gap.artifact}" but no shell validator tests it. ` +
     `What validates the correctness of this artifact?`,

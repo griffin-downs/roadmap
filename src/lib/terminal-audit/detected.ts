@@ -1,5 +1,5 @@
 // @module terminal-audit/detected
-// @description Mechanically detect audit gaps — uncovered consumes, scope leaks, untested produces
+// @description Mechanically detect audit gaps — uncovered consumes, untested produces
 // @exports DetectedGap, GapType, DetectionResult, detectGaps
 
 import type { Graph, ValidationRule } from '../../protocol.ts';
@@ -7,7 +7,7 @@ import { consumeArtifact } from '../../protocol.ts';
 
 // --- Types ---
 
-export type GapType = 'uncovered-consume' | 'scope-leak' | 'untested-produce';
+export type GapType = 'uncovered-consume' | 'untested-produce';
 
 export interface DetectedGap {
   type: GapType;
@@ -18,7 +18,7 @@ export interface DetectedGap {
 
 export interface DetectionResult {
   gaps: DetectedGap[];
-  summary: { uncoveredConsumes: number; scopeLeaks: number; untestedProduces: number; total: number };
+  summary: { uncoveredConsumes: number; untestedProduces: number; total: number };
 }
 
 // --- Implementation ---
@@ -26,18 +26,15 @@ export interface DetectionResult {
 /**
  * Detect gaps mechanically from DAG structure + filesystem state.
  *
- * Three detection passes:
+ * Two detection passes:
  * 1. uncovered-consume: consumes[] entries not covered by any artifact-exists or shell validator
  *    across the DAG (i.e., no node validates that the consumed artifact actually exists)
- * 2. scope-leak: changed files that fall outside every node's produces[]
- * 3. untested-produce: produce files not referenced in any shell validator command
+ * 2. untested-produce: produce files not referenced in any shell validator command
  *
  * @param dag - The graph being audited
- * @param changedFiles - Files changed in the working tree (e.g. from git diff)
  */
 export function detectGaps(
   dag: Graph<string>,
-  changedFiles: string[],
 ): DetectionResult {
   const gaps: DetectedGap[] = [];
 
@@ -75,22 +72,7 @@ export function detectGaps(
     }
   }
 
-  // Collect files referenced in shell commands (test files, etc.) — not scope leaks
-  const shellReferencedFiles = extractShellReferencedFiles(shellCommands);
-
-  // Pass 2: Scope leaks — changed files outside any produces[] or shell-referenced files
-  for (const file of changedFiles) {
-    if (!allProduces.has(file) && !isInfraFile(file) && !shellReferencedFiles.has(file)) {
-      gaps.push({
-        type: 'scope-leak',
-        nodeId: '',
-        artifact: file,
-        detail: `changed file "${file}" is not in any node's produces[]`,
-      });
-    }
-  }
-
-  // Pass 3: Untested produces — produce files not referenced in any shell command
+  // Pass 2: Untested produces — produce files not referenced in any shell command
   for (const nodeId of Object.keys(dag.nodes)) {
     const node = dag.nodes[nodeId as keyof typeof dag.nodes] as any;
     if (!node) continue;
@@ -108,14 +90,12 @@ export function detectGaps(
   }
 
   const uncoveredConsumes = gaps.filter(g => g.type === 'uncovered-consume').length;
-  const scopeLeaks = gaps.filter(g => g.type === 'scope-leak').length;
   const untestedProduces = gaps.filter(g => g.type === 'untested-produce').length;
 
   return {
     gaps,
     summary: {
       uncoveredConsumes,
-      scopeLeaks,
       untestedProduces,
       total: gaps.length,
     },
@@ -144,27 +124,6 @@ function collectValidatedArtifacts(
 /** Init markers are synthetic — never flag them */
 function isInitMarker(artifact: string): boolean {
   return artifact === 'init.marker' || artifact.endsWith('.marker');
-}
-
-/** Infrastructure files (.roadmap/*, .git/*, package.json, etc.) are not scope leaks */
-function isInfraFile(file: string): boolean {
-  return file.startsWith('.roadmap/') || file.startsWith('.git/') ||
-    file === 'package.json' || file === 'package-lock.json' ||
-    file === 'pnpm-lock.yaml' || file === 'tsconfig.json';
-}
-
-/** Extract file paths referenced in shell commands (e.g. test files passed to vitest/jest) */
-function extractShellReferencedFiles(shellCommands: string[]): Set<string> {
-  const files = new Set<string>();
-  for (const cmd of shellCommands) {
-    // Extract paths: tokens containing / and ending in known extensions
-    for (const token of cmd.split(/\s+/)) {
-      if (token.includes('/') && /\.\w+$/.test(token)) {
-        files.add(token);
-      }
-    }
-  }
-  return files;
 }
 
 /**
