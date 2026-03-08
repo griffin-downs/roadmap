@@ -40,25 +40,16 @@ describe('advance-feature-branch', () => {
   });
 
   it('should NOT have enforceMainBranch in cmdStatus function', () => {
-    // Extract the cmdStatus function
-    const cmdStatusMatch = binContent.match(
-      /async function cmdStatus\(note: string \| undefined\) \{[\s\S]*?(?=\n  async function|\n  function|\nfunction [a-z])/
-    );
-    expect(cmdStatusMatch).toBeTruthy();
-
-    if (cmdStatusMatch) {
-      const cmdStatusBody = cmdStatusMatch[0];
-      // Verify enforceMainBranch is NOT called inside cmdStatus
-      expect(cmdStatusBody).not.toMatch(
-        /^\s*enforceMainBranch\(\)/m
-      );
-    }
+    // cmdStatus is now in src/cli/status.ts — verify it doesn't call enforceMainBranch
+    const statusPath = join(repoRoot, 'src', 'cli', 'status.ts');
+    const statusContent = readFileSync(statusPath, 'utf-8');
+    expect(statusContent).not.toMatch(/enforceMainBranch/);
   });
 
   it('should still enforce main branch for make command (without --dry-run)', () => {
-    // Verify the enforcement logic still applies to make
+    // Verify the enforcement logic still applies to make (router delegates to enforceMainBranch)
     const enforceLogic = binContent.match(
-      /const BRANCH_EXEMPT = new Set\(\[([^\]]*)\]\);[\s\S]*?if \(!BRANCH_EXEMPT\.has\(cmd\)[\s\S]*?\{[\s\S]*?enforceMainBranch\(\);[\s\S]*?\}/
+      /const BRANCH_EXEMPT = new Set\(\[([^\]]*)\]\);[\s\S]*?if \(!BRANCH_EXEMPT\.has\(cmd\)[\s\S]*?\{[\s\S]*?enforceMainBranch\(repoRoot\);[\s\S]*?\}/
     );
     expect(enforceLogic).toBeTruthy();
   });
