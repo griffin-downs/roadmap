@@ -46,6 +46,7 @@ import { buildTerminalBrief, type TerminalBrief } from '../src/lib/terminal-brie
 import { archiveHead, appendLink, currentIteration, parseExecutionReport, type ChainLink, type ExecutionReport } from '../src/lib/chain.ts';
 import type { FinalHandoff, InterimHandoff } from '../src/lib/brief.ts';
 import { saveFinal, saveInterim } from '../src/lib/agent-dispatch/handoff-journal.ts';
+import { currentIteration, loadChain, getRootIntent } from '../src/lib/chain.ts';
 import type { Graph, Orientation } from '../src/protocol.ts';
 import type { SiblingStatus } from '../src/lib/cross-orient.ts';
 import type { OrientV1, OrientDag, OrientDagNode, OrientDagEdge, OrientBlockedNode } from '../src/lib/core/orient-schema.ts';
@@ -507,6 +508,24 @@ async function cmdOrient(note: string | undefined) {
     }
   }
 
+  // Chain context from chain.jsonl
+  let chainContext: { iteration: number; predecessorId: string | null; dagId: string; rootIntent: string } | undefined;
+  try {
+    const chain = loadChain(repoRoot);
+    if (chain.length > 0) {
+      const iteration = currentIteration(repoRoot);
+      const lastLink = chain[chain.length - 1];
+      chainContext = {
+        iteration,
+        predecessorId: lastLink.predecessorId,
+        dagId: dag.id ?? 'unknown',
+        rootIntent: getRootIntent(repoRoot),
+      };
+    }
+  } catch {
+    // Chain context is best-effort
+  }
+
   const result: Record<string, unknown> = {
     position: nextPosition,
     level: nextLevel,
@@ -520,6 +539,7 @@ async function cmdOrient(note: string | undefined) {
     branch: getCurrentBranch(),
     worktree: isWorktree(),
     briefs,
+    ...(chainContext ? { chain: chainContext } : {}),
   };
 
   // When DAG is complete, surface unloaded specs as next action
