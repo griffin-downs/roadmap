@@ -1,0 +1,27 @@
+{
+  "artifact": "cli-decompose-verified",
+  "verifiedAt": "2026-03-08T21:26:00Z",
+  "summary": "CLI decomposition complete. bin/roadmap.ts reduced from 2064 to 203 lines.",
+  "evidence": {
+    "routerLines": 203,
+    "routerTarget": 250,
+    "cliModules": 9,
+    "cliModuleTarget": 9,
+    "testsPass": 286,
+    "typeCheckClean": true,
+    "behaviorChanged": false
+  },
+  "modules": [
+    "src/cli/shared.ts",
+    "src/cli/orient.ts",
+    "src/cli/advance.ts",
+    "src/cli/make.ts",
+    "src/cli/status.ts",
+    "src/cli/api.ts",
+    "src/cli/help.ts",
+    "src/cli/dag.ts",
+    "src/cli/spec.ts"
+  ],
+  "deletions": 1960,
+  "additions": 1829
+}
