@@ -100,7 +100,8 @@ export interface IntentDiagnosis {
 export type ConsumeSpec = string | { artifact: string; resolvedBy: string };
 
 export function consumeArtifact(c: ConsumeSpec): string {
-  return typeof c === 'string' ? c : c.artifact;
+  if (typeof c === 'string') return c;
+  return c.artifact;
 }
 
 export function consumeResolvedBy(c: ConsumeSpec): string | undefined {
