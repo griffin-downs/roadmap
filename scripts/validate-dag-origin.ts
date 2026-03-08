@@ -98,7 +98,7 @@ export function validateDagOrigin(repoRoot: string): ValidateResult {
   }
 
   // 4. If head.json changed, verify mutations.jsonl has receipts for this DAG
-  // Checks provenance (receipts exist for current DAG), not recency (time window)
+  // Checks both provenance (receipts exist for current DAG) and recency (within 60s)
   const mutationsPath = join(repoRoot, '.roadmap/mutations.jsonl');
   if (existsSync(headPath) && existsSync(mutationsPath)) {
     try {
@@ -107,20 +107,38 @@ export function validateDagOrigin(repoRoot: string): ValidateResult {
       if (dagId) {
         const lines = readFileSync(mutationsPath, 'utf-8').split('\n').filter(l => l.trim());
         // Valid if: mutations.jsonl is empty (DAG created via make, no mutations yet)
-        // or has at least one receipt (mutations were tracked through CLI)
-        // Only fail if mutations.jsonl exists with entries for a *different* DAG
+        // or has at least one recent receipt (mutations were tracked through CLI)
         if (lines.length > 0) {
-          const hasMatchingReceipt = lines.some(line => {
+          const STALE_THRESHOLD_MS = 60_000;
+          const now = Date.now();
+          const matchingReceipts: { timestamp?: string }[] = [];
+          for (const line of lines) {
             try {
               const entry = JSON.parse(line);
-              return !entry.dagId || entry.dagId === dagId;
-            } catch { return false; }
-          });
-          if (!hasMatchingReceipt) {
+              if (!entry.dagId || entry.dagId === dagId) {
+                matchingReceipts.push(entry);
+              }
+            } catch { /* skip malformed lines */ }
+          }
+          if (matchingReceipts.length === 0) {
             return {
               ok: false,
               code: 'missing-mutation-receipt',
               message: `mutations.jsonl has no receipts for DAG "${dagId}"`,
+              fix: 'Use roadmap dag {insert,remove,modify} to mutate the DAG, not direct edits',
+            };
+          }
+          // Check recency: at least one matching receipt must be within the threshold
+          const hasRecentReceipt = matchingReceipts.some(entry => {
+            if (!entry.timestamp) return false;
+            const ts = new Date(entry.timestamp).getTime();
+            return !isNaN(ts) && (now - ts) < STALE_THRESHOLD_MS;
+          });
+          if (!hasRecentReceipt) {
+            return {
+              ok: false,
+              code: 'missing-mutation-receipt',
+              message: `mutations.jsonl has no recent receipts for DAG "${dagId}" (all older than ${STALE_THRESHOLD_MS / 1000}s)`,
               fix: 'Use roadmap dag {insert,remove,modify} to mutate the DAG, not direct edits',
             };
           }
