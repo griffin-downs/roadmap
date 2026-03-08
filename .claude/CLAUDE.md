@@ -8,120 +8,66 @@ DAG expansion protocol library. Any repo can depend on this package, define a `r
 
 **Read this first.** This guide helps agents understand what they're building without requiring conversation.
 
-### System Architecture (6 Layers)
+### Layered Architecture
 
 ```
-Layer 1: DAG Core
-  ├─ define(g)    — validate structure
-  ├─ verify(g)    — validate contracts (consumes satisfied by predecessors)
-  ├─ check(g)     — termination (reachability from init↔term)
-  ├─ orient(g)    — batch position from filesystem
-  └─ advanceBatch — move to next batch
-  Status: ✓ COMPLETE
+src/core/          Pure graph algebra. Zero IO. Graph in, Value out.
+  ├─ graph.ts        define, verify, check, flat, fwd, detectCycles, reach
+  ├─ order.ts        order, parallelOrder, criticalPath, batchConflicts
+  ├─ orient.ts       orient(g, exists) → Orientation
+  ├─ batch.ts        advanceBatch, readyNodes, nextBatch
+  ├─ reconcile.ts    reconcile, merge, branch, analyze, modify
+  ├─ access.ts       nodes(g), node(g, id) — typed accessors
+  └─ types.ts        CoreNodeSpec, CoreGraph (5-field contract)
 
-Layer 2: Batch Execution
-  ├─ parallelOrder(g)  — topological sort → batches (runnable in parallel)
-  ├─ nodeOrder(g)      — full execution sequence
-  └─ Progress tracking  — which nodes are done
-  Status: ✓ COMPLETE
+src/runtime/       IO boundary. Single filesystem touch point.
+  ├─ context.ts      loadContext(repoRoot) → Context (loads completions, chain, handoffs)
+  ├─ completion.ts   CompletionStore — receipt-based completion tracking
+  ├─ brief.ts        brief(g, position, context) → Brief (pure, sync)
+  ├─ meta.ts         NodeMeta, ManagedGraph, fullNode() — runtime metadata
+  └─ mutate.ts       modifyAndCommit() — IO-side DAG mutation with git commit
 
-Layer 3: Enforcement & Safety
-  ├─ Pre-commit gates (4 gates)      — branch discipline, gitsafe, DAG edit auth
-  ├─ Gitsafe (gitsafe-loader.ts)     — file access control (denylist, size limits, multi-repo)
-  ├─ Validator framework (5 types)   — artifact-exists, shell, function, schema, manual-approval
-  ├─ CheckpointManager (recovery.ts) — snapshots, rollback, wired into runtime
-  ├─ DAG intake pipeline             — origin enforcement, blocks manual DAG construction
-  └─ DAG mutator (dag-mutator.ts)    — insert/remove/modify with provenance receipts
-  Status: ✓ COMPLETE
+src/cli/           Thin dispatch. Parse args, call runtime, JSON to stdout.
+  ├─ make.ts         spec → DAG creation
+  ├─ orient.ts       batch position query
+  └─ advance.ts      node completion / batch advancement
 
-Layer 4: Agent Coordination [PARTIAL]
-  ├─ Worktree spawning          — isolated DAG editing per agent
-  ├─ Feature branch merging     — consolidation via git
-  ├─ Task dispatch              — claim/assign/complete workflow (basic)
-  ├─ Swarm orchestration        — MISSING (no multi-agent coordination)
-  ├─ Load balancing             — MISSING
-  └─ Status synchronization     — MISSING
-  Status: 🟡 PARTIAL (worktrees work, swarm doesn't)
+bin/roadmap.ts     CLI entry point + router (2064 lines — decomposition WIP)
 
-Layer 5: Spec Integration
-  ├─ Spec parsing               — JSON IR exists
-  ├─ DAG generation from spec   — basic (exists)
-  ├─ Scenario mapping           — spec-conformance.ts (Given/When/Then → node mapping)
-  ├─ Conformance validation     — spec-conformance validator (validates DAG against scenarios)
-  ├─ LLM feedback loop          — llm-feedback.ts (metrics → improvement prompts)
-  └─ Distributed DAG            — protocol-distributed.ts (multi-repo DAG state + pattern mining)
-  Status: ✓ COMPLETE
-
-Layer 6: Observability
-  ├─ Trail logging              — .roadmap/trail.jsonl (exists)
-  ├─ Metrics extraction         — metrics-extractor.ts (SLO tracking from trail)
-  ├─ Checkpoint runtime         — checkpoint-runtime.ts (snapshots + audit trail)
-  ├─ Error attribution          — trail error recording with structured codes
-  └─ Telemetry/dashboard        — MISSING
-  Status: ✓ MOSTLY COMPLETE (dashboard missing)
+src/lib/           Supporting modules (protocol types, validators, intake, etc.)
+src/lib/protocol/  Type definitions + barrel exports
+  ├─ types.ts        NodeSpec, Graph, ValidationRule, etc.
+  ├─ index.ts        Barrel — re-exports from core/ and runtime/
+  ├─ schema.ts       Validator rule schemas
+  └─ validation.ts   validateNode, validateBatch, validateGraph
 ```
 
-### Self-Compounding Stack (Implemented)
+**Invariant:** `src/core/` has zero `node:fs` imports. All filesystem access goes through `src/runtime/context.ts` via `loadContext()`. The `exists` predicate passed to `orient()` is the only bridge from pure algebra to filesystem state.
 
-These modules form the self-teaching pipeline:
+### Module Map
 
-1. **CheckpointManager** (src/checkpoint-runtime.ts) — wired into runtime, snapshots + rollback
-2. **Metrics extraction** (src/metrics-extractor.ts) — SLO tracking from trail.jsonl
-3. **Gitsafe multi-repo** (src/lib/gitsafe-loader.ts) — file access control across N repos
-4. **Spec-conformance** (src/validators/spec-conformance.ts) — Given/When/Then → node validation
-5. **LLM feedback** (src/llm-feedback.ts) — metrics + audit → improvement prompts
-6. **Distributed DAG** (src/protocol-distributed.ts) — multi-repo DAG merge + pattern mining
-7. **DAG mutator** (src/lib/dag-mutator.ts) — insert/remove/modify with provenance
-8. **Intake pipeline** (src/lib/intake/index.ts) — enforced spec origin for all DAGs
+| Area | Key Files | What |
+|------|-----------|------|
+| DAG algebra | `src/core/*.ts` | Pure validation, ordering, orientation, merging |
+| IO boundary | `src/runtime/context.ts` | Single `loadContext()` loads all filesystem state |
+| Completion | `src/runtime/completion.ts` | Receipt-based tracking with evidence records |
+| Brief generation | `src/runtime/brief.ts` | Pure brief(g, position, context) → Brief |
+| Type split | `src/core/types.ts` + `src/runtime/meta.ts` | CoreNodeSpec (5 fields) vs NodeMeta (runtime fields) |
+| Intake pipeline | `src/lib/intake/` | Spec origin enforcement, SpecIR parsing, DAG generation |
+| DAG mutation | `src/lib/dag-mutator.ts` | insert/remove/modify with provenance to mutations.jsonl |
+| Gitsafe | `src/lib/gitsafe-loader.ts` | File access control (denylist, size limits) |
+| Validators | `src/lib/protocol/validation.ts` | artifact-exists, shell, schema, manual-approval, expanded |
+| Trail | `src/lib/audit/trail.ts` | .roadmap/trail.jsonl append-only event log |
+| Metrics | `src/metrics-extractor.ts` | SLO tracking from trail.jsonl |
+| Claims | `src/lib/claims/claims.ts` | Node claim/assign/release for multi-agent |
+| Chain | `src/lib/chain.ts` | DAG chaining — iteration tracking, execution reports |
+| Agent dispatch | `src/lib/agent-dispatch/` | Brief gate, handoff journal, dispatch coordinator |
+| Predicates | `src/predicates.ts` | findRepoRoot, fileExists, gitArtifactExists, compound, any |
 
 ### Gap Inventory
 
-**🟡 HIGH (enables distributed work):**
-- **Swarm orchestration** — Multi-agent coordination (worktrees work, no swarm layer)
-- **Metrics dashboard** — Visualization of trail/metrics data
-
-### Integration Patterns (Learn from These Branches)
-
-Reference these completed branches to understand how to wire systems:
-
-1. **feat/protocol-design** (e535f8f)
-   - How to: Build core DAG operations
-   - Pattern: Define types first, then implementations
-   - Test: Cycles detection, contract validation
-
-2. **feat/hook-installation** (5f4af3f)
-   - How to: Add pre-commit gates
-   - Pattern: Hook into git lifecycle, validate before commit
-   - Test: Bypass detection, gate logic
-
-3. **feat/worktree-spawn-command** (0894831)
-   - How to: Add agent isolation + feature branch support
-   - Pattern: Worktree branching discipline, merge semantics
-   - Test: Branch protection, DAG edit enforcement
-
-4. **feat/consolidation-complete** (48a8eaf)
-   - How to: Merge multiple DAGs
-   - Pattern: Dependency resolution, provenance tracking
-   - Test: Conflicting merges, topological ordering
-
-5. **feat/hardening-verification** (bf5ce57)
-   - How to: Build validator framework
-   - Pattern: Pluggable validators, composable checks
-   - Test: Each validator type, integration with complete()
-
-### Quick Reference Map
-
-**"I need to add observability"**
-→ Layer 6: metrics-extractor.ts, checkpoint-runtime.ts, trail.jsonl. Gap: dashboard/visualization.
-
-**"I need to support multiple repos"**
-→ Layer 5: protocol-distributed.ts (multi-repo merge), gitsafe-loader.ts (multi-repo access control).
-
-**"I need agents to generate correct DAGs"**
-→ Layer 5: spec-conformance.ts (scenario → node validation), intake pipeline (origin enforcement).
-
-**"I need the system to teach itself"**
-→ Full pipeline: metrics-extractor → llm-feedback → spec-conformance → distributed DAG pattern mining.
+- **bin/roadmap.ts decomposition** — 2064-line monolith, cli/ modules exist alongside but aren't wired as primary dispatch yet
+- **Metrics dashboard** — trail.jsonl + metrics-extractor exist but no visualization
 
 ### Session Checklist (Before Starting Work)
 
@@ -130,7 +76,6 @@ Before an agent claims a task:
 - [ ] Agent has read this AGENT_GUIDE section
 - [ ] Agent understands which layer(s) the task affects
 - [ ] Agent knows what existing code relates to it
-- [ ] Agent has read 1-2 example branches (integration patterns)
 - [ ] Agent can explain: "I'm building X so that Y becomes possible"
 
 If agent can't check all ^, ask for clarification before starting.
@@ -141,10 +86,9 @@ If agent can't check all ^, ask for clarification before starting.
 
 | Import | What |
 |--------|------|
-| `roadmap` | Full API — DAG ops + recovery + versioning + predicates + errors |
+| `roadmap` | Full API — DAG ops + predicates + errors + types |
 | `roadmap/protocol` | Core — define, verify, orient, merge, branch, reconcile, parallelOrder, advanceBatch |
-| `roadmap/agent` | Sealed agent API — getBrief, advance, checkpoint (no DAG introspection) |
-| `roadmap/recovery` | CheckpointManager + AuditTrail |
+| `roadmap/agent` | Sealed agent API — getBrief, advance (no DAG introspection) |
 | `roadmap/validation` | validateNode, validateGraph, validateBatch |
 | `roadmap/versioning` | loadDAG, migration, compatibility |
 
@@ -164,6 +108,7 @@ reconcile(g, fwd, bwd)   find where forward.produces meets backward.consumes
 merge(g1, g2, conn)      combine DAGs at join points
 branch(g, from)          extract subgraph
 validateBatch(g, batch, exists)  validate all nodes in a batch as unit
+findRepoRoot(startDir)   walk up to .roadmap/ or .git — repo root discovery
 fileExists(root)         curried predicate for orient()
 RoadmapError(code, ctx)  typed error with fix suggestion
 ```
@@ -171,13 +116,13 @@ RoadmapError(code, ctx)  typed error with fix suggestion
 ## Key Types
 
 ```typescript
-NodeSpec<TAll, TSelf>   { id, desc, produces, consumes, deps, validate, idempotent, mode?, expandedFrom? }
-Graph<T>                { id, desc, init, term, nodes: { [N in T]: NodeSpec<T, N> } }
-Orientation             { position: string[], level, batchRemaining, batchComplete, preGate, done, produces, consumes, remaining }
-ValidationRule          'artifact-exists' | 'artifact-schema' | 'function' | 'manual-approval' | 'expanded' | 'shell'
-RoadmapError            { code: ErrorCode, context: { fix, entry, ... } }
-Brief                   { position, mode, produces, consumes, description, pattern, handoffs }
-FinalHandoff            { summary, keyDecisions, gotchas, timestamp }
+CoreNodeSpec       { id, desc, produces, consumes, deps }           // pure algebra contract
+NodeMeta           { validate, idempotent, mode, expandedFrom, … }  // runtime metadata
+NodeSpec<T,S>      CoreNodeSpec & NodeMeta                           // full node (backward compat)
+Graph<T>           { id, desc, init, term, nodes: { [N in T]: NodeSpec<T, N> } }
+Orientation        { position: string[], level, batchRemaining, batchComplete, preGate, done, produces, consumes, remaining }
+Context            { repoRoot, completion, chain, handoffs }         // IO boundary output
+Brief              { position, mode, produces, consumes, description, pattern, handoffs }
 ```
 
 ## Batch Position Model
@@ -205,12 +150,8 @@ Nodes can declare `mode: 'plan'` to signal decomposition rather than execution.
 - **Plan nodes** complete when expansion children exist (`expandedFrom` provenance)
 - **Execute nodes** (default) complete when produced artifacts exist
 - **Pre-gate**: plan nodes surface in `orient().preGate` before deps close — investigation can start early
-  - Filtered: plan nodes with uncompleted plan-mode deps are excluded (their ADR outputs shape downstream research)
-  - Execute deps are ignored for pre-gate (code doesn't affect research direction)
 - **`expanded` validation rule**: checks that nodes with `expandedFrom === nodeId` exist in the graph
 - **Brief.mode**: agents receive `'plan'` or `'execute'` in their sealed brief and branch on it
-
-Orient output includes `preGate` array for plan nodes workable before deps close.
 
 ## Validation Stack
 
@@ -229,68 +170,43 @@ Unified DAG editing discipline for both human users and LLM agents via feature b
 
 ### Workflow
 
-1. **Spawn**: `roadmap spawn --task <node-id>` creates worktree and feature branch
-   ```bash
-   git worktree add .claude/worktrees/<task-id> -b feat/<task-id>
-   cd .claude/worktrees/<task-id>
-   ```
+1. **Spawn**: `git worktree add .claude/worktrees/<task-id> -b feat/<task-id>`
+2. **Work**: Edit files, `git add <produces>`, `git commit -m "<node-id>: <what>"`
+3. **Merge**: `roadmap merge-batch --from feat/task-1,feat/task-2`
+4. **Cleanup**: `roadmap cleanup-worktrees`
 
-2. **Work**: Edit files, commit to feature branch
-   ```bash
-   git add <files>
-   git commit -m "<node-id>: <what>"
-   ```
+### Branch Discipline
 
-3. **Merge**: `roadmap merge-batch --from <branches>` consolidates DAGs
-   ```bash
-   roadmap merge-batch --from feat/task-1,feat/task-2
-   ```
-
-4. **Cleanup**: `roadmap cleanup-worktrees` removes stale worktrees
-
-### Pre-Commit Enforcement
-
-The pre-commit hook enforces branch discipline:
-- Reject edits to `head*.json` on main/master
-- Allow edits only on `feat/*`, `wip/*`, `develop` branches
-
-### Merge Semantics
-
-Multiple DAGs are consolidated via:
-1. Discover all `.roadmap/*.json` files from each branch
-2. Merge DAGs in dependency order (topological sort)
-3. Propagate constraints (derive artifact dependencies)
-4. Validate (define, verify, check)
-5. Write unified head.json with consolidatedFrom provenance
+- `feat/*`, `wip/*`, `develop` — allowed to edit `.roadmap/head.json` and run DAG mutations
+- `main` — read-only for DAG state (pre-commit hook + runtime gate enforce this)
+- Worktrees are exempt from branch enforcement (isolated execution context)
 
 ## CLI
 
 ```
 Core (mainline execution loop):
-  bin/roadmap make <spec>  --note "..."   Create ideal DAG from spec
-  bin/roadmap orient       --note "..."   Batch position + produces/consumes (JSON)
-  bin/roadmap advance [id] --note "..."   Complete node (run validators) or advance batch
+  roadmap make <spec>  --note "..."   Create ideal DAG from spec
+  roadmap orient       --note "..."   Batch position + produces/consumes (JSON)
+  roadmap advance [id] --note "..."   Complete node (run validators) or advance batch
 
 Groups:
-  bin/roadmap dag insert   --note "..."   Insert node into DAG
-  bin/roadmap dag remove   --note "..."   Remove node (--cascade for dependents)
-  bin/roadmap dag modify   --note "..."   Modify node fields
-  bin/roadmap dag log                     Show mutation history
-  bin/roadmap spec plan    --note "..."   Spec planning (--gallery, select <id>, status)
+  roadmap dag insert   --note "..."   Insert node into DAG
+  roadmap dag remove   --note "..."   Remove node (--cascade for dependents)
+  roadmap dag modify   --note "..."   Modify node fields
+  roadmap dag log                     Show mutation history
+  roadmap spec plan    --note "..."   Spec planning (--gallery, select <id>, status)
 
 Discovery:
-  bin/roadmap api [<cmd>]                 Schema discovery (JSON Schema + examples)
-  bin/roadmap api --all                   Full registry dump
-  bin/roadmap help                        Usage
+  roadmap api [<cmd>]                 Schema discovery (JSON Schema + examples)
+  roadmap api --all                   Full registry dump
+  roadmap help                        Usage
 ```
 
 All commands require `--note "reason"` (except help, orient, api). Output is JSON. Every invocation appends to both `~/.roadmap/trail.jsonl` (global) and `.roadmap/trail.jsonl` (local).
 
 ## Session Protocol
 
-**At session start**: `roadmap orient --note "<what you're doing and why>"`. This is mandatory — it finds position and leaves a breadcrumb. Do not infer position from memory or file reads. The note is trail content — write what matters, not ceremony.
-
-Example: `--note "auth module — adding JWT refresh token rotation"`
+**At session start**: `roadmap orient --note "<what you're doing and why>"`. This is mandatory — it finds position and leaves a breadcrumb. Do not infer position from memory or file reads.
 
 **Core loop:**
 ```bash
@@ -300,13 +216,7 @@ roadmap advance <node-id> --note "..."  # Run validators, record completion
 roadmap advance --note "..."            # Advance to next batch (when all nodes done)
 ```
 
-**Group reference:** `roadmap <group> help` (dag, spec)
-
 **During work**: Orient after completing logical units.
-
-## This Repo's Own Roadmap
-
-DAG stored in `.roadmap/head.json`. 24 nodes (self-compounding-001). Position at terminal node `self-teaching-enabled` — 23/24 complete, 1 remaining.
 
 ## Expansion Protocol
 
@@ -318,35 +228,14 @@ DAG stored in `.roadmap/head.json`. 24 nodes (self-compounding-001). Position at
 6. `define(g)` after every change, `check(g)` to test termination
 7. Done when `check()` returns `{ done: true }` and `verify()` returns `[]`
 
-Plan nodes can appear anywhere in the DAG. They expand into new execute (or plan) nodes at runtime. Use `expandedFrom` to track provenance.
-
 ## File Headers
 
 Every src/ file has structured headers for machine discovery:
 ```
-// @module protocol
-// @exports define, verify, orient, merge, branch, ...
-// @types NodeSpec, Graph, Orientation, ...
-// @entry roadmap/protocol
+// @module core/graph
+// @exports define, verify, check, flat, fwd, detectCycles, reach, Flat
+// @types Flat
+// @entry roadmap
 ```
 
 Grep for `@exports` across src/ to get the full API map without reading function bodies.
-
----
-
-## CLI Surface (v0.3.0+)
-
-3 core commands + 2 groups + discovery.
-
-### Core
-- `make <spec>` — Create ideal DAG from spec (validates: define, verify, check)
-- `orient` — Batch position from filesystem
-- `advance [node-id]` — Complete node (run validators, record evidence) or advance batch
-
-### Groups
-- `dag {insert,remove,modify,log}` — DAG mutations with provenance
-- `spec {plan}` — Spec planning (gallery, select, status)
-
-### Discovery
-- `api [<cmd>]` — JSON Schema for any command's input/output
-- `api --all` — Full schema registry

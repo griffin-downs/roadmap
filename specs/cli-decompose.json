@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "dag_id": "cli-decompose",
+  "dag_desc": "Decompose bin/roadmap.ts (2064 lines) into src/cli/ modules. Each command becomes a self-contained module. bin/roadmap.ts shrinks to a thin router (~150 lines): arg parsing, gitsafe, trail, error handling, and a switch statement that delegates to cli/ modules.",
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "inputs": [
+    { "path": "bin/roadmap.ts", "sha256": "sha256-source", "role": "spec" }
+  ],
+  "metadata": {
+    "generated": "2026-03-08T19:30:00Z",
+    "compile_hash": "manual"
+  },
+  "tasks": [
+    {
+      "id": "init",
+      "desc": "Anchor: bin/roadmap.ts is 2064-line monolith with 20+ inline command functions. src/cli/ has 3 thin wrappers (make.ts, orient.ts, advance.ts) from convergence DAG that aren't wired in.",
+      "priority": 0,
+      "depends": [],
+      "produces": [],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [{ "type": "artifact-exists" }]
+    },
+    {
+      "id": "extract-shared",
+      "desc": "Extract shared CLI infrastructure from bin/roadmap.ts into src/cli/shared.ts: DAG loading (loadDAGWithAutoMerge + migrateSingleHead + ensureConsolidated), trail recording (appendTrail), gitsafe enforcement (enforceMainBranch + safeReadFile), output helpers (json, emit wrappers), findRepoRoot + setRepoRoot init. All command modules will import from shared.ts.",
+      "priority": 1,
+      "depends": ["init"],
+      "produces": ["src/cli/shared.ts"],
+      "consumes": [],
+      "ambient": ["bin/roadmap.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "grep -q 'export function loadDAG\\|export function appendTrail\\|export function enforceMainBranch' src/cli/shared.ts" }
+      ]
+    },
+    {
+      "id": "extract-small",
+      "desc": "Extract cmdStatus (52 lines), cmdApi (77 lines), and cmdHelp (66 lines) from bin/roadmap.ts into src/cli/status.ts, src/cli/api.ts, src/cli/help.ts. Each exports a single run() function. Wire them into bin/roadmap.ts router (replace inline functions with imports).",
+      "priority": 2,
+      "depends": ["extract-shared"],
+      "produces": ["src/cli/status.ts", "src/cli/api.ts", "src/cli/help.ts"],
+      "consumes": ["src/cli/shared.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "pnpm vitest run" }
+      ]
+    },
+    {
+      "id": "extract-dag-group",
+      "desc": "Extract cmdDagGroup + cmdDagInsert/Remove/Modify/Log (211 lines) from bin/roadmap.ts into src/cli/dag.ts. Exports run() that sub-routes insert/remove/modify/log. Wire into bin/roadmap.ts router.",
+      "priority": 2,
+      "depends": ["extract-shared"],
+      "produces": ["src/cli/dag.ts"],
+      "consumes": ["src/cli/shared.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "pnpm vitest run" }
+      ]
+    },
+    {
+      "id": "extract-spec-group",
+      "desc": "Extract cmdSpecGroup + cmdPlanRouter/Gallery/Select/Status + cmdSpecMigrate (237 lines) from bin/roadmap.ts into src/cli/spec.ts. Exports run() that sub-routes plan/migrate. Wire into bin/roadmap.ts router.",
+      "priority": 2,
+      "depends": ["extract-shared"],
+      "produces": ["src/cli/spec.ts"],
+      "consumes": ["src/cli/shared.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "pnpm vitest run" }
+      ]
+    },
+    {
+      "id": "extract-orient",
+      "desc": "Replace the thin src/cli/orient.ts (27 lines) with the full cmdOrient logic (168 lines) extracted from bin/roadmap.ts. Handles DAG loading, completion-based orient, brief generation per node, chain context, claim annotation, human rendering. Wire into bin/roadmap.ts router.",
+      "priority": 3,
+      "depends": ["extract-shared"],
+      "produces": ["src/cli/orient.ts"],
+      "consumes": ["src/cli/shared.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "pnpm vitest run" }
+      ]
+    },
+    {
+      "id": "extract-make",
+      "desc": "Replace the thin src/cli/make.ts (30 lines) with the full cmdMake logic (261 lines) extracted from bin/roadmap.ts. Handles spec parsing, tasks normalization, DAG creation via tasksToDAG, define/verify/check validation, spec-origin tracking, head.json writing, chain initialization. Wire into bin/roadmap.ts router.",
+      "priority": 3,
+      "depends": ["extract-shared"],
+      "produces": ["src/cli/make.ts"],
+      "consumes": ["src/cli/shared.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "pnpm vitest run" }
+      ]
+    },
+    {
+      "id": "extract-advance",
+      "desc": "Replace the thin src/cli/advance.ts (27 lines) with the full cmdAdvance logic (499 lines) extracted from bin/roadmap.ts. This is the largest and most complex command — handles single-node advance (validator execution, evidence recording, completion writing, handoff journaling, brief caching) and batch advance (batch validation, next-batch orientation). Wire into bin/roadmap.ts router.",
+      "priority": 4,
+      "depends": ["extract-shared", "extract-orient"],
+      "produces": ["src/cli/advance.ts"],
+      "consumes": ["src/cli/shared.ts", "src/cli/orient.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "pnpm vitest run" }
+      ]
+    },
+    {
+      "id": "thin-router",
+      "desc": "Rewrite bin/roadmap.ts as a thin router. Delete all extracted cmdFoo functions. What remains: shebang, imports from src/cli/*, arg parsing (rawArgs, note, cmd extraction), KNOWN_COMMANDS gate, the routeCommand switch statement that delegates to cli/ modules, and top-level error handling. Target: under 200 lines.",
+      "priority": 5,
+      "depends": ["extract-small", "extract-dag-group", "extract-spec-group", "extract-orient", "extract-make", "extract-advance"],
+      "produces": ["bin/roadmap.ts"],
+      "consumes": [
+        "src/cli/shared.ts", "src/cli/orient.ts", "src/cli/advance.ts",
+        "src/cli/make.ts", "src/cli/status.ts", "src/cli/api.ts",
+        "src/cli/help.ts", "src/cli/dag.ts", "src/cli/spec.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists" },
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "pnpm vitest run" },
+        { "type": "shell", "command": "test $(wc -l < bin/roadmap.ts) -lt 250" }
+      ]
+    },
+    {
+      "id": "term",
+      "desc": "CLI decomposition complete. bin/roadmap.ts is under 200 lines. All commands route through src/cli/ modules. 286+ tests pass. Build clean. No command behavior changed — only structure.",
+      "priority": 6,
+      "depends": ["thin-router"],
+      "produces": [".roadmap/tasks/cli-decompose-verified.artifact.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm run check" },
+        { "type": "shell", "command": "pnpm vitest run" },
+        { "type": "shell", "command": "test $(wc -l < bin/roadmap.ts) -lt 250" },
+        { "type": "shell", "command": "test $(ls src/cli/*.ts | wc -l) -ge 9" },
+        { "type": "artifact-exists" }
+      ]
+    }
+  ]
+}

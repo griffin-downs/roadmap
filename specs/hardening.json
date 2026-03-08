@@ -1,34 +1,92 @@
 {
-  "id": "hardening",
-  "desc": "Harden completion store (atomic writes, legacy warnings, unit tests), extract FS from protocol validation into injected predicates, replace unsafe casts in reconcile with typed builder + add core algebra unit tests.",
-  "init": "init",
-  "term": "term",
-  "nodes": {
-    "init": {
+  "schema_version": 1,
+  "dag_id": "hardening",
+  "dag_desc": "Harden completion store (atomic writes, legacy warnings, unit tests), extract FS from protocol validation into injected predicates, replace unsafe casts in reconcile with typed builder + add core algebra unit tests.",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "role": "tasks",
+      "path": "specs/hardening.json",
+      "sha256": "ba83e21623ec2c38fcb1996eee8a791cce3ab1f083d82c7d2ec0e91456687cbb"
+    },
+    {
+      "role": "other",
+      "path": "src/runtime/completion.ts",
+      "sha256": "54c58307cc842ff6fb171f2c6499fbbd63d3ca6c6c487d89e0d5df2d799a20a1"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/protocol/validation.ts",
+      "sha256": "82992a2d8c11155782574f0971885723613b5e13226568c0216e0594c1ca23c3"
+    },
+    {
+      "role": "other",
+      "path": "src/core/reconcile.ts",
+      "sha256": "2267668be8d6893fe0b5aee0a9aa17364e9bea1b2436bd6d5e7fe84471943933"
+    },
+    {
+      "role": "other",
+      "path": "src/core/graph.ts",
+      "sha256": "d4f8d5daf119aa9cf46114e0c1ce5a44f6a0a64792dc4b1e6a38407ad3792125"
+    },
+    {
+      "role": "other",
+      "path": "src/core/order.ts",
+      "sha256": "eaf352509e6a125ebbc839d47f272ef30ef5a502ffc21798330eeb902c0e37cf"
+    },
+    {
+      "role": "other",
+      "path": "src/core/orient.ts",
+      "sha256": "06bdb49dad87ea0d2fb6dfe28828b5642b3004659fdebeb831aedeac1fdfff9f"
+    },
+    {
+      "role": "other",
+      "path": "src/core/types.ts",
+      "sha256": "3b8f453496701df6629e0dd16ee2742fcbf4359af7a7a2b4604c94d613cfd479"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/protocol/types.ts",
+      "sha256": "6a65d83b67ede069f45bd8a85f008b0fda6629136b96d5db836e442e8bae3f26"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-08T00:00:00Z",
+    "compile_hash": "manual"
+  },
+  "tasks": [
+    {
       "id": "init",
       "desc": "Anchor: three health deficits identified — completion store race (read-modify-write with no lock), protocol validation FS leak (dynamic import node:fs in pure layer), reconcile type unsafety (7x as any on graph construction). 286 tests passing, tsc clean.",
+      "priority": 0,
+      "depends": [],
       "produces": [
         ".roadmap/tasks/init.artifact.json"
       ],
       "consumes": [],
-      "deps": [],
+      "mode": "execute",
       "validate": [
         {
           "type": "artifact-exists"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "completion-atomic-write": {
+    {
       "id": "completion-atomic-write",
       "desc": "Replace read-modify-write in saveCompletionWithEvidence and saveCompletion with atomic write pattern: write to .roadmap/completed.json.tmp, then rename. Eliminates race where two parallel advance calls clobber each other.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "src/runtime/completion.ts"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "artifact-exists",
@@ -42,19 +100,20 @@
           "type": "shell",
           "command": "grep -q renameSync src/runtime/completion.ts"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "completion-legacy-warn": {
+    {
       "id": "completion-legacy-warn",
       "desc": "When hasPassingReceipt returns true for a legacy record (no validationChecks, just completedAt), annotate the record with legacy: true and surface a structured warning in orient output and advance output. Do not change pass/fail semantics — only add visibility.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "src/cli/orient.ts"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -64,20 +123,21 @@
           "type": "shell",
           "command": "pnpm test"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "validation-predicate": {
+    {
       "id": "validation-predicate",
       "desc": "Add readFile parameter to validateNode signature: readFile?: (path: string) => string | null. Use it in artifact-schema and spec-conformance rules instead of dynamic import('node:fs'). Shell/spawn validators keep their child_process imports (IO is their purpose). Callers pass fs-backed readFile at the call site in src/cli/advance.ts. The protocol layer becomes pure: given predicates, returns results.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "src/lib/protocol/validation.ts",
         "src/cli/advance.ts"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "artifact-exists",
@@ -95,19 +155,20 @@
           "type": "shell",
           "command": "! grep -q \"import.*node:fs\" src/lib/protocol/validation.ts"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "reconcile-typed-builder": {
+    {
       "id": "reconcile-typed-builder",
       "desc": "Add a buildGraph<T> helper to src/core/reconcile.ts that takes (id, desc, init, term, nodes: Record<string, Flat>) and returns Graph<T> with a single centralized cast. Replace all as-any sites with calls to buildGraph. Net effect: one cast in one place, validated by define() immediately after.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "src/core/reconcile.ts"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "artifact-exists",
@@ -121,22 +182,23 @@
           "type": "shell",
           "command": "pnpm test"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "completion-tests": {
+    {
       "id": "completion-tests",
       "desc": "Dedicated unit test suite for CompletionStore. Cover: roundtrip save/load, legacy format migration (migrateEntry), hasPassingReceipt with evidence vs legacy vs failing, validateEntry type guard, filterByDagId, CompletionStore.from fixture, concurrent save detection. Minimum 15 test cases.",
+      "priority": 2,
+      "depends": [
+        "completion-atomic-write",
+        "completion-legacy-warn"
+      ],
       "produces": [
         "tests/completion-store.test.ts"
       ],
       "consumes": [
         "src/runtime/completion.ts"
       ],
-      "deps": [
-        "completion-atomic-write",
-        "completion-legacy-warn"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "artifact-exists",
@@ -146,21 +208,22 @@
           "type": "shell",
           "command": "pnpm test -- tests/completion-store.test.ts"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "core-algebra-tests": {
+    {
       "id": "core-algebra-tests",
       "desc": "Dedicated unit test suite for src/core/ modules. Cover: define (valid graph, cycle detection, missing init/term, convergenceCheck key validation), verify (consumes satisfied, unsatisfied, resolvedBy), check (reachable, orphans, loopTarget), flat/fwd, detectCycles, reach, reconcile/merge/branch/modify with the new buildGraph helper. Pure algebra — no filesystem, no CLI. Minimum 25 test cases.",
+      "priority": 2,
+      "depends": [
+        "reconcile-typed-builder"
+      ],
       "produces": [
         "tests/core-algebra.test.ts"
       ],
       "consumes": [
         "src/core/reconcile.ts"
       ],
-      "deps": [
-        "reconcile-typed-builder"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "artifact-exists",
@@ -170,12 +233,17 @@
           "type": "shell",
           "command": "pnpm test -- tests/core-algebra.test.ts"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "term": {
+    {
       "id": "term",
       "desc": "All three health streams hardened. Completion store: atomic writes + legacy visibility + dedicated tests. Protocol validation: pure predicate layer, no hidden FS. Reconcile: single-cast builder + dedicated core algebra tests. Full suite green, tsc clean, zero as-any in reconcile call sites, zero dynamic fs imports in protocol.",
+      "priority": 3,
+      "depends": [
+        "completion-tests",
+        "core-algebra-tests",
+        "validation-predicate"
+      ],
       "produces": [
         ".roadmap/tasks/term.artifact.json"
       ],
@@ -186,15 +254,10 @@
         "src/lib/protocol/validation.ts",
         "src/core/reconcile.ts"
       ],
-      "deps": [
-        "completion-tests",
-        "core-algebra-tests",
-        "validation-predicate"
-      ],
+      "mode": "execute",
       "validate": [
         {
-          "type": "artifact-exists",
-          "path": ".roadmap/tasks/term.artifact.json"
+          "type": "artifact-exists"
         },
         {
           "type": "shell",
@@ -216,10 +279,7 @@
           "type": "shell",
           "command": "grep -q renameSync src/runtime/completion.ts"
         }
-      ],
-      "idempotent": true
+      ]
     }
-  },
-  "version": "0.3.0",
-  "protocolVersion": "0.3.0"
+  ]
 }

@@ -240,7 +240,11 @@ export async function crossOrientWithState(dag: Graph<string>, repoRoot: string)
   const allNodeIds = Object.keys(dag.nodes);
   const remainingIds = allNodeIds.filter(nid => !retired.has(nid) && !dagFiltered.hasPassing(nid));
 
-  return { ...pos, remaining: remainingIds };
+  // Surface legacy completions (passing without evidence)
+  const legacyIds = dagFiltered.legacyIds();
+  const legacyCompletions = [...legacyIds].filter(id => id in dag.nodes);
+
+  return { ...pos, remaining: remainingIds, legacyCompletions };
 }
 
 // ── Output helpers ──────────────────────────────────────────────────────

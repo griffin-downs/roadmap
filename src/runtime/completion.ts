@@ -3,9 +3,16 @@
 // @exports ValidatorResult, RunnerInfo, CompletionRecord, EvidenceRecord, CompletionRecordWithEvidence, CompletionStore, CompletionStoreError, loadCompletions, saveCompletion, isNodeComplete, getCompletedNodeIds, validateEntry, migrateEntry, hasPassingReceipt, loadCompletionsWithEvidence, saveCompletionWithEvidence
 // @entry roadmap/completion
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
+
+/** Atomic write: write to tmp, then rename. Prevents partial writes on crash or race. */
+function atomicWriteJson(filePath: string, data: unknown): void {
+  const tmp = filePath + '.tmp';
+  writeFileSync(tmp, JSON.stringify(data, null, 2) + '\n');
+  renameSync(tmp, filePath);
+}
 
 // ── Types (from completion-store.ts) ────────────────────────────────────────
 
@@ -208,7 +215,7 @@ export function saveCompletionWithEvidence(
   }
 
   const recordArray = Array.from(completions.values());
-  writeFileSync(join(dirPath, 'completed.json'), JSON.stringify(recordArray, null, 2) + '\n');
+  atomicWriteJson(join(dirPath, 'completed.json'), recordArray);
 }
 
 // ── Tracker functions (from completion-tracker.ts) ──────────────────────────
@@ -263,9 +270,9 @@ export function saveCompletion(
     checkpointId,
   });
 
-  // Write back to file
+  // Write back to file (atomic: tmp + rename)
   const recordArray = Array.from(completions.values());
-  writeFileSync(completionPath, JSON.stringify(recordArray, null, 2) + '\n');
+  atomicWriteJson(completionPath, recordArray);
 }
 
 /** Check if a node has been completed */
@@ -346,6 +353,18 @@ export class CompletionStore {
     const ids = new Set<string>();
     for (const [id] of this.records) {
       if (this.hasPassing(id)) ids.add(id);
+    }
+    return ids;
+  }
+
+  /** Node IDs that pass only because they're legacy (no validationChecks). */
+  legacyIds(): Set<string> {
+    const ids = new Set<string>();
+    for (const [id, record] of this.records) {
+      if (!this.hasPassing(id)) continue;
+      if (!record.validationChecks || record.validationChecks.length === 0) {
+        ids.add(id);
+      }
     }
     return ids;
   }

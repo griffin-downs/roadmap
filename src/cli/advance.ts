@@ -102,10 +102,14 @@ async function advanceNode(
 
   // Run validators
   const existsPredicate = (artifact: string) => existsSync(join(repoRoot, artifact));
+  const readFilePredicate = (path: string): string | null => {
+    try { return readFileSync(path, 'utf-8'); } catch { return null; }
+  };
   const validationResult = await validateNode(dag, nodeId, existsPredicate, {
     repoRoot,
     branch: getCurrentBranch(repoRoot),
     intentJudgments,
+    readFile: readFilePredicate,
   });
 
   const checks: EvidenceRecord[] = validationResult.checks.map(c => {

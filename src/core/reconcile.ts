@@ -10,6 +10,15 @@ import { consumeArtifact } from '../lib/protocol/types.ts';
 import { flat, define, verify, check } from './graph.ts';
 import type { Flat } from './graph.ts';
 
+// --- buildGraph: single centralized cast for graph construction ---
+
+function buildGraph<T extends string>(
+  id: string, desc: string, init: string, term: string,
+  nodes: Record<string, Flat>,
+): Graph<T> {
+  return { id, desc, init, term, nodes } as Graph<T>;
+}
+
 // --- reconcile ---
 
 export function reconcile<T extends string>(
@@ -62,13 +71,14 @@ export function mergeCheck<T1 extends string, T2 extends string>(
 ): MergeConflict[] {
   const ids1 = new Set(Object.keys(g1.nodes));
   const conflicts: MergeConflict[] = [];
-  for (const [id, node] of Object.entries(g2.nodes)) {
-    if (ids1.has(id)) {
+  const g1Map = new Map(flat(g1).map(n => [n.id, n]));
+  for (const n of flat(g2)) {
+    if (ids1.has(n.id)) {
       conflicts.push({
         type: 'node-id-collision',
-        nodeId: id,
-        left: (g1.nodes as Record<string, unknown>)[id],
-        right: node,
+        nodeId: n.id,
+        left: g1Map.get(n.id),
+        right: n,
       });
     }
   }
@@ -106,13 +116,12 @@ export function branchWithWitness<T extends string>(
     if (visited.has(node.id)) branchedNodes[node.id] = node;
   }
 
-  const branched: Graph<T> = {
-    id: `${g.id}:${fromNode}`,
-    desc: `Branch of ${g.desc} from ${fromNode}`,
-    init: fromNode,
-    term: g.term,
-    nodes: branchedNodes as any,
-  };
+  const branched = buildGraph<T>(
+    `${g.id}:${fromNode}`,
+    `Branch of ${g.desc} from ${fromNode}`,
+    fromNode, g.term,
+    branchedNodes,
+  );
 
   const validated = define(branched);
   const errors = verify(validated);
@@ -142,28 +151,24 @@ export function merge<T1 extends string, T2 extends string>(
   }
 
   const mergedNodes: Record<string, Flat> = {};
-  for (const [id, node] of Object.entries(g1.nodes)) {
-    mergedNodes[id as string] = node as Flat;
-  }
-  for (const [id, node] of Object.entries(g2.nodes)) {
-    mergedNodes[id as string] = node as Flat;
-  }
+  for (const n of flat(g1)) mergedNodes[n.id] = n;
+  for (const n of flat(g2)) mergedNodes[n.id] = n;
 
   for (const conn of connections) {
-    const g2Node = mergedNodes[conn.g2Node as string];
+    const g2Node = mergedNodes[conn.g2Node];
     if (!g2Node) throw new Error(`Connection g2Node "${conn.g2Node}" not found in g2`);
-    if (!g2Node.deps.includes(conn.g1Node as string)) {
-      g2Node.deps = [...g2Node.deps, conn.g1Node as string];
+    if (!g2Node.deps.includes(conn.g1Node)) {
+      g2Node.deps = [...g2Node.deps, conn.g1Node];
     }
   }
 
-  const merged: Graph<T1 | T2> = {
-    id: `${g1.id}+${g2.id}`,
-    desc: `${g1.desc} → ${g2.desc}`,
-    init: (initOverride || g1.init) as T1 | T2,
-    term: (termOverride || g2.term) as T1 | T2,
-    nodes: mergedNodes as any,
-  };
+  const merged = buildGraph<T1 | T2>(
+    `${g1.id}+${g2.id}`,
+    `${g1.desc} → ${g2.desc}`,
+    initOverride || g1.init,
+    termOverride || g2.term,
+    mergedNodes,
+  );
 
   const validated = define(merged);
   const errors = verify(validated);
@@ -208,8 +213,8 @@ export function analyze<T extends string>(g: Graph<T>, nodeId: string): ModifyAn
 
   const dependents = nodes.filter(n => n.deps.includes(nodeId)).map(n => n.id);
 
-  const tempNodes = { ...g.nodes };
-  delete (tempNodes as any)[nodeId];
+  const nodeMap = new Map(nodes.map(n => [n.id, n]));
+  nodeMap.delete(nodeId);
 
   let orphaned: string[] = [];
   try {
@@ -219,7 +224,7 @@ export function analyze<T extends string>(g: Graph<T>, nodeId: string): ModifyAn
 
     while (queue.length) {
       const id = queue.shift()!;
-      const node = (tempNodes as any)[id];
+      const node = nodeMap.get(id);
       if (!node) break;
 
       for (const dep of node.deps) {
@@ -230,7 +235,7 @@ export function analyze<T extends string>(g: Graph<T>, nodeId: string): ModifyAn
       }
     }
 
-    orphaned = Object.keys(tempNodes)
+    orphaned = [...nodeMap.keys()]
       .filter(id => !reachable.has(id) && id !== g.term)
       .sort();
   } catch {
@@ -273,19 +278,17 @@ export function modify<T extends string>(
   }
 
   const modifiedNodes: Record<string, Flat> = {};
-  for (const [id, node] of Object.entries(g.nodes)) {
-    if (id === nodeId) continue;
-    const newDeps = (node as Flat).deps.filter(d => d !== nodeId);
-    modifiedNodes[id] = { ...(node as Flat), deps: newDeps };
+  for (const n of flat(g)) {
+    if (n.id === nodeId) continue;
+    modifiedNodes[n.id] = { ...n, deps: n.deps.filter(d => d !== nodeId) };
   }
 
-  const modified: Graph<T> = {
-    id: `${g.id}:modified`,
-    desc: `${g.desc} (node "${nodeId}" deleted)`,
-    init: g.init,
-    term: g.term,
-    nodes: modifiedNodes as any,
-  };
+  const modified = buildGraph<T>(
+    `${g.id}:modified`,
+    `${g.desc} (node "${nodeId}" deleted)`,
+    g.init, g.term,
+    modifiedNodes,
+  );
 
   try {
     const cycles = flat(modified).filter(n => n.id).map(n => n.id);

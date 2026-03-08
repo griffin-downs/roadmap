@@ -2036,13 +2036,13 @@
   },
   {
     "nodeId": "term",
-    "completedAt": "2026-03-08T15:31:08.699Z",
-    "dagId": "purge-non-algebra",
+    "completedAt": "2026-03-08T21:02:31.053Z",
+    "dagId": "hardening",
     "validationChecks": [
       {
-        "rule": "shell:pnpm run build",
+        "rule": "artifact-exists:.roadmap/tasks/term.artifact.json",
         "passed": true,
-        "evidence": "command passed (exit 0): pnpm run build"
+        "evidence": "artifact exists: .roadmap/tasks/term.artifact.json"
       },
       {
         "rule": "shell:pnpm run check",
@@ -2050,33 +2050,33 @@
         "evidence": "command passed (exit 0): pnpm run check"
       },
       {
-        "rule": "shell:pnpm vitest run",
+        "rule": "shell:pnpm test",
         "passed": true,
-        "evidence": "command passed (exit 0): pnpm vitest run"
+        "evidence": "command passed (exit 0): pnpm test"
       },
       {
-        "rule": "shell:test ! -d src/validators",
+        "rule": "shell:test $(grep -c 'as any' src/core/reconcile.ts) -le 1",
         "passed": true,
-        "evidence": "command passed (exit 0): test ! -d src/validators"
+        "evidence": "command passed (exit 0): test $(grep -c 'as any' src/core/reconcile.ts) -le 1"
       },
       {
-        "rule": "shell:test ! -d src/commands",
+        "rule": "shell:! grep -q \"import.*node:fs\" src/lib/protocol/validation.ts",
         "passed": true,
-        "evidence": "command passed (exit 0): test ! -d src/commands"
+        "evidence": "command passed (exit 0): ! grep -q \"import.*node:fs\" src/lib/protocol/validation.ts"
       },
       {
-        "rule": "shell:test ! -d test",
+        "rule": "shell:grep -q renameSync src/runtime/completion.ts",
         "passed": true,
-        "evidence": "command passed (exit 0): test ! -d test"
+        "evidence": "command passed (exit 0): grep -q renameSync src/runtime/completion.ts"
       },
       {
-        "rule": "artifact-exists:.roadmap/tasks/purge-non-algebra-verified.artifact.json",
+        "rule": "artifact-exists:.roadmap/tasks/term.artifact.json",
         "passed": true,
         "evidence": "file exists"
       }
     ],
-    "gitSha": "38925ef0f5b6cf058384607def00a58ccc7ca04f",
-    "treeSha": "779c740e8f61fb7e7bce1a1ad1741a8d45bfedfb",
+    "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
+    "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
     "branch": "main"
   },
   {
@@ -2302,6 +2302,851 @@
     ],
     "gitSha": "e4daf28f8f533f02bf8e38f385a674104562d171",
     "treeSha": "e735fe798ccd28b3b627492d67f019796702dd52",
+    "branch": "main"
+  },
+  {
+    "nodeId": "unify-completion",
+    "completedAt": "2026-03-08T16:11:45.622Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "shell:! test -f src/lib/completion/completion-tracker.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! test -f src/lib/completion/completion-tracker.ts"
+      },
+      {
+        "rule": "shell:! test -f src/lib/completion/completion-store.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! test -f src/lib/completion/completion-store.ts"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/completion.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "da0d240ae86b2bd25674dc730a65b236ca5771d9",
+    "treeSha": "bd21abb4fa4f29f3b8cf45c31b563598a39870a5",
+    "branch": "main"
+  },
+  {
+    "nodeId": "housekeeping",
+    "completedAt": "2026-03-08T16:12:25.771Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "shell:! test -f src/lib/terminal-audit/validator.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! test -f src/lib/terminal-audit/validator.ts"
+      },
+      {
+        "rule": "shell:! test -d test",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! test -d test"
+      },
+      {
+        "rule": "shell:! grep -r \"typeof.*=== 'string' ? .* : .*\\.artifact\" src/lib/ --include='*.ts' -l | grep -v node_modules",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -r \"typeof.*=== 'string' ? .* : .*\\.artifact\" src/lib/ --include='*.ts' -l | grep -v node_modules"
+      },
+      {
+        "rule": "artifact-exists:tests/.unified",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a20a46c96ad062a43c82a9585d8f0989ab534329",
+    "treeSha": "d99a2abafc89d9e00267d8725c435a2f98ea090d",
+    "branch": "main"
+  },
+  {
+    "nodeId": "typed-accessors",
+    "completedAt": "2026-03-08T16:13:51.625Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'export function nodes' src/core/access.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function nodes' src/core/access.ts"
+      },
+      {
+        "rule": "shell:grep -q 'export function node' src/core/access.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function node' src/core/access.ts"
+      },
+      {
+        "rule": "shell:! grep -r 'as keyof typeof' src/lib/ src/core/",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -r 'as keyof typeof' src/lib/ src/core/"
+      },
+      {
+        "rule": "artifact-exists:src/core/access.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "3284b55b0542e62f89737af3490b4b600aff0af0",
+    "treeSha": "3c4957b456360a86aa3bab44bd579377d6689d93",
+    "branch": "main"
+  },
+  {
+    "nodeId": "extract-core",
+    "completedAt": "2026-03-08T16:19:26.856Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "shell:! grep -r 'node:fs' src/core/",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -r 'node:fs' src/core/"
+      },
+      {
+        "rule": "shell:grep -q 'export function define' src/core/graph.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function define' src/core/graph.ts"
+      },
+      {
+        "rule": "shell:grep -q 'export function orient' src/core/orient.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function orient' src/core/orient.ts"
+      },
+      {
+        "rule": "artifact-exists:src/core/graph.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/core/order.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/core/orient.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/core/batch.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/core/reconcile.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "8f6f4b1932ddde1d0ad38a18ef24bee88b8df2c5",
+    "treeSha": "960e1abe6dff1018a68a3e246a4455d4cb40c63c",
+    "branch": "main"
+  },
+  {
+    "nodeId": "split-nodespec",
+    "completedAt": "2026-03-08T16:22:38.223Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "shell:grep -q 'export interface NodeMeta' src/runtime/meta.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export interface NodeMeta' src/runtime/meta.ts"
+      },
+      {
+        "rule": "shell:grep -q 'export function fullNode' src/runtime/meta.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function fullNode' src/runtime/meta.ts"
+      },
+      {
+        "rule": "artifact-exists:src/core/types.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/meta.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "0256986a274c4b999a6ad215e5335721a1832e3b",
+    "treeSha": "4fdfd123f3f6caf6f150047314adcb4df39ff840",
+    "branch": "main"
+  },
+  {
+    "nodeId": "pure-orient",
+    "completedAt": "2026-03-08T16:24:05.448Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:! grep -r 'node:fs' src/core/orient.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -r 'node:fs' src/core/orient.ts"
+      },
+      {
+        "rule": "shell:! grep -r 'readFile\\|existsSync\\|readdirSync' src/core/orient.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -r 'readFile\\|existsSync\\|readdirSync' src/core/orient.ts"
+      },
+      {
+        "rule": "artifact-exists:src/core/orient.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "8882a33f2bceed70f7c975b93f9610470e71cceb",
+    "treeSha": "18ed1a754c1410a52e5b8f7534f6d448dc68c068",
+    "branch": "main"
+  },
+  {
+    "nodeId": "io-boundary",
+    "completedAt": "2026-03-08T16:26:50.153Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'export function loadContext' src/runtime/context.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function loadContext' src/runtime/context.ts"
+      },
+      {
+        "rule": "shell:grep -q 'export interface Context' src/runtime/context.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export interface Context' src/runtime/context.ts"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/context.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a7932138992aa8a940b4b980d960e3d16a807d53",
+    "treeSha": "60a7c033cb496cb18f3483b031db0e44cccb8aea",
+    "branch": "main"
+  },
+  {
+    "nodeId": "pure-brief",
+    "completedAt": "2026-03-08T16:31:30.772Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "shell:! grep -r 'node:fs' src/runtime/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -r 'node:fs' src/runtime/brief.ts"
+      },
+      {
+        "rule": "shell:! grep 'async' src/runtime/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep 'async' src/runtime/brief.ts"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "b70cec1a711aaf0c6a1fe90943c2156b428adbc8",
+    "treeSha": "3e2a33c4a521681f0cacbae4db106d34d6cfad4d",
+    "branch": "main"
+  },
+  {
+    "nodeId": "thin-cli",
+    "completedAt": "2026-03-08T16:35:01.334Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "shell:pnpm run build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run build"
+      },
+      {
+        "rule": "artifact-exists:src/cli/make.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/orient.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "0c5c942f349fd70107779fe1fb304ec5c86614f0",
+    "treeSha": "21eba5971f86069d8ae7aa009f312341ae7ef9d2",
+    "branch": "main"
+  },
+  {
+    "nodeId": "wire-exports",
+    "completedAt": "2026-03-08T16:37:20.729Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm run build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run build"
+      },
+      {
+        "rule": "shell:node -e \"const r = require('./dist/src/protocol.js'); if (!r.define || !r.orient) throw 'missing exports'\"",
+        "passed": true,
+        "evidence": "command passed (exit 0): node -e \"const r = require('./dist/src/protocol.js'); if (!r.define || !r.orient) throw 'missing exports'\""
+      },
+      {
+        "rule": "artifact-exists:src/protocol.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/protocol.ts"
+      },
+      {
+        "rule": "artifact-exists:src/protocol.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "71e5038e4238c8d5daf82b1bab6b9aeac5f9c128",
+    "treeSha": "5677903a08b4a8c7bab0bcbce9c0bbe1c8b3e598",
+    "branch": "main"
+  },
+  {
+    "nodeId": "downstream-verify",
+    "completedAt": "2026-03-08T16:39:38.885Z",
+    "dagId": "convergence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm vitest run tests/downstream-compat.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run tests/downstream-compat.test.ts"
+      },
+      {
+        "rule": "shell:! grep -r 'node:fs' src/core/",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -r 'node:fs' src/core/"
+      },
+      {
+        "rule": "artifact-exists:tests/downstream-compat.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4477d40c2cfb6090acfc914e84decacf4f330c57",
+    "treeSha": "01ef5debbe963982a1787910ae34c4be4a1f8676",
+    "branch": "main"
+  },
+  {
+    "nodeId": "extract-shared",
+    "completedAt": "2026-03-08T20:05:12.773Z",
+    "dagId": "cli-decompose",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/shared.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/shared.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'export function loadDAG\\|export function appendTrail\\|export function enforceMainBranch' src/cli/shared.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function loadDAG\\|export function appendTrail\\|export function enforceMainBranch' src/cli/shared.ts"
+      },
+      {
+        "rule": "artifact-exists:src/cli/shared.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "e8462e3be00d5f69fad7232ac34fc319951e3a49",
+    "treeSha": "e86ff606331b1841a02ccf4b8672020b59eb3496",
+    "branch": "main"
+  },
+  {
+    "nodeId": "extract-small",
+    "completedAt": "2026-03-08T20:20:44.730Z",
+    "dagId": "cli-decompose",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/status.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/status.ts"
+      },
+      {
+        "rule": "artifact-exists:src/cli/api.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/api.ts"
+      },
+      {
+        "rule": "artifact-exists:src/cli/help.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/help.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/cli/status.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/api.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/help.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "7ce295e8839b84d42c19b1e44135fd0196f127a4",
+    "treeSha": "bb1919a7826612c01cca3a3241e9c660ed3b4a07",
+    "branch": "main"
+  },
+  {
+    "nodeId": "extract-dag-group",
+    "completedAt": "2026-03-08T20:20:58.744Z",
+    "dagId": "cli-decompose",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/dag.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/dag.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/cli/dag.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "7ce295e8839b84d42c19b1e44135fd0196f127a4",
+    "treeSha": "bb1919a7826612c01cca3a3241e9c660ed3b4a07",
+    "branch": "main"
+  },
+  {
+    "nodeId": "extract-spec-group",
+    "completedAt": "2026-03-08T20:21:06.841Z",
+    "dagId": "cli-decompose",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/spec.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/spec.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/cli/spec.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "7ce295e8839b84d42c19b1e44135fd0196f127a4",
+    "treeSha": "bb1919a7826612c01cca3a3241e9c660ed3b4a07",
+    "branch": "main"
+  },
+  {
+    "nodeId": "extract-orient",
+    "completedAt": "2026-03-08T20:21:14.870Z",
+    "dagId": "cli-decompose",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/orient.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/orient.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/cli/orient.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "7ce295e8839b84d42c19b1e44135fd0196f127a4",
+    "treeSha": "bb1919a7826612c01cca3a3241e9c660ed3b4a07",
+    "branch": "main"
+  },
+  {
+    "nodeId": "extract-make",
+    "completedAt": "2026-03-08T20:21:23.182Z",
+    "dagId": "cli-decompose",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/make.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/make.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/cli/make.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "7ce295e8839b84d42c19b1e44135fd0196f127a4",
+    "treeSha": "bb1919a7826612c01cca3a3241e9c660ed3b4a07",
+    "branch": "main"
+  },
+  {
+    "nodeId": "extract-advance",
+    "completedAt": "2026-03-08T20:23:29.323Z",
+    "dagId": "cli-decompose",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "79b67f6861eaaad934c1ebeef44377d919081a23",
+    "treeSha": "78f43178fa6ef03e17f749f6dd4fca1331a54a7e",
+    "branch": "main"
+  },
+  {
+    "nodeId": "thin-router",
+    "completedAt": "2026-03-08T20:25:43.929Z",
+    "dagId": "cli-decompose",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "artifact exists: bin/roadmap.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "shell:test $(wc -l < bin/roadmap.ts) -lt 250",
+        "passed": true,
+        "evidence": "command passed (exit 0): test $(wc -l < bin/roadmap.ts) -lt 250"
+      },
+      {
+        "rule": "artifact-exists:bin/roadmap.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "ebd009153b91266ef6f1822b51b27bfd846f7439",
+    "treeSha": "722614ffc499913d0b9efcd6c20fcbef5a57e737",
+    "branch": "main"
+  },
+  {
+    "nodeId": "reconcile-typed-builder",
+    "completedAt": "2026-03-08T20:54:06.722Z",
+    "dagId": "hardening",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/core/reconcile.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/core/reconcile.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm test",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test"
+      },
+      {
+        "rule": "artifact-exists:src/core/reconcile.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
+    "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
+    "branch": "main"
+  },
+  {
+    "nodeId": "completion-atomic-write",
+    "completedAt": "2026-03-08T20:54:44.047Z",
+    "dagId": "hardening",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/runtime/completion.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/runtime/completion.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q renameSync src/runtime/completion.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q renameSync src/runtime/completion.ts"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/completion.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
+    "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
+    "branch": "main"
+  },
+  {
+    "nodeId": "completion-legacy-warn",
+    "completedAt": "2026-03-08T20:56:08.890Z",
+    "dagId": "hardening",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm test",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test"
+      },
+      {
+        "rule": "artifact-exists:src/cli/orient.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
+    "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
+    "branch": "main"
+  },
+  {
+    "nodeId": "validation-predicate",
+    "completedAt": "2026-03-08T20:57:47.766Z",
+    "dagId": "hardening",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/lib/protocol/validation.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/protocol/validation.ts"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm test",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test"
+      },
+      {
+        "rule": "shell:! grep -q \"import.*node:fs\" src/lib/protocol/validation.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -q \"import.*node:fs\" src/lib/protocol/validation.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/protocol/validation.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
+    "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
+    "branch": "main"
+  },
+  {
+    "nodeId": "core-algebra-tests",
+    "completedAt": "2026-03-08T21:00:03.017Z",
+    "dagId": "hardening",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:tests/core-algebra.test.ts",
+        "passed": true,
+        "evidence": "artifact exists: tests/core-algebra.test.ts"
+      },
+      {
+        "rule": "shell:pnpm test -- tests/core-algebra.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test -- tests/core-algebra.test.ts"
+      },
+      {
+        "rule": "artifact-exists:tests/core-algebra.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
+    "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
+    "branch": "main"
+  },
+  {
+    "nodeId": "completion-tests",
+    "completedAt": "2026-03-08T21:01:29.252Z",
+    "dagId": "hardening",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:tests/completion-store.test.ts",
+        "passed": true,
+        "evidence": "artifact exists: tests/completion-store.test.ts"
+      },
+      {
+        "rule": "shell:pnpm test -- tests/completion-store.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test -- tests/completion-store.test.ts"
+      },
+      {
+        "rule": "artifact-exists:tests/completion-store.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
+    "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
     "branch": "main"
   }
 ]

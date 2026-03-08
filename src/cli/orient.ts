@@ -148,6 +148,11 @@ export async function run(
     chain: chainContext,
   };
 
+  // Surface legacy completions — nodes that pass without evidence
+  if (pos.legacyCompletions && pos.legacyCompletions.length > 0) {
+    result.legacyCompletions = pos.legacyCompletions;
+  }
+
   if (result.complete) {
     const { scanPendingSpecs } = await import('../lib/orient-forward.ts');
     const dagId = dag.id ?? '';

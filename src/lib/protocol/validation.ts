@@ -18,7 +18,7 @@ export async function validateNode<T extends string>(
   g: Graph<T>,
   nodeId: string,
   exists: (artifact: string) => boolean,
-  opts?: { intentJudgments?: IntentJudgment[]; validating?: boolean; repoRoot?: string; branch?: string },
+  opts?: { intentJudgments?: IntentJudgment[]; validating?: boolean; repoRoot?: string; branch?: string; readFile?: (path: string) => string | null },
 ): Promise<ValidationResult> {
   const spec = node(g, nodeId as T) as any;
 
@@ -51,21 +51,22 @@ export async function validateNode<T extends string>(
     } else if (rule.type === 'artifact-schema') {
       // Basic JSON Schema validation: required, type, enum constraints
       try {
-        const { readFileSync: rfs, existsSync: efs } = await import('node:fs');
-        const { resolve: resolvePath } = await import('node:path');
         const root = opts?.repoRoot ?? process.cwd();
-        const targetPath = resolvePath(root, rule.target);
-        const schemaPath = resolvePath(root, rule.schema);
+        const targetRel = rule.target.startsWith('/') ? rule.target : `${root}/${rule.target}`;
+        const schemaRel = rule.schema.startsWith('/') ? rule.schema : `${root}/${rule.schema}`;
+        const rf = opts?.readFile;
+        const targetContent = rf ? rf(targetRel) : null;
+        const schemaContent = rf ? rf(schemaRel) : null;
 
-        if (!efs(targetPath)) {
+        if (targetContent === null) {
           passed = false;
           evidence = `target file not found: ${rule.target}`;
-        } else if (!efs(schemaPath)) {
+        } else if (schemaContent === null) {
           passed = false;
           evidence = `schema file not found: ${rule.schema}`;
         } else {
-          const targetData = JSON.parse(rfs(targetPath, 'utf-8'));
-          const schema = JSON.parse(rfs(schemaPath, 'utf-8'));
+          const targetData = JSON.parse(targetContent);
+          const schema = JSON.parse(schemaContent);
           const errors: string[] = [];
 
           // Validate type constraint at root level
@@ -286,16 +287,15 @@ export async function validateNode<T extends string>(
       }
     } else if (rule.type === 'spec-conformance') {
       // Verify spec file exists and referenced story numbers appear in it.
-      // Resolves spec path: absolute paths used as-is, relative paths resolved from cwd (= repoRoot in CLI context).
       try {
-        const { readFileSync: rfs, existsSync: efs } = await import('node:fs');
-        const { resolve: resolvePath } = await import('node:path');
-        const specPath = resolvePath(process.cwd(), rule.spec);
-        if (!efs(specPath)) {
+        const root = opts?.repoRoot ?? process.cwd();
+        const specRel = rule.spec.startsWith('/') ? rule.spec : `${root}/${rule.spec}`;
+        const rf = opts?.readFile;
+        const specContent = rf ? rf(specRel) : null;
+        if (specContent === null) {
           passed = false;
           evidence = `spec file not found: ${rule.spec}`;
         } else {
-          const specContent = rfs(specPath, 'utf-8');
           const storyRefs = (rule.stories ?? []) as number[];
           const missingStories = storyRefs.filter(
             (s: number) =>
