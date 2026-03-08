@@ -5,7 +5,7 @@ import * as assert from 'node:assert';
 import { execSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { saveCompletionWithEvidence, loadCompletionsWithEvidence } from '../src/lib/evidence/completion-evidence.ts';
+import { saveCompletionWithEvidence, loadCompletionsWithEvidence } from '../src/runtime/completion.ts';
 
 test('evidence-branch: records branch name in completion receipt', () => {
   const tmpDir = mkdtempSync('/tmp/evidence-branch-test-');

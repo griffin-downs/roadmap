@@ -4,8 +4,8 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { loadCompletionsWithEvidence } from '../evidence/completion-evidence.ts';
-import type { CompletionRecordWithEvidence, EvidenceRecord } from '../evidence/completion-evidence.ts';
+import { loadCompletionsWithEvidence } from '../../runtime/completion.ts';
+import type { CompletionRecordWithEvidence, EvidenceRecord } from '../../runtime/completion.ts';
 import type { Graph } from '../../protocol.ts';
 
 export interface NodeCommitStatus {

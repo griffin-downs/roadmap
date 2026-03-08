@@ -5,6 +5,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Graph } from '../../protocol.ts';
+import { node } from '../../core/access.ts';
 import type { HeadIndex } from './index-extractor.ts';
 
 export type LoadStrategy = 'minimal' | 'current-batch' | 'current-plus-next' | 'full';
@@ -199,10 +200,10 @@ export class LazyGraphLoader {
     const nodeSet = new Set(nodeIds);
 
     // Create partial graph with only requested nodes
-    const nodes: { [key: string]: any } = {};
+    const partialNodes: { [key: string]: any } = {};
     for (const nodeId of nodeIds) {
       if (nodeId in fullGraph.nodes) {
-        nodes[nodeId] = fullGraph.nodes[nodeId as keyof typeof fullGraph.nodes];
+        partialNodes[nodeId] = node(fullGraph, nodeId);
       }
     }
 

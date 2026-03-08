@@ -8,7 +8,7 @@ import {
   loadCompletionsWithEvidence,
   saveCompletionWithEvidence,
   type CompletionRecordWithEvidence,
-} from '../src/lib/evidence/completion-evidence.ts';
+} from '../src/runtime/completion.ts';
 
 const TEST_REPO = '/tmp/roadmap-schema-test';
 

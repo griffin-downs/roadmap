@@ -71,20 +71,20 @@ export async function buildScaffold<T extends string>(
 
   // Traverse in topological order
   for (const nodeId of topo) {
-    const node = dag.nodes[nodeId as keyof typeof dag.nodes];
-    if (!node) continue;
+    const spec = node(dag, nodeId);
+    if (!spec) continue;
 
     // Skip init, term, and plan nodes
     if (nodeId === dag.init || nodeId === dag.term) continue;
-    if (node.mode === 'plan') continue;
+    if (spec.mode === 'plan') continue;
 
     // Materialize stubs for each produced artifact
-    for (const producedPath of node.produces) {
+    for (const producedPath of spec.produces) {
       const absPath = join(repoRoot, producedPath);
       const existed = existsSync(absPath);
 
       // Build stub content
-      const consumesStr = node.consumes.map(c => consumeArtifact(c));
+      const consumesStr = spec.consumes.map(c => consumeArtifact(c));
       const content = generateStub(producedPath, nodeId, consumesStr);
 
       // Create stub entry

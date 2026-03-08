@@ -10,6 +10,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import type { Graph } from '../protocol.ts';
+import { node } from '../core/access.ts';
 
 const CACHE_DIR = '.roadmap/.cache';
 const MAX_CHARS = 2000; // ~500 tokens budget
@@ -149,11 +150,11 @@ export function writeNodeCache(
   dag: Graph<string>,
   repoRoot: string,
 ): boolean {
-  const node = dag.nodes[nodeId as keyof typeof dag.nodes];
-  if (!node) return false;
+  const spec = node(dag, nodeId);
+  if (!spec) return false;
 
   const files: FileSummary[] = [];
-  for (const produce of node.produces) {
+  for (const produce of spec.produces) {
     const summary = extractFileSummary(produce, repoRoot);
     if (summary) files.push(summary);
   }

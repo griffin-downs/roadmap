@@ -2,7 +2,7 @@
 
 import { test } from 'node:test';
 import * as assert from 'node:assert';
-import { CompletionStore } from '../src/lib/completion/completion-context.ts';
+import { CompletionStore } from '../src/runtime/completion.ts';
 
 test('dag-scoped-completion: filterByDagId includes current DAG receipts', () => {
   // Create a mock CompletionStore with mixed DAG receipts

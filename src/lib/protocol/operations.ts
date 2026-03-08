@@ -7,7 +7,7 @@ import type {
   ValidationCheck, ValidationResult, IntentFailure, IntentJudgment,
 } from './types.ts';
 import { consumeArtifact, consumeResolvedBy } from './types.ts';
-import { CompletionStore } from '../completion/completion-context.ts';
+import { CompletionStore } from '../../runtime/completion.ts';
 
 // --- Internal: flat iteration over mapped type ---
 

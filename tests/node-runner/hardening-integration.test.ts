@@ -6,7 +6,7 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { validateEntry, migrateEntry } from '../src/lib/evidence/completion-evidence.ts';
+import { validateEntry, migrateEntry } from '../src/runtime/completion.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, '..');

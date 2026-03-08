@@ -3,8 +3,8 @@
 // @types All protocol types
 // @entry roadmap/protocol
 
-import { CompletionStore } from '../completion/completion-context.ts';
-export { CompletionStore } from '../completion/completion-context.ts';
+import { CompletionStore } from '../../runtime/completion.ts';
+export { CompletionStore } from '../../runtime/completion.ts';
 
 // --- Types ---
 

@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync, existsSync, statSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Graph } from '../protocol.ts';
-import { CompletionStore } from './completion/completion-context.ts';
+import { CompletionStore } from '../runtime/completion.ts';
 
 // --- Types ---
 
