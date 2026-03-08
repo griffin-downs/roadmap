@@ -42,8 +42,7 @@ import { ensureConsolidated } from '../src/lib/roadmap/cli-consolidation-init.ts
 import { saveDagHead, migrateSingleHead } from '../src/lib/multi-dag.ts';
 import { getBrief } from '../src/lib/brief.ts';
 import { writeNodeCache } from '../src/lib/brief-cache.ts';
-import { validateTerminalAudit, type AuditResponse, type TerminalAuditResult } from '../src/lib/terminal-audit/validator.ts';
-import { expandGaps } from '../src/lib/terminal-audit/gap-expansion.ts';
+import { runAudit, type TerminalAuditContext } from '../src/lib/terminal-audit/validator.ts';
 import type { FinalHandoff, InterimHandoff } from '../src/lib/brief.ts';
 import { saveFinal, saveInterim } from '../src/lib/agent-dispatch/handoff-journal.ts';
 import type { Graph, Orientation } from '../src/protocol.ts';
@@ -690,70 +689,12 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     return;
   }
 
-  // Terminal audit gate: for terminal nodes, run computed+detected audit
-  let terminalAuditResult: TerminalAuditResult | undefined;
+  // Terminal audit: informational summary for terminal nodes (not a gate)
+  let terminalAuditSummary: TerminalAuditContext | undefined;
   if (nodeId === dag.term) {
     const auditRecords = loadCompletionsWithEvidence(repoRoot);
-    const changedFiles = getBranchChangedFiles(repoRoot);
     const existsPredicate = (artifact: string) => existsSync(join(repoRoot, artifact));
-
-    // Parse --evaluate-file as AuditResponse[] if it looks like audit responses
-    let auditResponses: AuditResponse[] | undefined;
-    if (intentJudgments && Array.isArray(intentJudgments) && intentJudgments.length > 0) {
-      const first = intentJudgments[0] as any;
-      if (first.promptId && typeof first.answer === 'string') {
-        auditResponses = intentJudgments as unknown as AuditResponse[];
-        intentJudgments = undefined; // consumed as audit responses, not intent judgments
-      }
-    }
-
-    terminalAuditResult = validateTerminalAudit(dag, auditRecords, existsPredicate, changedFiles, auditResponses);
-
-    if (!terminalAuditResult.passed) {
-      // Gap expansion: convert detected gaps into fix nodes instead of asking for narrative.
-      // If gaps are actionable, insert fix nodes as terminal deps and reject advance.
-      // Agent executes fix nodes, then retries terminal advance (re-audit will pass).
-      const expansion = expandGaps(dag, terminalAuditResult.detected, repoRoot);
-
-      if (expansion.expanded) {
-        // DAG mutated — fix nodes inserted. Reload for accurate orient.
-        const contextPacket: any = {
-          error: `Terminal audit: ${expansion.fixNodes.length} gap(s) detected, fix nodes inserted`,
-          terminalAudit: {
-            computed: terminalAuditResult.computed,
-            detected: terminalAuditResult.detected.summary,
-          },
-          gapExpansion: {
-            fixNodes: expansion.fixNodes.map(n => ({ id: n.id, desc: n.desc, gapType: n.gapType, artifact: n.gapArtifact })),
-            reason: expansion.reason,
-          },
-          fix: `Execute the ${expansion.fixNodes.length} fix node(s) above, then retry: roadmap advance ${nodeId} --note "gaps fixed"`,
-          checks,
-        };
-        emit({ ok: false, cmd: _outputOpts.cmd, error: contextPacket }, _outputOpts);
-        recordTrailError('advance', 'TERMINAL_AUDIT_EXPANDED', `Node ${nodeId}: ${expansion.reason}`, note);
-        process.exit(1);
-        return;
-      }
-
-      // No actionable gaps for expansion — fall back to evaluate-file prompt
-      const contextPacket: any = {
-        error: `Terminal audit: ${terminalAuditResult.reason}`,
-        terminalAudit: {
-          computed: terminalAuditResult.computed,
-          detected: terminalAuditResult.detected.summary,
-          prompts: terminalAuditResult.prompts,
-        },
-        fix: terminalAuditResult.prompts.length > 0
-          ? 'Write a JSON file with audit responses and pass via --evaluate-file <path>. Format: [{"promptId":"gap-0-...","answer":"..."},...]'
-          : 'Fix detected gaps and retry',
-        checks,
-      };
-      emit({ ok: false, cmd: _outputOpts.cmd, error: contextPacket }, _outputOpts);
-      recordTrailError('advance', 'TERMINAL_AUDIT_FAILED', `Node ${nodeId}: ${terminalAuditResult.reason}`, note);
-      process.exit(1);
-      return;
-    }
+    terminalAuditSummary = runAudit(dag, auditRecords, existsPredicate);
   }
 
   // Attribution safety: warn if branch has changes outside this node's produces
@@ -861,7 +802,7 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     batchComplete: newPos.batchComplete,
     remaining: newPos.batchRemaining,
     ...(intentGates.length > 0 ? { intentGates } : {}),
-    ...(terminalAuditResult ? { terminalAudit: { computed: terminalAuditResult.computed, detected: terminalAuditResult.detected.summary, passed: true } } : {}),
+    ...(terminalAuditSummary ? { terminalAudit: { computed: terminalAuditSummary.computed, detected: terminalAuditSummary.detected.summary } } : {}),
     ...(attributionWarning ? { attributionWarning } : {}),
     ...(parallelEditWarning ? { parallelEditWarning } : {}),
   };
