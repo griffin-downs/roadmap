@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "engine": "spec-kit",
+  "engine": "test-engine",
   "version": "1.0.0",
-  "compile_hash": "manual",
-  "spec_sha": "5a7df76974f4b35550e06828395d62797f03abbb284ce8bc61605d45de82e4f4",
-  "importedAt": "2026-03-08T14:58:59.508Z",
-  "dagId": "purge-non-algebra"
+  "compile_hash": "test-hash",
+  "spec_sha": "6f7438ff7f2c8293810222f5a5c2d03e4c831055fa6d6e2bcd1a81e831b91fc1",
+  "importedAt": "2026-03-08T15:32:05.995Z",
+  "dagId": "rehash-test"
 }
