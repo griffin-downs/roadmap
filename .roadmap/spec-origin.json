@@ -3,7 +3,7 @@
   "engine": "spec-kit",
   "version": "1.0.0",
   "compile_hash": "manual",
-  "spec_sha": "a3e80d98f2984e0c148fc736a820291402d4105c7f4a8992da36d9af606d07ca",
-  "importedAt": "2026-03-08T10:51:58.897Z",
-  "dagId": "terminal-enrichment"
+  "spec_sha": "5a7df76974f4b35550e06828395d62797f03abbb284ce8bc61605d45de82e4f4",
+  "importedAt": "2026-03-08T14:58:59.508Z",
+  "dagId": "purge-non-algebra"
 }
