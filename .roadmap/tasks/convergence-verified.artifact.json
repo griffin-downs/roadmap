@@ -1,0 +1,58 @@
+{
+  "dagId": "convergence",
+  "nodeId": "term",
+  "verified": true,
+  "timestamp": "2026-03-08T17:40:30.000Z",
+  "evidence": {
+    "coreZeroIO": {
+      "pass": true,
+      "command": "grep -r 'node:fs\\|node:path\\|readFileSync\\|writeFileSync\\|existsSync' src/core/",
+      "matches": 0,
+      "detail": "grep exit code 1 — no matches found"
+    },
+    "testsPass": {
+      "pass": true,
+      "testCount": 286,
+      "testFiles": 18,
+      "command": "pnpm vitest run",
+      "duration": "6.10s"
+    },
+    "typeCheck": {
+      "pass": true,
+      "command": "npx tsc --noEmit",
+      "exitCode": 0
+    },
+    "buildSucceeds": {
+      "pass": true,
+      "command": "pnpm run build",
+      "output": "dist/roadmap.js 199.3kb",
+      "exitCode": 0
+    },
+    "coreFiles": [
+      "src/core/graph.ts",
+      "src/core/order.ts",
+      "src/core/orient.ts",
+      "src/core/batch.ts",
+      "src/core/reconcile.ts",
+      "src/core/access.ts",
+      "src/core/types.ts"
+    ],
+    "runtimeFiles": [
+      "src/runtime/completion.ts",
+      "src/runtime/context.ts",
+      "src/runtime/meta.ts",
+      "src/runtime/brief.ts"
+    ],
+    "cliFiles": [
+      "src/cli/make.ts",
+      "src/cli/orient.ts",
+      "src/cli/advance.ts"
+    ],
+    "publicAPI": {
+      "pass": true,
+      "test": "tests/downstream-compat.test.ts",
+      "assertions": 20
+    }
+  },
+  "summary": "Convergence verified: layered architecture restored — core/ pure algebra (zero IO imports), runtime/ IO boundary, cli/ thin dispatch. 286 tests pass across 18 test files. Type check clean. Build produces dist/roadmap.js. Public API surface unchanged (20 downstream-compat assertions pass). The seed invariant is restored at scale: every core operation is Graph in, Value out."
+}
