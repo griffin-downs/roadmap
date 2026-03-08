@@ -1,0 +1,282 @@
+{
+  "schema_version": 1,
+  "dag_id": "purge-non-algebra",
+  "dag_desc": "Delete all source and test files that are not part of the graph algebra or its runtime. Remove 9 non-algebra modules, their tests, the terminal-audit stub, and unify the test directory. Reduce codebase by ~3,860 lines.",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "path": "specs/purge-non-algebra.json",
+      "sha256": "5a7df76974f4b35550e06828395d62797f03abbb284ce8bc61605d45de82e4f4",
+      "role": "spec"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-08T12:00:00Z",
+    "compile_hash": "manual"
+  },
+  "tasks": [
+    {
+      "id": "init",
+      "desc": "Init marker",
+      "priority": 0,
+      "depends": [],
+      "produces": [
+        "init.marker"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "init.marker"
+        }
+      ]
+    },
+    {
+      "id": "delete-source-files",
+      "desc": "Delete 9 non-algebra source modules: brief-validator, topology-service, intent-gate-enrichment, llm-feedback, protocol-distributed, spec-conformance, task-worktree, checkpoint-runtime, spec-init. Also delete the terminal-audit/validator.ts stub. Remove empty directories src/validators/ and src/commands/. Clean any index.ts re-exports if present.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        ".roadmap/tasks/purge-source-receipt.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/agent-dispatch/brief-validator.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/topology/topology-service.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/intent/intent-gate-enrichment.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/llm-feedback.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/protocol-distributed.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/validators/spec-conformance.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/agent-dispatch/task-worktree.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/checkpoint-runtime.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/commands/spec-init.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/terminal-audit/validator.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -d src/validators"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -d src/commands"
+        }
+      ]
+    },
+    {
+      "id": "delete-test-files",
+      "desc": "Delete test files that imported the 9 deleted modules: distributed-dag.test.ts, llm-feedback.test.ts, spec-conformance.test.ts, checkpoint-integration.test.ts, agent-dispatch/agent-integration.test.ts.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        ".roadmap/tasks/purge-tests-receipt.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test ! -f tests/distributed-dag.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f tests/llm-feedback.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f tests/spec-conformance.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f tests/checkpoint-integration.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f tests/agent-dispatch/agent-integration.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "unify-test-directory",
+      "desc": "Move all 35 test files from test/ to tests/. Update any import paths that reference test/ relative paths. Delete the empty test/ directory.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        ".roadmap/tasks/unify-tests-receipt.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test ! -d test"
+        },
+        {
+          "type": "shell",
+          "command": "test -d tests"
+        },
+        {
+          "type": "shell",
+          "command": "test $(ls tests/*.test.ts tests/**/*.test.ts 2>/dev/null | wc -l) -gt 50"
+        }
+      ]
+    },
+    {
+      "id": "clean-imports",
+      "desc": "Remove any remaining import references to deleted modules across the codebase. Check src/index.ts, src/lib/agent-dispatch/index.ts, and any other barrel exports. Verify no broken imports remain.",
+      "priority": 2,
+      "depends": [
+        "delete-source-files",
+        "delete-test-files",
+        "unify-test-directory"
+      ],
+      "produces": [
+        ".roadmap/tasks/clean-imports-receipt.json"
+      ],
+      "consumes": [
+        ".roadmap/tasks/purge-source-receipt.json",
+        ".roadmap/tasks/purge-tests-receipt.json",
+        ".roadmap/tasks/unify-tests-receipt.json"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -r 'brief-validator' src/"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -r 'topology-service' src/"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -r 'intent-gate-enrichment' src/"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -r 'checkpoint-runtime' src/"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -r 'protocol-distributed' src/"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -r 'spec-init' src/"
+        }
+      ]
+    },
+    {
+      "id": "verify-build",
+      "desc": "Full verification: build, type check, and all remaining tests pass. Record final line count and file count as evidence of reduction.",
+      "priority": 3,
+      "depends": [
+        "clean-imports"
+      ],
+      "produces": [
+        ".roadmap/tasks/purge-verified.json"
+      ],
+      "consumes": [
+        ".roadmap/tasks/clean-imports-receipt.json"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run build"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
+      ]
+    },
+    {
+      "id": "term",
+      "desc": "Purge complete. Codebase contains only algebra, runtime, and CLI. No non-algebra modules, no orphaned tests, one unified test directory.",
+      "priority": 4,
+      "depends": [
+        "verify-build"
+      ],
+      "produces": [
+        ".roadmap/tasks/purge-non-algebra-verified.artifact.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run build"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -d src/validators"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -d src/commands"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -d test"
+        }
+      ]
+    }
+  ]
+}
