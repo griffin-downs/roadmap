@@ -48,9 +48,95 @@ export async function validateNode<T extends string>(
       }
       else { passed = exists(artifact); evidence = passed ? `artifact exists: ${artifact}` : `artifact missing: ${artifact}`; }
     } else if (rule.type === 'artifact-schema') {
-      // TODO: Implement schema validation
-      passed = false;
-      evidence = 'schema validation not yet implemented';
+      // Basic JSON Schema validation: required, type, enum constraints
+      try {
+        const { readFileSync: rfs, existsSync: efs } = await import('node:fs');
+        const { resolve: resolvePath } = await import('node:path');
+        const root = opts?.repoRoot ?? process.cwd();
+        const targetPath = resolvePath(root, rule.target);
+        const schemaPath = resolvePath(root, rule.schema);
+
+        if (!efs(targetPath)) {
+          passed = false;
+          evidence = `target file not found: ${rule.target}`;
+        } else if (!efs(schemaPath)) {
+          passed = false;
+          evidence = `schema file not found: ${rule.schema}`;
+        } else {
+          const targetData = JSON.parse(rfs(targetPath, 'utf-8'));
+          const schema = JSON.parse(rfs(schemaPath, 'utf-8'));
+          const errors: string[] = [];
+
+          // Validate type constraint at root level
+          const checkType = (value: unknown, expected: string): boolean => {
+            if (expected === 'object') return typeof value === 'object' && value !== null && !Array.isArray(value);
+            if (expected === 'array') return Array.isArray(value);
+            if (expected === 'string') return typeof value === 'string';
+            if (expected === 'number' || expected === 'integer') return typeof value === 'number';
+            if (expected === 'boolean') return typeof value === 'boolean';
+            if (expected === 'null') return value === null;
+            return true;
+          };
+
+          // Validate a value against a schema node
+          const validate = (value: unknown, s: any, path: string): void => {
+            // Type check
+            if (s.type) {
+              if (Array.isArray(s.type)) {
+                if (!s.type.some((t: string) => checkType(value, t))) {
+                  errors.push(`${path}: expected type ${s.type.join('|')}, got ${Array.isArray(value) ? 'array' : typeof value}`);
+                }
+              } else if (!checkType(value, s.type)) {
+                errors.push(`${path}: expected type ${s.type}, got ${Array.isArray(value) ? 'array' : typeof value}`);
+              }
+            }
+
+            // Enum check
+            if (s.enum && !s.enum.includes(value)) {
+              errors.push(`${path}: value ${JSON.stringify(value)} not in enum [${s.enum.map((e: unknown) => JSON.stringify(e)).join(', ')}]`);
+            }
+
+            // Required properties check (only for objects)
+            if (s.required && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              for (const key of s.required) {
+                if (!(key in (value as Record<string, unknown>))) {
+                  errors.push(`${path}: missing required property "${key}"`);
+                }
+              }
+            }
+
+            // Recurse into properties (only for objects)
+            if (s.properties && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+              const obj = value as Record<string, unknown>;
+              for (const [key, propSchema] of Object.entries(s.properties)) {
+                if (key in obj) {
+                  validate(obj[key], propSchema, `${path}.${key}`);
+                }
+              }
+            }
+
+            // Recurse into array items
+            if (s.items && Array.isArray(value)) {
+              for (let i = 0; i < value.length; i++) {
+                validate(value[i], s.items, `${path}[${i}]`);
+              }
+            }
+          };
+
+          validate(targetData, schema, '$');
+
+          if (errors.length === 0) {
+            passed = true;
+            evidence = `schema validation passed: ${rule.target} conforms to ${rule.schema}`;
+          } else {
+            passed = false;
+            evidence = `schema validation failed: ${errors.join('; ')}`;
+          }
+        }
+      } catch (e: any) {
+        passed = false;
+        evidence = `artifact-schema error: ${String(e.message).slice(0, 200)}`;
+      }
     } else if (rule.type === 'function') {
       // Run shell command synchronously; exit 0 = pass, non-zero = fail
       // Guard against recursion (e.g. vitest validate → spawns vitest → validate → ...)
