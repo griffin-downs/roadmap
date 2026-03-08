@@ -4,6 +4,7 @@
 // @entry internal
 
 import type { Graph, NodeSpec } from '../../protocol.ts';
+import { consumeArtifact } from '../../protocol.ts';
 
 export interface DAGContract {
   id: string;
@@ -40,8 +41,7 @@ export function analyzeDAGContract(dag: Graph<string>): DAGContract {
     // Collect consumes (handle both string[] and ConsumeSpec[])
     if (node.consumes) {
       node.consumes.forEach(c => {
-        const artifact = typeof c === 'string' ? c : c.artifact;
-        consumes.add(artifact);
+        consumes.add(consumeArtifact(c));
       });
     }
   }
@@ -51,7 +51,7 @@ export function analyzeDAGContract(dag: Graph<string>): DAGContract {
   for (const [nodeId, node] of Object.entries(dag.nodes)) {
     if (node.consumes) {
       const externalDeps = node.consumes
-        .map(c => typeof c === 'string' ? c : c.artifact)
+        .map(c => consumeArtifact(c))
         .filter(artifact => !produces.has(artifact));
       if (externalDeps.length > 0) {
         internalDeps.set(nodeId, new Set(externalDeps));

@@ -6,7 +6,8 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, dirname, extname } from 'node:path';
 import type { Graph } from '../protocol.ts';
-import { order } from '../protocol.ts';
+import { order, consumeArtifact } from '../protocol.ts';
+import { node } from '../core/access.ts';
 
 export interface StubFile {
   path: string;        // relative to repoRoot
@@ -83,9 +84,7 @@ export async function buildScaffold<T extends string>(
       const existed = existsSync(absPath);
 
       // Build stub content
-      const consumesStr = node.consumes.map(c =>
-        typeof c === 'string' ? c : c.artifact
-      );
+      const consumesStr = node.consumes.map(c => consumeArtifact(c));
       const content = generateStub(producedPath, nodeId, consumesStr);
 
       // Create stub entry

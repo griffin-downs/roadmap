@@ -4,6 +4,8 @@
 // @entry roadmap/agent
 
 import type { Graph } from '../protocol.ts';
+import { consumeArtifact } from '../protocol.ts';
+import { node } from '../core/access.ts';
 import { briefSlice, type BriefSlice, type AncestorContext, type SpecContext } from './brief-slice.ts';
 import type { FileSummary } from './brief-cache.ts';
 import { buildTerminalBrief, type TerminalBrief } from './terminal-brief.ts';
@@ -84,8 +86,8 @@ export async function getBrief(
   position: string,
   repoRoot: string,
 ): Promise<Brief> {
-  const node = dag.nodes[position as keyof typeof dag.nodes];
-  if (!node) throw new Error(`Invalid position: ${position}`);
+  const spec = node(dag, position);
+  if (!spec) throw new Error(`Invalid position: ${position}`);
 
   // Count remaining nodes (reachable from current position to term)
   const remaining = countRemaining(dag, position);
@@ -99,9 +101,8 @@ export async function getBrief(
 
   // Find predecessor in DAG (node that outputs what current node consumes)
   const deps = Object.values(dag.nodes).filter((n) =>
-    node.consumes.some((c) => {
-      const artifact = typeof c === 'string' ? c : c.artifact;
-      return n.produces.includes(artifact);
+    spec.consumes.some((c) => {
+      return n.produces.includes(consumeArtifact(c));
     }),
   );
 
@@ -120,9 +121,9 @@ export async function getBrief(
   }
 
   // For plan nodes, include dep status so agents know what's pending
-  const pendingDeps = node.mode === 'plan'
-    ? node.deps.filter((d: string) => {
-        const depNode = dag.nodes[d as keyof typeof dag.nodes];
+  const pendingDeps = spec.mode === 'plan'
+    ? spec.deps.filter((d: string) => {
+        const depNode = node(dag, d);
         return depNode != null;
       })
     : [];
@@ -144,11 +145,11 @@ export async function getBrief(
   return {
     dagIntent: dag.desc,
     position,
-    mode: node.mode ?? 'execute',
-    produces: node.produces.slice(0, 5),
-    consumes: node.consumes.map(c => typeof c === 'string' ? c : c.artifact).slice(0, 5),
-    description: slice?.specContext.description ?? node.desc,
-    pattern: inferPattern(node.id, node.mode),
+    mode: spec.mode ?? 'execute',
+    produces: spec.produces.slice(0, 5),
+    consumes: spec.consumes.map(c => consumeArtifact(c)).slice(0, 5),
+    description: slice?.specContext.description ?? spec.desc,
+    pattern: inferPattern(spec.id, spec.mode),
     handoff: prevHandoff,
     handoffJournal: journal,
     remaining,
@@ -172,10 +173,10 @@ function countRemaining(dag: Graph<string>, position: string): number {
     if (visited.has(current)) continue;
     visited.add(current);
 
-    const node = dag.nodes[current as keyof typeof dag.nodes];
-    if (!node) continue;
+    const n = node(dag, current);
+    if (!n) continue;
 
-    for (const dep of node.deps) {
+    for (const dep of n.deps) {
       if (!visited.has(dep)) queue.push(dep);
     }
   }

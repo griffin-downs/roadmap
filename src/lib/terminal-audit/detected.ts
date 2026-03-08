@@ -3,6 +3,7 @@
 // @exports GapEntry, DetectedGaps, detectGaps
 
 import type { Graph, ValidationRule } from '../../protocol.ts';
+import { consumeArtifact } from '../../protocol.ts';
 
 export type GapType = 'uncovered-consume' | 'untested-produce';
 
@@ -71,7 +72,7 @@ export function detectGaps(dag: Graph<string>): DetectedGaps {
   // Detect uncovered consumes
   for (const node of Object.values(dag.nodes)) {
     for (const consume of node.consumes) {
-      const artifact = typeof consume === 'string' ? consume : consume.artifact;
+      const artifact = consumeArtifact(consume);
       if (!shellGuardedProducers.has(artifact)) {
         gaps.push({ type: 'uncovered-consume', nodeId: node.id, artifact });
       }

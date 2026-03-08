@@ -8,6 +8,8 @@
 // Depth 1 = full cached context. Depth 2+ = convention summary only.
 
 import type { Graph, NodeSpec } from '../protocol.ts';
+import { consumeArtifact } from '../protocol.ts';
+import { node } from '../core/access.ts';
 import { readNodeCache, extractFileSummary, type NodeContextCache, type FileSummary } from './brief-cache.ts';
 
 export interface SpecContext {
@@ -78,9 +80,9 @@ function walkBackwardCone(
         // Still collect deps for the starting node
         if (id === nodeId) {
           visited.add(id);
-          const node = dag.nodes[id as keyof typeof dag.nodes];
-          if (node) {
-            for (const dep of node.deps) {
+          const n = node(dag, id);
+          if (n) {
+            for (const dep of n.deps) {
               if (!visited.has(dep)) nextFrontier.push(dep);
             }
           }
@@ -90,9 +92,9 @@ function walkBackwardCone(
       visited.add(id);
       layer.push(id);
 
-      const node = dag.nodes[id as keyof typeof dag.nodes];
-      if (node) {
-        for (const dep of node.deps) {
+      const n = node(dag, id);
+      if (n) {
+        for (const dep of n.deps) {
           if (!visited.has(dep)) nextFrontier.push(dep);
         }
       }
@@ -204,15 +206,15 @@ export function briefSlice(
   dag: Graph<string>,
   repoRoot: string,
 ): BriefSlice {
-  const node = dag.nodes[nodeId as keyof typeof dag.nodes];
-  if (!node) {
+  const spec = node(dag, nodeId);
+  if (!spec) {
     throw new Error(`briefSlice: node not found: ${nodeId}`);
   }
 
   // Layer 1: Spec context
   const specContext: SpecContext = {
-    description: node.desc,
-    ambient: (node as any).ambient ?? [],
+    description: spec.desc,
+    ambient: (spec as any).ambient ?? [],
   };
 
   // Layer 2: Ancestor context via backward cone
@@ -250,15 +252,15 @@ export function briefSlice(
 
   // Layer 3: Node contract
   const nodeContract = {
-    produces: [...node.produces],
-    consumes: node.consumes.map((c: any) => typeof c === 'string' ? c : c.artifact),
-    validate: node.validate,
+    produces: [...spec.produces],
+    consumes: spec.consumes.map((c: any) => consumeArtifact(c)),
+    validate: spec.validate,
   };
 
   // Layer 4: Produces preview — sample existing files the node will create/modify.
   // Critical for init nodes (no ancestors) and modification nodes.
   const producesPreview: FileSummary[] = [];
-  for (const produce of node.produces) {
+  for (const produce of spec.produces) {
     const summary = extractFileSummary(produce, repoRoot);
     if (summary) producesPreview.push(summary);
   }
