@@ -212,7 +212,7 @@ export class LazyGraphLoader {
       desc: fullGraph.desc,
       init: fullGraph.init,
       term: fullGraph.term,
-      nodes: nodes as any,
+      nodes: partialNodes as any,
       spec: fullGraph.spec,
     };
   }

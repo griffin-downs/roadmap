@@ -5,6 +5,7 @@ import type {
   Graph, ValidationCheck, ValidationResult, IntentFailure,
   IntentJudgment,
 } from './types.ts';
+import { node } from '../../core/access.ts';
 import { define, check, verify } from './operations.ts';
 
 // --- Validation: Proof of delivery ---
@@ -19,9 +20,9 @@ export async function validateNode<T extends string>(
   exists: (artifact: string) => boolean,
   opts?: { intentJudgments?: IntentJudgment[]; validating?: boolean; repoRoot?: string; branch?: string },
 ): Promise<ValidationResult> {
-  const node = g.nodes[nodeId as keyof typeof g.nodes] as any;
+  const spec = node(g, nodeId as T) as any;
 
-  if (!node) {
+  if (!spec) {
     return {
       nodeId,
       passed: false,
@@ -34,7 +35,7 @@ export async function validateNode<T extends string>(
   let allPassed = true;
 
   // Execute each validation rule
-  for (const rule of (node.validate || [])) {
+  for (const rule of (spec.validate || [])) {
     let passed = false;
     let evidence = '';
 
@@ -454,9 +455,9 @@ export async function validateBatch<T extends string>(
 
   // Check that all produced artifacts exist (artifact materialization requirement)
   for (const nodeId of batch) {
-    const node = g.nodes[nodeId as keyof typeof g.nodes] as any;
-    if (node && node.produces) {
-      for (const artifact of node.produces) {
+    const spec = node(g, nodeId as T) as any;
+    if (spec && spec.produces) {
+      for (const artifact of spec.produces) {
         if (!exists(artifact)) {
           missingArtifacts.push(artifact);
         }

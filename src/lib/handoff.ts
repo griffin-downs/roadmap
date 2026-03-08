@@ -4,6 +4,7 @@
 // @entry roadmap/agent
 
 import type { Graph } from '../protocol.ts';
+import { node } from '../core/access.ts';
 import type { FinalHandoff, InterimHandoff } from './brief.ts';
 
 /**
@@ -69,8 +70,8 @@ export async function advance(
   await writeFile(handoffPath, JSON.stringify(handoff, null, 2), 'utf-8');
 
   // Update position in DAG (find next node)
-  const node = dag.nodes[nodeId as keyof typeof dag.nodes];
-  if (!node) throw new Error(`Invalid node: ${nodeId}`);
+  const spec = node(dag, nodeId);
+  if (!spec) throw new Error(`Invalid node: ${nodeId}`);
 
   // Next position: first node that depends on this one
   const nextNodes = Object.entries(dag.nodes).filter(([, n]) =>
