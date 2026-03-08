@@ -1,5 +1,5 @@
 // @module terminal-brief
-// @description Aggregates six context layers into a TerminalBrief for terminal advance
+// @description Aggregates context layers into a TerminalBrief for terminal advance
 // @exports TerminalBrief, HandoffSummary, buildTerminalBrief
 // @entry roadmap/terminal-brief
 
@@ -8,10 +8,6 @@ import { join } from 'node:path';
 import type { Graph } from '../protocol.ts';
 import type { ChainLink, ExecutionReport } from './chain.ts';
 import { loadChain, currentIteration, getRootIntent } from './chain.ts';
-import type { TerminalAuditContext } from './terminal-audit/validator.ts';
-import { runAudit } from './terminal-audit/validator.ts';
-import type { ComputedReport } from './terminal-audit/computed.ts';
-import type { DetectionResult } from './terminal-audit/detected.ts';
 import { loadCompletionsWithEvidence } from './evidence/completion-evidence.ts';
 import type { CompletionRecordWithEvidence } from './evidence/completion-evidence.ts';
 
@@ -21,9 +17,7 @@ export interface TerminalBrief {
   chainHistory: ChainLink[];
   completionEvidence: Map<string, CompletionRecordWithEvidence>;
   handoffSummaries: HandoffSummary[];
-  computedSummary: ComputedReport;
   executionReport?: ExecutionReport;
-  detectedGaps: DetectionResult;
 }
 
 export interface HandoffSummary {
@@ -35,9 +29,12 @@ export interface HandoffSummary {
 }
 
 /**
- * Build a TerminalBrief aggregating all six context layers.
+ * Build a TerminalBrief aggregating context layers.
  * Called during terminal node advance to give the planning agent
  * full context for generating the successor spec.
+ *
+ * Note: computed audit summary and gap detection were removed
+ * (dead code after chain-terminal refactor).
  */
 export function buildTerminalBrief(
   dag: Graph<string>,
@@ -50,11 +47,7 @@ export function buildTerminalBrief(
   // Layer 2: handoff journals
   const handoffSummaries = loadHandoffSummaries(repoRoot);
 
-  // Layer 3: computed audit summary
-  const existsPredicate = (artifact: string) => existsSync(join(repoRoot, artifact));
-  const auditContext = runAudit(dag, completionEvidence, existsPredicate);
-
-  // Layer 4: chain history
+  // Layer 3: chain history
   const chainHistory = loadChain(repoRoot);
   const iteration = currentIteration(repoRoot);
   let rootIntent: string;
@@ -65,11 +58,8 @@ export function buildTerminalBrief(
     rootIntent = dag.desc;
   }
 
-  // Layer 5: execution report (passed in from --evaluate-file)
+  // Layer 4: execution report (passed in from --evaluate-file)
   // Already provided as parameter
-
-  // Layer 6: detected gaps (informational)
-  const detectedGaps = auditContext.detected;
 
   return {
     rootIntent,
@@ -77,9 +67,7 @@ export function buildTerminalBrief(
     chainHistory,
     completionEvidence,
     handoffSummaries,
-    computedSummary: auditContext.computed,
     executionReport,
-    detectedGaps,
   };
 }
 

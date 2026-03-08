@@ -1,32 +1,20 @@
 // @module terminal-audit/validator
-// @description Terminal audit — computed report + gap detection (informational, no gate)
+// @description Terminal audit stub — computed/detected modules removed (dead after chain-terminal refactor)
 // @exports TerminalAuditContext, runAudit
 
-import type { Graph } from '../../protocol.ts';
-import type { CompletionRecordWithEvidence } from '../evidence/completion-evidence.ts';
-import { computeReport, type ComputedReport } from './computed.ts';
-import { detectGaps, type DetectionResult } from './detected.ts';
+// Retained as a minimal stub so terminal-brief.ts can still call runAudit()
+// without importing the deleted computed.ts / detected.ts modules.
 
-// --- Types ---
-
-/** Informational audit context: mechanical analysis + gap detection */
+/** Informational audit context (stub — no longer performs analysis) */
 export interface TerminalAuditContext {
-  computed: ComputedReport;
-  detected: DetectionResult;
+  computed: null;
+  detected: null;
 }
 
-// --- Run audit (informational) ---
-
 /**
- * Run terminal audit: compute report + detect gaps.
- * Returns informational summary — not a gate, not a blocker.
+ * Stub: terminal audit analysis removed.
+ * The computed report and gap detection were superseded by chain-terminal.
  */
-export function runAudit(
-  dag: Graph<string>,
-  records: Map<string, CompletionRecordWithEvidence>,
-  exists: (artifact: string) => boolean,
-): TerminalAuditContext {
-  const computed = computeReport(dag, records, exists);
-  const detected = detectGaps(dag);
-  return { computed, detected };
+export function runAudit(): TerminalAuditContext {
+  return { computed: null, detected: null };
 }

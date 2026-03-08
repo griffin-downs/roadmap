@@ -331,17 +331,6 @@ describe('buildTerminalBrief', () => {
     expect(brief.handoffSummaries[0].summary).toBe('Initialized project structure');
     expect(brief.handoffSummaries[0].keyDecisions).toEqual(['Used TypeScript']);
     expect(brief.handoffSummaries[0].gotchas).toEqual(['Requires Node 20+']);
-
-    // Layer 6: computedSummary
-    expect(brief.computedSummary).toBeDefined();
-    expect(brief.computedSummary.commitStatus).toBeDefined();
-    expect(brief.computedSummary.testEvidence).toBeDefined();
-    expect(brief.computedSummary.auditTrail).toBeDefined();
-
-    // detectedGaps
-    expect(brief.detectedGaps).toBeDefined();
-    expect(brief.detectedGaps.gaps).toBeDefined();
-    expect(brief.detectedGaps.summary).toBeDefined();
   });
 
   it('excludes interim handoff files', () => {
