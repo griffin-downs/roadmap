@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "engine": "spec-kit",
   "version": "1.0.0",
-  "compile_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "spec_sha": "aba9929e4c499f400277dbb6e303bac97bc35ea93394417116b551b4186bc51d",
-  "importedAt": "2026-03-08T07:20:08.021Z",
-  "dagId": "chain-terminal"
+  "compile_hash": "manual",
+  "spec_sha": "a3e80d98f2984e0c148fc736a820291402d4105c7f4a8992da36d9af606d07ca",
+  "importedAt": "2026-03-08T10:51:58.897Z",
+  "dagId": "terminal-enrichment"
 }
