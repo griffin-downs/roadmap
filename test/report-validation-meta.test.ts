@@ -103,9 +103,9 @@ describe('report-validation meta-test (CLI pipeline)', () => {
     const result = cli('advance term --note "try without judgment"', tmpDir);
     expect(result.ok).toBe(false);
     const combined = result.stdout + result.stderr;
-    // Without --evaluate, the intent gate blocks with structured context
-    expect(combined).toContain('INTENT GATE');
-    expect(combined).toContain('Agent must evaluate');
+    // Without --evaluate, the intent validator fails
+    expect(combined).toContain('unevaluated');
+    expect(combined).toContain('--evaluate-file');
   });
 
   it('advance term REJECTS freeform prose via --evaluate-file', () => {
