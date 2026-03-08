@@ -5,7 +5,7 @@ export default defineConfig({
     globals: true,
     globalSetup: ['tests/globalSetup.ts'],
     include: ['tests/**/*.test.ts', 'src/tests/**/*.test.ts', 'src/**/__tests__/**/*.test.ts'],
-    exclude: ['test/**/*.test.ts', 'node_modules/**'],
+    exclude: ['node_modules/**'],
     pool: 'forks',
     maxWorkers: 8,
     minWorkers: 4,

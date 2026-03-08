@@ -1,6 +1,6 @@
 // @module tests
 // @exports (test suite)
-// @entry test/advance-feature-branch.test.ts
+// @entry tests/advance-feature-branch.test.ts
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';

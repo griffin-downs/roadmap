@@ -2078,5 +2078,120 @@
     "gitSha": "a40895557fe0dfae00817cbae516991676565aae",
     "treeSha": "20b88d4e712744e483fa861ee9a000d29f6034d8",
     "branch": "main"
+  },
+  {
+    "nodeId": "delete-test-files",
+    "completedAt": "2026-03-08T15:22:20.972Z",
+    "dagId": "purge-non-algebra",
+    "validationChecks": [
+      {
+        "rule": "shell:test ! -f tests/distributed-dag.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f tests/distributed-dag.test.ts"
+      },
+      {
+        "rule": "shell:test ! -f tests/llm-feedback.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f tests/llm-feedback.test.ts"
+      },
+      {
+        "rule": "shell:test ! -f tests/spec-conformance.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f tests/spec-conformance.test.ts"
+      },
+      {
+        "rule": "shell:test ! -f tests/checkpoint-integration.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f tests/checkpoint-integration.test.ts"
+      },
+      {
+        "rule": "shell:test ! -f tests/agent-dispatch/agent-integration.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f tests/agent-dispatch/agent-integration.test.ts"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/tasks/purge-tests-receipt.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4d07f62fc6b961e7832b3df0e3d4212c23e6efa8",
+    "treeSha": "95a974860f59f1989c6d80819b1ebf5bab2794c8",
+    "branch": "main"
+  },
+  {
+    "nodeId": "delete-source-files",
+    "completedAt": "2026-03-08T15:22:52.578Z",
+    "dagId": "purge-non-algebra",
+    "validationChecks": [
+      {
+        "rule": "shell:test ! -f src/lib/agent-dispatch/brief-validator.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/agent-dispatch/brief-validator.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/lib/topology/topology-service.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/topology/topology-service.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/lib/intent/intent-gate-enrichment.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/intent/intent-gate-enrichment.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/llm-feedback.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/llm-feedback.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/protocol-distributed.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/protocol-distributed.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/validators/spec-conformance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/validators/spec-conformance.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/lib/agent-dispatch/task-worktree.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/agent-dispatch/task-worktree.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/checkpoint-runtime.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/checkpoint-runtime.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/commands/spec-init.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/commands/spec-init.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/lib/terminal-audit/validator.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/terminal-audit/validator.ts"
+      },
+      {
+        "rule": "shell:test ! -d src/validators",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -d src/validators"
+      },
+      {
+        "rule": "shell:test ! -d src/commands",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -d src/commands"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/tasks/purge-source-receipt.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "04e610fd9a8e3a23b3797f5806def59f2fe8dc9b",
+    "treeSha": "32783883c0e67755a3ba791617bc5fb263154cc0",
+    "branch": "main"
   }
 ]
