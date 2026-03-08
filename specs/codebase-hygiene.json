@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "dag_id": "codebase-hygiene",
+  "dag_desc": "Codebase hygiene sweep: remove dead code from chain-terminal aftermath, fix broken validators, clean test directory, prune orphaned modules. Zero new features — strictly cleanup and correctness.",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "path": "specs/codebase-hygiene.json",
+      "sha256": "a003acb7d862ebc6baf6543dd3656adc87eb7c6b53177811afc386ccbf16e631",
+      "role": "spec"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-08T09:00:00Z",
+    "compile_hash": "manual"
+  },
+  "tasks": [
+    {
+      "id": "init",
+      "desc": "Init marker",
+      "priority": 0,
+      "depends": [],
+      "produces": [
+        "init.marker"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "init.marker"
+        }
+      ]
+    },
+    {
+      "id": "dead-imports-roadmap-ts",
+      "desc": "Remove 14 unused imports from bin/roadmap.ts: order, batchConflicts, readyNodes, nextBatch, criticalPath, reconcile, validateGraph, consumeArtifact, crossOrient, discoverDependencies, resolveSiblingPath, enrichIntentGate, buildScaffold, ensureIndexExists. Remove dead loadDAG() function (~line 2058). Type check must still pass.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "bin/roadmap.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -P '^import.*\\border\\b.*from' bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -q 'crossOrient' bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -q 'buildScaffold' bin/roadmap.ts"
+        }
+      ]
+    },
+    {
+      "id": "prune-terminal-audit",
+      "desc": "Remove terminal-audit as a live module. Delete src/lib/terminal-audit/computed.ts and src/lib/terminal-audit/detected.ts. Simplify validator.ts to not import them. Update terminal-brief.ts to not depend on runAudit/TerminalAuditContext — terminal brief should assemble context without calling audit functions. Remove terminal-audit test files from test/ directory (terminal-audit-e2e.test.ts, terminal-audit-validator.test.ts, terminal-audit-detected.test.ts, terminal-audit-computed.test.ts). Type check must pass.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/lib/terminal-brief.ts",
+        "src/lib/terminal-audit/validator.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/terminal-audit/computed.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/terminal-audit/detected.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
+      ]
+    },
+    {
+      "id": "remove-runtime-explore",
+      "desc": "Remove runtime-explore validator type from src/lib/protocol/validation.ts (lines 200-237). Remove the CDP observation mapping code. Remove 'runtime-explore' from ValidationRule union type in types.ts if present. @playwright/test is already removed from package.json. Type check must pass.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/lib/protocol/validation.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -q 'runtime-explore' src/lib/protocol/validation.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
+      ]
+    },
+    {
+      "id": "fix-stale-receipt",
+      "desc": "Fix stale-receipt detection in validateDagOrigin(). The test at tests/dag-mutator.test.ts:310 (currently skipped) expects validateDagOrigin() to return code 'missing-mutation-receipt' when mutations.jsonl has a receipt older than 60 seconds. Implement the detection logic and unskip the test.",
+      "priority": 2,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/lib/dag-mutator.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -q 'it.skip' tests/dag-mutator.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run tests/dag-mutator.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "rescue-phantom-tests",
+      "desc": "Move 9 vitest-importing test files from test/ to tests/: advance-feature-branch.test.ts, intent-gate-e2e.test.ts, intent-report-validation.test.ts, report-validation-meta.test.ts, terminal-audit-computed.test.ts, terminal-audit-detected.test.ts, terminal-audit-e2e.test.ts, terminal-audit-validator.test.ts, brief-enrichment.test.ts. Note: 4 terminal-audit test files may be deleted by prune-terminal-audit instead of moved. Move the remaining 5. Verify they pass under vitest.",
+      "priority": 2,
+      "depends": [
+        "prune-terminal-audit"
+      ],
+      "produces": [
+        ".roadmap/tasks/rescue-phantom-tests.artifact.json"
+      ],
+      "consumes": [
+        "src/lib/terminal-audit/validator.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f test/brief-enrichment.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f test/advance-feature-branch.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "implement-artifact-schema",
+      "desc": "Implement artifact-schema validator in src/lib/protocol/validation.ts. Currently a stub that always fails with 'schema validation not yet implemented'. Use Ajv or simple JSON schema validation: read the target file, parse as JSON, validate against the schema file. If schema file doesn't exist, fail with clear error. Replace the TODO comment.",
+      "priority": 3,
+      "depends": [
+        "remove-runtime-explore"
+      ],
+      "produces": [
+        "src/lib/protocol/validation.ts"
+      ],
+      "consumes": [
+        "src/lib/protocol/validation.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -q 'TODO.*schema validation' src/lib/protocol/validation.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
+      ]
+    },
+    {
+      "id": "hygiene-verified",
+      "desc": "Terminal — full build, type check, and test suite pass. All dead code removed, broken tests fixed or deleted, phantom tests rescued.",
+      "priority": 4,
+      "depends": [
+        "dead-imports-roadmap-ts",
+        "rescue-phantom-tests",
+        "fix-stale-receipt",
+        "implement-artifact-schema"
+      ],
+      "produces": [
+        ".roadmap/tasks/hygiene-verified.artifact.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run build"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -q 'crossOrient' bin/roadmap.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/terminal-audit/computed.ts"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -q 'runtime-explore' src/lib/protocol/validation.ts"
+        }
+      ]
+    }
+  ]
+}
