@@ -1,8 +1,0 @@
-{
-  "node": "clean-imports",
-  "brokenImports": [],
-  "cleanedExports": [],
-  "tscResult": "clean (exit 0, no errors)",
-  "notes": "No barrel exports or imports referenced deleted modules. spec-conformance references are validator type names in schemas, not module imports. terminal-audit/computed.ts and terminal-audit/detected.ts are live dependencies of terminal-brief.ts (not deleted).",
-  "timestamp": "2026-03-08T15:26:00+00:00"
-}

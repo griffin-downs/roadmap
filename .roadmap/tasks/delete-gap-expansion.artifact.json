@@ -1,1 +1,0 @@
-{"node":"delete-gap-expansion","status":"complete","deletedFiles":["src/lib/terminal-audit/gap-expansion.ts"],"removedImports":["expandGaps"],"removedTrailCodes":["TERMINAL_AUDIT_EXPANDED"]}

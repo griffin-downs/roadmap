@@ -1,20 +1,34 @@
 {
-  "id": "convergence",
-  "desc": "Refactor roadmap into layered architecture — pure graph algebra (core), IO boundary (runtime), thin dispatch (CLI) — restoring the seed commit invariant: every operation is Graph in, Value out.",
-  "sourceDAGs": [
-    "head.json"
+  "schema_version": 1,
+  "dag_id": "convergence",
+  "dag_desc": "Refactor roadmap into layered architecture — pure graph algebra (core), IO boundary (runtime), thin dispatch (CLI) — restoring the seed commit invariant: every operation is Graph in, Value out.",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "path": "specs/convergence.json",
+      "sha256": "9c0bb106a8d8f686a232688c5b0de64478aa069162e6584503d6debed9d51372",
+      "role": "spec"
+    }
   ],
-  "timestamp": "2026-03-08T15:59:15.121Z",
-  "entries": [
+  "metadata": {
+    "generated": "2026-03-08T12:00:00Z",
+    "compile_hash": "manual"
+  },
+  "tasks": [
     {
       "id": "init",
-      "phase": "convergence",
+      "desc": "Init marker — current codebase, all 343 tests passing",
+      "priority": 0,
+      "depends": [],
       "produces": [
         "init.marker"
       ],
       "consumes": [],
-      "deps": [],
-      "desc": "Init marker — current codebase, all 343 tests passing",
+      "mode": "execute",
       "validate": [
         {
           "type": "artifact-exists",
@@ -24,15 +38,16 @@
     },
     {
       "id": "typed-accessors",
-      "phase": "convergence",
+      "desc": "Create core/access.ts with nodes(g) and node(g, id) — typed graph accessors that replace every 'as keyof typeof dag.nodes' cast across the codebase. Restore the seed's flat() abstraction boundary: one bridge between the mapped type and runtime iteration.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "src/core/access.ts"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "desc": "Create core/access.ts with nodes(g) and node(g, id) — typed graph accessors that replace every 'as keyof typeof dag.nodes' cast across the codebase. Restore the seed's flat() abstraction boundary: one bridge between the mapped type and runtime iteration.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -54,15 +69,16 @@
     },
     {
       "id": "unify-completion",
-      "phase": "convergence",
+      "desc": "Merge completion-tracker.ts, completion-store.ts, and completion-evidence.ts into one module: runtime/completion.ts. One CompletionRecord type, one load(), one save(). Every consumer uses the same function, the same shape. Delete the three source files.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "src/runtime/completion.ts"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "desc": "Merge completion-tracker.ts, completion-store.ts, and completion-evidence.ts into one module: runtime/completion.ts. One CompletionRecord type, one load(), one save(). Every consumer uses the same function, the same shape. Delete the three source files.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -84,15 +100,16 @@
     },
     {
       "id": "housekeeping",
-      "phase": "convergence",
+      "desc": "Three mechanical cleanups: (1) delete src/lib/terminal-audit/validator.ts stub (returns nulls, dead after computed.ts/detected.ts rebuild), (2) move test/ contents to tests/ — one directory, one convention, (3) replace all inline 'typeof c === string ? c : c.artifact' with consumeArtifact(c) calls.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "tests/.unified"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
-      "desc": "Three mechanical cleanups: (1) delete src/lib/terminal-audit/validator.ts stub (returns nulls, dead after computed.ts/detected.ts rebuild), (2) move test/ contents to tests/ — one directory, one convention, (3) replace all inline 'typeof c === string ? c : c.artifact' with consumeArtifact(c) calls.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -118,7 +135,13 @@
     },
     {
       "id": "extract-core",
-      "phase": "convergence",
+      "desc": "Pull pure functions from operations.ts (1002 lines) into src/core/: graph.ts (define, verify, check), order.ts (order, parallelOrder, criticalPath), orient.ts (orient as pure — takes graph + exists predicate, returns Position), batch.ts (advanceBatch as pure — takes graph + completed set, returns next batch), reconcile.ts (reconcile, merge, branch). core/ must have zero node:fs imports. operations.ts becomes a thin re-export or is deleted.",
+      "priority": 2,
+      "depends": [
+        "typed-accessors",
+        "unify-completion",
+        "housekeeping"
+      ],
       "produces": [
         "src/core/graph.ts",
         "src/core/order.ts",
@@ -129,12 +152,7 @@
       "consumes": [
         "src/core/access.ts"
       ],
-      "deps": [
-        "typed-accessors",
-        "unify-completion",
-        "housekeeping"
-      ],
-      "desc": "Pull pure functions from operations.ts (1002 lines) into src/core/: graph.ts (define, verify, check), order.ts (order, parallelOrder, criticalPath), orient.ts (orient as pure — takes graph + exists predicate, returns Position), batch.ts (advanceBatch as pure — takes graph + completed set, returns next batch), reconcile.ts (reconcile, merge, branch). core/ must have zero node:fs imports. operations.ts becomes a thin re-export or is deleted.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -160,7 +178,11 @@
     },
     {
       "id": "split-nodespec",
-      "phase": "convergence",
+      "desc": "Separate NodeSpec into 5-field contract (id, desc, produces, consumes, deps) in core/types.ts and NodeMeta (validate, idempotent, mode, nodeType, track, expandedFrom, loopTarget, convergenceCheck, ambient, _intentDiagnosis, affects) in runtime/meta.ts. Add ManagedGraph type that carries both. Provide fullNode() helper for backward-compat construction.",
+      "priority": 3,
+      "depends": [
+        "extract-core"
+      ],
       "produces": [
         "src/core/types.ts",
         "src/runtime/meta.ts"
@@ -168,10 +190,7 @@
       "consumes": [
         "src/core/graph.ts"
       ],
-      "deps": [
-        "extract-core"
-      ],
-      "desc": "Separate NodeSpec into 5-field contract (id, desc, produces, consumes, deps) in core/types.ts and NodeMeta (validate, idempotent, mode, nodeType, track, expandedFrom, loopTarget, convergenceCheck, ambient, _intentDiagnosis, affects) in runtime/meta.ts. Add ManagedGraph type that carries both. Provide fullNode() helper for backward-compat construction.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -193,7 +212,11 @@
     },
     {
       "id": "pure-orient",
-      "phase": "convergence",
+      "desc": "Ensure orient in core/orient.ts is purely orient(g, exists) → Position with zero IO. The exists predicate is the only bridge to the filesystem. All completion loading, chain context, brief generation happens in the runtime layer that calls orient, not inside it.",
+      "priority": 3,
+      "depends": [
+        "extract-core"
+      ],
       "produces": [
         "src/core/orient.ts"
       ],
@@ -201,10 +224,7 @@
         "src/core/graph.ts",
         "src/core/access.ts"
       ],
-      "deps": [
-        "extract-core"
-      ],
-      "desc": "Ensure orient in core/orient.ts is purely orient(g, exists) → Position with zero IO. The exists predicate is the only bridge to the filesystem. All completion loading, chain context, brief generation happens in the runtime layer that calls orient, not inside it.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -222,7 +242,12 @@
     },
     {
       "id": "io-boundary",
-      "phase": "convergence",
+      "desc": "Create runtime/context.ts with loadContext(repoRoot) → Context. Single filesystem touch point that loads completions, chain state, handoffs, and returns a Context object. All runtime functions take Context as an argument instead of repoRoot. This is the IO boundary — everything below is pure, everything above calls loadContext once.",
+      "priority": 4,
+      "depends": [
+        "split-nodespec",
+        "pure-orient"
+      ],
       "produces": [
         "src/runtime/context.ts"
       ],
@@ -230,11 +255,7 @@
         "src/runtime/completion.ts",
         "src/runtime/meta.ts"
       ],
-      "deps": [
-        "split-nodespec",
-        "pure-orient"
-      ],
-      "desc": "Create runtime/context.ts with loadContext(repoRoot) → Context. Single filesystem touch point that loads completions, chain state, handoffs, and returns a Context object. All runtime functions take Context as an argument instead of repoRoot. This is the IO boundary — everything below is pure, everything above calls loadContext once.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -252,7 +273,11 @@
     },
     {
       "id": "pure-brief",
-      "phase": "convergence",
+      "desc": "Rewrite brief generation as brief(g, position, context) → Brief — pure function taking pre-loaded Context. Convert getBrief from async to sync (remove dynamic imports). buildTerminalBrief, computeReport, detectGaps all take Context, not repoRoot. No function in src/lib/brief.ts or src/lib/terminal-brief.ts touches the filesystem directly.",
+      "priority": 5,
+      "depends": [
+        "io-boundary"
+      ],
       "produces": [
         "src/runtime/brief.ts"
       ],
@@ -260,10 +285,7 @@
         "src/runtime/context.ts",
         "src/core/orient.ts"
       ],
-      "deps": [
-        "io-boundary"
-      ],
-      "desc": "Rewrite brief generation as brief(g, position, context) → Brief — pure function taking pre-loaded Context. Convert getBrief from async to sync (remove dynamic imports). buildTerminalBrief, computeReport, detectGaps all take Context, not repoRoot. No function in src/lib/brief.ts or src/lib/terminal-brief.ts touches the filesystem directly.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -285,7 +307,11 @@
     },
     {
       "id": "thin-cli",
-      "phase": "convergence",
+      "desc": "Rewrite bin/roadmap.ts as thin dispatch over runtime functions. Each command (make, orient, advance, dag, spec) becomes a separate file in src/cli/ under 30 lines: parse args, call one runtime function, JSON.stringify to stdout. bin/roadmap.ts becomes a router that imports cli/ modules.",
+      "priority": 6,
+      "depends": [
+        "pure-brief"
+      ],
       "produces": [
         "src/cli/make.ts",
         "src/cli/orient.ts",
@@ -295,10 +321,7 @@
         "src/runtime/context.ts",
         "src/runtime/brief.ts"
       ],
-      "deps": [
-        "pure-brief"
-      ],
-      "desc": "Rewrite bin/roadmap.ts as thin dispatch over runtime functions. Each command (make, orient, advance, dag, spec) becomes a separate file in src/cli/ under 30 lines: parse args, call one runtime function, JSON.stringify to stdout. bin/roadmap.ts becomes a router that imports cli/ modules.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -316,7 +339,11 @@
     },
     {
       "id": "wire-exports",
-      "phase": "convergence",
+      "desc": "Verify and update package.json exports map so that 'roadmap', 'roadmap/protocol', and 'roadmap/cli-envelope' re-export from the new module structure. No downstream consumer import path changes. The public API surface is identical.",
+      "priority": 7,
+      "depends": [
+        "thin-cli"
+      ],
       "produces": [
         "src/protocol.ts"
       ],
@@ -325,10 +352,7 @@
         "src/core/graph.ts",
         "src/runtime/meta.ts"
       ],
-      "deps": [
-        "thin-cli"
-      ],
-      "desc": "Verify and update package.json exports map so that 'roadmap', 'roadmap/protocol', and 'roadmap/cli-envelope' re-export from the new module structure. No downstream consumer import path changes. The public API surface is identical.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -346,17 +370,18 @@
     },
     {
       "id": "downstream-verify",
-      "phase": "convergence",
+      "desc": "Run donjon's test suite against the restructured roadmap package. Verify: (1) donjon imports resolve (roadmap, roadmap/protocol, roadmap/cli-envelope), (2) donjon's programmatic define() + orient() + CompletionStore usage works, (3) donjon's CLI proxy calls (roadmap make, orient, advance) succeed. Zero breakage.",
+      "priority": 8,
+      "depends": [
+        "wire-exports"
+      ],
       "produces": [
         "tests/downstream-compat.test.ts"
       ],
       "consumes": [
         "src/protocol.ts"
       ],
-      "deps": [
-        "wire-exports"
-      ],
-      "desc": "Run donjon's test suite against the restructured roadmap package. Verify: (1) donjon imports resolve (roadmap, roadmap/protocol, roadmap/cli-envelope), (2) donjon's programmatic define() + orient() + CompletionStore usage works, (3) donjon's CLI proxy calls (roadmap make, orient, advance) succeed. Zero breakage.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -370,15 +395,16 @@
     },
     {
       "id": "term",
-      "phase": "convergence",
+      "desc": "Convergence verified: every operation in core/ is Graph in, Value out. core/ has zero node:fs imports. All 343+ roadmap tests pass. donjon tests pass. Public API surface unchanged. The seed's invariant is restored at scale.",
+      "priority": 9,
+      "depends": [
+        "downstream-verify"
+      ],
       "produces": [
         ".roadmap/tasks/convergence-verified.artifact.json"
       ],
       "consumes": [],
-      "deps": [
-        "downstream-verify"
-      ],
-      "desc": "Convergence verified: every operation in core/ is Graph in, Value out. core/ has zero node:fs imports. All 343+ roadmap tests pass. donjon tests pass. Public API surface unchanged. The seed's invariant is restored at scale.",
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -402,37 +428,5 @@
         }
       ]
     }
-  ],
-  "phaseMap": {
-    "convergence": [
-      "init",
-      "typed-accessors",
-      "unify-completion",
-      "housekeeping",
-      "extract-core",
-      "split-nodespec",
-      "pure-orient",
-      "io-boundary",
-      "pure-brief",
-      "thin-cli",
-      "wire-exports",
-      "downstream-verify",
-      "term"
-    ]
-  },
-  "nodeToPhase": {
-    "init": "convergence",
-    "typed-accessors": "convergence",
-    "unify-completion": "convergence",
-    "housekeeping": "convergence",
-    "extract-core": "convergence",
-    "split-nodespec": "convergence",
-    "pure-orient": "convergence",
-    "io-boundary": "convergence",
-    "pure-brief": "convergence",
-    "thin-cli": "convergence",
-    "wire-exports": "convergence",
-    "downstream-verify": "convergence",
-    "term": "convergence"
-  }
+  ]
 }
