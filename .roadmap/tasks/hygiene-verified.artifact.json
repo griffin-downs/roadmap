@@ -1,0 +1,1 @@
+{"node":"hygiene-verified","status":"complete","summary":"Codebase hygiene sweep complete","cleaned":{"deadImports":14,"deadFunctions":1,"deletedFiles":6,"movedTests":5,"fixedBugs":1,"implementedValidators":1,"prunedValidatorTypes":1},"testsPass":337}
