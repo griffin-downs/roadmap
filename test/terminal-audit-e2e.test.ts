@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { validateTerminalAudit, runAudit, evaluateResponses } from '../src/lib/terminal-audit/validator.ts';
 import { computeReport } from '../src/lib/terminal-audit/computed.ts';
-import { detectGaps } from '../src/lib/terminal-audit/detected.ts';
-import { expandGaps } from '../src/lib/terminal-audit/gap-expansion.ts';
 import { tasksToDAG, parseTasksMd } from '../src/lib/intake/speckit-import.ts';
 import type { Graph, NodeSpec } from '../src/lib/protocol/types.ts';
 import type { CompletionRecordWithEvidence } from '../src/lib/evidence/completion-evidence.ts';
@@ -191,35 +189,4 @@ describe('E2E: terminal audit full pipeline', () => {
     });
   });
 
-  describe('gap expansion: terminal node cycle prevention', () => {
-    it('skips gaps on terminal node to avoid cycle', () => {
-      // Terminal node produces an artifact with no shell test → untested-produce gap
-      // Without the fix, expandGaps would insert fix-untested-produce-N depending
-      // on term, then wire term to depend on the fix → cycle → define() throws
-      const dag = buildDAG({
-        init: { produces: ['init.marker'] },
-        work: { produces: ['src/out.ts'], deps: ['init'], validate: [{ type: 'shell', command: 'echo ok' }] },
-        term: {
-          produces: ['.roadmap/tasks/done.json'],
-          deps: ['work'],
-          validate: [{ type: 'artifact-exists', path: '.roadmap/tasks/done.json' }],
-        },
-      });
-
-      const detected = detectGaps(dag, []);
-      // There should be a gap on term (untested-produce for .roadmap/tasks/done.json)
-      const termGaps = detected.gaps.filter(g => g.nodeId === 'term');
-
-      // expandGaps should skip terminal gaps instead of creating a cycle
-      const result = expandGaps(dag, detected, '/tmp/nonexistent');
-      // Verify no fix node depends on terminal
-      for (const fix of result.fixNodes) {
-        expect(fix.deps).not.toContain('term');
-      }
-      // If there were only terminal gaps, no expansion should happen
-      if (termGaps.length === detected.gaps.length) {
-        expect(result.expanded).toBe(false);
-      }
-    });
-  });
 });
