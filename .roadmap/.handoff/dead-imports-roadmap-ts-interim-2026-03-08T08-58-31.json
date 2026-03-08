@@ -1,9 +1,0 @@
-{
-  "timestamp": "2026-03-08T08:58:31.917Z",
-  "progress": 0.5,
-  "discovered": [],
-  "blockers": [
-    "shell:! grep -q 'crossOrient' bin/roadmap.ts"
-  ],
-  "currentFile": ""
-}

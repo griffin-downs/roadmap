@@ -1,9 +1,0 @@
-{
-  "timestamp": "2026-03-08T08:45:00.481Z",
-  "progress": 0.5,
-  "discovered": [],
-  "blockers": [
-    "artifact-exists:.roadmap/tasks/delete-gap-expansion.artifact.json"
-  ],
-  "currentFile": ""
-}

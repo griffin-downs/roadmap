@@ -1,9 +1,0 @@
-{
-  "schemaVersion": 1,
-  "engine": "test-engine",
-  "version": "1.0.0",
-  "compile_hash": "test-hash",
-  "spec_sha": "bd1e3e39730afe86889145c7eaddd60ca25cc9c15d143de98b39018accf52bd3",
-  "importedAt": "2026-03-08T15:26:14.469Z",
-  "dagId": "rehash-test"
-}
