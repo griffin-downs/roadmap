@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "dag_id": "surface-coverage",
+  "dag_desc": "Cull dead code (5 files, 831 LOC), remove unused @types/commander dep, add render layer unit tests (pure functions), add brief-gate unit tests (pure validation), add handoff-journal unit tests (IO, tmp dirs), add agent-executor unit tests (IO, tmp dirs).",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "role": "tasks",
+      "path": "specs/surface-coverage.json",
+      "sha256": "5c35ec709afa9a11811fb90ad52cfdb2e343c83392e86b634f6ffcd51f04ef4c"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/god-engineer-prompt.ts",
+      "sha256": "467260c1601971dbbcffb0218c0cc246803a14567d5b83ee718c9b7c4410c309"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/plan-overlay.ts",
+      "sha256": "07f7d6e0ba1b249908fd629a44c369609133205565ccec4cc0cd2ed11dafc956"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/receipts-ux.ts",
+      "sha256": "f0d40f1bcb6eb4aebcb0d18e4edd9447e1cf8eaf4d31225d14f8bde340cc39a4"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/scaffold.ts",
+      "sha256": "5204a320df76e143ec0d7ce5cac82a78c00c9791e243dffcb8d920712934f50f"
+    },
+    {
+      "role": "other",
+      "path": "src/spec-kit/agent-brief.ts",
+      "sha256": "d4d78a4dad9647cce5a961731f2a3cd66b76ff6c3dd085d1bb94f14af0a7c603"
+    },
+    {
+      "role": "other",
+      "path": "package.json",
+      "sha256": "30a0b4544fe75408e0834c32411512eff7e34732ada0d8bac9b9e7a8c95a99b7"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/render/bars.ts",
+      "sha256": "61eb999f50dd6cf3cdf8f28c288648d6a36d54d23f5f7dc70022fdfe537241cc"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/render/box.ts",
+      "sha256": "5b84183d274e2025dc96495a57abb5ae453eb36020351732245badf5ac70200b"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/render/layout.ts",
+      "sha256": "d3839e7f48513696f318446cbedb1146083438378549be851f96cb9af8718c5f"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/render/style.ts",
+      "sha256": "399b466a8436e7e3f12fbfa5c5be789ece01cf3f0017566d1c9ae76f68321893"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/render/dag.ts",
+      "sha256": "62588638050f781bf77c79481590b1e1b24cdfb2816a79114c459f80c83f19d6"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/agent-dispatch/brief-gate.ts",
+      "sha256": "4f21b38f9f67a716739dcf547bd56a6cfce2ef3487f55357af1fc60ecea70acc"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/agent-dispatch/handoff-journal.ts",
+      "sha256": "5175af6820017a9b3785d1e7eebed8d2a22624dfb66df4fc3e4cc14022e7cbc3"
+    },
+    {
+      "role": "other",
+      "path": "src/lib/agent-dispatch/agent-executor.ts",
+      "sha256": "95178f329d414bd1a6027ca11cd83b256046e7e2d0b99961a1c1006e87dd0a4b"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-08T00:00:00Z",
+    "compile_hash": "manual"
+  },
+  "tasks": [
+    {
+      "id": "init",
+      "desc": "Anchor: 356 tests, tsc clean. 5 dead files (831 LOC), 1 unused dep. Render layer (7 pure modules, 0 tests), agent-dispatch layer (5 modules, 0 tests).",
+      "priority": 0,
+      "depends": [],
+      "produces": [
+        ".roadmap/tasks/init.artifact.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": ".roadmap/tasks/init.artifact.json"
+        }
+      ]
+    },
+    {
+      "id": "dead-code-cull",
+      "desc": "Delete 5 dead files: src/lib/god-engineer-prompt.ts, src/lib/plan-overlay.ts, src/lib/receipts-ux.ts, src/lib/scaffold.ts, src/spec-kit/agent-brief.ts. Remove @types/commander from devDependencies in package.json. Verify tsc clean and all tests pass after removal.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "package.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm test"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/god-engineer-prompt.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/plan-overlay.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/receipts-ux.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/scaffold.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/spec-kit/agent-brief.ts"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -q commander package.json"
+        }
+      ]
+    },
+    {
+      "id": "render-tests",
+      "desc": "Unit tests for src/lib/render/ — pure string functions, no IO. Cover: layout (resolveWidth, wrapText, truncate, padEnd), bars (progressBar, progressLine), box (boxPanel, boxTable), style (ansiEnabled, styled, emoji, STATUS_EMOJI constants), dag (renderDagLayers, renderCriticalPath), errors (renderErrorPanel), index (render, renderNodes dispatch). All pure — no tmp dirs needed. Minimum 30 test cases.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "tests/render.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "tests/render.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm test -- tests/render.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "brief-gate-tests",
+      "desc": "Unit tests for src/lib/agent-dispatch/brief-gate.ts — pure validation, no IO. Cover: BriefGate.validate (required fields, field formats, artifact integrity, DAG leakage check, handoff integrity), validateBrief, validateBriefContract (null, non-object, valid), isSealedBrief type guard, formatBriefValidationReport. Test matrix: valid brief passes, each required field missing fails, invalid mode fails, oversized produces warns, DAG fields rejected, handoff progress bounds, summary length bounds. Minimum 20 test cases.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "tests/brief-gate.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "tests/brief-gate.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm test -- tests/brief-gate.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "handoff-journal-tests",
+      "desc": "Unit tests for src/lib/agent-dispatch/handoff-journal.ts — filesystem IO, needs tmp dirs. Cover: HandoffJournal class (writeInterim, writeFinal, loadInterims, loadFinal, loadChain, clearNode), standalone functions (writeInterimHandoff, writeFinalHandoff, loadJournal, loadFinal, saveInterim, saveFinal, journalDir). Test: roundtrip write+load, chronological ordering of interims, missing files return null/empty, clearNode idempotent, invalid JSON handled gracefully. Minimum 15 test cases.",
+      "priority": 2,
+      "depends": [
+        "brief-gate-tests"
+      ],
+      "produces": [
+        "tests/handoff-journal.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "tests/handoff-journal.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm test -- tests/handoff-journal.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "agent-executor-tests",
+      "desc": "Unit tests for src/lib/agent-dispatch/agent-executor.ts — filesystem IO, needs tmp dirs with mock consumes/produces. Cover: AgentExecutor (readConsumed access control, writeProduced access control + dir creation, execute success path, execute with missing produces). Test: read allowed artifact passes, read disallowed artifact throws, write to produces dir creates file, execute with all produces existing succeeds, execute with missing produce fails. Minimum 10 test cases.",
+      "priority": 2,
+      "depends": [
+        "handoff-journal-tests"
+      ],
+      "produces": [
+        "tests/agent-executor.test.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "tests/agent-executor.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm test -- tests/agent-executor.test.ts"
+        }
+      ]
+    },
+    {
+      "id": "term",
+      "desc": "Dead code culled (-831 LOC, -1 dep). Render layer fully tested (pure). Agent-dispatch core tested (brief-gate, handoff-journal, agent-executor). Full suite green, tsc clean.",
+      "priority": 3,
+      "depends": [
+        "dead-code-cull",
+        "render-tests",
+        "agent-executor-tests"
+      ],
+      "produces": [
+        ".roadmap/tasks/term.artifact.json"
+      ],
+      "consumes": [
+        "tests/render.test.ts",
+        "tests/brief-gate.test.ts",
+        "tests/handoff-journal.test.ts",
+        "tests/agent-executor.test.ts",
+        "package.json"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": ".roadmap/tasks/term.artifact.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm test"
+        },
+        {
+          "type": "shell",
+          "command": "test ! -f src/lib/god-engineer-prompt.ts"
+        }
+      ]
+    }
+  ]
+}

@@ -2036,8 +2036,8 @@
   },
   {
     "nodeId": "term",
-    "completedAt": "2026-03-08T21:02:31.053Z",
-    "dagId": "hardening",
+    "completedAt": "2026-03-08T21:41:04.249Z",
+    "dagId": "surface-coverage",
     "validationChecks": [
       {
         "rule": "artifact-exists:.roadmap/tasks/term.artifact.json",
@@ -2055,19 +2055,9 @@
         "evidence": "command passed (exit 0): pnpm test"
       },
       {
-        "rule": "shell:test $(grep -c 'as any' src/core/reconcile.ts) -le 1",
+        "rule": "shell:test ! -f src/lib/god-engineer-prompt.ts",
         "passed": true,
-        "evidence": "command passed (exit 0): test $(grep -c 'as any' src/core/reconcile.ts) -le 1"
-      },
-      {
-        "rule": "shell:! grep -q \"import.*node:fs\" src/lib/protocol/validation.ts",
-        "passed": true,
-        "evidence": "command passed (exit 0): ! grep -q \"import.*node:fs\" src/lib/protocol/validation.ts"
-      },
-      {
-        "rule": "shell:grep -q renameSync src/runtime/completion.ts",
-        "passed": true,
-        "evidence": "command passed (exit 0): grep -q renameSync src/runtime/completion.ts"
+        "evidence": "command passed (exit 0): test ! -f src/lib/god-engineer-prompt.ts"
       },
       {
         "rule": "artifact-exists:.roadmap/tasks/term.artifact.json",
@@ -2075,9 +2065,9 @@
         "evidence": "file exists"
       }
     ],
-    "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
-    "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
-    "branch": "main"
+    "gitSha": "1884fb5ee99b5c573b9bb7ba006d57c76b422a9f",
+    "treeSha": "79d182cce95c9a208deb2d2d560434e6dcbe75dd",
+    "branch": "feat/term-surface-coverage"
   },
   {
     "nodeId": "delete-test-files",
@@ -3148,5 +3138,160 @@
     "gitSha": "41207830981d655755f63d8cb8ad6e55ad6a692e",
     "treeSha": "428f4b11e4481c6098b5f960cde06073cb5d10f0",
     "branch": "main"
+  },
+  {
+    "nodeId": "dead-code-cull",
+    "completedAt": "2026-03-08T21:33:33.295Z",
+    "dagId": "surface-coverage",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm test",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test"
+      },
+      {
+        "rule": "shell:test ! -f src/lib/god-engineer-prompt.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/god-engineer-prompt.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/lib/plan-overlay.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/plan-overlay.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/lib/receipts-ux.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/receipts-ux.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/lib/scaffold.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/lib/scaffold.ts"
+      },
+      {
+        "rule": "shell:test ! -f src/spec-kit/agent-brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test ! -f src/spec-kit/agent-brief.ts"
+      },
+      {
+        "rule": "shell:! grep -q commander package.json",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -q commander package.json"
+      },
+      {
+        "rule": "artifact-exists:package.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "e5d7d181ebc5cf13322a35f3e06a0758bf8a3f8d",
+    "treeSha": "933a45acf1ebe4607d3a84c72f938c2e5f90ea54",
+    "branch": "feat/dead-code-cull"
+  },
+  {
+    "nodeId": "brief-gate-tests",
+    "completedAt": "2026-03-08T21:35:01.170Z",
+    "dagId": "surface-coverage",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:tests/brief-gate.test.ts",
+        "passed": true,
+        "evidence": "artifact exists: tests/brief-gate.test.ts"
+      },
+      {
+        "rule": "shell:pnpm test -- tests/brief-gate.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test -- tests/brief-gate.test.ts"
+      },
+      {
+        "rule": "artifact-exists:tests/brief-gate.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "e64dbf5715e5ffa91ca3561c389e58c6fbb44240",
+    "treeSha": "31cc5cdc2159576ddb809e435a8711a00ef3c933",
+    "branch": "feat/dead-code-cull"
+  },
+  {
+    "nodeId": "render-tests",
+    "completedAt": "2026-03-08T21:36:03.148Z",
+    "dagId": "surface-coverage",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:tests/render.test.ts",
+        "passed": true,
+        "evidence": "artifact exists: tests/render.test.ts"
+      },
+      {
+        "rule": "shell:pnpm test -- tests/render.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test -- tests/render.test.ts"
+      },
+      {
+        "rule": "artifact-exists:tests/render.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "f1e6c456ad892916e6ce89c7b91a832208f94665",
+    "treeSha": "c52a7fd806398929b00dde7d0929fa42071e53bb",
+    "branch": "feat/dead-code-cull"
+  },
+  {
+    "nodeId": "handoff-journal-tests",
+    "completedAt": "2026-03-08T21:38:09.461Z",
+    "dagId": "surface-coverage",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:tests/handoff-journal.test.ts",
+        "passed": true,
+        "evidence": "artifact exists: tests/handoff-journal.test.ts"
+      },
+      {
+        "rule": "shell:pnpm test -- tests/handoff-journal.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test -- tests/handoff-journal.test.ts"
+      },
+      {
+        "rule": "artifact-exists:tests/handoff-journal.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a6e8c694d45e75c044c02b041fac0a3ce9c427ed",
+    "treeSha": "5126d1557e66998af2bcb9fffb9dbd2ec8904e18",
+    "branch": "feat/handoff-journal-tests"
+  },
+  {
+    "nodeId": "agent-executor-tests",
+    "completedAt": "2026-03-08T21:39:46.960Z",
+    "dagId": "surface-coverage",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:tests/agent-executor.test.ts",
+        "passed": true,
+        "evidence": "artifact exists: tests/agent-executor.test.ts"
+      },
+      {
+        "rule": "shell:pnpm test -- tests/agent-executor.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm test -- tests/agent-executor.test.ts"
+      },
+      {
+        "rule": "artifact-exists:tests/agent-executor.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "b44d71a064dfd0fd23264d84ae45cb2eb57d8ddf",
+    "treeSha": "282a91f3c660ea4b09e6159fb0c2d1402823f5dd",
+    "branch": "feat/agent-executor-tests"
   }
 ]
