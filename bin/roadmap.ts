@@ -42,7 +42,8 @@ import { ensureConsolidated } from '../src/lib/roadmap/cli-consolidation-init.ts
 import { saveDagHead, migrateSingleHead } from '../src/lib/multi-dag.ts';
 import { getBrief } from '../src/lib/brief.ts';
 import { writeNodeCache } from '../src/lib/brief-cache.ts';
-import { runAudit, type TerminalAuditContext } from '../src/lib/terminal-audit/validator.ts';
+import { buildTerminalBrief, type TerminalBrief } from '../src/lib/terminal-brief.ts';
+import { archiveHead, appendLink, currentIteration, parseExecutionReport, type ChainLink, type ExecutionReport } from '../src/lib/chain.ts';
 import type { FinalHandoff, InterimHandoff } from '../src/lib/brief.ts';
 import { saveFinal, saveInterim } from '../src/lib/agent-dispatch/handoff-journal.ts';
 import type { Graph, Orientation } from '../src/protocol.ts';
@@ -689,12 +690,101 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     return;
   }
 
-  // Terminal audit: informational summary for terminal nodes (not a gate)
-  let terminalAuditSummary: TerminalAuditContext | undefined;
+  // Terminal advance: chain to next iteration
+  let terminalBrief: TerminalBrief | undefined;
   if (nodeId === dag.term) {
-    const auditRecords = loadCompletionsWithEvidence(repoRoot);
-    const existsPredicate = (artifact: string) => existsSync(join(repoRoot, artifact));
-    terminalAuditSummary = runAudit(dag, auditRecords, existsPredicate);
+    // Build terminal brief with all six context layers
+    let executionReport: ExecutionReport | undefined;
+    if (intentJudgments) {
+      // --evaluate-file now parsed as ExecutionReport (not AuditResponse)
+      try {
+        const evalPath = process.argv.find((a, i) => i > 0 && process.argv[i-1] === '--evaluate-file');
+        if (evalPath) {
+          executionReport = parseExecutionReport(evalPath);
+        }
+      } catch (e) {
+        // Non-fatal: report is optional enrichment
+      }
+    }
+    terminalBrief = buildTerminalBrief(dag, repoRoot, executionReport);
+
+    // Find successor spec in term's produces
+    const termNode = dag.nodes[dag.term as keyof typeof dag.nodes] as any;
+    const successorSpecPath = (termNode.produces ?? []).find(
+      (p: string) => p.endsWith('.json') && !p.includes('artifact')
+    );
+
+    if (successorSpecPath) {
+      const fullSpecPath = join(repoRoot, successorSpecPath);
+      if (existsSync(fullSpecPath)) {
+        try {
+          // Validate successor spec via make pipeline
+          const specContent = JSON.parse(readFileSync(fullSpecPath, 'utf-8'));
+          const successorDag = specContent;
+
+          // Validate structure
+          if (successorDag.tasks) {
+            // It's a SpecIR — convert via tasksToDAG
+            const builtDag = tasksToDAG(successorDag.tasks, {
+              dagId: successorDag.dag_id ?? `${dag.id}-successor`,
+              dagDesc: successorDag.dag_desc ?? 'Successor DAG',
+            });
+            define(builtDag);
+            verify(builtDag);
+            check(builtDag);
+
+            // Archive current head and install successor
+            const iteration = currentIteration(repoRoot) + 1;
+            archiveHead(repoRoot);
+            const headPath = join(repoRoot, '.roadmap', 'head.json');
+            writeFileSync(headPath, JSON.stringify(builtDag, null, 2) + '\n');
+
+            // Record chain link
+            const link: ChainLink = {
+              dagId: dag.id ?? 'unknown',
+              iteration: iteration - 1,
+              predecessorId: iteration > 1 ? dag.id ?? null : null,
+              completedAt: new Date().toISOString(),
+              successorDagId: builtDag.id ?? null,
+              executionReport,
+            };
+            appendLink(repoRoot, link);
+          } else if (successorDag.init && successorDag.term && successorDag.nodes) {
+            // Already a raw Graph — validate directly
+            define(successorDag);
+            verify(successorDag);
+            check(successorDag);
+
+            const iteration = currentIteration(repoRoot) + 1;
+            archiveHead(repoRoot);
+            const headPath = join(repoRoot, '.roadmap', 'head.json');
+            writeFileSync(headPath, JSON.stringify(successorDag, null, 2) + '\n');
+
+            const link: ChainLink = {
+              dagId: dag.id ?? 'unknown',
+              iteration: iteration - 1,
+              predecessorId: iteration > 1 ? dag.id ?? null : null,
+              completedAt: new Date().toISOString(),
+              successorDagId: successorDag.id ?? null,
+              executionReport,
+            };
+            appendLink(repoRoot, link);
+          }
+        } catch (e: any) {
+          // Successor spec validation failed — term advance fails
+          const contextPacket: any = {
+            error: `Successor spec validation failed: ${e.message}`,
+            successorSpec: successorSpecPath,
+            fix: 'Fix the successor spec JSON and retry terminal advance',
+            checks,
+          };
+          emit({ ok: false, cmd: _outputOpts.cmd, error: contextPacket }, _outputOpts);
+          recordTrailError('advance', 'SUCCESSOR_VALIDATION_FAILED', `Terminal ${nodeId}: ${e.message}`, note);
+          process.exit(1);
+          return;
+        }
+      }
+    }
   }
 
   // Attribution safety: warn if branch has changes outside this node's produces
@@ -802,7 +892,7 @@ async function advanceNode(dag: Graph<string>, nodeId: string, note: string) {
     batchComplete: newPos.batchComplete,
     remaining: newPos.batchRemaining,
     ...(intentGates.length > 0 ? { intentGates } : {}),
-    ...(terminalAuditSummary ? { terminalAudit: { computed: terminalAuditSummary.computed, detected: terminalAuditSummary.detected.summary } } : {}),
+    ...(terminalBrief ? { terminalBrief: { rootIntent: terminalBrief.rootIntent, iteration: terminalBrief.iteration, chainHistory: terminalBrief.chainHistory, computedSummary: terminalBrief.computedSummary, detectedGaps: terminalBrief.detectedGaps.summary } } : {}),
     ...(attributionWarning ? { attributionWarning } : {}),
     ...(parallelEditWarning ? { parallelEditWarning } : {}),
   };
