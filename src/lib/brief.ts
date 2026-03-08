@@ -6,6 +6,7 @@
 import type { Graph } from '../protocol.ts';
 import { briefSlice, type BriefSlice, type AncestorContext, type SpecContext } from './brief-slice.ts';
 import type { FileSummary } from './brief-cache.ts';
+import { buildTerminalBrief, type TerminalBrief } from './terminal-brief.ts';
 
 export interface InterimHandoff {
   /** ISO 8601 timestamp when checkpoint was created */
@@ -69,6 +70,8 @@ export interface Brief {
   topology?: BriefSlice['topology'];
   /** Produces preview: current state of files this node will create/modify */
   producesPreview?: FileSummary[];
+  /** Terminal context: enriched when position === dag.term */
+  terminalContext?: TerminalBrief;
 }
 
 /**
@@ -132,6 +135,12 @@ export async function getBrief(
     // Slice is best-effort enrichment
   }
 
+  // Terminal enrichment: when at term node, build full terminal context
+  let terminalContext: TerminalBrief | undefined;
+  if (position === dag.term) {
+    terminalContext = buildTerminalBrief(dag, repoRoot);
+  }
+
   return {
     dagIntent: dag.desc,
     position,
@@ -150,6 +159,7 @@ export async function getBrief(
       : {}),
     ...(slice?.topology ? { topology: slice.topology } : {}),
     ...(slice?.producesPreview?.length ? { producesPreview: slice.producesPreview } : {}),
+    ...(terminalContext ? { terminalContext } : {}),
   } as Brief;
 }
 
