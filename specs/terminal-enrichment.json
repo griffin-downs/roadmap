@@ -2,106 +2,225 @@
   "schema_version": 1,
   "dag_id": "terminal-enrichment",
   "dag_desc": "Wire terminal brief enrichment into orient so agents at term nodes get completion evidence, gap analysis, and handoff context before writing successor specs.",
-  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
-  "inputs": [{ "path": "specs/terminal-enrichment.json", "sha256": "self", "role": "spec" }],
-  "metadata": { "generated": "2026-03-08T12:00:00Z", "compile_hash": "manual" },
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "path": "specs/terminal-enrichment.json",
+      "sha256": "a3e80d98f2984e0c148fc736a820291402d4105c7f4a8992da36d9af606d07ca",
+      "role": "spec"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-08T12:00:00Z",
+    "compile_hash": "manual"
+  },
   "tasks": [
     {
       "id": "init",
       "desc": "Init marker",
       "priority": 0,
       "depends": [],
-      "produces": ["init.marker"],
+      "produces": [
+        "init.marker"
+      ],
       "consumes": [],
       "mode": "execute",
-      "validate": [{ "type": "artifact-exists", "path": "init.marker" }]
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "init.marker"
+        }
+      ]
     },
     {
       "id": "restore-computed-report",
       "desc": "Restore completion evidence computation. Rebuild a lightweight computeReport() in src/lib/terminal-audit/computed.ts that reads .roadmap/completed.json and returns: per-node commit status (produces, gitSha, completedAt, missing artifacts), test evidence (shell validator results), audit trail (checksTotal, checksPassed, checksFailed per node). No gate logic, no pass/fail — pure data assembly. This was deleted in the hygiene sweep but the data is needed for terminal brief enrichment.",
       "priority": 1,
-      "depends": ["init"],
-      "produces": ["src/lib/terminal-audit/computed.ts"],
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/lib/terminal-audit/computed.ts"
+      ],
       "consumes": [],
       "mode": "execute",
       "validate": [
-        { "type": "shell", "command": "pnpm run check" },
-        { "type": "shell", "command": "grep -q 'computeReport' src/lib/terminal-audit/computed.ts" },
-        { "type": "shell", "command": "grep -q 'commitStatus' src/lib/terminal-audit/computed.ts" }
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'computeReport' src/lib/terminal-audit/computed.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'commitStatus' src/lib/terminal-audit/computed.ts"
+        }
       ]
     },
     {
       "id": "restore-gap-detection",
       "desc": "Restore gap detection. Rebuild a lightweight detectGaps() in src/lib/terminal-audit/detected.ts that reads the DAG and returns: uncovered consumes (consumed but no predecessor produces it with a shell validator), untested produces (produced but no validator references it). No gate, no prompt generation, no scope-leak — just the two mechanical gap types. This was deleted in the hygiene sweep but gap data is needed for terminal brief enrichment.",
       "priority": 1,
-      "depends": ["init"],
-      "produces": ["src/lib/terminal-audit/detected.ts"],
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/lib/terminal-audit/detected.ts"
+      ],
       "consumes": [],
       "mode": "execute",
       "validate": [
-        { "type": "shell", "command": "pnpm run check" },
-        { "type": "shell", "command": "grep -q 'detectGaps' src/lib/terminal-audit/detected.ts" },
-        { "type": "shell", "command": "grep -q 'uncovered-consume' src/lib/terminal-audit/detected.ts" }
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'detectGaps' src/lib/terminal-audit/detected.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'uncovered-consume' src/lib/terminal-audit/detected.ts"
+        }
       ]
     },
     {
       "id": "enrich-terminal-brief",
       "desc": "Update buildTerminalBrief() in src/lib/terminal-brief.ts to use restored computed report and gap detection. TerminalBrief interface should include: rootIntent (dag.desc), iteration (from chain), completionEvidence (from computeReport), handoffSummaries (from .roadmap/.handoff/), detectedGaps (from detectGaps), chainHistory (from chain.jsonl). This is the full context an agent needs to write a good successor spec.",
       "priority": 2,
-      "depends": ["restore-computed-report", "restore-gap-detection"],
-      "produces": ["src/lib/terminal-brief.ts"],
-      "consumes": ["src/lib/terminal-audit/computed.ts", "src/lib/terminal-audit/detected.ts"],
+      "depends": [
+        "restore-computed-report",
+        "restore-gap-detection"
+      ],
+      "produces": [
+        "src/lib/terminal-brief.ts"
+      ],
+      "consumes": [
+        "src/lib/terminal-audit/computed.ts",
+        "src/lib/terminal-audit/detected.ts"
+      ],
       "mode": "execute",
       "validate": [
-        { "type": "shell", "command": "pnpm run check" },
-        { "type": "shell", "command": "grep -q 'completionEvidence' src/lib/terminal-brief.ts" },
-        { "type": "shell", "command": "grep -q 'detectedGaps' src/lib/terminal-brief.ts" },
-        { "type": "shell", "command": "grep -q 'computeReport' src/lib/terminal-brief.ts" }
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'completionEvidence' src/lib/terminal-brief.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'detectedGaps' src/lib/terminal-brief.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'computeReport' src/lib/terminal-brief.ts"
+        }
       ]
     },
     {
       "id": "wire-orient-terminal-brief",
       "desc": "Wire terminal brief into orient's getBrief(). In src/lib/brief.ts, detect when position === dag.term. When true, call buildTerminalBrief() and merge its fields into the Brief output as a terminalContext field. The agent at the terminal node sees everything it needs to write a successor spec: completion evidence, gaps, handoffs, chain history, root intent. This is the key fix — moving enrichment from advance-time to orient-time.",
       "priority": 3,
-      "depends": ["enrich-terminal-brief"],
-      "produces": ["src/lib/brief.ts"],
-      "consumes": ["src/lib/terminal-brief.ts"],
+      "depends": [
+        "enrich-terminal-brief"
+      ],
+      "produces": [
+        "src/lib/brief.ts"
+      ],
+      "consumes": [
+        "src/lib/terminal-brief.ts"
+      ],
       "mode": "execute",
       "validate": [
-        { "type": "shell", "command": "pnpm run check" },
-        { "type": "shell", "command": "grep -q 'terminalContext' src/lib/brief.ts" },
-        { "type": "shell", "command": "grep -q 'buildTerminalBrief' src/lib/brief.ts" },
-        { "type": "shell", "command": "pnpm vitest run" }
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'terminalContext' src/lib/brief.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'buildTerminalBrief' src/lib/brief.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
       ]
     },
     {
       "id": "test-terminal-enrichment",
       "desc": "Integration tests: (1) orient returns terminalContext in brief when position is the term node, (2) terminalContext includes completionEvidence with per-node status, (3) terminalContext includes detectedGaps with uncovered-consume and untested-produce types, (4) terminalContext includes handoffSummaries, (5) non-terminal nodes do NOT get terminalContext, (6) buildTerminalBrief works with empty completed.json (fresh DAG).",
       "priority": 4,
-      "depends": ["wire-orient-terminal-brief"],
-      "produces": ["tests/terminal-enrichment.test.ts"],
-      "consumes": ["src/lib/brief.ts", "src/lib/terminal-brief.ts"],
+      "depends": [
+        "wire-orient-terminal-brief"
+      ],
+      "produces": [
+        "tests/terminal-enrichment.test.ts"
+      ],
+      "consumes": [
+        "src/lib/brief.ts",
+        "src/lib/terminal-brief.ts"
+      ],
       "mode": "execute",
       "validate": [
-        { "type": "artifact-exists", "path": "tests/terminal-enrichment.test.ts" },
-        { "type": "shell", "command": "pnpm vitest run tests/terminal-enrichment.test.ts" }
+        {
+          "type": "artifact-exists",
+          "path": "tests/terminal-enrichment.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run tests/terminal-enrichment.test.ts"
+        }
       ]
     },
     {
       "id": "term",
       "desc": "Terminal — orient enriches terminal node briefs with completion evidence, gap analysis, and handoff context. Agents at term see everything needed to write successor specs.",
       "priority": 5,
-      "depends": ["test-terminal-enrichment"],
-      "produces": [".roadmap/tasks/terminal-enrichment-verified.artifact.json"],
+      "depends": [
+        "test-terminal-enrichment"
+      ],
+      "produces": [
+        ".roadmap/tasks/terminal-enrichment-verified.artifact.json"
+      ],
       "consumes": [],
       "mode": "execute",
       "validate": [
-        { "type": "shell", "command": "pnpm run build" },
-        { "type": "shell", "command": "pnpm run check" },
-        { "type": "shell", "command": "pnpm vitest run" },
-        { "type": "shell", "command": "grep -q 'terminalContext' src/lib/brief.ts" },
-        { "type": "shell", "command": "grep -q 'computeReport' src/lib/terminal-audit/computed.ts" },
-        { "type": "shell", "command": "grep -q 'detectGaps' src/lib/terminal-audit/detected.ts" }
+        {
+          "type": "shell",
+          "command": "pnpm run build"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'terminalContext' src/lib/brief.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'computeReport' src/lib/terminal-audit/computed.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'detectGaps' src/lib/terminal-audit/detected.ts"
+        }
       ]
     }
   ]

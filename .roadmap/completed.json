@@ -1878,5 +1878,205 @@
     "gitSha": "dfd45f39cba8f7aa85891960d5107fb305d46307",
     "treeSha": "361036676dfa8523c911059ff114c0b052a1a5c7",
     "branch": "main"
+  },
+  {
+    "nodeId": "restore-computed-report",
+    "completedAt": "2026-03-08T10:54:35.880Z",
+    "dagId": "terminal-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'computeReport' src/lib/terminal-audit/computed.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'computeReport' src/lib/terminal-audit/computed.ts"
+      },
+      {
+        "rule": "shell:grep -q 'commitStatus' src/lib/terminal-audit/computed.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'commitStatus' src/lib/terminal-audit/computed.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/terminal-audit/computed.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "aecf09406e6f27fe5f1ea6ce4ff377fc0c7c67e4",
+    "treeSha": "6128979acbb59338ba48eeb9d40050a6fe008bfd",
+    "branch": "main"
+  },
+  {
+    "nodeId": "restore-gap-detection",
+    "completedAt": "2026-03-08T10:54:37.376Z",
+    "dagId": "terminal-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'detectGaps' src/lib/terminal-audit/detected.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'detectGaps' src/lib/terminal-audit/detected.ts"
+      },
+      {
+        "rule": "shell:grep -q 'uncovered-consume' src/lib/terminal-audit/detected.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'uncovered-consume' src/lib/terminal-audit/detected.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/terminal-audit/detected.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "aecf09406e6f27fe5f1ea6ce4ff377fc0c7c67e4",
+    "treeSha": "6128979acbb59338ba48eeb9d40050a6fe008bfd",
+    "branch": "main"
+  },
+  {
+    "nodeId": "enrich-terminal-brief",
+    "completedAt": "2026-03-08T10:55:52.541Z",
+    "dagId": "terminal-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'completionEvidence' src/lib/terminal-brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'completionEvidence' src/lib/terminal-brief.ts"
+      },
+      {
+        "rule": "shell:grep -q 'detectedGaps' src/lib/terminal-brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'detectedGaps' src/lib/terminal-brief.ts"
+      },
+      {
+        "rule": "shell:grep -q 'computeReport' src/lib/terminal-brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'computeReport' src/lib/terminal-brief.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/terminal-brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "7776d67e31bc4fadb129c703efecc7e975ee0904",
+    "treeSha": "1b12194e6fed562bbf4a883add923eb003113f70",
+    "branch": "main"
+  },
+  {
+    "nodeId": "wire-orient-terminal-brief",
+    "completedAt": "2026-03-08T10:56:46.696Z",
+    "dagId": "terminal-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'terminalContext' src/lib/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'terminalContext' src/lib/brief.ts"
+      },
+      {
+        "rule": "shell:grep -q 'buildTerminalBrief' src/lib/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'buildTerminalBrief' src/lib/brief.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/lib/brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "1164647a3b8f29e5ce047fd3002770c6624f34e9",
+    "treeSha": "be07de9bcd1ced0a4cff7a61bcce06872047a0a8",
+    "branch": "main"
+  },
+  {
+    "nodeId": "test-terminal-enrichment",
+    "completedAt": "2026-03-08T10:57:35.612Z",
+    "dagId": "terminal-enrichment",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:tests/terminal-enrichment.test.ts",
+        "passed": true,
+        "evidence": "artifact exists: tests/terminal-enrichment.test.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run tests/terminal-enrichment.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run tests/terminal-enrichment.test.ts"
+      },
+      {
+        "rule": "artifact-exists:tests/terminal-enrichment.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "b2d71504f67b49c951ef5fdceafd81d212d1119d",
+    "treeSha": "bdf450af17af8e0d685c5b56c92aec32e3fcb0a0",
+    "branch": "main"
+  },
+  {
+    "nodeId": "term",
+    "completedAt": "2026-03-08T10:58:02.426Z",
+    "dagId": "terminal-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run build"
+      },
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "shell:grep -q 'terminalContext' src/lib/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'terminalContext' src/lib/brief.ts"
+      },
+      {
+        "rule": "shell:grep -q 'computeReport' src/lib/terminal-audit/computed.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'computeReport' src/lib/terminal-audit/computed.ts"
+      },
+      {
+        "rule": "shell:grep -q 'detectGaps' src/lib/terminal-audit/detected.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'detectGaps' src/lib/terminal-audit/detected.ts"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/tasks/terminal-enrichment-verified.artifact.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a40895557fe0dfae00817cbae516991676565aae",
+    "treeSha": "20b88d4e712744e483fa861ee9a000d29f6034d8",
+    "branch": "main"
   }
 ]
