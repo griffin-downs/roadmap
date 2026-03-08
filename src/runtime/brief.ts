@@ -1,7 +1,7 @@
 // @module runtime/brief
 // @description Pure brief generation — brief(g, position, context) → Brief.
 //   All IO reads come through Context (pre-loaded). No filesystem imports.
-//   Sync — no dynamic imports, no async.
+//   Sync — no dynamic imports, fully synchronous.
 // @exports brief, Brief, FinalHandoff, InterimHandoff, TerminalBrief, HandoffSummary, ComputedReport, DetectedGaps
 // @types Brief, TerminalBrief, HandoffSummary, ComputedReport, DetectedGaps
 // @entry roadmap
