@@ -156,8 +156,9 @@ async function advanceNode(
     return;
   }
 
-  // Terminal advance: chain to next iteration
+  // Terminal advance: build terminal brief, chain if successor exists
   let terminalBrief: TerminalBrief | undefined;
+  let chained = false;
   if (nodeId === dag.term) {
     let executionReport: ExecutionReport | undefined;
     if (intentJudgments) {
@@ -170,6 +171,7 @@ async function advanceNode(
     }
     terminalBrief = buildTerminalBrief(dag, repoRoot, executionReport);
 
+    // Check for explicit successor spec in term node produces
     const termNode = dag.nodes[dag.term as keyof typeof dag.nodes] as any;
     const successorSpecPath = (termNode.produces ?? []).find(
       (p: string) => p.endsWith('.json') && !p.includes('artifact'),
@@ -201,6 +203,7 @@ async function advanceNode(
               executionReport,
             };
             appendLink(repoRoot, link);
+            chained = true;
           } else if (specContent.init && specContent.term && specContent.nodes) {
             define(specContent); verify(specContent); check(specContent);
 
@@ -218,6 +221,7 @@ async function advanceNode(
               executionReport,
             };
             appendLink(repoRoot, link);
+            chained = true;
           }
         } catch (e: any) {
           emit({ ok: false, cmd: outputOpts.cmd, error: {
@@ -330,7 +334,13 @@ async function advanceNode(
     batchComplete: newPos.batchComplete,
     remaining: newPos.batchRemaining,
     ...(intentGates.length > 0 ? { intentGates } : {}),
-    ...(terminalBrief ? { terminalBrief: { rootIntent: terminalBrief.rootIntent, iteration: terminalBrief.iteration, chainHistory: terminalBrief.chainHistory } } : {}),
+    ...(terminalBrief ? { terminalBrief: {
+      rootIntent: terminalBrief.rootIntent,
+      iteration: terminalBrief.iteration,
+      chainHistory: terminalBrief.chainHistory,
+      detectedGaps: terminalBrief.detectedGaps,
+      ...(chained ? { chained: true, message: 'Successor DAG installed — run orient to continue' } : {}),
+    } } : {}),
     ...(attributionWarning ? { attributionWarning } : {}),
     ...(parallelEditWarning ? { parallelEditWarning } : {}),
   };
@@ -346,8 +356,21 @@ async function advanceNode(
     const next = advanceBatch(dag, completion, retiredSet(repoRoot));
     if (!next || next.position.length === 0) {
       result.advanced = true;
-      result.done = true;
-      result.message = 'All work complete';
+
+      // Completion gate: gaps detected and no successor chained → not done
+      const hasGaps = terminalBrief && terminalBrief.detectedGaps.gaps.length > 0;
+      if (hasGaps && !chained) {
+        result.done = false;
+        result.chainRequired = true;
+        result.message = 'DAG nodes complete but gaps remain. Write a successor spec and run: roadmap make <spec> --note "chain from ' + (dag.id ?? 'unknown') + '"';
+        result.gaps = terminalBrief!.detectedGaps.gaps;
+        result.rootIntent = terminalBrief!.rootIntent;
+        result.iteration = terminalBrief!.iteration;
+      } else {
+        result.done = true;
+        result.message = 'All work complete';
+      }
+
       const goal = loadSpecGoal(dag.id ?? '', repoRoot);
       if (goal) {
         result.goalAssessment = {
