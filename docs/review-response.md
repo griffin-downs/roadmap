@@ -22,6 +22,38 @@
 
 ---
 
+## 🪞 Before Anything Else: Notice What Just Happened
+
+The review asked whether roadmap is worth its overhead. We answered with 11,509 trail events, 691 completion records, 1,288 validation checks, per-node git SHAs, chain iteration history, and per-day throughput metrics.
+
+**Ask where that data came from.**
+
+It came from the overhead. The trail.jsonl the review calls unnecessary is the dataset. The completion receipts the review calls expensive are the evidence records. The git SHAs the review says "pay a runtime tax for a rarely-consulted log" are the provenance chain we just cited 40 times.
+
+The reviewer had to *estimate* costs from source code — reading function signatures, counting `execSync` calls, guessing token budgets. They had no operational data. They had no throughput numbers. They had no catch rates. Because they don't run roadmap.
+
+We have all of it. Because roadmap records it.
+
+```
+  the review's evidence                    our evidence
+  ───────────────────────────────────────  ─────────────────────────────────────
+  source code static analysis              11,509 trail events (machine-recorded)
+  estimated subprocess count               691 completion records (validator-gated)
+  guessed token overhead                   1,288 validation checks (timestamped)
+  cited 3 GitHub issues                    37 archived DAGs (with provenance)
+  referenced 8 blog posts                  345 donjon nodes (with git SHAs)
+  ───────────────────────────────────────  ─────────────────────────────────────
+  methodology: read the engine             methodology: drive the car, read the OBD
+```
+
+plan.md can't tell you how many validators caught problems. A task list can't compute throughput per day. git log can't tell you which batches ran in parallel, which chain iteration spawned from which gaps, or how many structural problems were caught before they shipped.
+
+The "overhead" the review complains about is the instrumentation that produces the evidence that disproves the review. The trail isn't a tax. It's a flight recorder. And when someone asks "was the flight successful?", we don't estimate — we replay the tape.
+
+💎 The review asked "is this worth the cost?" and could only guess. We answered with data, and the data only exists because the system records it. That's not a coincidence. That's the architecture.
+
+---
+
 ## 🐉 The Review
 
 Someone pointed Claude at this repository and said "make a critical review." Claude did what Claude does — read every file, count every import, estimate every cost. It produced a document that is meticulous about expenses and silent about revenue.
@@ -434,6 +466,10 @@ The question isn't whether this pattern is needed. It's whether the ecosystem ca
   │                                                                              │
   └──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+And remember: the only reason we could respond with data instead of opinions is because the system records everything the review calls overhead. The trail.jsonl, the completion receipts, the chain history, the validation evidence — the reviewer looked at these and saw cost. We looked at them and saw the flight recorder.
+
+The review asked "is this worth it?" and had to guess from source code. We queried the trail and answered in 30 seconds. That asymmetry is the whole argument.
 
 💎 The remaining question is whether fully autonomous agent execution is a narrow use case or the direction the entire field is moving. The review assumes the former. 691 nodes suggest the latter.
 
