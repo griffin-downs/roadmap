@@ -18,7 +18,9 @@ import { archiveHead, appendLink, currentIteration, parseExecutionReport, type C
 import { tasksToDAG } from '../lib/intake/speckit-import.ts';
 import type { FinalHandoff, InterimHandoff } from '../lib/brief.ts';
 import { saveFinal, saveInterim } from '../lib/agent-dispatch/handoff-journal.ts';
+import { computeExecutionReport } from '../lib/auto-execution-report.ts';
 import { requireValidOrigin } from '../lib/intake/runtime-gate.ts';
+import type { GapEntry } from '../lib/terminal-audit/detected.ts';
 import { emit, type OutputOpts } from '../lib/cli-envelope.ts';
 import {
   loadDAG, crossOrientWithState, appendTrail, recordTrailError,
@@ -160,14 +162,16 @@ async function advanceNode(
   let terminalBrief: TerminalBrief | undefined;
   let chained = false;
   if (nodeId === dag.term) {
+    // Auto-compute execution report; --evaluate-file overrides
     let executionReport: ExecutionReport | undefined;
-    if (intentJudgments) {
+    if (evalFileIdx !== -1 && args[evalFileIdx + 1]) {
       try {
-        const evalPath = process.argv.find((a, i) => i > 0 && process.argv[i-1] === '--evaluate-file');
-        if (evalPath) {
-          executionReport = parseExecutionReport(evalPath);
-        }
-      } catch { /* non-fatal */ }
+        const evalPath = resolve(repoRoot, args[evalFileIdx + 1]);
+        executionReport = parseExecutionReport(evalPath);
+      } catch { /* non-fatal — fall through to auto-compute */ }
+    }
+    if (!executionReport) {
+      executionReport = computeExecutionReport(repoRoot);
     }
     terminalBrief = buildTerminalBrief(dag, repoRoot, executionReport);
 
@@ -339,6 +343,7 @@ async function advanceNode(
       iteration: terminalBrief.iteration,
       chainHistory: terminalBrief.chainHistory,
       detectedGaps: terminalBrief.detectedGaps,
+      ...(terminalBrief.scoring ? { scoring: terminalBrief.scoring } : {}),
       ...(chained ? { chained: true, message: 'Successor DAG installed — run orient to continue' } : {}),
     } } : {}),
     ...(attributionWarning ? { attributionWarning } : {}),
@@ -367,8 +372,13 @@ async function advanceNode(
         result.rootIntent = terminalBrief!.rootIntent;
         result.iteration = terminalBrief!.iteration;
       } else {
-        result.done = true;
-        result.message = 'All work complete';
+        result.chainReady = true;
+        result.rootIntent = terminalBrief?.rootIntent ?? dag.desc;
+        result.iteration = terminalBrief?.iteration ?? 0;
+        result.gaps = terminalBrief?.detectedGaps.gaps ?? [];
+        result.scoring = terminalBrief?.scoring ?? undefined;
+        result.improvementAreas = deriveImprovementAreas(terminalBrief?.detectedGaps.gaps ?? []);
+        result.message = 'DAG complete. chainReady output contains gaps, scoring, and improvementAreas for successor spec authoring. Run: roadmap make <spec> --note "chain from ' + (dag.id ?? 'unknown') + '"';
       }
 
       const goal = loadSpecGoal(dag.id ?? '', repoRoot);
@@ -448,13 +458,13 @@ async function advanceBatchCmd(
       requiredAction: 'Assess whether the goal is satisfied before closing session. Surface any known_remaining items to the user.',
     } : undefined;
     emit({ ok: true, cmd: outputOpts.cmd, data: {
-      advanced: true, level: pos.level + 1, position: [], message: 'All work complete', done: true,
+      advanced: true, level: pos.level + 1, position: [], message: 'DAG complete. Evaluate gaps and write successor spec if needed.', chainReady: true,
       ...(goalAssessment ? { goalAssessment } : {}),
     } }, outputOpts);
 
     appendTrail({
       ts: new Date().toISOString(), cmd: 'advance', note, repo: basename(repoRoot),
-      position: [], level: pos.level + 1, detail: { done: true },
+      position: [], level: pos.level + 1, detail: { chainReady: true },
     }, repoRoot);
     return;
   }
@@ -490,4 +500,57 @@ function checkAttribution(root: string, produces: string[]): string | undefined 
   } catch {
     return undefined;
   }
+}
+
+/**
+ * Derive actionable improvement areas from detected gaps.
+ * Each string describes what the next spec should address.
+ */
+function deriveImprovementAreas(gaps: GapEntry[]): string[] {
+  const areas: string[] = [];
+  const seen = new Set<string>();
+
+  // Group by gap type for deduplication
+  const byType = new Map<string, GapEntry[]>();
+  for (const gap of gaps) {
+    if (!byType.has(gap.type)) byType.set(gap.type, []);
+    byType.get(gap.type)!.push(gap);
+  }
+
+  const uncovered = byType.get('uncovered-consume') ?? [];
+  if (uncovered.length > 0) {
+    const nodes = [...new Set(uncovered.map(g => g.nodeId))];
+    const msg = `Add shell validators for consumed artifacts in: ${nodes.join(', ')} (${uncovered.length} unguarded contracts)`;
+    if (!seen.has(msg)) { seen.add(msg); areas.push(msg); }
+  }
+
+  const untested = byType.get('untested-produce') ?? [];
+  if (untested.length > 0) {
+    const nodes = [...new Set(untested.map(g => g.nodeId))];
+    const msg = `Add acceptance tests for produced artifacts in: ${nodes.join(', ')} (${untested.length} untested outputs)`;
+    if (!seen.has(msg)) { seen.add(msg); areas.push(msg); }
+  }
+
+  const noShell = byType.get('no-shell-coverage') ?? [];
+  if (noShell.length > 0) {
+    const nodes = [...new Set(noShell.map(g => g.nodeId))];
+    const msg = `Upgrade artifact-exists-only nodes to include shell validators: ${nodes.join(', ')} (existence checked, correctness not tested)`;
+    if (!seen.has(msg)) { seen.add(msg); areas.push(msg); }
+  }
+
+  const untestedEvidence = byType.get('untested-evidence') ?? [];
+  if (untestedEvidence.length > 0) {
+    const nodes = [...new Set(untestedEvidence.map(g => g.nodeId))];
+    const msg = `Nodes completed without shell test evidence: ${nodes.join(', ')} — add runtime tests to validate correctness, not just existence`;
+    if (!seen.has(msg)) { seen.add(msg); areas.push(msg); }
+  }
+
+  const velocityDecay = byType.get('velocity-decay') ?? [];
+  if (velocityDecay.length > 0) {
+    const nodes = [...new Set(velocityDecay.map(g => g.nodeId))];
+    const msg = `Velocity decay detected in nodes: ${nodes.join(', ')} — consider splitting large nodes or reducing scope per batch`;
+    if (!seen.has(msg)) { seen.add(msg); areas.push(msg); }
+  }
+
+  return areas;
 }
