@@ -117,7 +117,7 @@ export const schemas: Record<string, CommandSchema> = {
       batchComplete: z.boolean(),
       done: z.number().describe('Completed node count'),
       remaining: z.number().describe('Remaining node count'),
-      complete: z.boolean().describe('All work finished'),
+      chainReady: z.boolean().describe('All nodes executed — evaluate gaps and write successor spec'),
     }),
     examples: [{
       cli: 'roadmap orient --note "check position"',

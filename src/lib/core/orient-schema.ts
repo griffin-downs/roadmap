@@ -25,7 +25,7 @@ export type OrientV1 = {
   batchComplete: boolean;
   done: number;
   remaining: number;
-  complete: boolean;
+  chainReady: boolean;
   preGate?: string[];
   planNodes?: Record<string, string>;
   claims?: Record<string, unknown>;

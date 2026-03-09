@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { CompletionStore } from './completion.ts';
 import type { ChainLink } from '../lib/chain.ts';
 import type { FinalHandoff, InterimHandoff } from '../lib/brief.ts';
+import { computeTrailMetrics, type TrailMetrics } from '../lib/trail-metrics.ts';
 
 // --- Types ---
 
@@ -45,6 +46,8 @@ export interface Context {
   readonly chain: ChainState;
   /** Handoff data — per-node final handoffs and interim checkpoints */
   readonly handoffs: HandoffMap;
+  /** Trail-derived scoring metrics — velocity, batch duration, session metrics. Best-effort: undefined if trail.jsonl missing or unparseable */
+  readonly scoring?: TrailMetrics;
 }
 
 // --- Loaders ---
@@ -158,10 +161,19 @@ function loadHandoffs(repoRoot: string): HandoffMap {
  * Uses loadOrEmpty for completions so missing files don't throw.
  */
 export function loadContext(repoRoot: string): Context {
+  // Trail scoring is best-effort — if trail.jsonl is missing or malformed, scoring is undefined
+  let scoring: TrailMetrics | undefined;
+  try {
+    scoring = computeTrailMetrics(repoRoot);
+  } catch {
+    // Best-effort: don't crash if trail metrics computation fails
+  }
+
   return {
     repoRoot,
     completion: CompletionStore.loadOrEmpty(repoRoot),
     chain: loadChainState(repoRoot),
     handoffs: loadHandoffs(repoRoot),
+    scoring,
   };
 }

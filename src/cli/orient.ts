@@ -55,7 +55,7 @@ export async function run(
         batchComplete: false,
         done: 0,
         remaining: 0,
-        complete: false,
+        chainReady: false,
         errors: [{ kind: 'no_dag', message: 'No roadmap tracked in this repo' }],
         exit: { code: 0 },
       } satisfies OrientV1 }, outputOpts);
@@ -141,7 +141,7 @@ export async function run(
     batchComplete: nextBatchRemaining.length === 0,
     done: pos.done.length,
     remaining: pos.remaining.length,
-    complete: pos.remaining.length === 0,
+    chainReady: pos.remaining.length === 0,
     branch: getCurrentBranch(repoRoot),
     worktree: isWorktree(repoRoot),
     briefs,
@@ -153,13 +153,15 @@ export async function run(
     result.legacyCompletions = pos.legacyCompletions;
   }
 
-  if (result.complete) {
+  if (result.chainReady) {
     const { scanPendingSpecs } = await import('../lib/orient-forward.ts');
     const dagId = dag.id ?? '';
     const pending = scanPendingSpecs(repoRoot, dagId);
     if (pending.length > 0) {
       result.pendingSpecs = pending;
       result.nextAction = `Load next spec: roadmap make ${pending[0].path} --note "..."`;
+    } else {
+      result.nextAction = 'DAG complete. Evaluate gaps and write successor spec if needed: roadmap make <spec> --note "..."';
     }
   }
 

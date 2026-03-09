@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "dag_id": "asymptotic-chain",
+  "dag_desc": "Remove done:true from the output vocabulary. Wire scoring into terminal brief. Make chaining the only exit from a completed DAG. The improvement-6→7→8 loop becomes the default behavior, not the exception.",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "path": ".roadmap/tasks/asymptotic-chain.spec.json",
+      "sha256": "9422a12630e7ffdc105e7cb90ea683e9ec1104757ae429f237ff56e99fde7e19",
+      "role": "tasks"
+    },
+    {
+      "path": "src/cli/advance.ts",
+      "sha256": "6aee81c344003b34c7bc90f1d23ad30ef0e3673206219d03ee89a106e29a69f3",
+      "role": "other"
+    },
+    {
+      "path": "src/cli/orient.ts",
+      "sha256": "4d3493466a61464ac07e90d451be021d74c80688c56d92e293e27236a9971e24",
+      "role": "other"
+    },
+    {
+      "path": "src/runtime/brief.ts",
+      "sha256": "d3fba5b7a1aabc86dffad5a41f5a8701e2e6d4ba8995f1c184d3e0d5bc4b80f6",
+      "role": "other"
+    },
+    {
+      "path": "src/runtime/context.ts",
+      "sha256": "efea733ca1b49aba7ec06f774bb725a9bfe6aafc92e7ba580ec7bf1d00e3d15a",
+      "role": "other"
+    },
+    {
+      "path": "src/lib/terminal-brief.ts",
+      "sha256": "587d08b950ffaeb42c901ac2e13b3aebaa604e6edf5bb8b5147df099692c1ff4",
+      "role": "other"
+    },
+    {
+      "path": "src/lib/terminal-audit/detected.ts",
+      "sha256": "88fcd80f6336ba3b9beb69e34892a2ab22209f6545568f011f395a0dadfa9743",
+      "role": "other"
+    },
+    {
+      "path": "src/metrics-extractor.ts",
+      "sha256": "9ad17accdde9a36609317be1b4dafc138258f781b9339f3ad2377d24670b115f",
+      "role": "other"
+    },
+    {
+      "path": "src/lib/trail-metrics.ts",
+      "sha256": "bd5d8457bea8ba8ea8339c6246fab96537da73f9ef809257a0e5b0bd079c392f",
+      "role": "other"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-09T00:00:00Z",
+    "compile_hash": "manual"
+  },
+  "tasks": [
+    {
+      "id": "init",
+      "desc": "Current state: all tests passing, scoring infrastructure (MetricsExtractor, trail-metrics) built but unwired, done:true leaks from advance and orient, chaining mechanism operational but never triggered by default.",
+      "priority": 0,
+      "depends": [],
+      "produces": [
+        "init.marker"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "path": "init.marker"
+        }
+      ]
+    },
+    {
+      "id": "wire-trail-scoring",
+      "desc": "Connect trail-metrics scoring to the terminal brief path. Add a 'scoring' field to the TerminalBrief type carrying velocity, batch duration, retry counts, and coverage signals computed from trail.jsonl. Extend Context (src/runtime/context.ts) to load trail metrics via loadContext() so the pure buildTerminalBrief() in src/runtime/brief.ts can include them. Update the IO-based buildTerminalBrief in src/lib/terminal-brief.ts to also compute and include scoring. After this node, any terminal advance output includes scoring data from the session trail.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/runtime/brief.ts",
+        "src/runtime/context.ts",
+        "src/lib/terminal-brief.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'scoring' src/runtime/brief.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'scoring\\|TrailMetrics\\|MetricsSummary' src/runtime/context.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
+      ]
+    },
+    {
+      "id": "kill-done-signal",
+      "desc": "Remove every code path that emits done:true or complete:true from CLI output. In src/cli/advance.ts: both advanceNode (line ~370) and advanceBatchCmd (line ~451) terminal paths must emit chainReady:true instead of done:true. The message changes from 'All work complete' to guidance about successor spec creation. In src/cli/orient.ts: rename the 'complete' field to 'chainReady' (line ~144) — true means 'all nodes executed, time to chain' not 'time to stop'. When orient detects chainReady, include the existing pendingSpecs scan plus a message directing agents to evaluate and spec. Update any tests that assert on done:true or complete:true in CLI output.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
+      "produces": [
+        "src/cli/advance.ts",
+        "src/cli/orient.ts"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -n 'done: true' src/cli/advance.ts"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -n \"message: 'All work complete'\" src/cli/advance.ts"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -n 'complete: pos' src/cli/orient.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'chainReady' src/cli/orient.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'chainReady' src/cli/advance.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
+      ]
+    },
+    {
+      "id": "enrich-chain-ready",
+      "desc": "The chainReady output from terminal advance carries actionable content for successor spec authoring. Broaden detectGaps() in src/lib/terminal-audit/detected.ts beyond structural contracts: add scoring-derived gap types — nodes with only artifact-exists validators (no shell coverage), produces with no test evidence in completion records, velocity decay across batches (later batches significantly slower than earlier). The advance terminal output includes: scoring summary, full gap surface (structural + scoring-derived), root intent, iteration count, and concrete 'what to improve next' items derived from gaps. An agent reading this output has everything needed to write a successor spec without additional context.",
+      "priority": 2,
+      "depends": [
+        "wire-trail-scoring",
+        "kill-done-signal"
+      ],
+      "produces": [
+        "src/lib/terminal-audit/detected.ts",
+        "src/cli/advance.ts"
+      ],
+      "consumes": [
+        "src/runtime/brief.ts",
+        "src/runtime/context.ts",
+        "src/cli/advance.ts",
+        "src/cli/orient.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'chainReady' src/cli/advance.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'no-shell-coverage\\|velocity-decay\\|untested-evidence' src/lib/terminal-audit/detected.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
+      ]
+    },
+    {
+      "id": "test-chain-loop",
+      "desc": "Integration test proving the asymptotic loop holds. Test 1: create a minimal DAG, advance all nodes to terminal, assert output contains chainReady:true with scoring and gaps — never done:true. Test 2: orient on a fully-advanced DAG returns chainReady:true, not complete:true. Test 3: terminal brief includes scoring data from trail. Test 4: detectGaps returns scoring-derived gaps (no-shell-coverage, untested-evidence) for a DAG with only artifact-exists validators. Test 5: the chainReady output includes enough context to write a successor spec (rootIntent, iteration, gaps, scoring present).",
+      "priority": 3,
+      "depends": [
+        "enrich-chain-ready"
+      ],
+      "produces": [
+        "tests/chain-loop.test.ts"
+      ],
+      "consumes": [
+        "src/cli/advance.ts",
+        "src/cli/orient.ts",
+        "src/runtime/brief.ts",
+        "src/lib/terminal-audit/detected.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm vitest run tests/chain-loop.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        }
+      ]
+    },
+    {
+      "id": "term",
+      "desc": "Asymptotic chain loop verified: no CLI command emits done:true, scoring feeds terminal brief, chainReady is the only completion signal, detectGaps includes scoring-derived gaps, agents receive sufficient context to write successor specs. The improvement-6→7→8 pattern is now the default, not the exception.",
+      "priority": 4,
+      "depends": [
+        "test-chain-loop"
+      ],
+      "produces": [
+        ".roadmap/tasks/asymptotic-chain-verified.json"
+      ],
+      "consumes": [
+        "tests/chain-loop.test.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "pnpm run build"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm run check"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -rn 'done: true' src/cli/ --include='*.ts'"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -rn \"complete: pos\" src/cli/orient.ts"
+        }
+      ]
+    }
+  ]
+}

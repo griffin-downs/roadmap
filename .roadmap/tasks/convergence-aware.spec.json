@@ -1,36 +1,79 @@
 {
-  "id": "convergence-aware",
-  "desc": "Auto-populate ExecutionReport at terminal, compute gap trajectory across chain history, synthesize convergence assessment into chainReady output. Agents get 'converging at 40%/iteration' or 'stuck on 3 persistent gaps' — enough to write specs that converge rather than churn.",
-  "init": "init",
-  "term": "term",
-  "nodes": {
-    "init": {
+  "schema_version": 1,
+  "dag_id": "convergence-aware",
+  "dag_desc": "Auto-populate ExecutionReport at terminal, compute gap trajectory across chain history, synthesize convergence assessment into chainReady output. Agents get 'converging at 40%/iteration' or 'stuck on 3 persistent gaps' — enough to write specs that converge rather than churn.",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "inputs": [
+    {
+      "path": ".roadmap/tasks/convergence-aware.spec.json",
+      "sha256": "02cb5c239f33b5637d73219eeb64a4603da2e977faefda1ebcc259affda89dc7",
+      "role": "tasks"
+    },
+    {
+      "path": "src/lib/chain.ts",
+      "sha256": "8c6f6081d36d20fbe0a4fa55828efa9ce1ae54683a46caba0c692e946c2cc972",
+      "role": "other"
+    },
+    {
+      "path": "src/lib/terminal-audit/detected.ts",
+      "sha256": "baf131accb9e4e8ec8548bef6130262e3276cd9e6a59a653f25c2388261904fd",
+      "role": "other"
+    },
+    {
+      "path": "src/cli/advance.ts",
+      "sha256": "07ee47ff40e0cafe6fef2f00d48140096f9d5ab1ab9ea80f493a5d043acfcef4",
+      "role": "other"
+    },
+    {
+      "path": "src/runtime/brief.ts",
+      "sha256": "8eb40bca4b01dc3b96b66c34ce7296e2d6d636d3884618a8a312b0038a8d07cb",
+      "role": "other"
+    },
+    {
+      "path": "src/lib/terminal-brief.ts",
+      "sha256": "8750baa996df73292fe0cfe103242d176832855022aac6b48c3e3f58f736ecd2",
+      "role": "other"
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-09T11:00:00Z",
+    "compile_hash": "manual"
+  },
+  "tasks": [
+    {
       "id": "init",
       "desc": "Current state: asymptotic-chain DAG complete. chainReady replaces done:true. Scoring wired into TerminalBrief. detectGaps broadened. But ExecutionReport is opt-in, gap trajectory not computed, no convergence assessment.",
+      "priority": 0,
+      "depends": [],
       "produces": [
         "init.marker"
       ],
       "consumes": [],
-      "deps": [],
+      "mode": "execute",
       "validate": [
         {
           "type": "artifact-exists",
           "path": "init.marker"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "auto-execution-report": {
+    {
       "id": "auto-execution-report",
       "desc": "Auto-populate ExecutionReport when terminal node advances, without requiring --evaluate-file. Compute from data already available: nodesExecuted from CompletionStore (count of completed node IDs), totalDuration from trail metrics (totalWallClockMs), retriesPerNode from trail entries (count advance entries per node with detail.passed === false followed by retry). observations[] from handoff summaries (gotchas from all nodes). blockers[] from handoff summaries. deltaAssessment left empty (filled by gap-trajectory node). Wire this into advance.ts terminal path: when building ChainLink for appendLink(), auto-compute the ExecutionReport instead of requiring --evaluate-file. The --evaluate-file path remains as an override.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "src/lib/auto-execution-report.ts",
         "src/cli/advance.ts"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -48,19 +91,20 @@
           "type": "shell",
           "command": "pnpm vitest run"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "gap-trajectory": {
+    {
       "id": "gap-trajectory",
       "desc": "Compute gap trajectory across chain history. New module src/lib/convergence/gap-trajectory.ts exports computeGapTrajectory(repoRoot) → GapTrajectory. Algorithm: (1) load head-index.json to get predecessor chain, (2) for each archived head in .roadmap/heads/, load the DAG and run detectGaps() on it, (3) build per-iteration gap counts by type, (4) compute resolved[] (gaps in predecessor not in current), persistent[] (gaps in both), new[] (gaps in current not in predecessor), (5) compute convergence direction: gap count trend (shrinking/stable/growing), reduction rate per iteration. GapTrajectory type: { iterations: Array<{ dagId, iteration, gapCount, gapsByType }>, resolved: GapEntry[], persistent: GapEntry[], new: GapEntry[], trend: 'converging' | 'stable' | 'diverging', reductionRate: number }. Pure function over archived DAG files — no dependency on current execution state.",
+      "priority": 1,
+      "depends": [
+        "init"
+      ],
       "produces": [
         "src/lib/convergence/gap-trajectory.ts"
       ],
       "consumes": [],
-      "deps": [
-        "init"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -82,12 +126,16 @@
           "type": "shell",
           "command": "pnpm vitest run"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "convergence-assessment": {
+    {
       "id": "convergence-assessment",
       "desc": "Synthesize gap trajectory + execution report into a ConvergenceAssessment and wire it into the chainReady output. New module src/lib/convergence/assessment.ts exports assessConvergence(trajectory, currentGaps, executionReport) → ConvergenceAssessment. ConvergenceAssessment type: { trend, reductionRate, persistentGaps[], resolvedThisIteration[], newThisIteration[], recommendation: string, iterationSummary: string }. The recommendation is a concrete sentence: 'Gap surface shrinking 40% per iteration — 3 persistent gaps need targeted shell validators' or 'Diverging after iteration 2 — 5 new no-shell-coverage gaps suggest validator strategy needs revision'. Wire into: (1) TerminalBrief gets a convergence field (both pure and IO versions), (2) advance.ts chainReady output includes convergenceAssessment, (3) the ExecutionReport.deltaAssessment auto-populates from the assessment's iterationSummary. Update src/runtime/brief.ts, src/lib/terminal-brief.ts, src/cli/advance.ts.",
+      "priority": 2,
+      "depends": [
+        "auto-execution-report",
+        "gap-trajectory"
+      ],
       "produces": [
         "src/lib/convergence/assessment.ts",
         "src/runtime/brief.ts",
@@ -98,10 +146,7 @@
         "src/lib/auto-execution-report.ts",
         "src/lib/convergence/gap-trajectory.ts"
       ],
-      "deps": [
-        "auto-execution-report",
-        "gap-trajectory"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -127,12 +172,15 @@
           "type": "shell",
           "command": "pnpm vitest run"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "test-convergence": {
+    {
       "id": "test-convergence",
       "desc": "Integration tests proving convergence assessment works across chain iterations. Test 1: computeGapTrajectory on a repo with 2 archived heads returns correct resolved/persistent/new classification. Test 2: assessConvergence with shrinking gap surface returns trend:'converging' with correct reductionRate. Test 3: assessConvergence with growing gap surface returns trend:'diverging'. Test 4: assessConvergence with zero chain history returns trend:'stable' (first iteration baseline). Test 5: terminal advance chainReady output includes convergenceAssessment field. Test 6: auto ExecutionReport populates nodesExecuted and totalDuration from trail data. Use mock archived heads (write temp DAG JSON files) for trajectory tests.",
+      "priority": 3,
+      "depends": [
+        "convergence-assessment"
+      ],
       "produces": [
         "tests/convergence-assessment.test.ts"
       ],
@@ -141,9 +189,7 @@
         "src/lib/convergence/assessment.ts",
         "src/lib/auto-execution-report.ts"
       ],
-      "deps": [
-        "convergence-assessment"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -153,21 +199,22 @@
           "type": "shell",
           "command": "pnpm vitest run"
         }
-      ],
-      "idempotent": true
+      ]
     },
-    "term": {
+    {
       "id": "term",
       "desc": "Convergence-aware chain loop verified. Agents at terminal see: gap trajectory (resolved/persistent/new), convergence trend (converging/stable/diverging), reduction rate, and a concrete recommendation for the successor spec. ExecutionReport auto-populates. The full evaluative context for convergence-based spec authoring is in the chainReady output.",
+      "priority": 4,
+      "depends": [
+        "test-convergence"
+      ],
       "produces": [
         ".roadmap/tasks/convergence-aware-verified.json"
       ],
       "consumes": [
         "tests/convergence-assessment.test.ts"
       ],
-      "deps": [
-        "test-convergence"
-      ],
+      "mode": "execute",
       "validate": [
         {
           "type": "shell",
@@ -189,10 +236,7 @@
           "type": "shell",
           "command": "grep -q 'convergence' src/cli/advance.ts"
         }
-      ],
-      "idempotent": true
+      ]
     }
-  },
-  "version": "0.3.0",
-  "protocolVersion": "0.3.0"
+  ]
 }

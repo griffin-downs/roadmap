@@ -1,0 +1,1 @@
+{"verified":"2026-03-09","invariants":["no done:true in CLI output","scoring feeds terminal brief","chainReady is only completion signal","detectGaps includes scoring-derived gaps","agents receive successor spec context"]}

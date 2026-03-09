@@ -2036,13 +2036,13 @@
   },
   {
     "nodeId": "term",
-    "completedAt": "2026-03-08T21:41:04.249Z",
-    "dagId": "surface-coverage",
+    "completedAt": "2026-03-09T11:05:20.147Z",
+    "dagId": "convergence-aware",
     "validationChecks": [
       {
-        "rule": "artifact-exists:.roadmap/tasks/term.artifact.json",
+        "rule": "shell:pnpm run build",
         "passed": true,
-        "evidence": "artifact exists: .roadmap/tasks/term.artifact.json"
+        "evidence": "command passed (exit 0): pnpm run build"
       },
       {
         "rule": "shell:pnpm run check",
@@ -2050,24 +2050,29 @@
         "evidence": "command passed (exit 0): pnpm run check"
       },
       {
-        "rule": "shell:pnpm test",
+        "rule": "shell:pnpm vitest run",
         "passed": true,
-        "evidence": "command passed (exit 0): pnpm test"
+        "evidence": "command passed (exit 0): pnpm vitest run"
       },
       {
-        "rule": "shell:test ! -f src/lib/god-engineer-prompt.ts",
+        "rule": "shell:grep -q 'ConvergenceAssessment' src/lib/convergence/assessment.ts",
         "passed": true,
-        "evidence": "command passed (exit 0): test ! -f src/lib/god-engineer-prompt.ts"
+        "evidence": "command passed (exit 0): grep -q 'ConvergenceAssessment' src/lib/convergence/assessment.ts"
       },
       {
-        "rule": "artifact-exists:.roadmap/tasks/term.artifact.json",
+        "rule": "shell:grep -q 'convergence' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'convergence' src/cli/advance.ts"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/tasks/convergence-aware-verified.json",
         "passed": true,
         "evidence": "file exists"
       }
     ],
-    "gitSha": "1884fb5ee99b5c573b9bb7ba006d57c76b422a9f",
-    "treeSha": "79d182cce95c9a208deb2d2d560434e6dcbe75dd",
-    "branch": "feat/term-surface-coverage"
+    "gitSha": "1af1a8532766ccac882338b335e8ca0a47bc911b",
+    "treeSha": "8de55fb22fe12796b696442411c0886fe60c994c",
+    "branch": "feat/wire-runtime-explore"
   },
   {
     "nodeId": "delete-test-files",
@@ -3293,5 +3298,335 @@
     "gitSha": "b44d71a064dfd0fd23264d84ae45cb2eb57d8ddf",
     "treeSha": "282a91f3c660ea4b09e6159fb0c2d1402823f5dd",
     "branch": "feat/agent-executor-tests"
+  },
+  {
+    "nodeId": "kill-done-signal",
+    "completedAt": "2026-03-09T10:32:39.880Z",
+    "dagId": "asymptotic-chain",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:! grep -n 'done: true' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -n 'done: true' src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:! grep -n \"message: 'All work complete'\" src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -n \"message: 'All work complete'\" src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:! grep -n 'complete: pos' src/cli/orient.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -n 'complete: pos' src/cli/orient.ts"
+      },
+      {
+        "rule": "shell:grep -q 'chainReady' src/cli/orient.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'chainReady' src/cli/orient.ts"
+      },
+      {
+        "rule": "shell:grep -q 'chainReady' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'chainReady' src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/orient.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "efb0cfd34b3cbd6e356e240a91c56b263a475a02",
+    "treeSha": "48147c9b980d0f30f89568ca24791496f1e0864d",
+    "branch": "feat/wire-runtime-explore"
+  },
+  {
+    "nodeId": "wire-trail-scoring",
+    "completedAt": "2026-03-09T10:32:48.740Z",
+    "dagId": "asymptotic-chain",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'scoring' src/runtime/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'scoring' src/runtime/brief.ts"
+      },
+      {
+        "rule": "shell:grep -q 'scoring\\|TrailMetrics\\|MetricsSummary' src/runtime/context.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'scoring\\|TrailMetrics\\|MetricsSummary' src/runtime/context.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/context.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/lib/terminal-brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "efb0cfd34b3cbd6e356e240a91c56b263a475a02",
+    "treeSha": "48147c9b980d0f30f89568ca24791496f1e0864d",
+    "branch": "feat/wire-runtime-explore"
+  },
+  {
+    "nodeId": "enrich-chain-ready",
+    "completedAt": "2026-03-09T10:36:22.079Z",
+    "dagId": "asymptotic-chain",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'chainReady' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'chainReady' src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:grep -q 'no-shell-coverage\\|velocity-decay\\|untested-evidence' src/lib/terminal-audit/detected.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'no-shell-coverage\\|velocity-decay\\|untested-evidence' src/lib/terminal-audit/detected.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/lib/terminal-audit/detected.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "efb0cfd34b3cbd6e356e240a91c56b263a475a02",
+    "treeSha": "48147c9b980d0f30f89568ca24791496f1e0864d",
+    "branch": "feat/wire-runtime-explore"
+  },
+  {
+    "nodeId": "test-chain-loop",
+    "completedAt": "2026-03-09T10:39:50.014Z",
+    "dagId": "asymptotic-chain",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm vitest run tests/chain-loop.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run tests/chain-loop.test.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:tests/chain-loop.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "cb49dedcfec28e80acf7f26c73cd7b3d9046ab07",
+    "treeSha": "cb6b989b7fb443819432f2656ceb31c627a42c40",
+    "branch": "feat/wire-runtime-explore"
+  },
+  {
+    "nodeId": "auto-execution-report",
+    "completedAt": "2026-03-09T10:59:24.655Z",
+    "dagId": "convergence-aware",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'autoExecutionReport\\|computeExecutionReport' src/lib/auto-execution-report.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'autoExecutionReport\\|computeExecutionReport' src/lib/auto-execution-report.ts"
+      },
+      {
+        "rule": "shell:grep -q 'auto-execution-report\\|autoExecutionReport\\|computeExecutionReport' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'auto-execution-report\\|autoExecutionReport\\|computeExecutionReport' src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/lib/auto-execution-report.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "59837a4a2000763e7727115cf55fe7af2cd5978f",
+    "treeSha": "cd8bea39df0ad177419ceafc230bc4bdb6020051",
+    "branch": "feat/wire-runtime-explore"
+  },
+  {
+    "nodeId": "gap-trajectory",
+    "completedAt": "2026-03-09T10:59:36.243Z",
+    "dagId": "convergence-aware",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'computeGapTrajectory' src/lib/convergence/gap-trajectory.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'computeGapTrajectory' src/lib/convergence/gap-trajectory.ts"
+      },
+      {
+        "rule": "shell:grep -q 'GapTrajectory' src/lib/convergence/gap-trajectory.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'GapTrajectory' src/lib/convergence/gap-trajectory.ts"
+      },
+      {
+        "rule": "shell:grep -q 'converging\\|diverging\\|stable' src/lib/convergence/gap-trajectory.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'converging\\|diverging\\|stable' src/lib/convergence/gap-trajectory.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/lib/convergence/gap-trajectory.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "59837a4a2000763e7727115cf55fe7af2cd5978f",
+    "treeSha": "cd8bea39df0ad177419ceafc230bc4bdb6020051",
+    "branch": "feat/wire-runtime-explore"
+  },
+  {
+    "nodeId": "convergence-assessment",
+    "completedAt": "2026-03-09T11:02:11.601Z",
+    "dagId": "convergence-aware",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm run check",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm run check"
+      },
+      {
+        "rule": "shell:grep -q 'ConvergenceAssessment' src/lib/convergence/assessment.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'ConvergenceAssessment' src/lib/convergence/assessment.ts"
+      },
+      {
+        "rule": "shell:grep -q 'assessConvergence' src/lib/convergence/assessment.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'assessConvergence' src/lib/convergence/assessment.ts"
+      },
+      {
+        "rule": "shell:grep -q 'convergence' src/runtime/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'convergence' src/runtime/brief.ts"
+      },
+      {
+        "rule": "shell:grep -q 'convergence' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'convergence' src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:src/lib/convergence/assessment.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/lib/terminal-brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "1af1a8532766ccac882338b335e8ca0a47bc911b",
+    "treeSha": "8de55fb22fe12796b696442411c0886fe60c994c",
+    "branch": "feat/wire-runtime-explore"
+  },
+  {
+    "nodeId": "test-convergence",
+    "completedAt": "2026-03-09T11:05:07.504Z",
+    "dagId": "convergence-aware",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm vitest run tests/convergence-assessment.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run tests/convergence-assessment.test.ts"
+      },
+      {
+        "rule": "shell:pnpm vitest run",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm vitest run"
+      },
+      {
+        "rule": "artifact-exists:tests/convergence-assessment.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "1af1a8532766ccac882338b335e8ca0a47bc911b",
+    "treeSha": "8de55fb22fe12796b696442411c0886fe60c994c",
+    "branch": "feat/wire-runtime-explore"
   }
 ]

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "engine": "spec-kit",
   "version": "1.0.0",
-  "compile_hash": "manual",
-  "spec_sha": "5c35ec709afa9a11811fb90ad52cfdb2e343c83392e86b634f6ffcd51f04ef4c",
-  "importedAt": "2026-03-08T21:31:35.019Z",
-  "dagId": "surface-coverage"
+  "compile_hash": "9b23ead79d90d03d7709c4393f8c65724f8dd1c15feebd37ca1df9d66c6e7869",
+  "spec_sha": "dddbc4bb294ef0d9fb8277b2be971b4cc497292e8f483ff4b1e2745d6dc24b47",
+  "importedAt": "2026-03-09T10:51:45.632Z",
+  "dagId": "convergence-aware"
 }
