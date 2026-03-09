@@ -7,17 +7,17 @@
 ---
 
 ```
-  ┌──────────────────────────────────────────────────────────────────────────────┐
-  │                                                                              │
-  │   The review read the codebase. We ran it.                                   │
-  │                                                                              │
-  │   11,509 commands · 691 nodes completed · 37 DAGs archived                   │
-  │   9 repos governed · 102 active hours · 112.8 cmds/hour                      │
-  │   2,104 advances · 1,288 validation checks · 168 structural catches          │
-  │                                                                              │
-  │   The review counted subprocesses.                                           │
-  │                                                                              │
-  └──────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                                                                          │
+  │  The review read the codebase. We ran it.                                │
+  │                                                                          │
+  │  11,509 commands · 691 nodes completed · 37 DAGs archived                │
+  │  9 repos governed · 102 active hours · 112.8 cmds/hour                   │
+  │  2,104 advances · 1,288 validation checks · 168 structural catches       │
+  │                                                                          │
+  │  The review counted subprocesses.                                        │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -91,31 +91,31 @@ The review is theoretical. Here is what actually happened.
 ### Global Operations — 9 days, 9 repos
 
 ```
-  ┌──────────────────────────────────────────────────────────────────────────────┐
-  │  AGGREGATE OPERATIONS                           Mar 1-9, 2026               │
-  │                                                                              │
-  │  trail events          11,509                                                │
-  │  repos governed             9        roadmap · donjon · mono-fusion          │
-  │                                      render · fusion-auv-v2 · todo-app      │
-  │                                      temp-converter · cockpit · fusion-auv   │
-  │  active hours             102                                                │
-  │  commands/active hour   112.8                                                │
-  │  peak day            3,575 cmds      March 8                                 │
-  │                                                                              │
-  │  ── execution ──────────────────────────────────────────────────────────────  │
-  │  nodes completed          691        across all repos, evidence-backed       │
-  │  unique nodes advanced    715        via roadmap advance                     │
-  │  advances total         2,104                                                │
-  │  DAGs created           3,848        (includes test iterations)              │
-  │  DAGs archived             37+       completed and chained                   │
-  │  parallel batches       1,433        orient returned 2+ nodes                │
-  │                                                                              │
-  │  ── validation ─────────────────────────────────────────────────────────────  │
-  │  checks executed        1,288+       donjon alone — others unmetered         │
-  │  structural catches       168        validator rejections → fixed → retried  │
-  │  terminal audit gates       8        incomplete work caught at DAG boundary  │
-  │                                                                              │
-  └──────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │  AGGREGATE OPERATIONS                         Mar 1-9, 2026              │
+  │                                                                          │
+  │  trail events          11,509                                            │
+  │  repos governed             9      roadmap · donjon · mono-fusion        │
+  │                                    render · fusion-auv-v2 · todo-app     │
+  │                                    temp-converter · cockpit · fusion-auv  │
+  │  active hours             102                                            │
+  │  commands/active hour   112.8                                            │
+  │  peak day            3,575 cmds    March 8                               │
+  │                                                                          │
+  │  ── execution ────────────────────────────────────────────────────────── │
+  │  nodes completed          691      across all repos, evidence-backed     │
+  │  unique nodes advanced    715      via roadmap advance                   │
+  │  advances total         2,104                                            │
+  │  DAGs created           3,848      (includes test iterations)            │
+  │  DAGs archived             37+     completed and chained                 │
+  │  parallel batches       1,433      orient returned 2+ nodes              │
+  │                                                                          │
+  │  ── validation ───────────────────────────────────────────────────────── │
+  │  checks executed        1,288+     donjon alone — others unmetered       │
+  │  structural catches       168      validator rejections → fixed → retried│
+  │  terminal audit gates       8      incomplete work caught at DAG boundary│
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ![Daily Throughput](assets/daily-throughput.png)
@@ -202,16 +202,16 @@ The tool governs its own development. 4 chain iterations. Complexity converging.
 ### 🐝 Consumer Repos — The Swarm
 
 ```
-  repo              DAG                   nodes    completed   status
-  ────────────────  ────────────────────  ───────  ──────────  ──────────────
-  mono-fusion       bootstrap-001             18        23/18  ✅ complete
-  temp-converter    unit-conversion-lib       28        19/28  ✅ complete
-  fusion-auv-v2     maturity-audit            14        27/14  ✅ term audit
-  render            render-pipeline           11        21/11  ✅ multi-chain
-  todo-app          003-todo-app             116           —   ⏳ 116-node DAG
-  cockpit           fanout                     4         4/4   ⚠️ origin gate
-  ─────────────────────────────────────────────────────────────────────────────
-  TOTAL                                      191        94+    4/6 complete
+  repo             DAG                    nodes  completed  status
+  ───────────────  ─────────────────────  ─────  ─────────  ──────────────
+  mono-fusion      bootstrap-001             18      23/18  ✅ complete
+  temp-converter   unit-conversion-lib       28      19/28  ✅ complete
+  fusion-auv-v2    maturity-audit            14      27/14  ✅ term audit
+  render           render-pipeline           11      21/11  ✅ multi-chain
+  todo-app         003-todo-app             116          —  ⏳ 116-node DAG
+  cockpit          fanout                     4        4/4  ⚠️ origin gate
+  ───────────────  ─────────────────────  ─────  ─────────  ──────────────
+  TOTAL                                     191       94+   4/6 complete
 ```
 
 Note the >100% completion rates: fusion-auv-v2 completed 27 nodes on a 14-node DAG because the terminal audit **auto-inserted 13 fix nodes** when it detected gaps. The system found incomplete work and extended the DAG to cover it. That's not overhead. That's the architecture working.
@@ -351,17 +351,60 @@ An agent getting this brief wrote 62 correct tests on first pass. No human told 
 
 ### "Validator gates provide false confidence"
 
+The review's framing reveals its deepest misunderstanding. It describes `orient` as checking "did the file get created?" and concludes: "If validators are cheap (artifact-exists only), roadmap proves almost nothing beyond 'the agent wrote a file.' This is barely more useful than checking git status."
+
+Here is what validators actually look like across all active DAGs:
+
+```
+  validator type distribution — 148 validators across 8 repos
+  ─────────────────────────────────────────────────────────────────────────
+  shell               91   (61.5%)  ██████████████████████████████░░░░░░░░
+  artifact-exists     38   (25.7%)  ████████████░░░░░░░░░░░░░░░░░░░░░░░░░
+  spec-conformance    15   (10.1%)  █████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+  intent               3   ( 2.0%)  █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+  expanded             1   ( 0.7%)  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+```
+
+**61.5% of all validators are shell commands.** Not file existence checks. Actual execution: `pnpm test`, `pnpm run typecheck`, `cmake -B build`, `npx vitest run tests/frames.test.ts`, `docker run --rm ... colcon build`, `bin/render api --all 2>&1 | grep -q 'float'`. Type checking. Test suites. Build pipelines. Docker container builds. API smoke tests.
+
+The review lists these in its own table — `shell` with `tsc --noEmit`, `shell` with `npm test` — then proceeds to argue as if `artifact-exists` is the primary mechanism. It isn't. It's 25.7%. The other 74.3% runs real commands that prove real properties.
+
+**What those real validators caught:**
+
 ```
   donjon validation checks:   1,288
-  structural catches:           168       problems caught before they shipped
+  structural catches:           168       shell failures → agent fixed → retried
   terminal audit catches:         8       incomplete work caught at DAG boundary
   ──────────────────────────────────────────────────────────────────────────
   total problems caught:        176       → fixed → retried → passed
 ```
 
-176 problems caught is not "false confidence." It's 176 problems that would have shipped silently without validators. The review says validators "catch structural failures but not logical ones." Correct. The alternative is catching **neither**.
+```
+  shell commands in actual use (sample)
+  ├─ pnpm test                                     full test suite
+  ├─ pnpm run typecheck                            tsc compilation
+  ├─ npx vitest run tests/frames.test.ts           targeted test file
+  ├─ cmake -B build -S packages/vcb                C++ build verification
+  ├─ docker run --rm ... colcon build              ROS2 package build in container
+  ├─ bin/render api --all 2>&1 | grep -q 'float'  API surface smoke test
+  ├─ test ! -f src/lib/god-engineer-prompt.ts      deletion verification
+  └─ ! grep -q commander package.json              dependency removal check
+```
 
-The review frames imperfect checks as worse than no checks. This is not an argument. This is an absence of one.
+176 problems caught. Not by checking if files exist. By running test suites, type checkers, build systems, and container builds. The review's characterization — "barely more useful than checking git status" — applies to 25.7% of validators. The other 74.3% would like a word.
+
+And the validator architecture goes further than the review acknowledges. Beyond shell and artifact-exists:
+
+- **spec-conformance** — validates against the spec that generated the DAG (15 active across repos)
+- **intent** — structured LLM-as-judge evaluation with `evaluator: 'council'` hook (3 active, architecture slot for semantic validation)
+- **artifact-schema** — JSON schema validation against declared schemas
+- **build-produces** — runs a build command and verifies output artifacts exist
+- **launch-check** — starts a service and checks for a success signal
+- **expanded** — verifies plan node decomposition produced child nodes
+
+The review saw this validator catalog in the source. Listed it in a table. Then argued as if only `artifact-exists` matters.
+
+The review frames imperfect checks as worse than no checks: "false confidence can make review less thorough." The alternative is **no checks**. 176 problems shipping silently instead of being caught, fixed, and retried. That's not false confidence. That's the system doing its job.
 
 ### "Autonomous completion creates unreviewable batches"
 
@@ -451,20 +494,20 @@ The question isn't whether this pattern is needed. It's whether the ecosystem ca
 ## 🦋 Conclusion
 
 ```
-  ┌──────────────────────────────────────────────────────────────────────────────┐
-  │                                                                              │
-  │  The review read the codebase and counted subprocesses.                      │
-  │  We ran 11,509 commands across 9 repositories in 9 days.                     │
-  │                                                                              │
-  │  691 nodes completed. 37 DAGs archived. 176 problems caught.                 │
-  │  3 chain iterations proving continuation works.                              │
-  │  191 tests from 3 cold agents in 7 minutes.                                  │
-  │  86 nodes/day sustained throughput.                                          │
-  │  112.8 commands per active hour.                                             │
-  │                                                                              │
-  │  The review is a cost analysis that forgot to measure revenue.               │
-  │                                                                              │
-  └──────────────────────────────────────────────────────────────────────────────┘
+  ┌──────────────────────────────────────────────────────────────────────────┐
+  │                                                                          │
+  │  The review read the codebase and counted subprocesses.                   │
+  │  We ran 11,509 commands across 9 repositories in 9 days.                  │
+  │                                                                          │
+  │  691 nodes completed. 37 DAGs archived. 176 problems caught.              │
+  │  3 chain iterations proving continuation works.                           │
+  │  191 tests from 3 cold agents in 7 minutes.                               │
+  │  86 nodes/day sustained throughput.                                       │
+  │  112.8 commands per active hour.                                          │
+  │                                                                          │
+  │  The review is a cost analysis that forgot to measure revenue.            │
+  │                                                                          │
+  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 And remember: the only reason we could respond with data instead of opinions is because the system records everything the review calls overhead. The trail.jsonl, the completion receipts, the chain history, the validation evidence — the reviewer looked at these and saw cost. We looked at them and saw the flight recorder.
