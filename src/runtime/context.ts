@@ -1,8 +1,8 @@
 // @module runtime/context
 // @description Single IO boundary for the runtime layer. loadContext() reads all
 //   filesystem state once; every downstream runtime function takes Context, not repoRoot.
-// @exports Context, ChainState, HandoffMap, HandoffEntry, loadContext
-// @types Context, ChainState, HandoffMap, HandoffEntry
+// @exports Context, ChainState, HandoffMap, HandoffEntry, ChainLink, ExecutionReport, loadContext
+// @types Context, ChainState, HandoffMap, HandoffEntry, ChainLink, ExecutionReport
 // @entry roadmap
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -11,6 +11,9 @@ import { join } from 'node:path';
 import { CompletionStore } from './completion.ts';
 import type { ChainLink, ExecutionReport } from '../lib/chain.ts';
 import type { FinalHandoff, InterimHandoff } from '../lib/brief.ts';
+
+// Re-export chain types so callers can import from context rather than chain.ts directly.
+export type { ChainLink, ExecutionReport };
 import { computeTrailMetrics, type TrailMetrics } from '../lib/trail-metrics.ts';
 
 // --- Types ---
@@ -20,6 +23,11 @@ export interface ChainState {
   readonly links: readonly ChainLink[];
   /** Highest iteration number, or 0 if no chain entries */
   readonly iteration: number;
+  /**
+   * Desc of the root (iteration 0) archived DAG — the original intent of the chain.
+   * Falls back to empty string if no archived heads exist.
+   */
+  readonly rootIntent: string;
 }
 
 /** A node's handoff data: final handoff plus any interim checkpoints */
@@ -56,27 +64,31 @@ export interface Context {
 function loadChainState(repoRoot: string): ChainState {
   const headsDir = join(repoRoot, '.roadmap', 'heads');
   if (!existsSync(headsDir)) {
-    return { links: [], iteration: 0 };
+    return { links: [], iteration: 0, rootIntent: '' };
   }
 
   try {
     const files = readdirSync(headsDir).filter(f => f.endsWith('.json'));
     const links: ChainLink[] = [];
+    /** desc per dagId — used to find root intent below */
+    const descByDagId = new Map<string, string>();
 
     for (const file of files) {
       try {
         const content = readFileSync(join(headsDir, file), 'utf-8');
-        const parsed = JSON.parse(content) as { id?: string; _lineage?: { iteration: number; predecessorId: string | null; completedAt: string; executionReport?: ExecutionReport } };
+        const parsed = JSON.parse(content) as { id?: string; desc?: string; _lineage?: { iteration: number; predecessorId: string | null; completedAt: string; executionReport?: ExecutionReport } };
         if (!parsed._lineage) continue;
         const lin = parsed._lineage;
+        const dagId = parsed.id ?? file.replace('.json', '');
         links.push({
-          dagId: parsed.id ?? file.replace('.json', ''),
+          dagId,
           iteration: lin.iteration,
           predecessorId: lin.predecessorId,
           completedAt: lin.completedAt,
           successorDagId: null,
           executionReport: lin.executionReport,
         });
+        if (parsed.desc) descByDagId.set(dagId, parsed.desc);
       } catch {
         // Skip malformed heads
       }
@@ -84,9 +96,17 @@ function loadChainState(repoRoot: string): ChainState {
 
     links.sort((a, b) => a.iteration - b.iteration);
     const iteration = links.length === 0 ? 0 : Math.max(...links.map(l => l.iteration));
-    return { links, iteration };
+
+    // rootIntent: desc from the lowest-iteration archived head
+    let rootIntent = '';
+    if (links.length > 0) {
+      const rootLink = links[0]; // already sorted ascending
+      rootIntent = descByDagId.get(rootLink.dagId) ?? '';
+    }
+
+    return { links, iteration, rootIntent };
   } catch {
-    return { links: [], iteration: 0 };
+    return { links: [], iteration: 0, rootIntent: '' };
   }
 }
 

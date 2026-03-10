@@ -11,6 +11,7 @@ import {
 import type { Graph } from '../protocol.ts';
 import { CompletionStore, saveCompletionWithEvidence } from '../runtime/completion.ts';
 import type { EvidenceRecord } from '../runtime/completion.ts';
+import { loadContext } from '../runtime/context.ts';
 import { getBrief } from '../lib/brief.ts';
 import { buildTerminalBrief, type TerminalBrief } from '../lib/terminal-brief.ts';
 import { archiveHead, readArchivedLinks, parseExecutionReport, type ExecutionReport } from '../lib/chain.ts';
@@ -172,7 +173,8 @@ async function advanceNode(
     if (!executionReport) {
       executionReport = computeExecutionReport(repoRoot);
     }
-    terminalBrief = buildTerminalBrief(dag, repoRoot, executionReport);
+    const advCtx = loadContext(repoRoot);
+    terminalBrief = buildTerminalBrief(dag, repoRoot, executionReport, advCtx.chain);
 
     // Check for explicit successor spec in term node produces
     const termNode = dag.nodes[dag.term as keyof typeof dag.nodes] as any;

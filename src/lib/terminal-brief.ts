@@ -6,8 +6,8 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Graph } from '../protocol.ts';
-import type { ChainLink, ExecutionReport } from './chain.ts';
-import { readArchivedLinks, getRootIntent } from './chain.ts';
+import type { ChainLink, ExecutionReport, ChainState } from '../runtime/context.ts';
+import { loadContext } from '../runtime/context.ts';
 import { computeReport } from './terminal-audit/computed.ts';
 import type { ComputedReport } from './terminal-audit/computed.ts';
 import { detectGaps } from './terminal-audit/detected.ts';
@@ -43,11 +43,18 @@ export interface HandoffSummary {
  * Build a TerminalBrief aggregating context layers.
  * Called during terminal node advance or orient-time enrichment
  * to give agents full context for writing successor specs.
+ *
+ * @param dag - The current DAG
+ * @param repoRoot - Absolute path to repository root
+ * @param executionReport - Optional execution report for the completed DAG
+ * @param chain - Pre-loaded ChainState (Context.chain). Avoids direct chain.ts IO.
+ *                If omitted, chain history and rootIntent are auto-loaded via loadContext().
  */
 export function buildTerminalBrief(
   dag: Graph<string>,
   repoRoot: string,
   executionReport?: ExecutionReport,
+  chain?: ChainState,
 ): TerminalBrief {
   // Layer 1: completion evidence (per-node commit status, test results, audit trail)
   const completionEvidence = computeReport(dag, repoRoot);
@@ -55,18 +62,16 @@ export function buildTerminalBrief(
   // Layer 2: handoff journals
   const handoffSummaries = loadHandoffSummaries(repoRoot);
 
-  // Layer 3: chain history (from heads/*.json _lineage fields)
-  const chainHistory = readArchivedLinks(repoRoot);
+  // Layer 3: chain history — use pre-loaded ChainState if provided, else auto-load via loadContext()
+  const resolvedChain: ChainState = chain ?? loadContext(repoRoot).chain;
+  const chainHistory: ChainLink[] = [...resolvedChain.links];
   const iteration = chainHistory.length > 0
     ? Math.max(...chainHistory.map(l => l.iteration)) + 1
     : 0;
-  let rootIntent: string;
-  try {
-    rootIntent = getRootIntent(repoRoot);
-  } catch {
-    // First iteration — use current DAG desc
-    rootIntent = dag.desc;
-  }
+  // rootIntent: lowest-iteration archived DAG desc; fall back to current DAG desc
+  const rootIntent = (resolvedChain.rootIntent && resolvedChain.rootIntent !== '')
+    ? resolvedChain.rootIntent
+    : dag.desc;
 
   // Layer 5: trail-derived scoring (best-effort — undefined if trail.jsonl missing)
   let scoring: TrailMetrics | undefined;
@@ -88,7 +93,7 @@ export function buildTerminalBrief(
   // Layer 5: convergence assessment (best-effort)
   let convergence: ConvergenceAssessment | undefined;
   try {
-    const trajectory = computeGapTrajectory(repoRoot);
+    const trajectory = computeGapTrajectory(repoRoot, chainHistory);
     convergence = assessConvergence(trajectory, detectedGaps, executionReport);
     // Auto-populate deltaAssessment on the execution report
     if (executionReport && convergence) {

@@ -7,8 +7,8 @@ import { join } from 'node:path';
 import type { Graph } from '../../protocol.ts';
 import { detectGaps } from '../terminal-audit/detected.ts';
 import type { GapEntry } from '../terminal-audit/detected.ts';
-import { readArchivedLinks } from '../chain.ts';
-import type { ChainLink } from '../chain.ts';
+import type { ChainLink } from '../../runtime/context.ts';
+import { loadContext } from '../../runtime/context.ts';
 
 export interface IterationSnapshot {
   dagId: string;
@@ -111,16 +111,22 @@ function snapshotFromDag(dag: Graph<string>, dagId: string, iteration: number): 
 /**
  * Compute gap trajectory across chain history.
  *
+ * @param repoRoot - Absolute path to repository root
+ * @param chainLinks - Pre-loaded chain links from Context.chain.links (avoids direct chain.ts IO)
+ *
  * 1. Load current head.json as the current DAG
  * 2. Run detectGaps(currentDag) for current gaps
- * 3. Load chain from heads/*.json _lineage fields to get iteration history
+ * 3. Use provided chainLinks for iteration history
  * 4. For each ChainLink, load the archived DAG from .roadmap/heads/<dagId>.json
  * 5. Run detectGaps() on each archived DAG to get historical gap snapshots
  * 6. Build iterations[] array with per-iteration gap counts
  * 7. Compare current gaps vs most recent predecessor
  * 8. Compute trend and reductionRate
  */
-export function computeGapTrajectory(repoRoot: string): GapTrajectory {
+export function computeGapTrajectory(
+  repoRoot: string,
+  chainLinks?: readonly ChainLink[],
+): GapTrajectory {
   const iterations: IterationSnapshot[] = [];
   let currentGaps: GapEntry[] = [];
   let currentDagId = 'unknown';
@@ -136,12 +142,10 @@ export function computeGapTrajectory(repoRoot: string): GapTrajectory {
     }
   }
 
-  // Step 3: Load chain history from heads/*.json _lineage fields
-  const chain = readArchivedLinks(repoRoot);
-
-  // Step 4–5: Load archived DAGs and compute snapshots
-  // chain is already sorted by iteration from readArchivedLinks
-  const sortedChain = chain;
+  // Step 3: Use pre-loaded chain links when provided; otherwise load from Context.
+  // This avoids direct chain.ts IO — all filesystem access goes through Context.
+  const resolvedLinks: readonly ChainLink[] = chainLinks ?? loadContext(repoRoot).chain.links;
+  const sortedChain = [...resolvedLinks].sort((a, b) => a.iteration - b.iteration);
 
   for (const link of sortedChain) {
     const archivePath = join(repoRoot, HEADS_DIR, `${link.dagId}.json`);

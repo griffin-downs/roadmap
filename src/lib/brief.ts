@@ -8,6 +8,7 @@ import { consumeArtifact } from '../protocol.ts';
 import { node } from '../core/access.ts';
 import { briefSlice, type BriefSlice, type AncestorContext, type SpecContext, type FileSummary } from './brief-slice.ts';
 import { buildTerminalBrief, type TerminalBrief } from './terminal-brief.ts';
+import { loadContext } from '../runtime/context.ts';
 
 export interface InterimHandoff {
   /** ISO 8601 timestamp when checkpoint was created */
@@ -138,7 +139,8 @@ export async function getBrief(
   // Terminal enrichment: when at term node, build full terminal context
   let terminalContext: TerminalBrief | undefined;
   if (position === dag.term) {
-    terminalContext = buildTerminalBrief(dag, repoRoot);
+    const ctx = loadContext(repoRoot);
+    terminalContext = buildTerminalBrief(dag, repoRoot, undefined, ctx.chain);
   }
 
   return {
