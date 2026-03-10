@@ -4,9 +4,9 @@
 // @entry roadmap
 
 // DAG mutation engine. All mutations to head.json go through here.
-// Validates before/after, records provenance receipts to mutations.jsonl.
+// Provenance receipts flow through trail.jsonl via the trailAppender callback.
 
-import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { define, verify, check } from '../protocol.ts';
 import type { Graph, NodeSpec } from '../protocol.ts';
@@ -28,8 +28,6 @@ export interface MutationRecord {
 export interface MutationLog {
   mutations: MutationRecord[];
 }
-
-const MUTATIONS_PATH = '.roadmap/mutations.jsonl';
 
 // Deep clone a Graph (JSON round-trip — sufficient for serializable DAGs)
 function cloneGraph(g: Graph<string>): Graph<string> {
@@ -243,28 +241,38 @@ export function modifyNode(
   return { dag: result, receipt };
 }
 
-// Persist mutated DAG and append receipt
-export function commitMutation(repoRoot: string, dag: Graph<string>, receipt: MutationRecord): void {
+// Persist mutated DAG and record receipt.
+// trailAppender: optional callback that receives the receipt for trail logging (injected by caller).
+export function commitMutation(
+  repoRoot: string,
+  dag: Graph<string>,
+  receipt: MutationRecord,
+  trailAppender?: (receipt: MutationRecord) => void,
+): void {
   const headPath = join(repoRoot, '.roadmap', 'head.json');
-  const mutationsPath = join(repoRoot, MUTATIONS_PATH);
   const roadmapDir = join(repoRoot, '.roadmap');
 
   if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
 
   writeFileSync(headPath, JSON.stringify(dag, null, 2) + '\n');
-  appendFileSync(mutationsPath, JSON.stringify(receipt) + '\n');
+  trailAppender?.(receipt);
 }
 
-// Load mutation history
-export function loadMutationLog(repoRoot: string): MutationLog {
-  const mutationsPath = join(repoRoot, MUTATIONS_PATH);
-  if (!existsSync(mutationsPath)) return { mutations: [] };
+const DAG_MUTATION_CMDS = new Set(['dag.insert', 'dag.remove', 'dag.modify']);
 
-  const lines = readFileSync(mutationsPath, 'utf-8').split('\n').filter(l => l.trim());
+// Load mutation history from trail.jsonl by filtering dag mutation events.
+export function loadMutationLog(repoRoot: string): MutationLog {
+  const trailPath = join(repoRoot, '.roadmap', 'trail.jsonl');
+  if (!existsSync(trailPath)) return { mutations: [] };
+
+  const lines = readFileSync(trailPath, 'utf-8').split('\n').filter(l => l.trim());
   const mutations: MutationRecord[] = [];
   for (const line of lines) {
     try {
-      mutations.push(JSON.parse(line));
+      const entry = JSON.parse(line);
+      if (DAG_MUTATION_CMDS.has(entry.cmd) && entry.detail?.receipt) {
+        mutations.push(entry.detail.receipt as MutationRecord);
+      }
     } catch { /* skip corrupt lines */ }
   }
   return { mutations };

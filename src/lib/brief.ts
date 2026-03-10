@@ -6,8 +6,7 @@
 import type { Graph } from '../protocol.ts';
 import { consumeArtifact } from '../protocol.ts';
 import { node } from '../core/access.ts';
-import { briefSlice, type BriefSlice, type AncestorContext, type SpecContext } from './brief-slice.ts';
-import type { FileSummary } from './brief-cache.ts';
+import { briefSlice, type BriefSlice, type AncestorContext, type SpecContext, type FileSummary } from './brief-slice.ts';
 import { buildTerminalBrief, type TerminalBrief } from './terminal-brief.ts';
 
 export interface InterimHandoff {

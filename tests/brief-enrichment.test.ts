@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { writeNodeCache, readNodeCache, type NodeContextCache } from '../src/lib/brief-cache.ts';
+import { readNodeCache, extractFileSummary, type NodeContextCache } from '../src/lib/brief-slice.ts';
 import { briefSlice } from '../src/lib/brief-slice.ts';
 import { getBrief } from '../src/lib/brief.ts';
 import type { Graph } from '../src/protocol.ts';
@@ -53,6 +53,19 @@ function writeTestFile(relPath: string, content: string) {
   writeFileSync(abs, content);
 }
 
+/**
+ * Write a NodeContextCache fixture directly (replaces writeNodeCache which was removed).
+ * Used to set up ancestor cache state for briefSlice tests.
+ */
+function writeTestCache(nodeId: string, repoRoot: string, cache: NodeContextCache): void {
+  const cacheDir = join(repoRoot, '.roadmap', '.cache');
+  mkdirSync(cacheDir, { recursive: true });
+  writeFileSync(
+    join(cacheDir, `${nodeId}.context.json`),
+    JSON.stringify(cache, null, 2) + '\n',
+  );
+}
+
 beforeEach(() => {
   mkdirSync(TMP, { recursive: true });
 });
@@ -61,9 +74,29 @@ afterEach(() => {
   rmSync(TMP, { recursive: true, force: true });
 });
 
-describe('writeNodeCache', () => {
-  it('produces bounded JSON from code files', () => {
-    const dag = makeTestDAG();
+describe('readNodeCache', () => {
+  it('returns null for uncached nodes', () => {
+    const cache = readNodeCache('nonexistent', TMP);
+    expect(cache).toBeNull();
+  });
+
+  it('reads a written cache fixture', () => {
+    const fixture: NodeContextCache = {
+      nodeId: 'setup',
+      timestamp: '2024-01-01T00:00:00.000Z',
+      files: [{ path: 'src/index.ts', headLines: ['import { x } from "y";'], exports: ['export function main(): void'], signatures: [] }],
+      conventions: { importStyle: 'named', exportStyle: 'named-export', namingHint: 'camelCase' },
+    };
+    writeTestCache('setup', TMP, fixture);
+    const cache = readNodeCache('setup', TMP);
+    expect(cache).not.toBeNull();
+    expect(cache!.nodeId).toBe('setup');
+    expect(cache!.conventions.importStyle).toBe('named');
+  });
+});
+
+describe('extractFileSummary', () => {
+  it('extracts exports from a TypeScript file', () => {
     writeTestFile('src/index.ts', [
       'import { readFileSync } from "node:fs";',
       'import { join } from "node:path";',
@@ -74,56 +107,22 @@ describe('writeNodeCache', () => {
       '',
       'export const VERSION = "1.0.0";',
     ].join('\n'));
+
+    const summary = extractFileSummary('src/index.ts', TMP);
+    expect(summary).not.toBeNull();
+    expect(summary!.exports).toContain('export function main(): void');
+    expect(summary!.exports).toContain('export const VERSION');
+  });
+
+  it('returns null for non-code files', () => {
     writeTestFile('tsconfig.json', '{"compilerOptions":{}}');
-
-    const wrote = writeNodeCache('setup', dag, TMP);
-    expect(wrote).toBe(true);
-
-    const cache = readNodeCache('setup', TMP);
-    expect(cache).not.toBeNull();
-    expect(cache!.nodeId).toBe('setup');
-    expect(cache!.files.length).toBe(1); // only .ts, not .json
-    expect(cache!.files[0].exports).toContain('export function main(): void');
-    expect(cache!.files[0].exports).toContain('export const VERSION');
-
-    // Budget check: serialized cache < 2000 chars
-    const serialized = JSON.stringify(cache);
-    expect(serialized.length).toBeLessThan(4000);
+    const summary = extractFileSummary('tsconfig.json', TMP);
+    expect(summary).toBeNull();
   });
 
-  it('detects import and export conventions', () => {
-    const dag = makeTestDAG();
-    writeTestFile('src/index.ts', [
-      'import { readFileSync } from "node:fs";',
-      'import type { Graph } from "../protocol.ts";',
-      '',
-      'export function loadGraph(): Graph<string> {',
-      '  return {} as any;',
-      '}',
-    ].join('\n'));
-
-    writeNodeCache('setup', dag, TMP);
-    const cache = readNodeCache('setup', TMP);
-
-    expect(cache!.conventions.importStyle).toBe('named');
-    expect(cache!.conventions.exportStyle).toBe('named-export');
-    expect(cache!.conventions.namingHint).toBe('camelCase');
-  });
-
-  it('returns false for nodes with no code files', () => {
-    const dag = makeTestDAG();
-    writeTestFile('tsconfig.json', '{}');
-    // setup produces src/index.ts and tsconfig.json, but only tsconfig exists
-    // and it's not a code file
-    const wrote = writeNodeCache('setup', dag, TMP);
-    expect(wrote).toBe(false);
-  });
-});
-
-describe('readNodeCache', () => {
-  it('returns null for uncached nodes', () => {
-    const cache = readNodeCache('nonexistent', TMP);
-    expect(cache).toBeNull();
+  it('returns null for missing files', () => {
+    const summary = extractFileSummary('nonexistent.ts', TMP);
+    expect(summary).toBeNull();
   });
 });
 
@@ -148,12 +147,13 @@ describe('briefSlice', () => {
   it('contracts ancestor context by distance', () => {
     const dag = makeTestDAG();
 
-    // Cache setup node (depth 1 ancestor of implement)
-    writeTestFile('src/index.ts', [
-      'import { readFileSync } from "node:fs";',
-      'export function main(): void {}',
-    ].join('\n'));
-    writeNodeCache('setup', dag, TMP);
+    // Write cache fixture for setup node (depth 2 ancestor of verify)
+    writeTestCache('setup', TMP, {
+      nodeId: 'setup',
+      timestamp: '2024-01-01T00:00:00.000Z',
+      files: [{ path: 'src/index.ts', headLines: ['import { readFileSync } from "node:fs";'], exports: ['export function main(): void'], signatures: [] }],
+      conventions: { importStyle: 'named', exportStyle: 'named-export', namingHint: 'camelCase' },
+    });
 
     const slice = briefSlice('verify', dag, TMP);
 
@@ -170,9 +170,13 @@ describe('briefSlice', () => {
   it('puts depth-1 ancestors in immediate, not heritage', () => {
     const dag = makeTestDAG();
 
-    // Cache setup node
-    writeTestFile('src/index.ts', 'export function main(): void {}');
-    writeNodeCache('setup', dag, TMP);
+    // Write cache fixture for setup (depth 1 ancestor of implement)
+    writeTestCache('setup', TMP, {
+      nodeId: 'setup',
+      timestamp: '2024-01-01T00:00:00.000Z',
+      files: [{ path: 'src/index.ts', headLines: [], exports: ['export function main(): void'], signatures: [] }],
+      conventions: { importStyle: 'named', exportStyle: null, namingHint: null },
+    });
 
     const slice = briefSlice('implement', dag, TMP);
 
@@ -285,11 +289,13 @@ describe('getBrief (enriched)', () => {
   it('includes codeContext when ancestor caches exist', async () => {
     const dag = makeTestDAG();
 
-    writeTestFile('src/index.ts', [
-      'import { readFileSync } from "node:fs";',
-      'export function main(): void {}',
-    ].join('\n'));
-    writeNodeCache('setup', dag, TMP);
+    // Write cache fixture directly for setup (ancestor of implement)
+    writeTestCache('setup', TMP, {
+      nodeId: 'setup',
+      timestamp: '2024-01-01T00:00:00.000Z',
+      files: [{ path: 'src/index.ts', headLines: ['import { readFileSync } from "node:fs";'], exports: ['export function main(): void'], signatures: [] }],
+      conventions: { importStyle: 'named', exportStyle: 'named-export', namingHint: 'camelCase' },
+    });
 
     const brief = await getBrief(dag, 'implement', TMP);
 

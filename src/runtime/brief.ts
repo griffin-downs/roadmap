@@ -13,7 +13,7 @@ import type { Orientation } from '../core/orient.ts';
 import type { Context, HandoffEntry } from './context.ts';
 import type { FinalHandoff, InterimHandoff } from '../lib/brief.ts';
 import { briefSlice, type BriefSlice, type AncestorContext, type SpecContext } from '../lib/brief-slice.ts';
-import type { FileSummary } from '../lib/brief-cache.ts';
+import type { FileSummary } from '../lib/brief-slice.ts';
 import type { ComputedReport, NodeCommitStatus, TestEvidence, AuditTrail } from '../lib/terminal-audit/computed.ts';
 import { detectGaps, type DetectedGaps } from '../lib/terminal-audit/detected.ts';
 import type { ChainLink, ExecutionReport } from '../lib/chain.ts';

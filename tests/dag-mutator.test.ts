@@ -1,13 +1,29 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
   insertNode, removeNode, modifyNode,
   validateMutation, commitMutation, loadMutationLog,
-  MutationError,
+  MutationError, type MutationRecord,
 } from '../src/lib/dag-mutator.ts';
 import type { Graph } from '../src/protocol.ts';
+
+// Helper: create a trailAppender that writes receipt to trail.jsonl in the expected format
+function makeTrailAppender(repoRoot: string, cmd: string): (receipt: MutationRecord) => void {
+  return (receipt: MutationRecord) => {
+    const trailPath = join(repoRoot, '.roadmap', 'trail.jsonl');
+    const entry = { ts: receipt.timestamp, cmd, detail: { nodeId: receipt.nodeId, receipt } };
+    appendFileSync(trailPath, JSON.stringify(entry) + '\n', 'utf-8');
+  };
+}
+
+// Helper: write a trail entry with a mutation receipt directly (for gate tests)
+function writeTrailReceipt(repoRoot: string, receipt: MutationRecord, cmd = 'dag.insert'): void {
+  const trailPath = join(repoRoot, '.roadmap', 'trail.jsonl');
+  const entry = { ts: receipt.timestamp, cmd, detail: { nodeId: receipt.nodeId, receipt } };
+  appendFileSync(trailPath, JSON.stringify(entry) + '\n', 'utf-8');
+}
 
 // Minimal valid DAG for testing
 function makeDag(extra: Record<string, any> = {}): Graph<string> {
@@ -189,12 +205,12 @@ describe('dag-mutator', () => {
     const { dag: d1, receipt: r1 } = insertNode(dag, {
       id: 'n1', desc: 'first', produces: [], consumes: [], deps: ['init'],
     }, 'first insert');
-    commitMutation(root, d1, r1);
+    commitMutation(root, d1, r1, makeTrailAppender(root, 'dag.insert'));
 
     const { dag: d2, receipt: r2 } = insertNode(d1, {
       id: 'n2', desc: 'second', produces: [], consumes: [], deps: ['n1'],
     }, 'second insert');
-    commitMutation(root, d2, r2);
+    commitMutation(root, d2, r2, makeTrailAppender(root, 'dag.insert'));
 
     const log = loadMutationLog(root);
     expect(log.mutations).toHaveLength(2);
@@ -208,38 +224,41 @@ describe('dag-mutator', () => {
     const { dag: d1, receipt: r1 } = insertNode(dag, {
       id: 'a1', desc: 'a', produces: [], consumes: [], deps: ['init'],
     }, 'first');
-    commitMutation(root, d1, r1);
+    commitMutation(root, d1, r1, makeTrailAppender(root, 'dag.insert'));
 
-    // Read raw file
-    const raw1 = readFileSync(join(root, '.roadmap/mutations.jsonl'), 'utf-8');
+    // Read raw trail file
+    const raw1 = readFileSync(join(root, '.roadmap/trail.jsonl'), 'utf-8');
     const lines1 = raw1.trim().split('\n');
     expect(lines1).toHaveLength(1);
 
     const { dag: d2, receipt: r2 } = modifyNode(d1, 'a1', { desc: 'updated' }, 'modify');
-    commitMutation(root, d2, r2);
+    commitMutation(root, d2, r2, makeTrailAppender(root, 'dag.modify'));
 
-    const raw2 = readFileSync(join(root, '.roadmap/mutations.jsonl'), 'utf-8');
+    const raw2 = readFileSync(join(root, '.roadmap/trail.jsonl'), 'utf-8');
     const lines2 = raw2.trim().split('\n');
     expect(lines2).toHaveLength(2);
     // First line unchanged
     expect(lines2[0]).toBe(lines1[0]);
   });
 
-  // Test 13: commitMutation writes head.json
-  it('commitMutation writes head.json and mutations.jsonl', () => {
+  // Test 13: commitMutation writes head.json and receipt to trail.jsonl via appender
+  it('commitMutation writes head.json and receipt to trail.jsonl via appender', () => {
     const dag = makeDag();
     const { dag: mutated, receipt } = insertNode(dag, {
       id: 'committed', desc: 'test commit', produces: [], consumes: [], deps: ['init'],
     }, 'commit test');
-    commitMutation(root, mutated, receipt);
+    commitMutation(root, mutated, receipt, makeTrailAppender(root, 'dag.insert'));
 
     const headPath = join(root, '.roadmap/head.json');
     expect(existsSync(headPath)).toBe(true);
     const written = JSON.parse(readFileSync(headPath, 'utf-8'));
     expect(written.nodes['committed']).toBeDefined();
 
-    const mutPath = join(root, '.roadmap/mutations.jsonl');
-    expect(existsSync(mutPath)).toBe(true);
+    const trailPath = join(root, '.roadmap/trail.jsonl');
+    expect(existsSync(trailPath)).toBe(true);
+    const log = loadMutationLog(root);
+    expect(log.mutations).toHaveLength(1);
+    expect(log.mutations[0].nodeId).toBe('committed');
   });
 
   // Test 14: validateMutation detects cycle
@@ -306,19 +325,19 @@ describe('validate-dag-origin mutation receipt gate', () => {
     writeFileSync(join(root, '.roadmap/head.json'), JSON.stringify({ id: 'test-dag', nodes: {} }));
   }
 
-  // Test 14 from spec: Pre-commit gate detects manual edit (no mutation receipt)
-  it('detects manual edit when mutations.jsonl has stale receipt', () => {
+  // Test 14 from spec: Pre-commit gate detects manual edit (stale receipt in trail.jsonl)
+  it('detects manual edit when trail.jsonl has stale receipt', () => {
     writeOrigin();
     writeHead();
     // Write a stale mutation receipt (2 minutes ago)
-    const staleReceipt = {
+    const staleReceipt: MutationRecord = {
       op: 'insert',
       nodeId: 'x',
       timestamp: new Date(Date.now() - 120_000).toISOString(),
       note: 'old',
       dagValidation: { define: true, verify: true, check: true },
     };
-    writeFileSync(join(root, '.roadmap/mutations.jsonl'), JSON.stringify(staleReceipt) + '\n');
+    writeTrailReceipt(root, staleReceipt);
 
     const result = validateDagOrigin(root);
     expect(result.ok).toBe(false);
@@ -329,14 +348,14 @@ describe('validate-dag-origin mutation receipt gate', () => {
   it('passes when recent mutation receipt exists', () => {
     writeOrigin();
     writeHead();
-    const freshReceipt = {
+    const freshReceipt: MutationRecord = {
       op: 'insert',
       nodeId: 'x',
       timestamp: new Date().toISOString(),
       note: 'fresh',
       dagValidation: { define: true, verify: true, check: true },
     };
-    writeFileSync(join(root, '.roadmap/mutations.jsonl'), JSON.stringify(freshReceipt) + '\n');
+    writeTrailReceipt(root, freshReceipt);
 
     const result = validateDagOrigin(root);
     expect(result.ok).toBe(true);

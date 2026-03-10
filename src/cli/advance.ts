@@ -12,7 +12,6 @@ import type { Graph } from '../protocol.ts';
 import { CompletionStore, saveCompletionWithEvidence } from '../runtime/completion.ts';
 import type { EvidenceRecord } from '../runtime/completion.ts';
 import { getBrief } from '../lib/brief.ts';
-import { writeNodeCache } from '../lib/brief-cache.ts';
 import { buildTerminalBrief, type TerminalBrief } from '../lib/terminal-brief.ts';
 import { archiveHead, appendLink, currentIteration, parseExecutionReport, type ChainLink, type ExecutionReport } from '../lib/chain.ts';
 import { tasksToDAG } from '../lib/intake/speckit-import.ts';
@@ -349,8 +348,6 @@ async function advanceNode(
     ...(attributionWarning ? { attributionWarning } : {}),
     ...(parallelEditWarning ? { parallelEditWarning } : {}),
   };
-
-  try { writeNodeCache(nodeId, dag, repoRoot); } catch { /* best-effort */ }
 
   if (newPos.batchRemaining.length > 0) {
     try { result.nextBrief = await getBrief(dag, newPos.batchRemaining[0], repoRoot); } catch { /* best-effort */ }

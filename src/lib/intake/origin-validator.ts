@@ -13,7 +13,6 @@ import {
   loadSpecOrigin,
   validateOriginHash,
   sha256,
-  SPEC_ORIGIN_PATH,
 } from './spec-origin.ts';
 
 export interface OriginValidationResult {
@@ -49,26 +48,24 @@ export function validateOriginComplete(
     dagHashMatch: null,
   };
 
-  // Check origin file exists
-  const originPath = join(repoRoot, SPEC_ORIGIN_PATH);
-  checks.originExists = existsSync(originPath);
+  // Check origin exists (in head.json._origin or legacy origin file)
+  const origin = loadSpecOrigin(repoRoot);
+  checks.originExists = origin !== null;
   if (!checks.originExists) {
-    errors.push(`Missing ${SPEC_ORIGIN_PATH} — DAG has no spec provenance`);
+    errors.push(`Missing spec origin — DAG has no spec provenance (expected head.json._origin)`);
     return { valid: false, checks, errors };
   }
 
-  // Check parseable as SpecOrigin
-  const origin = loadSpecOrigin(repoRoot);
-  checks.originParseable = origin !== null;
-  if (!origin) {
-    errors.push(`${SPEC_ORIGIN_PATH} exists but is not a valid SpecOrigin`);
-    return { valid: false, checks, errors };
-  }
+  // Origin was parseable (loadSpecOrigin returned non-null)
+  checks.originParseable = true;
+
+  // origin is non-null here (checks.originExists guard above ensures this)
+  const o = origin as SpecOrigin;
 
   // Check version
-  checks.versionCompatible = origin.schemaVersion === SUPPORTED_SCHEMA_VERSION;
+  checks.versionCompatible = o.schemaVersion === SUPPORTED_SCHEMA_VERSION;
   if (!checks.versionCompatible) {
-    errors.push(`Unsupported schema version ${origin.schemaVersion} (expected ${SUPPORTED_SCHEMA_VERSION})`);
+    errors.push(`Unsupported schema version ${o.schemaVersion} (expected ${SUPPORTED_SCHEMA_VERSION})`);
   }
 
   // Check spec hash if spec file provided
@@ -84,7 +81,7 @@ export function validateOriginComplete(
     if (existsSync(opts.dagPath)) {
       const dagContent = readFileSync(opts.dagPath, 'utf-8');
       const currentDagHash = sha256(dagContent);
-      checks.dagHashMatch = currentDagHash === origin.compile_hash;
+      checks.dagHashMatch = currentDagHash === o.compile_hash;
       if (!checks.dagHashMatch) {
         errors.push('DAG content has been modified since import (compile_hash mismatch)');
       }

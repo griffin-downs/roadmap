@@ -5,7 +5,6 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { createHash } from 'node:crypto';
 
 // Inline types to keep script self-contained for tsc --noEmit
 interface SpecOrigin {
@@ -25,8 +24,9 @@ export interface ValidateResult {
   fix?: string;
 }
 
-const SPEC_ORIGIN_PATH = '.roadmap/spec-origin.json';
 const HEAD_PATH = '.roadmap/head.json';
+/** @deprecated legacy path, kept only for fallback reads */
+const LEGACY_SPEC_ORIGIN_PATH = '.roadmap/spec-origin.json';
 
 function isSpecOrigin(x: unknown): x is SpecOrigin {
   if (typeof x !== 'object' || x === null) return false;
@@ -42,94 +42,131 @@ function isSpecOrigin(x: unknown): x is SpecOrigin {
   );
 }
 
-export function validateDagOrigin(repoRoot: string): ValidateResult {
-  const originPath = join(repoRoot, SPEC_ORIGIN_PATH);
+type LoadOriginResult =
+  | { ok: true; origin: SpecOrigin; head: Record<string, unknown> | null }
+  | { ok: false; code: 'missing-origin' | 'invalid-format'; message: string };
 
-  // 1. spec-origin.json must exist
-  if (!existsSync(originPath)) {
-    return {
-      ok: false,
-      code: 'missing-origin',
-      message: 'Missing: .roadmap/spec-origin.json',
-      fix: 'DAGs must be created via: roadmap make <spec.json> --note "..."\n   Or restore origin: roadmap spec init --from <spec.json> --note "..."',
-    };
+/** Load SpecOrigin from head.json._origin (canonical) or legacy spec-origin.json. */
+function loadOrigin(repoRoot: string): LoadOriginResult {
+  const headPath = join(repoRoot, HEAD_PATH);
+  let head: Record<string, unknown> | null = null;
+
+  if (existsSync(headPath)) {
+    try {
+      const parsed = JSON.parse(readFileSync(headPath, 'utf-8'));
+      if (parsed && typeof parsed === 'object') {
+        head = parsed as Record<string, unknown>;
+        if ('_origin' in head) {
+          if (isSpecOrigin(head['_origin'])) {
+            return { ok: true, origin: head['_origin'] as SpecOrigin, head };
+          }
+          // _origin exists but is invalid format
+          return {
+            ok: false,
+            code: 'invalid-format',
+            message: 'Invalid: head.json._origin has wrong schema (expected schemaVersion=1, valid hashes)',
+          };
+        }
+      }
+    } catch { /* fall through to legacy */ }
   }
 
-  // 2. Must parse as valid SpecOrigin
-  let origin: unknown;
-  try {
-    origin = JSON.parse(readFileSync(originPath, 'utf-8'));
-  } catch {
-    return {
-      ok: false,
-      code: 'invalid-format',
-      message: 'Corrupt: .roadmap/spec-origin.json is not valid JSON',
-      fix: 'Re-run the spec pipeline: roadmap make <spec.json> --note "..."',
-    };
-  }
-
-  if (!isSpecOrigin(origin)) {
+  // Legacy fallback: spec-origin.json
+  const legacyPath = join(repoRoot, LEGACY_SPEC_ORIGIN_PATH);
+  if (existsSync(legacyPath)) {
+    let raw: string;
+    try {
+      raw = readFileSync(legacyPath, 'utf-8');
+    } catch {
+      return { ok: false, code: 'invalid-format', message: 'Corrupt: .roadmap/spec-origin.json is not valid JSON' };
+    }
+    let data: unknown;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return { ok: false, code: 'invalid-format', message: 'Corrupt: .roadmap/spec-origin.json is not valid JSON' };
+    }
+    if (isSpecOrigin(data)) {
+      return { ok: true, origin: data, head };
+    }
     return {
       ok: false,
       code: 'invalid-format',
       message: 'Invalid: .roadmap/spec-origin.json has wrong schema (expected schemaVersion=1, valid hashes)',
+    };
+  }
+
+  return {
+    ok: false,
+    code: 'missing-origin',
+    message: 'Missing: head.json._origin (no spec provenance found)',
+  };
+}
+
+export function validateDagOrigin(repoRoot: string): ValidateResult {
+  // 1. Origin must exist (in head.json._origin or legacy spec-origin.json)
+  const loaded = loadOrigin(repoRoot);
+
+  if (!loaded.ok) {
+    if (loaded.code === 'missing-origin') {
+      return {
+        ok: false,
+        code: 'missing-origin',
+        message: loaded.message,
+        fix: 'DAGs must be created via: roadmap make <spec.json> --note "..."\n   Or restore origin: roadmap spec init --from <spec.json> --note "..."',
+      };
+    }
+    return {
+      ok: false,
+      code: 'invalid-format',
+      message: loaded.message,
       fix: 'Re-run the spec pipeline: roadmap make <spec.json> --note "..."',
     };
   }
 
-  // 3. If head.json exists, verify dagId matches
-  const headPath = join(repoRoot, HEAD_PATH);
-  if (existsSync(headPath)) {
-    try {
-      const head = JSON.parse(readFileSync(headPath, 'utf-8'));
-      if (typeof head === 'object' && head !== null && 'id' in head) {
-        if (head.id !== origin.dagId) {
-          return {
-            ok: false,
-            code: 'dag-id-mismatch',
-            message: `Mismatch: head.json id "${head.id}" != spec-origin dagId "${origin.dagId}"`,
-            fix: 'The DAG was modified outside the spec pipeline. Re-import: roadmap make <spec.json> --note "..."',
-          };
-        }
-      }
-    } catch {
-      // head.json parse failure is caught by other gates
+  const { origin, head } = loaded;
+
+  // 2. If head.json is loaded, verify dagId matches
+  if (head !== null && 'id' in head) {
+    if (head.id !== origin.dagId) {
+      return {
+        ok: false,
+        code: 'dag-id-mismatch',
+        message: `Mismatch: head.json id "${head.id}" != spec-origin dagId "${origin.dagId}"`,
+        fix: 'The DAG was modified outside the spec pipeline. Re-import: roadmap make <spec.json> --note "..."',
+      };
     }
   }
 
-  // 4. If head.json changed, verify mutations.jsonl has receipts for this DAG
-  // Checks both provenance (receipts exist for current DAG) and recency (within 60s)
-  const mutationsPath = join(repoRoot, '.roadmap/mutations.jsonl');
-  if (existsSync(headPath) && existsSync(mutationsPath)) {
+  // 3. If head.json changed, verify trail.jsonl has mutation receipts for this DAG
+  const headPath = join(repoRoot, HEAD_PATH);
+  const trailPath = join(repoRoot, '.roadmap/trail.jsonl');
+  const DAG_MUTATION_CMDS = new Set(['dag.insert', 'dag.remove', 'dag.modify']);
+  if (existsSync(headPath) && existsSync(trailPath)) {
     try {
-      const head = JSON.parse(readFileSync(headPath, 'utf-8'));
-      const dagId = typeof head === 'object' && head !== null && 'id' in head ? head.id : null;
+      const headData = JSON.parse(readFileSync(headPath, 'utf-8'));
+      const dagId = typeof headData === 'object' && headData !== null && 'id' in headData ? headData.id : null;
       if (dagId) {
-        const lines = readFileSync(mutationsPath, 'utf-8').split('\n').filter(l => l.trim());
-        // Valid if: mutations.jsonl is empty (DAG created via make, no mutations yet)
-        // or has at least one recent receipt (mutations were tracked through CLI)
-        if (lines.length > 0) {
+        const lines = readFileSync(trailPath, 'utf-8').split('\n').filter((l: string) => l.trim());
+        // Collect mutation receipts from trail.jsonl dag mutation events
+        const mutationReceipts: { timestamp?: string }[] = [];
+        for (const line of lines) {
+          try {
+            const entry = JSON.parse(line);
+            if (DAG_MUTATION_CMDS.has(entry.cmd) && entry.detail?.receipt) {
+              const receipt = entry.detail.receipt;
+              if (!receipt.dagId || receipt.dagId === dagId) {
+                mutationReceipts.push(receipt);
+              }
+            }
+          } catch { /* skip malformed lines */ }
+        }
+        // Valid if: no mutation entries yet (DAG created via make, no mutations)
+        // or has at least one recent receipt (mutations tracked through CLI)
+        if (mutationReceipts.length > 0) {
           const STALE_THRESHOLD_MS = 60_000;
           const now = Date.now();
-          const matchingReceipts: { timestamp?: string }[] = [];
-          for (const line of lines) {
-            try {
-              const entry = JSON.parse(line);
-              if (!entry.dagId || entry.dagId === dagId) {
-                matchingReceipts.push(entry);
-              }
-            } catch { /* skip malformed lines */ }
-          }
-          if (matchingReceipts.length === 0) {
-            return {
-              ok: false,
-              code: 'missing-mutation-receipt',
-              message: `mutations.jsonl has no receipts for DAG "${dagId}"`,
-              fix: 'Use roadmap dag {insert,remove,modify} to mutate the DAG, not direct edits',
-            };
-          }
-          // Check recency: at least one matching receipt must be within the threshold
-          const hasRecentReceipt = matchingReceipts.some(entry => {
+          const hasRecentReceipt = mutationReceipts.some(entry => {
             if (!entry.timestamp) return false;
             const ts = new Date(entry.timestamp).getTime();
             return !isNaN(ts) && (now - ts) < STALE_THRESHOLD_MS;
@@ -138,7 +175,7 @@ export function validateDagOrigin(repoRoot: string): ValidateResult {
             return {
               ok: false,
               code: 'missing-mutation-receipt',
-              message: `mutations.jsonl has no recent receipts for DAG "${dagId}" (all older than ${STALE_THRESHOLD_MS / 1000}s)`,
+              message: `trail.jsonl has no recent mutation receipts for DAG "${dagId}" (all older than ${STALE_THRESHOLD_MS / 1000}s)`,
               fix: 'Use roadmap dag {insert,remove,modify} to mutate the DAG, not direct edits',
             };
           }

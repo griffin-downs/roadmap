@@ -1,16 +1,114 @@
 // @module brief-slice
-// @exports briefSlice, BriefSlice, AncestorContext, SpecContext
-// @types BriefSlice, AncestorContext, SpecContext
+// @exports briefSlice, BriefSlice, AncestorContext, SpecContext, readNodeCache, extractFileSummary, NodeContextCache, FileSummary
+// @types BriefSlice, AncestorContext, SpecContext, NodeContextCache, FileSummary
 // @entry roadmap
 
 // Backward cone slice: walks DAG backward from a node,
 // reads cached convention contexts, contracts by graph distance.
 // Depth 1 = full cached context. Depth 2+ = convention summary only.
 
+import { existsSync, readFileSync } from 'node:fs';
+import { join, extname } from 'node:path';
 import type { Graph, NodeSpec } from '../protocol.ts';
 import { consumeArtifact } from '../protocol.ts';
 import { node } from '../core/access.ts';
-import { readNodeCache, extractFileSummary, type NodeContextCache, type FileSummary } from './brief-cache.ts';
+
+// --- File summary types and helpers ---
+
+const CACHE_DIR = '.roadmap/.cache';
+const HEAD_LINES = 20;
+
+export interface FileSummary {
+  path: string;
+  headLines: string[];
+  exports: string[];
+  signatures: string[];
+}
+
+export interface NodeContextCache {
+  nodeId: string;
+  timestamp: string;
+  files: FileSummary[];
+  conventions: {
+    importStyle: string | null;
+    exportStyle: string | null;
+    namingHint: string | null;
+  };
+}
+
+const CODE_EXTENSIONS = new Set([
+  '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs',
+  '.py', '.rs', '.go', '.java', '.c', '.cpp', '.h',
+]);
+
+function isCodeFile(path: string): boolean {
+  return CODE_EXTENSIONS.has(extname(path));
+}
+
+export function extractFileSummary(filePath: string, repoRoot: string): FileSummary | null {
+  const abs = join(repoRoot, filePath);
+  if (!existsSync(abs)) return null;
+  if (!isCodeFile(filePath)) return null;
+
+  let content: string;
+  try {
+    content = readFileSync(abs, 'utf-8');
+  } catch {
+    return null;
+  }
+
+  const lines = content.split('\n');
+  const headLines = lines.slice(0, HEAD_LINES);
+
+  // Extract exports
+  const exports: string[] = [];
+  for (const line of lines) {
+    if (/^export\s+(function|const|class|interface|type|enum|default)\b/.test(line)) {
+      // Trim to signature only (no body)
+      const sig = line.replace(/\{.*$/, '').replace(/=.*$/, '').trim();
+      if (sig.length < 200) exports.push(sig);
+    }
+    // Python
+    if (/^def\s+\w+/.test(line) || /^class\s+\w+/.test(line)) {
+      exports.push(line.trim());
+    }
+  }
+
+  // Extract function/method signatures (non-exported)
+  const signatures: string[] = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^(async\s+)?function\s+\w+/.test(trimmed) && !trimmed.startsWith('export')) {
+      const sig = trimmed.replace(/\{.*$/, '').trim();
+      if (sig.length < 200) signatures.push(sig);
+    }
+  }
+
+  return {
+    path: filePath,
+    headLines,
+    exports: exports.slice(0, 10),
+    signatures: signatures.slice(0, 10),
+  };
+}
+
+/**
+ * Read cached convention context for a node.
+ * Returns null if no cache exists.
+ */
+export function readNodeCache(
+  nodeId: string,
+  repoRoot: string,
+): NodeContextCache | null {
+  const cachePath = join(repoRoot, CACHE_DIR, `${nodeId}.context.json`);
+  if (!existsSync(cachePath)) return null;
+
+  try {
+    return JSON.parse(readFileSync(cachePath, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
 
 export interface SpecContext {
   /** Full task description from spec (no truncation) */

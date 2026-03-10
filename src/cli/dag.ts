@@ -34,7 +34,7 @@ export async function run(
   log      Show mutation history
 
 All mutations validate the DAG (define/verify/check) before committing.
-Provenance receipts are appended to .roadmap/mutations.jsonl.
+Provenance receipts are recorded in .roadmap/trail.jsonl.
 
 Examples:
   roadmap dag insert --node '{"id":"x","desc":"...","produces":[],"consumes":[],"deps":["init"]}' --note "why"
@@ -99,15 +99,15 @@ async function dagInsert(
 
   try {
     const { dag: mutated, receipt } = insertNode(dag, nodeSpec, note);
-    commitMutation(repoRoot, mutated, receipt);
-
-    appendTrail({
-      ts: new Date().toISOString(),
-      cmd: 'dag.insert',
-      note,
-      repo: basename(repoRoot),
-      detail: { nodeId: nodeSpec.id },
-    }, repoRoot);
+    commitMutation(repoRoot, mutated, receipt, (r) => {
+      appendTrail({
+        ts: new Date().toISOString(),
+        cmd: 'dag.insert',
+        note,
+        repo: basename(repoRoot),
+        detail: { nodeId: nodeSpec.id, receipt: r },
+      }, repoRoot);
+    });
 
     json({ ok: true, op: 'insert', nodeId: nodeSpec.id, receipt }, outputOpts);
   } catch (e) {
@@ -145,15 +145,15 @@ async function dagRemove(
 
   try {
     const { dag: mutated, receipt } = removeNode(dag, nodeId, note, { cascade });
-    commitMutation(repoRoot, mutated, receipt);
-
-    appendTrail({
-      ts: new Date().toISOString(),
-      cmd: 'dag.remove',
-      note,
-      repo: basename(repoRoot),
-      detail: { nodeId, cascade },
-    }, repoRoot);
+    commitMutation(repoRoot, mutated, receipt, (r) => {
+      appendTrail({
+        ts: new Date().toISOString(),
+        cmd: 'dag.remove',
+        note,
+        repo: basename(repoRoot),
+        detail: { nodeId, cascade, receipt: r },
+      }, repoRoot);
+    });
 
     json({ ok: true, op: 'remove', nodeId, cascade, receipt }, outputOpts);
   } catch (e) {
@@ -210,15 +210,15 @@ async function dagModify(
 
   try {
     const { dag: mutated, receipt } = modifyNode(dag, nodeId, changes, note);
-    commitMutation(repoRoot, mutated, receipt);
-
-    appendTrail({
-      ts: new Date().toISOString(),
-      cmd: 'dag.modify',
-      note,
-      repo: basename(repoRoot),
-      detail: { nodeId, changes },
-    }, repoRoot);
+    commitMutation(repoRoot, mutated, receipt, (r) => {
+      appendTrail({
+        ts: new Date().toISOString(),
+        cmd: 'dag.modify',
+        note,
+        repo: basename(repoRoot),
+        detail: { nodeId, changes, receipt: r },
+      }, repoRoot);
+    });
 
     json({ ok: true, op: 'modify', nodeId, receipt }, outputOpts);
   } catch (e) {
