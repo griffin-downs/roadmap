@@ -31,6 +31,7 @@ import * as cliApi from '../src/cli/api.ts';
 import * as cliHelp from '../src/cli/help.ts';
 import * as cliDag from '../src/cli/dag.ts';
 import * as cliSpec from '../src/cli/spec.ts';
+import * as cliLoop from '../src/cli/loop.ts';
 
 // --- Init ---
 const rawArgs = process.argv.slice(2);
@@ -68,7 +69,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 }
 
 // --- Known commands gate ---
-const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'status', 'spec', 'dag', 'api', 'help', '--help', '-h']);
+const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'status', 'spec', 'dag', 'loop', 'api', 'help', '--help', '-h']);
 if (!KNOWN_COMMANDS.has(cmd)) {
   const available = listCommands().map(c => c.command);
   emit({ ok: false, cmd: _outputOpts.cmd, error: {
@@ -150,7 +151,7 @@ async function main() {
   const note = _note;
 
   // Branch enforcement for DAG-mutating commands
-  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient', 'advance', 'status', 'spec']);
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient', 'advance', 'status', 'spec', 'loop']);
   if (!BRANCH_EXEMPT.has(cmd) && !(cmd === 'make' && args.includes('--dry-run'))) {
     enforceMainBranch(repoRoot);
   }
@@ -163,6 +164,7 @@ async function main() {
       case 'status':    return await cliStatus.run(args, repoRoot, hasLocalDAG, _outputOpts);
       case 'spec':      return await cliSpec.run(args, repoRoot, note, _outputOpts);
       case 'dag':       return await cliDag.run(args, repoRoot, note, hasLocalDAG, _outputOpts);
+      case 'loop':      return await cliLoop.run(args, repoRoot, note ?? '', _outputOpts);
       case 'api':       return cliApi.run(args, _outputOpts);
       case 'help':
       case '--help':

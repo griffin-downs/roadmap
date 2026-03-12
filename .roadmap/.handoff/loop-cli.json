@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-12T15:19:29.836Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "roadmap loop {start|generate|mine|close} wired into CLI dispatch",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "src/cli/loop.ts"
+    ],
+    "ready": true
+  }
+}

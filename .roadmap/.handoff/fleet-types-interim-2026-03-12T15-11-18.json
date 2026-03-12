@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-03-12T15:11:18.692Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "artifact-exists:produces"
+  ],
+  "currentFile": ""
+}

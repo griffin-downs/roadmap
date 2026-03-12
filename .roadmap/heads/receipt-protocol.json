@@ -1,0 +1,192 @@
+{
+  "id": "receipt-protocol",
+  "desc": "Integrate receipt chains into roadmap protocol — workflow compliance proof via append-only JSONL with SHA linking",
+  "init": "receipt-types",
+  "term": "integration-test",
+  "nodes": {
+    "receipt-types": {
+      "id": "receipt-types",
+      "desc": "Define receipt Zod schemas: OrientReceipt, AdvanceReceipt, IntakeReceipt, AdversarialReceipt. Port computeReceiptSha and validateChain from llm-cli pattern. SHA-linked, previousSha chain, action discriminator.",
+      "produces": [
+        "src/lib/receipt.ts",
+        "tests/receipt.test.ts"
+      ],
+      "consumes": [],
+      "deps": [],
+      "validate": [
+        {
+          "type": "artifact-exists"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx tests/receipt.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "receipt-state": {
+      "id": "receipt-state",
+      "desc": "Append-only JSONL state store at .roadmap/receipts.jsonl. append() computes SHA and links to previous. getAllReceipts() parses chain. isChainValid() verifies backlinks and content integrity. Port from llm-cli state.ts.",
+      "produces": [
+        "src/lib/receipt-state.ts",
+        "tests/receipt-state.test.ts"
+      ],
+      "consumes": [
+        "src/lib/receipt.ts"
+      ],
+      "deps": [
+        "receipt-types"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx tests/receipt-state.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "emit-orient": {
+      "id": "emit-orient",
+      "desc": "Orient command emits OrientReceipt after successful orientation. Captures position, level, batchRemaining, branch, timestamp. Appended via receipt-state.",
+      "produces": [
+        "src/cli/orient.ts"
+      ],
+      "consumes": [
+        "src/lib/receipt-state.ts"
+      ],
+      "deps": [
+        "receipt-state"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q 'receipt' src/cli/orient.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "emit-advance": {
+      "id": "emit-advance",
+      "desc": "Advance command emits AdvanceReceipt after successful node advance. Captures nodeId, validation checks, evidence summary, produces verified.",
+      "produces": [
+        "src/cli/advance.ts"
+      ],
+      "consumes": [
+        "src/lib/receipt-state.ts"
+      ],
+      "deps": [
+        "receipt-state"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q 'receipt' src/cli/advance.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "emit-intake": {
+      "id": "emit-intake",
+      "desc": "Make command emits IntakeReceipt on spec intake and AdversarialReceipt per review pass. Chain proves spec was reviewed before DAG committed.",
+      "produces": [
+        "src/cli/make.ts"
+      ],
+      "consumes": [
+        "src/lib/receipt-state.ts"
+      ],
+      "deps": [
+        "receipt-state"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "grep -q 'receipt' src/cli/make.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "chain-query": {
+      "id": "chain-query",
+      "desc": "Add roadmap receipts CLI verb. Query chain, verify integrity, show workflow summary. --verify exits 0 if valid, 1 if broken. JSON output.",
+      "produces": [
+        "src/cli/receipts.ts"
+      ],
+      "consumes": [
+        "src/lib/receipt-state.ts"
+      ],
+      "deps": [
+        "emit-orient",
+        "emit-advance",
+        "emit-intake"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists"
+        }
+      ],
+      "idempotent": true
+    },
+    "protocol-gaps": {
+      "id": "protocol-gaps",
+      "desc": "Extend advance to check receipt chain before validators. Warn if no orient receipt for current batch, warn if no commit for produces. Warnings to trail.jsonl, not blocking.",
+      "produces": [
+        "src/lib/receipt-check.ts",
+        "tests/receipt-check.test.ts"
+      ],
+      "consumes": [
+        "src/lib/receipt-state.ts",
+        "src/lib/receipt.ts"
+      ],
+      "deps": [
+        "chain-query"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists"
+        },
+        {
+          "type": "shell",
+          "command": "npx tsx tests/receipt-check.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "integration-test": {
+      "id": "integration-test",
+      "desc": "End-to-end: orient emits receipt, advance emits receipt, receipts --verify shows intact chain, protocol gap detection works.",
+      "produces": [
+        "tests/receipt-integration.test.ts"
+      ],
+      "consumes": [
+        "src/lib/receipt.ts",
+        "src/lib/receipt-state.ts",
+        "src/lib/receipt-check.ts",
+        "src/cli/receipts.ts"
+      ],
+      "deps": [
+        "protocol-gaps"
+      ],
+      "validate": [
+        {
+          "type": "shell",
+          "command": "npx tsx tests/receipt-integration.test.ts"
+        }
+      ],
+      "idempotent": true
+    }
+  },
+  "version": "0.3.0",
+  "protocolVersion": "0.3.0",
+  "_origin": {
+    "schemaVersion": 1,
+    "engine": "spec-kit",
+    "version": "1.0.0",
+    "compile_hash": "d522389e10ce219ee71c7165e55a3c8cb4faf65a403f5bb3d0a14ffb19728b55",
+    "spec_sha": "0366d2265e97ff9d7a6d9ee8fbc197e98d4e42039e1be4c96abbe93483d992d7",
+    "importedAt": "2026-03-12T14:19:17.745Z",
+    "dagId": "receipt-protocol"
+  }
+}

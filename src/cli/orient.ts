@@ -3,18 +3,103 @@
 // @exports run
 
 import { basename } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { execSync } from 'node:child_process';
 import { loadClaims, annotateWithClaims } from '../lib/claims/claims.ts';
 import { readPackageVersion } from '../lib/install-skills.ts';
 import { requireValidOrigin, checkSpecDrift } from '../lib/intake/runtime-gate.ts';
 import { getBrief } from '../lib/brief.ts';
 import { loadContext } from '../runtime/context.ts';
+import { loadFleetContext } from '../runtime/fleet.ts';
+import { readLoopHistory } from '../runtime/loop.ts';
 import { emit, type OutputOpts } from '../lib/cli-envelope.ts';
 import type { Graph } from '../lib/protocol/types.ts';
 import type { OrientV1 } from '../lib/core/orient-schema.ts';
+import type { FleetStatus, RepoStatus } from '../lib/fleet-types.ts';
 import {
   loadDAG, crossOrientWithState, appendTrail,
   getCurrentBranch, isWorktree, hasFlag, migrateSingleHead,
 } from './shared.ts';
+
+/** Fleet orient: cross-repo rollup status */
+async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise<void> {
+  const fleet = loadFleetContext(repoRoot);
+  const loopHistory = readLoopHistory(repoRoot);
+  const iteration = loopHistory.length > 0
+    ? Math.max(...loopHistory.map(r => r.iteration)) + 1
+    : 0;
+
+  let headCommit: string | null = null;
+  try {
+    headCommit = execSync('git rev-parse --short HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim();
+  } catch { /* not a git repo */ }
+
+  const repos: RepoStatus[] = [];
+  const blockers: string[] = [];
+
+  for (const rc of fleet.repos) {
+    if (!rc.context) {
+      repos.push({
+        name: rc.entry.name, path: rc.resolvedPath,
+        dagId: null, status: 'no-dag', level: null,
+        reason: rc.warning ?? 'unknown',
+      });
+      blockers.push(`${rc.entry.name}: ${rc.warning}`);
+      continue;
+    }
+
+    const headPath = join(rc.resolvedPath, '.roadmap', 'head.json');
+    if (!existsSync(headPath)) {
+      repos.push({
+        name: rc.entry.name, path: rc.resolvedPath,
+        dagId: null, status: 'no-dag', level: null,
+      });
+      continue;
+    }
+
+    try {
+      const head = JSON.parse(readFileSync(headPath, 'utf-8')) as { id?: string };
+      const dag = await loadDAG(rc.resolvedPath);
+      const pos = await crossOrientWithState(dag, rc.resolvedPath);
+
+      if (pos.remaining.length === 0) {
+        repos.push({
+          name: rc.entry.name, path: rc.resolvedPath,
+          dagId: head.id ?? null, status: 'complete',
+          level: pos.level, done: pos.done.length, remaining: 0,
+        });
+      } else {
+        repos.push({
+          name: rc.entry.name, path: rc.resolvedPath,
+          dagId: head.id ?? null, status: 'active',
+          level: pos.level, batch: pos.position,
+          done: pos.done.length, remaining: pos.remaining.length,
+        });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      repos.push({
+        name: rc.entry.name, path: rc.resolvedPath,
+        dagId: null, status: 'stalled', level: null, reason: msg,
+      });
+      blockers.push(`${rc.entry.name}: ${msg}`);
+    }
+  }
+
+  const allDone = repos.every(r => r.status === 'complete');
+  const loopReady = repos.length > 0 && allDone;
+
+  const fleetStatus: FleetStatus = {
+    iteration,
+    compiler: { repo: '.', headCommit },
+    repos,
+    loopReady,
+    blockers,
+  };
+
+  emit({ ok: true, cmd: outputOpts.cmd, data: fleetStatus }, outputOpts);
+}
 
 export async function run(
   args: string[],
@@ -23,6 +108,10 @@ export async function run(
   hasLocalDAG: boolean,
   outputOpts: OutputOpts,
 ): Promise<void> {
+  if (args.includes('--fleet')) {
+    return runFleetOrient(repoRoot, outputOpts);
+  }
+
   migrateSingleHead(repoRoot);
 
   const isCheck = args.includes('--check');

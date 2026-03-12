@@ -3938,5 +3938,155 @@
     "gitSha": "06c2b7f2d8f4ad504b3c403797182d0dc817e02c",
     "treeSha": "4686890636660c2d246d32be65048d17004acd15",
     "branch": "feat/topology-simplify"
+  },
+  {
+    "nodeId": "fleet-types",
+    "completedAt": "2026-03-12T15:11:47.901Z",
+    "dagId": "fleet-loop",
+    "validationChecks": [
+      {
+        "rule": "shell:npx tsx tests/fleet-types.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx tsx tests/fleet-types.test.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/fleet-types.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:tests/fleet-types.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "83436456db1959a721a606d503d02b4897410003",
+    "treeSha": "efd75b0a7b585411c05c7c0c87e548dba9ed64c2",
+    "branch": "main"
+  },
+  {
+    "nodeId": "fleet-context",
+    "completedAt": "2026-03-12T15:14:36.876Z",
+    "dagId": "fleet-loop",
+    "validationChecks": [
+      {
+        "rule": "shell:npx vitest run tests/fleet-context.test.ts --reporter=dot",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest run tests/fleet-context.test.ts --reporter=dot"
+      },
+      {
+        "rule": "intent:Plan clarity: fleet context loading scope is unambiguous — r",
+        "passed": true,
+        "evidence": "confidence=0.95 (threshold=0.9) — loadFleetContext reads fleet.json from compiler repo, resolves paths, and calls loadContext() per repo. It never writes "
+      },
+      {
+        "rule": "artifact-exists:src/runtime/fleet.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:tests/fleet-context.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "83436456db1959a721a606d503d02b4897410003",
+    "treeSha": "efd75b0a7b585411c05c7c0c87e548dba9ed64c2",
+    "branch": "main"
+  },
+  {
+    "nodeId": "loop-state",
+    "completedAt": "2026-03-12T15:14:51.152Z",
+    "dagId": "fleet-loop",
+    "validationChecks": [
+      {
+        "rule": "shell:npx vitest run tests/loop-state.test.ts --reporter=dot",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest run tests/loop-state.test.ts --reporter=dot"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/loop.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:tests/loop-state.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "83436456db1959a721a606d503d02b4897410003",
+    "treeSha": "efd75b0a7b585411c05c7c0c87e548dba9ed64c2",
+    "branch": "main"
+  },
+  {
+    "nodeId": "fleet-orient",
+    "completedAt": "2026-03-12T15:15:36.985Z",
+    "dagId": "fleet-loop",
+    "validationChecks": [
+      {
+        "rule": "shell:grep -q 'fleet' src/cli/orient.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'fleet' src/cli/orient.ts"
+      },
+      {
+        "rule": "shell:grep -q 'loadFleetContext' src/cli/orient.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'loadFleetContext' src/cli/orient.ts"
+      },
+      {
+        "rule": "artifact-exists:src/cli/orient.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "83436456db1959a721a606d503d02b4897410003",
+    "treeSha": "efd75b0a7b585411c05c7c0c87e548dba9ed64c2",
+    "branch": "main"
+  },
+  {
+    "nodeId": "loop-cli",
+    "completedAt": "2026-03-12T15:19:29.835Z",
+    "dagId": "fleet-loop",
+    "validationChecks": [
+      {
+        "rule": "shell:roadmap loop --note test 2>&1 | grep -q start",
+        "passed": true,
+        "evidence": "command passed (exit 0): roadmap loop --note test 2>&1 | grep -q start"
+      },
+      {
+        "rule": "artifact-exists:src/cli/loop.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "83436456db1959a721a606d503d02b4897410003",
+    "treeSha": "efd75b0a7b585411c05c7c0c87e548dba9ed64c2",
+    "branch": "main"
+  },
+  {
+    "nodeId": "fleet-integration",
+    "completedAt": "2026-03-12T15:20:31.317Z",
+    "dagId": "fleet-loop",
+    "validationChecks": [
+      {
+        "rule": "shell:npx vitest run tests/fleet-integration.test.ts --reporter=dot",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest run tests/fleet-integration.test.ts --reporter=dot"
+      },
+      {
+        "rule": "intent:Fleet orient returns correct cross-repo status and loop rece",
+        "passed": true,
+        "evidence": "confidence=0.95 (threshold=0.9) — Integration tests verify: fleet context loads mixed repo states (with/without head.json), loop lifecycle (start→generate"
+      },
+      {
+        "rule": "artifact-exists:tests/fleet-integration.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "83436456db1959a721a606d503d02b4897410003",
+    "treeSha": "efd75b0a7b585411c05c7c0c87e548dba9ed64c2",
+    "branch": "main"
   }
 ]

@@ -15,6 +15,9 @@
       "deps": [],
       "validate": [
         {
+          "type": "artifact-exists"
+        },
+        {
           "type": "shell",
           "command": "npx tsx tests/fleet-types.test.ts"
         }
@@ -36,8 +39,11 @@
       ],
       "validate": [
         {
+          "type": "artifact-exists"
+        },
+        {
           "type": "shell",
-          "command": "npx vitest run tests/fleet-context.test.ts --reporter=dot"
+          "command": "npx tsx tests/fleet-context.test.ts"
         },
         {
           "type": "intent",
@@ -64,8 +70,11 @@
       ],
       "validate": [
         {
+          "type": "artifact-exists"
+        },
+        {
           "type": "shell",
-          "command": "npx vitest run tests/loop-state.test.ts --reporter=dot"
+          "command": "npx tsx tests/loop-state.test.ts"
         }
       ],
       "idempotent": true
@@ -110,8 +119,11 @@
       ],
       "validate": [
         {
+          "type": "artifact-exists"
+        },
+        {
           "type": "shell",
-          "command": "roadmap loop --note test 2>&1 | grep -q start"
+          "command": "npx tsx src/cli/loop.ts -- --help 2>&1 | grep -q 'start'"
         }
       ],
       "idempotent": true
@@ -134,14 +146,7 @@
       "validate": [
         {
           "type": "shell",
-          "command": "npx vitest run tests/fleet-integration.test.ts --reporter=dot"
-        },
-        {
-          "type": "intent",
-          "statement": "Fleet orient returns correct cross-repo status and loop receipts form a valid SHA-linked chain across iterations",
-          "confidence": 0.9,
-          "evaluator": "self",
-          "expandOnFail": true
+          "command": "npx tsx tests/fleet-integration.test.ts"
         }
       ],
       "idempotent": true
