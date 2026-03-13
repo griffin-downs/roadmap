@@ -1,6 +1,6 @@
 // @module fleet-types
 // @description Fleet manifest and loop receipt type definitions
-// @exports FleetManifest, FleetRepoEntry, FleetStatus, RepoStatus, LoopReceipt, MiningFindings, GenerationRecord, parseFleetManifest, parseLoopReceipt
+// @exports FleetManifest, FleetRepoEntry, FleetStatus, FleetFrontierNode, RepoStatus, LoopReceipt, MiningFindings, GenerationRecord, parseFleetManifest, parseLoopReceipt
 // @entry roadmap
 
 import { z } from 'zod';
@@ -43,12 +43,21 @@ export const RepoStatusSchema = z.object({
 });
 export type RepoStatus = z.infer<typeof RepoStatusSchema>;
 
+export const FleetFrontierNodeSchema = z.object({
+  repo: z.string(),
+  dagId: z.string(),
+  nodeId: z.string(),
+  produces: z.array(z.string()),
+});
+export type FleetFrontierNode = z.infer<typeof FleetFrontierNodeSchema>;
+
 export const FleetStatusSchema = z.object({
   iteration: z.number(),
   compiler: z.object({ repo: z.string(), headCommit: z.string().nullable() }),
   repos: z.array(RepoStatusSchema),
   loopReady: z.boolean(),
   blockers: z.array(z.string()),
+  globalFrontier: z.array(FleetFrontierNodeSchema).optional(),
 });
 export type FleetStatus = z.infer<typeof FleetStatusSchema>;
 

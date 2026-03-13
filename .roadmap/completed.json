@@ -4393,5 +4393,40 @@
     "gitSha": "5a928bd8d56c8a8b0244240c544b53b483d39a51",
     "treeSha": "1e88dfeeb180187521933ebecaddca5d22e475c4",
     "branch": "feat/fleet-intelligence"
+  },
+  {
+    "nodeId": "successor-proposer",
+    "completedAt": "2026-03-13T11:15:59.784Z",
+    "dagId": "fleet-intelligence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm build"
+      },
+      {
+        "rule": "shell:grep -q 'export function proposeSuccessor' src/runtime/successor.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function proposeSuccessor' src/runtime/successor.ts"
+      },
+      {
+        "rule": "shell:grep -q 'export interface SuccessorProposal' src/runtime/successor.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export interface SuccessorProposal' src/runtime/successor.ts"
+      },
+      {
+        "rule": "shell:! grep -q 'node:fs' src/runtime/successor.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -q 'node:fs' src/runtime/successor.ts"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/successor.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a498757d4a12f243a3b65fac56d8d9d880421a5a",
+    "treeSha": "b2745aa0398674ee0218cb0bcc11a8bc14a95db9",
+    "branch": "feat/fleet-intelligence"
   }
 ]

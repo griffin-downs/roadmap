@@ -16,7 +16,7 @@ import { readLoopHistory } from '../runtime/loop.ts';
 import { emit, type OutputOpts } from '../lib/cli-envelope.ts';
 import type { Graph } from '../lib/protocol/types.ts';
 import type { OrientV1 } from '../lib/core/orient-schema.ts';
-import type { FleetStatus, RepoStatus } from '../lib/fleet-types.ts';
+import type { FleetStatus, FleetFrontierNode, RepoStatus } from '../lib/fleet-types.ts';
 import {
   loadDAG, crossOrientWithState, appendTrail,
   getCurrentBranch, isWorktree, hasFlag, migrateSingleHead,
@@ -37,6 +37,16 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
 
   const repos: RepoStatus[] = [];
   const blockers: string[] = [];
+
+  // Collect per-repo frontier data for cross-repo resolution
+  interface RepoDagInfo {
+    repoName: string;
+    dagId: string;
+    dag: Graph<string>;
+    position: string[];
+    allProduced: Set<string>; // paths produced by completed nodes
+  }
+  const repoDagInfos: RepoDagInfo[] = [];
 
   for (const rc of fleet.repos) {
     const activeDAGs = rc.activeDAGs.length > 0 ? [...rc.activeDAGs] : undefined;
@@ -67,6 +77,21 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
       const dag = await loadDAG(rc.resolvedPath);
       const pos = await crossOrientWithState(dag, rc.resolvedPath);
 
+      // Collect all paths produced by done nodes for cross-repo dependency resolution
+      const allProduced = new Set<string>();
+      for (const doneId of pos.done) {
+        const node = (dag.nodes as unknown as Record<string, { produces?: readonly string[] }>)[doneId];
+        if (node?.produces) node.produces.forEach(p => allProduced.add(p));
+      }
+
+      repoDagInfos.push({
+        repoName: rc.entry.name,
+        dagId: head.id ?? dag.id ?? rc.entry.name,
+        dag,
+        position: pos.position,
+        allProduced,
+      });
+
       if (pos.remaining.length === 0) {
         repos.push({
           name: rc.entry.name, path: rc.resolvedPath,
@@ -94,6 +119,50 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
     }
   }
 
+  // Build unified frontier: all nodes whose single-DAG deps are satisfied,
+  // filtered to remove those blocked by cross-repo consume dependencies.
+  const allProducedAcrossRepos = new Set<string>();
+  for (const info of repoDagInfos) {
+    for (const p of info.allProduced) allProducedAcrossRepos.add(p);
+  }
+
+  const globalFrontier: FleetFrontierNode[] = [];
+  for (const info of repoDagInfos) {
+    for (const nodeId of info.position) {
+      const node = (info.dag.nodes as unknown as Record<string, { produces?: readonly string[]; consumes?: readonly (string | { artifact: string })[] }>)[nodeId];
+      if (!node) continue;
+
+      // Check if any consumes path is unsatisfied by another repo (cross-repo blocker)
+      const consumes = (node.consumes ?? []).map(c =>
+        typeof c === 'string' ? c : c.artifact,
+      );
+      const crossRepoBocked = consumes.some(path => {
+        // If path is produced by this repo's done nodes, not cross-repo blocked
+        if (info.allProduced.has(path)) return false;
+        // If produced by another repo's done nodes, satisfied
+        if (allProducedAcrossRepos.has(path)) return false;
+        // Check if it's produced by any DAG at all (not yet done = blocked)
+        for (const other of repoDagInfos) {
+          if (other === info) continue;
+          for (const otherNodeId of Object.keys(other.dag.nodes)) {
+            const otherNode = (other.dag.nodes as unknown as Record<string, { produces?: readonly string[] }>)[otherNodeId];
+            if (otherNode?.produces?.includes(path)) return true; // cross-repo dep, not yet done
+          }
+        }
+        return false;
+      });
+
+      if (!crossRepoBocked) {
+        globalFrontier.push({
+          repo: info.repoName,
+          dagId: info.dagId,
+          nodeId,
+          produces: [...(node.produces ?? [])],
+        });
+      }
+    }
+  }
+
   const allDone = repos.every(r => r.status === 'complete');
   const loopReady = repos.length > 0 && allDone;
 
@@ -103,6 +172,7 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
     repos,
     loopReady,
     blockers,
+    globalFrontier,
   };
 
   emit({ ok: true, cmd: outputOpts.cmd, data: fleetStatus }, outputOpts);

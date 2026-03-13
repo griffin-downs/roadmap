@@ -276,7 +276,7 @@
     },
     "unified-frontier": {
       "id": "unified-frontier",
-      "desc": "Modify src/cli/orient.ts fleet orient to compute a unified frontier. After loading all active DAGs from all repos, resolve cross-repo dependencies (node.consumes referencing files in other repos). Build unified dependency graph. Topological sort across all DAGs. Return globalFrontier: { repo, dagId, nodeId, produces }[] — all nodes unblocked across all repos. Add globalFrontier to fleet orient output. Modify src/lib/fleet-types.ts to add FleetFrontierNode and globalFrontier to FleetStatus.",
+      "desc": "Cross-repo unified frontier in fleet orient",
       "produces": [
         "src/cli/orient.ts",
         "src/lib/fleet-types.ts"
