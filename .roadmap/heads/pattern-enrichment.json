@@ -6,7 +6,7 @@
   "nodes": {
     "render-pattern": {
       "id": "render-pattern",
-      "desc": "Replace inferPattern() with renderPattern() — interpolated execution prompts",
+      "desc": "Replace inferPattern() with renderPattern() in src/runtime/brief.ts. Interpolates description, produces, consumes, position, mode into a concrete 7-line execution prompt. Execute mode: TASK/PRODUCE/CONSUME/SCOPE/VERIFY/BLOCKED/MODE. Plan mode: TASK/DECOMPOSE/POSITION/OUTPUT/VERIFY. Uses only data already in scope (spec, g.desc, position). No new imports.",
       "produces": [
         "src/runtime/brief.ts"
       ],

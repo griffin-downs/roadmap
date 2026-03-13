@@ -142,7 +142,7 @@ export function brief(
     produces: spec.produces.slice(0, 5),
     consumes: spec.consumes.map(c => consumeArtifact(c)).slice(0, 5),
     description: slice?.specContext.description ?? spec.desc,
-    pattern: inferPattern(spec.id, spec.mode),
+    pattern: renderPattern(spec, g.desc, position),
     handoff: prevHandoff,
     handoffJournal: journal,
     remaining,
@@ -268,23 +268,29 @@ function countRemaining(dag: Graph<string>, position: string): number {
   return visited.size - 1; // Don't count current node
 }
 
-function inferPattern(nodeId: string, mode?: 'execute' | 'plan'): string {
-  if (mode === 'plan') {
-    return 'Decompose into sub-tasks. Decide if human input needed. Output is DAG expansion.';
+function renderPattern(spec: { id: string; desc: string; produces: readonly string[]; consumes: readonly (string | { artifact: string })[]; mode?: 'execute' | 'plan' }, dagDesc: string, position: string): string {
+  if (spec.mode === 'plan') {
+    return [
+      `TASK: ${spec.desc}`,
+      `DECOMPOSE: Break into concrete sub-nodes with produces/consumes`,
+      `POSITION: ${position} in "${dagDesc}"`,
+      `OUTPUT: DAG expansion via \`roadmap dag insert\``,
+      `VERIFY: Each child node is self-contained and independently executable`,
+    ].join('\n');
   }
 
-  const patterns: Record<string, string> = {
-    'spec': 'Write design doc: structure, contracts, examples',
-    'impl': 'Implement from spec. Keep it minimal, no extra features.',
-    'test': 'Write adversarial tests. Prove the spec holds.',
-    'integration': 'Wire up components. Verify end-to-end.',
-  };
+  const produces = spec.produces.length > 0 ? spec.produces.join(', ') : '(none)';
+  const consumes = spec.consumes.length > 0 ? spec.consumes.map((c: string | { artifact: string }) => typeof c === 'string' ? c : c.artifact).join(', ') : '(none)';
 
-  for (const [key, pattern] of Object.entries(patterns)) {
-    if (nodeId.includes(key)) return pattern;
-  }
-
-  return 'Build the artifacts listed in produces. Satisfy consumes requirements.';
+  return [
+    `TASK: ${spec.desc}`,
+    `PRODUCE: ${produces}`,
+    `CONSUME: ${consumes}`,
+    `SCOPE: ${position} in "${dagDesc}"`,
+    `VERIFY: All produces exist and validators pass`,
+    `BLOCKED: If consumes missing, stop and surface`,
+    `MODE: ${spec.mode ?? 'execute'}`,
+  ].join('\n');
 }
 
 /**
