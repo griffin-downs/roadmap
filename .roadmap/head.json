@@ -305,7 +305,7 @@
     },
     "test-intelligence": {
       "id": "test-intelligence",
-      "desc": "Write tests/execution-intelligence.test.ts. Test mineExecution: (1) detects unaddressed discoveries from handoffs, (2) detects weak evidence (grep-only validators), (3) detects scope drift from attribution warnings, (4) detects unresolved blockers, (5) returns empty findings for clean execution. Test assessTrajectory: (1) converging when findings decrease, (2) orbiting when persistent findings across iterations, (3) stable when no findings. Test proposeSuccessor: (1) continue with spec draft when findings exist, (2) converged when no findings, (3) orbit-break when trajectory orbiting. All tests use mock Context/ChainLink data — no filesystem.",
+      "desc": "Tests for execution intelligence",
       "produces": [
         "tests/execution-intelligence.test.ts"
       ],

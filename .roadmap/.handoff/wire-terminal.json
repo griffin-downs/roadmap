@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-13T11:18:54.986Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "terminal advance now includes execution intelligence",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "src/cli/advance.ts"
+    ],
+    "ready": true
+  }
+}

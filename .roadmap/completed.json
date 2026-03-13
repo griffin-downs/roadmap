@@ -4463,5 +4463,65 @@
     "gitSha": "ea2c909a5b9f9d229624a097cdedc0f402a423ae",
     "treeSha": "21787157cd694eccf58de4fc4876e441bee979cd",
     "branch": "feat/fleet-intelligence"
+  },
+  {
+    "nodeId": "test-fleet",
+    "completedAt": "2026-03-13T11:18:48.593Z",
+    "dagId": "fleet-intelligence",
+    "validationChecks": [
+      {
+        "rule": "shell:npx vitest run tests/fleet-discovery.test.ts --reporter=dot",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest run tests/fleet-discovery.test.ts --reporter=dot"
+      },
+      {
+        "rule": "artifact-exists:tests/fleet-discovery.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "9c4be261e67b9f06608066fa970b8a482250d786",
+    "treeSha": "eeb544367dc3c2f21000871cfc628ee3c44c5338",
+    "branch": "feat/fleet-intelligence"
+  },
+  {
+    "nodeId": "wire-terminal",
+    "completedAt": "2026-03-13T11:18:54.984Z",
+    "dagId": "fleet-intelligence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm build"
+      },
+      {
+        "rule": "shell:grep -q 'mineExecution' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'mineExecution' src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:grep -q 'assessTrajectory' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'assessTrajectory' src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:grep -q 'proposeSuccessor' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'proposeSuccessor' src/cli/advance.ts"
+      },
+      {
+        "rule": "shell:grep -q 'successorProposal' src/cli/advance.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'successorProposal' src/cli/advance.ts"
+      },
+      {
+        "rule": "artifact-exists:src/cli/advance.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "9979345fa1d0699166f136db637e57fec8df61f4",
+    "treeSha": "799fcb7f62be3ea77ee87928b9cd9cc3d11b72e3",
+    "branch": "feat/fleet-intelligence"
   }
 ]
