@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-03-13T11:13:01.922Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "shell:pnpm build && node dist/roadmap.js api --validate 2>&1 | grep -q '\"ok\":true'"
+  ],
+  "currentFile": ""
+}

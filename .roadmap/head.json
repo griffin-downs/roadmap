@@ -93,11 +93,15 @@
       "validate": [
         {
           "type": "shell",
-          "command": "pnpm build && node dist/roadmap.js api --validate 2>&1 | grep -q '\"ok\":true'"
+          "command": "pnpm build && node dist/roadmap.js api --validate 2>&1 | grep -q \"\\\"ok\\\"\""
         },
         {
           "type": "shell",
           "command": "pnpm build"
+        },
+        {
+          "type": "artifact-exists",
+          "path": "src/lib/schemas.ts"
         }
       ],
       "idempotent": true
