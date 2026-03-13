@@ -219,7 +219,10 @@ export async function run(
   hasLocalDAG: boolean,
   outputOpts: OutputOpts,
 ): Promise<void> {
-  if (args.includes('--fleet')) {
+  // Auto-detect fleet: if fleet.json exists, run fleet orient (unless --no-fleet)
+  const noFleet = args.includes('--no-fleet');
+  const fleetJsonPath = join(repoRoot, '.roadmap', 'fleet.json');
+  if (!noFleet && (args.includes('--fleet') || existsSync(fleetJsonPath))) {
     return runFleetOrient(repoRoot, outputOpts);
   }
 
@@ -369,18 +372,9 @@ export async function run(
     result.specDrift = { drifted: true, message: drift.message };
   }
 
-  // Fleet hint: if fleet.json exists, surface it so agents know multi-repo context is available
-  const fleetPath = join(repoRoot, '.roadmap', 'fleet.json');
-  if (existsSync(fleetPath)) {
-    try {
-      const fleetRaw = JSON.parse(readFileSync(fleetPath, 'utf-8'));
-      const repoCount = Array.isArray(fleetRaw.repos) ? fleetRaw.repos.length : 0;
-      result.fleet = {
-        exists: true,
-        repos: repoCount,
-        hint: 'This repo is part of a fleet. Use `roadmap orient --fleet` for cross-repo status.',
-      };
-    } catch { /* malformed fleet.json — skip hint */ }
+  // Fleet note: if fleet.json exists but --no-fleet was used, note it
+  if (noFleet && existsSync(fleetJsonPath)) {
+    result.fleet = { exists: true, note: 'Fleet auto-orient suppressed by --no-fleet' };
   }
 
   if (!isCheck) {

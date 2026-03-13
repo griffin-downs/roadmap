@@ -200,7 +200,11 @@ No DAG yet? Write a spec → `roadmap make spec.json --note "..."`.
        │
        ├────▷ [✨ make <spec> --note]      create DAG from spec
        ├────▷ [🧭 orient --note]           batch position + produces/consumes (JSON)
+       │                                    auto-detects fleet.json → global frontier
+       │                                    --no-fleet to suppress, --fleet to force
        ├────▷ [⚡ advance [id] --note]     complete node or advance batch
+       │                                    at terminal: mineExecution → assessTrajectory
+       │                                    → proposeSuccessor (continue/converged/orbit-break)
        │
        ├────▷ [🔀 dag insert --note]       insert node
        ├────▷ [🗑️ dag remove --note]       remove node (--cascade)
@@ -276,6 +280,55 @@ No DAG yet? Write a spec → `roadmap make spec.json --note "..."`.
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
+## Execution Reporting
+
+When executing a roadmap autonomously, surface progress richly. The user should see the DAG come alive.
+
+**On orient** — show the DAG shape, current batch, what's done:
+```
+┌─────────────────────────────────────────────────────────┐
+│  🔮 dag-name — B2 of 7 │ 5/14 done                     │
+├─────────────────────────────────────────────────────────┤
+│  B0  init ✅                                            │
+│  B1  setup-db ✅ │ setup-auth ✅                        │
+│  B2  [🧪 api-routes] │ [🧪 middleware] ←── you are here │
+│  B3  integration │ B4 tests │ B5 term                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+**On dispatch** — banner showing what agents are working on:
+```
+┌─────────────────────────────────────────────────────────┐
+│  B2 DISPATCHED — 2 parallel agents                     │
+│                                                         │
+│  🔧 api-routes    → src/api/routes.ts, src/api/types.ts│
+│  🔧 middleware    → src/middleware/auth.ts               │
+│                                                         │
+│  Progress: 5/14 done                                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+**On batch complete** — show advancement, what's next:
+```
+🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
+
+  B2 ✅ api-routes (3/3 checks) │ middleware (2/2 checks)
+  Next: B3 integration → src/integration/
+
+🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩🟩
+```
+
+**On terminal** — show the full DAG result with intelligence:
+```
+🟩 DAG COMPLETE — all checks pass
+   trajectory: converging │ intent distance: decreasing
+   successor: converged (no remaining findings)
+```
+
+Use color bars (🟥🟧🟨🟩🟦🟪) as dividers. Use box drawing for structure. Every scroll should land on something worth looking at.
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
 ## Entry Points
 
 ```
@@ -298,7 +351,12 @@ No DAG yet? Write a spec → `roadmap make spec.json --note "..."`.
   IO boundary        src/runtime/context.ts                 single loadContext() for all FS state
   completion         src/runtime/completion.ts              receipt-based tracking + evidence
   brief generation   src/runtime/brief.ts                   pure brief(g, position, context) → Brief
+  execution mining   src/runtime/execution-miner.ts         mineExecution(dag, context) → ExecutionFindings
+  trajectory         src/runtime/trajectory.ts              assessTrajectory(findings, chain) → TrajectoryAssessment
+  successor          src/runtime/successor.ts               proposeSuccessor(assessment) → SuccessorProposal
+  fleet context      src/runtime/fleet.ts                   loadFleetContext, scanActiveDAGs
   chain/lineage      src/lib/chain.ts                       archiveHead, getRootIntent, parseReport
+  api enforcement    src/lib/api-enforcement.ts             validateApiCoverage() → { ok, violations[] }
   DAG mutation       src/lib/dag-mutator.ts                 insert/remove/modify → trail.jsonl
   gitsafe            src/lib/gitsafe-loader.ts              file access control (denylist, size)
   validators         src/lib/protocol/validation.ts         artifact-exists, shell, schema, expanded
