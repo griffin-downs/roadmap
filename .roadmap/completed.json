@@ -4233,5 +4233,45 @@
     "gitSha": "e7e4033c3a3ae3431799bf507dd97094d641c269",
     "treeSha": "86883e9c0d15727325d54fe3cbfbf76cfd9ab198",
     "branch": "feat/fleet-intelligence"
+  },
+  {
+    "nodeId": "execution-miner",
+    "completedAt": "2026-03-13T11:10:19.943Z",
+    "dagId": "fleet-intelligence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm build"
+      },
+      {
+        "rule": "shell:grep -q 'export function mineExecution' src/runtime/execution-miner.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export function mineExecution' src/runtime/execution-miner.ts"
+      },
+      {
+        "rule": "shell:grep -q 'export interface ExecutionFindings' src/runtime/execution-miner.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'export interface ExecutionFindings' src/runtime/execution-miner.ts"
+      },
+      {
+        "rule": "shell:! grep -q 'node:fs' src/runtime/execution-miner.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -q 'node:fs' src/runtime/execution-miner.ts"
+      },
+      {
+        "rule": "shell:! grep -q 'node:path' src/runtime/execution-miner.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -q 'node:path' src/runtime/execution-miner.ts"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/execution-miner.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "1a1d006ffdda55b7bffe4f4223eb7b35bbae3110",
+    "treeSha": "cb9cddf27a7e3920f1c06449f2036e25d2d1882b",
+    "branch": "feat/fleet-intelligence"
   }
 ]

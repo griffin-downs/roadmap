@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-13T11:10:19.946Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "mineExecution exported, pure, all validators pass",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "src/runtime/execution-miner.ts"
+    ],
+    "ready": true
+  }
+}

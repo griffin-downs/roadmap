@@ -22,6 +22,12 @@ export type FleetManifest = z.infer<typeof FleetManifestSchema>;
 
 // --- Fleet Status (orient --fleet output) ---
 
+export const ActiveDAGSummarySchema = z.object({
+  dagId: z.string(),
+  desc: z.string().optional(),
+});
+export type ActiveDAGSummary = z.infer<typeof ActiveDAGSummarySchema>;
+
 export const RepoStatusSchema = z.object({
   name: z.string(),
   path: z.string(),
@@ -33,6 +39,7 @@ export const RepoStatusSchema = z.object({
   reason: z.string().optional(),
   done: z.number().optional(),
   remaining: z.number().optional(),
+  activeDAGs: z.array(ActiveDAGSummarySchema).optional(),
 });
 export type RepoStatus = z.infer<typeof RepoStatusSchema>;
 

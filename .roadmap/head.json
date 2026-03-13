@@ -140,7 +140,7 @@
     },
     "trajectory-assessor": {
       "id": "trajectory-assessor",
-      "desc": "Create src/runtime/trajectory.ts. Pure function assessTrajectory(findings, chainLinks, rootIntent, currentDagId) → TrajectoryAssessment. Compares current ExecutionFindings against previous iterations' execution reports (from ChainLink[].executionReport). Computes trend: converging (findings decreasing), stable (no findings), orbiting (persistent findings across 2+ iterations), diverging (new findings exceed resolved for 2+ iterations). Computes intentDistance based on whether unaddressed items relate to root intent keywords. Export TrajectoryAssessment type.",
+      "desc": "Pure trajectory assessment",
       "produces": [
         "src/runtime/trajectory.ts"
       ],
@@ -243,7 +243,7 @@
     },
     "multi-dag-discovery": {
       "id": "multi-dag-discovery",
-      "desc": "Modify src/runtime/fleet.ts loadFleetContext and src/cli/orient.ts fleet orient. Instead of only reading head.json per repo, also scan heads/*.json. Filter out completed DAGs (those with _lineage.completedAt). Return all active DAGs per repo in fleet status. RepoStatus gains activeDAGs: { dagId, level, batch[], done, remaining }[]. The primary dagId remains head.json's DAG (if exists), but all active heads are visible.",
+      "desc": "Scan heads/ for multi-DAG discovery",
       "produces": [
         "src/runtime/fleet.ts",
         "src/cli/orient.ts"

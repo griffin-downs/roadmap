@@ -39,11 +39,14 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
   const blockers: string[] = [];
 
   for (const rc of fleet.repos) {
+    const activeDAGs = rc.activeDAGs.length > 0 ? [...rc.activeDAGs] : undefined;
+
     if (!rc.context) {
       repos.push({
         name: rc.entry.name, path: rc.resolvedPath,
         dagId: null, status: 'no-dag', level: null,
         reason: rc.warning ?? 'unknown',
+        activeDAGs,
       });
       blockers.push(`${rc.entry.name}: ${rc.warning}`);
       continue;
@@ -54,6 +57,7 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
       repos.push({
         name: rc.entry.name, path: rc.resolvedPath,
         dagId: null, status: 'no-dag', level: null,
+        activeDAGs,
       });
       continue;
     }
@@ -68,6 +72,7 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
           name: rc.entry.name, path: rc.resolvedPath,
           dagId: head.id ?? null, status: 'complete',
           level: pos.level, done: pos.done.length, remaining: 0,
+          activeDAGs,
         });
       } else {
         repos.push({
@@ -75,6 +80,7 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
           dagId: head.id ?? null, status: 'active',
           level: pos.level, batch: pos.position,
           done: pos.done.length, remaining: pos.remaining.length,
+          activeDAGs,
         });
       }
     } catch (err) {
@@ -82,6 +88,7 @@ async function runFleetOrient(repoRoot: string, outputOpts: OutputOpts): Promise
       repos.push({
         name: rc.entry.name, path: rc.resolvedPath,
         dagId: null, status: 'stalled', level: null, reason: msg,
+        activeDAGs,
       });
       blockers.push(`${rc.entry.name}: ${msg}`);
     }
