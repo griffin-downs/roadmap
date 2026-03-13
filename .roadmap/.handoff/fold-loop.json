@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-03-13T11:10:07.147Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "loop CLI removed, receipts kept in runtime",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "bin/roadmap.ts",
+      "src/cli/help.ts"
+    ],
+    "ready": true
+  }
+}

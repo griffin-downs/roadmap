@@ -17,7 +17,7 @@
     },
     "fold-loop": {
       "id": "fold-loop",
-      "desc": "Remove roadmap loop CLI command. Delete src/cli/loop.ts. Remove loop from bin/roadmap.ts (import, KNOWN_COMMANDS, BRANCH_EXEMPT, switch case). Remove loop schemas from src/lib/schemas.ts. Keep src/runtime/loop.ts (receipt writing, called internally by make --chain and advance). Update help.ts to remove loop references. Router must have zero references to cliLoop.",
+      "desc": "Remove loop CLI command",
       "produces": [
         "bin/roadmap.ts",
         "src/cli/help.ts"
@@ -104,7 +104,7 @@
     },
     "execution-miner": {
       "id": "execution-miner",
-      "desc": "Create src/runtime/execution-miner.ts. Pure function mineExecution(dag, context, attributionWarnings?) → ExecutionFindings. Reads context.handoffs for unaddressed discoveries (discovered[] items where no successor node's desc references them) and unresolved blockers. Reads context.completion for weak evidence (nodes where all shell validators are grep-only). Reads context.scoring for velocity signals (batches with retry > 0 or duration > 2x median). attributionWarnings is the list of files changed outside produces. No IO. No imports from node:. Export ExecutionFindings type.",
+      "desc": "Pure execution mining function",
       "produces": [
         "src/runtime/execution-miner.ts"
       ],
