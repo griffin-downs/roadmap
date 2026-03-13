@@ -57,7 +57,7 @@
     },
     "test-pattern": {
       "id": "test-pattern",
-      "desc": "Test renderPattern: execute mode contains TASK/PRODUCE/CONSUME/SCOPE/VERIFY lines with actual node data interpolated. Plan mode contains DECOMPOSE. Verify pattern changes when produces/consumes/description change. Verify no data loss vs old inferPattern (all old patterns still matchable as substrings).",
+      "desc": "Tests for renderPattern interpolation",
       "produces": [
         "tests/pattern-enrichment.test.ts"
       ],

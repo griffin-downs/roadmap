@@ -4118,5 +4118,30 @@
     "gitSha": "7114797a4ca21c28bc0bb5978ab0723876b599c1",
     "treeSha": "a84899585d28e89cc89fd374922a86dd3c3aa160",
     "branch": "feat/fleet-loop"
+  },
+  {
+    "nodeId": "sync-lib-brief",
+    "completedAt": "2026-03-13T10:51:50.696Z",
+    "dagId": "pattern-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:grep -q 'renderPattern' src/lib/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'renderPattern' src/lib/brief.ts"
+      },
+      {
+        "rule": "shell:grep -qv 'inferPattern' src/lib/brief.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -qv 'inferPattern' src/lib/brief.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/brief.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "b95b7429ca5a4ebb414682908e6d1732f68a7c63",
+    "treeSha": "bbbb6f417df8c6909ff58e82cd04ca7894d907b9",
+    "branch": "feat/fleet-loop"
   }
 ]
