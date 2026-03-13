@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-03-13T11:14:00.575Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "heads/ scanning, completed DAGs filtered",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "src/runtime/fleet.ts",
+      "src/cli/orient.ts"
+    ],
+    "ready": true
+  }
+}

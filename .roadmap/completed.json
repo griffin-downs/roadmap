@@ -4343,5 +4343,35 @@
     "gitSha": "e9f094e76e8df3d56c0c0b37863334cbba985627",
     "treeSha": "e4fc3a5d14be02c27c3293bd520a0d6450883043",
     "branch": "feat/fleet-intelligence"
+  },
+  {
+    "nodeId": "register-missing-schemas",
+    "completedAt": "2026-03-13T11:14:17.439Z",
+    "dagId": "fleet-intelligence",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm build && node dist/roadmap.js api --validate 2>&1 | grep -q \"\\\"ok\\\"\"",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm build && node dist/roadmap.js api --validate 2>&1 | grep -q \"\\\"ok\\\"\""
+      },
+      {
+        "rule": "shell:pnpm build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm build"
+      },
+      {
+        "rule": "artifact-exists:src/lib/schemas.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/lib/schemas.ts"
+      },
+      {
+        "rule": "artifact-exists:src/lib/schemas.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "c75863d4088c5cd34051f06f443c030479acf760",
+    "treeSha": "e1644367c30adb13222106fd796edfb754453a56",
+    "branch": "feat/fleet-intelligence"
   }
 ]

@@ -348,7 +348,7 @@
     },
     "test-api-enforcement": {
       "id": "test-api-enforcement",
-      "desc": "Write tests/api-enforcement.test.ts. Test validateApiCoverage: (1) passes when all commands have schemas with required fields, (2) fails when a command is missing a schema, (3) fails when a schema is missing an example, (4) fails when a schema command is not in help text. Use the real schemas.ts registry — this is an integration test that catches real violations.",
+      "desc": "Tests for API enforcement validator",
       "produces": [
         "tests/api-enforcement.test.ts"
       ],
