@@ -4,6 +4,8 @@
 **Reviewer methodology:** Point an LLM at the repo. Say "critique this." Ship it.
 **This response:** March 9, 2026
 
+**What roadmap is:** A governance tool for AI agents executing multi-step work. It decomposes tasks into dependency graphs, assigns each step to an agent with a mission briefing, and runs automated checks before marking anything complete. Every operation is logged.
+
 ---
 
 ```
@@ -11,9 +13,9 @@
   │                                                                          │
   │  The review read the codebase. We ran it.                                │
   │                                                                          │
-  │  11,509 commands · 691 nodes completed · 37 DAGs archived                │
+  │  11,509 commands · 691 steps completed · 37 plans archived                │
   │  9 repos governed · 102 active hours · 112.8 cmds/hour                   │
-  │  2,104 advances · 1,288 validation checks · 168 structural catches       │
+  │  2,104 completions · 1,288 automated checks · 168 problems caught        │
   │                                                                          │
   │  The review counted subprocesses.                                        │
   │                                                                          │
@@ -24,45 +26,27 @@
 
 ## 🪞 Before Anything Else: Notice What Just Happened
 
-The review asked whether roadmap is worth its overhead. We answered with 11,509 trail events, 691 completion records, 1,288 validation checks, per-node git SHAs, chain iteration history, and per-day throughput metrics.
-
-**Ask where that data came from.**
-
-It came from the overhead. The trail.jsonl the review calls unnecessary is the dataset. The completion receipts the review calls expensive are the evidence records. The git SHAs the review says "pay a runtime tax for a rarely-consulted log" are the provenance chain we just cited 40 times.
-
-The reviewer had to *estimate* costs from source code — reading function signatures, counting `execSync` calls, guessing token budgets. They had no operational data. They had no throughput numbers. They had no catch rates. Because they don't run roadmap.
-
-We have all of it. Because roadmap records it.
+The review asked whether roadmap is worth its overhead. We answered with 11,509 logged operations, 691 completion records, and per-step git commit hashes. That data came from the overhead.
 
 ```
   the review's evidence                    our evidence
   ───────────────────────────────────────  ─────────────────────────────────────
-  source code static analysis              11,509 trail events (machine-recorded)
-  estimated subprocess count               691 completion records (validator-gated)
-  guessed token overhead                   1,288 validation checks (timestamped)
+  source code static analysis              11,509 operation logs (machine-recorded)
+  estimated subprocess count               691 completion records (check-gated)
+  guessed token overhead                   1,288 automated checks (timestamped)
   cited 3 GitHub issues                    37 archived DAGs (with provenance)
-  referenced 8 blog posts                  345 donjon nodes (with git SHAs)
+  referenced 8 blog posts                  345 donjon steps (with git SHAs)
   ───────────────────────────────────────  ─────────────────────────────────────
   methodology: read the engine             methodology: drive the car, read the OBD
 ```
 
-plan.md can't tell you how many validators caught problems. A task list can't compute throughput per day. git log can't tell you which batches ran in parallel, which chain iteration spawned from which gaps, or how many structural problems were caught before they shipped.
-
-The "overhead" the review complains about is the instrumentation that produces the evidence that disproves the review. The trail isn't a tax. It's a flight recorder. And when someone asks "was the flight successful?", we don't estimate — we replay the tape.
-
-💎 The review asked "is this worth the cost?" and could only guess. We answered with data, and the data only exists because the system records it. That's not a coincidence. That's the architecture.
+💎 The review asked "is this worth the cost?" and could only guess. We queried the trail and answered in 30 seconds. The first rule of information design: measure information, not ink. The review measured ink.
 
 ---
 
 ## 🐉 The Review
 
-Someone pointed Claude at this repository and said "make a critical review." Claude did what Claude does — read every file, count every import, estimate every cost. It produced a document that is meticulous about expenses and silent about revenue.
-
-The review identifies valid mechanical costs: 6-8 git subprocesses per node, ~900 tokens of protocol overhead, validator wall time. It correctly names the semantic correctness gap. It accurately praises the core/runtime architecture.
-
-Then it makes the error that defines the document: it evaluates a *runtime system* with *static analysis*, measures a *mission-briefing architecture* as a *task list*, and presents *reducible implementation noise* as *inherent paradigm cost*.
-
-It does not mention the brief system. It does not mention chain continuation. It does not mention gap detection. It does not mention handoff journals. It does not run a single command.
+The review evaluates a *runtime system* with *static analysis*, measures a *mission-briefing architecture* as a *task list*, and presents *reducible implementation noise* as *inherent paradigm cost*.
 
 ```
   🦊 the review's methodology
@@ -79,6 +63,20 @@ It does not mention the brief system. It does not mention chain continuation. It
 ```
 
 💀 Reviewing a car engine by weighing the parts.
+
+```
+  🔮 five diagnostic failures the review can't detect from source code
+  ├─ measured ink, not information
+  │  counted tokens spent, never measured value delivered
+  ├─ confused the map with the territory
+  │  orient() — state IS the filesystem. plan.md — text that represents state.
+  ├─ explained signs, missed referents
+  │  described what validators do, never asked what they replace
+  ├─ evaluated parts, not composition
+  │  each component modest alone — the architecture is what they compose into
+  └─ saw ornament where structure lives
+     trail, receipts, chain history = "overhead" = the evidence
+```
 
 ---
 
@@ -103,17 +101,17 @@ The review is theoretical. Here is what actually happened.
   │  peak day            3,575 cmds    March 8                               │
   │                                                                          │
   │  ── execution ────────────────────────────────────────────────────────── │
-  │  nodes completed          691      across all repos, evidence-backed     │
-  │  unique nodes advanced    715      via roadmap advance                   │
+  │  steps completed          691      across all repos, evidence-backed     │
+  │  unique steps advanced    715      via roadmap advance                   │
   │  advances total         2,104                                            │
-  │  DAGs created           3,848      (includes test iterations)            │
-  │  DAGs archived             37+     completed and chained                 │
-  │  parallel batches       1,433      orient returned 2+ nodes              │
+  │  plans created          3,848      (includes test iterations)            │
+  │  plans archived            37+     completed and chained                 │
+  │  parallel batches       1,433      orient returned 2+ steps              │
   │                                                                          │
   │  ── validation ───────────────────────────────────────────────────────── │
   │  checks executed        1,288+     donjon alone — others unmetered       │
   │  structural catches       168      validator rejections → fixed → retried│
-  │  terminal audit gates       8      incomplete work caught at DAG boundary│
+  │  terminal audit gates       8      incomplete work caught at plan boundary│
   │                                                                          │
   └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -135,7 +133,7 @@ The review is theoretical. Here is what actually happened.
 
 ### 🐙 Donjon — The Heaviest Consumer
 
-A real application. Not a test harness. Not a toy. 37 DAGs executed across 4 days of intensive development.
+37 DAGs across 4 days. Not a test harness.
 
 ![Donjon Evolution](assets/donjon-evolution.png)
 
@@ -144,56 +142,54 @@ A real application. Not a test harness. Not a toy. 37 DAGs executed across 4 day
   │  DONJON                                         Mar 4-8, 2026               │
   │                                                                              │
   │  trail events             716        in 4 days                               │
-  │  nodes completed          345        evidence-backed, validator-gated        │
-  │  total nodes across DAGs  412        37 DAGs, avg 11.1 nodes/DAG            │
-  │  completion rate        83.7%        345 of 412 nodes verified               │
+  │  steps completed          345        evidence-backed, check-gated            │
+  │  total steps across plans 412        37 plans, avg 11.1 steps/plan          │
+  │  completion rate        83.7%        345 of 412 steps verified               │
   │  specs authored            33        from scaffold to live HMI pipeline      │
   │  archived DAGs             36        + 1 current (live_hmi_pipeline)         │
-  │  max batch depth          L24        24 batches deep in a single DAG         │
-  │  throughput           86 nodes/day   345 nodes in 4 days                     │
+  │  max batch depth          L24        24 batches deep in a single plan        │
+  │  throughput          86 steps/day    345 steps in 4 days                     │
   │                                                                              │
   │  ── validation ─────────────────────────────────────────────────────────────  │
   │  checks executed        1,288                                                │
-  │  validator rejections     168        88% VALIDATION_FAILED (caught → fixed)  │
+  │  check rejections         168        88% VALIDATION_FAILED (caught → fixed)  │
   │  terminal audit gates       8        4% TERMINAL_AUDIT_FAILED               │
   │  successor failures         2        1% SUCCESSOR_VALIDATION_FAILED          │
   │                                                                              │
   │  ── chain ──────────────────────────────────────────────────────────────────  │
   │  improvement_cycle_6 → improvement_cycle_7 → improvement_cycle_8             │
   │  system detected gaps at terminal → refused done:true → agent wrote          │
-  │  successor spec → DAG chained → execution continued                          │
+  │  successor spec → plan chained → execution continued                         │
   │                                                                              │
   │  ── git ────────────────────────────────────────────────────────────────────  │
   │  total commits            398                                                │
-  │  roadmap-scoped           126        32% of all commits are node-produces    │
+  │  roadmap-scoped           126        32% of all commits are step outputs     │
   │  feature branches          18        feat/* active                           │
   │  agent worktrees            6        parallel execution evidence             │
   │                                                                              │
-  │  ── DAG mutations ──────────────────────────────────────────────────────────  │
+  │  ── plan mutations ─────────────────────────────────────────────────────────  │
   │  inserts                    2                                                │
   │  modifies                  17                                                │
-  │  removes                   15        14 were auto-injected fix nodes cleaned │
+  │  removes                   15        14 were auto-injected fix steps cleaned │
   │                                                                              │
   └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-💎 345 nodes verified across 37 DAGs in 4 days. 168 structural problems caught by validators before they shipped. This is not a prototype. This is production execution governance.
+💎 345 steps verified across 37 plans in 4 days. 168 problems caught before they shipped.
 
 ### 🦅 Roadmap — Self-Hosted
-
-The tool governs its own development. 4 chain iterations. Complexity converging.
 
 ```
   ┌──────────────────────────────────────────────────────────────────────────────┐
   │  ROADMAP (self-hosted)                          Mar 1-9, 2026               │
   │                                                                              │
   │  global trail attribution   4,026 commands (35% of all traffic)              │
-  │  nodes completed              128                                            │
+  │  steps completed              128                                            │
   │  test suite                   547 tests passing                              │
   │                                                                              │
   │  ── chain iterations ───────────────────────────────────────────────────────  │
-  │  cli-decompose    10 nodes  → convergence     13 nodes                       │
-  │  → hardening       8 nodes  → surface-coverage 7 nodes                       │
+  │  cli-decompose    10 steps  → convergence     13 steps                       │
+  │  → hardening       8 steps  → surface-coverage 7 steps                       │
   │  size trend: 10 → 13 → 8 → 7                  complexity converging ↘        │
   │                                                                              │
   └──────────────────────────────────────────────────────────────────────────────┘
@@ -202,23 +198,23 @@ The tool governs its own development. 4 chain iterations. Complexity converging.
 ### 🐝 Consumer Repos — The Swarm
 
 ```
-  repo             DAG                    nodes  completed  status
+  repo             plan                   steps  completed  status
   ───────────────  ─────────────────────  ─────  ─────────  ──────────────
   mono-fusion      bootstrap-001             18      23/18  ✅ complete
   temp-converter   unit-conversion-lib       28      19/28  ✅ complete
   fusion-auv-v2    maturity-audit            14      27/14  ✅ term audit
   render           render-pipeline           11      21/11  ✅ multi-chain
-  todo-app         003-todo-app             116          —  ⏳ 116-node DAG
+  todo-app         003-todo-app             116          —  ⏳ 116-step plan
   cockpit          fanout                     4        4/4  ⚠️ origin gate
   ───────────────  ─────────────────────  ─────  ─────────  ──────────────
   TOTAL                                     191       94+   4/6 complete
 ```
 
-Note the >100% completion rates: fusion-auv-v2 completed 27 nodes on a 14-node DAG because the terminal audit **auto-inserted 13 fix nodes** when it detected gaps. The system found incomplete work and extended the DAG to cover it. That's not overhead. That's the architecture working.
+fusion-auv-v2: 27 completions on a 14-step plan — the final audit found gaps and auto-inserted 13 fix steps. The system extended itself.
 
 ### ⚡ This Session — Surface Coverage
 
-Executed during the writing of this response. Three parallel agents, zero human intervention.
+Three parallel agents, zero human intervention.
 
 ![Surface Coverage Session](assets/surface-coverage-session.png)
 
@@ -226,7 +222,7 @@ Executed during the writing of this response. Three parallel agents, zero human 
   ┌──────────────────────────────────────────────────────────────────────────────┐
   │  SURFACE-COVERAGE SESSION                       Mar 8-9, 2026               │
   │                                                                              │
-  │  nodes                   7       init, 3 parallel, 2 sequential, term        │
+  │  steps                   7       init, 3 parallel, 2 sequential, term        │
   │  parallel agents         3       dispatched simultaneously                   │
   │  test cases written    191       render:62 brief-gate:78 handoff:32 exec:19  │
   │  dead code removed     849 LOC   5 files culled                              │
@@ -250,9 +246,11 @@ Executed during the writing of this response. Three parallel agents, zero human 
 
 ## 🗡️ Claim-by-Claim
 
-The review makes six major claims. Each one meets the data.
-
 ### "The dev-docs pattern achieves similar compaction resilience"
+
+**The claim:** Storing task state in markdown files — the "dev-docs" pattern — provides equivalent resilience to context window compaction at a fraction of the cost. A plan.md file survives compaction just as well as roadmap's orient system, so the added machinery is unnecessary.
+
+`orient()` computes position from the filesystem — what files exist, what's missing, what to build next. `plan.md` stores position in a text file an agent wrote and must re-read.
 
 ```
   plan.md                              orient()
@@ -265,9 +263,9 @@ The review makes six major claims. Each one meets the data.
   requires = honest self-reporting     requires = stat(2)
 ```
 
-The review cites three open Claude Code bugs (#24686, #26061, #27955) where plan state is lost after compaction. These bugs exist **because plan.md relies on conversation memory**. orient() is immune by construction.
+The distinction is structural. orient() doesn't *describe* project state — the filesystem IS the state. plan.md describes state in text that can drift from reality. One is the territory. The other is a map.
 
-**The review's own evidence undermines its claim.**
+The review cites three Claude Code bugs (#24686, #26061, #27955) where plan state is lost after compaction — when the AI's conversation history gets too long and older messages are summarized away. These bugs exist because plan.md relies on conversation memory. orient() doesn't — it checks the territory directly.
 
 ```
   orient commands across all repos:    3,317
@@ -275,23 +273,19 @@ The review cites three open Claude Code bugs (#24686, #26061, #27955) where plan
   cold agents that found position:     every single one
 ```
 
-3,317 orients. Zero failures. The dev-docs pattern has three open bugs. Pick one.
-
 ### "The narrowing gap — compaction improvements reduce roadmap's value"
 
-The review cites open bugs as evidence fixes are coming. Open bugs are evidence of **current failure**, not imminent resolution.
+**The claim:** Claude Code is actively improving its compaction handling. The review cites three open bugs as evidence of ongoing work, arguing that as these fixes land, roadmap's advantage over native plan mode will shrink — the gap is closing.
 
-And even when fixed: plan mode stores state in conversation memory. Conversation memory is compacted. Compaction loses detail. orient() doesn't use conversation memory.
+Open bugs are evidence of current failure, not imminent resolution. And even fixed: plan mode stores state in conversation memory → compaction loses detail → orient() doesn't use conversation memory. The gap is architectural, not implementational.
 
-The gap isn't narrowing. It's architectural.
-
-**The industry is converging on externalized state**, not better conversation memory: MCP externalizes tool access, structured outputs externalize format, persistent workspaces externalize files. The trend is *away* from holding plans in context and *toward* computing state from external sources.
-
-Roadmap is ahead of this curve, not behind it.
+The industry is converging on externalized state — MCP, structured outputs, persistent workspaces. Away from holding plans in context, toward computing state from external sources.
 
 ### "Runtime overhead — 6-8 git subprocesses per node"
 
-Approximately correct. Now: is it inherent?
+**The claim:** Every node invokes 6-8 git subprocesses, writes completion records, appends to trail.jsonl, and imposes a CLAUDE.md context tax. The review presents these costs as inherent to the roadmap paradigm and argues they make the approach prohibitively expensive.
+
+**The fundamental misunderstanding:** The review correctly identified real implementation costs — then treated them as if they were inherent to the paradigm. It acknowledged the costs could theoretically be optimized, then proceeded to argue as if the current implementation *is* the ceiling. This is like measuring the fuel consumption of a prototype engine and concluding that internal combustion can never be efficient.
 
 ```
   cost                          inherent?   reducible to
@@ -300,26 +294,29 @@ Approximately correct. Now: is it inherent?
   completion.json write         no          in-memory until session end
   trail.jsonl append            no          batch writes, or sqlite
   CLAUDE.md context tax         no          shrink it
+  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─     ─ ─ ─ ─    ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
   validator execution           YES         this IS the value
   per-node git commit           YES         this IS the audit trail
 ```
 
-**Did the overhead prevent throughput?**
+The top four rows are implementation noise — solvable with batching, caching, or architectural changes that don't alter what roadmap does. The bottom two rows are the paradigm: running checks and recording what happened. The review conflates all six into "overhead."
 
 ```
-  donjon:              345 nodes in 4 days = 86 nodes/day
-  surface-coverage:    7 nodes in ~7 minutes = 60 nodes/hour
-  peak global:         3,575 commands in one day
-  commands/active hr:  112.8
+  did the noise prevent throughput?
+  ─────────────────────────────────────────────────────
+  donjon              345 steps / 4 days  = 86 steps/day
+  surface-coverage    7 steps / ~7 min    = 60 steps/hour
+  peak global         3,575 commands in one day
+  commands/active hr  112.8
 ```
 
-86 nodes/day with the full subprocess overhead active. 112.8 commands per active hour. The overhead the review calls prohibitive didn't even slow us down.
+86 steps/day with every subprocess, every write, every append active. The overhead the review calls prohibitive didn't even register in the throughput data.
 
 ### "Roadmap does not improve parallelism over native Claude Code"
 
-Native worktree gives isolation. Roadmap gives **what each agent receives**.
+**The claim:** Claude Code's native worktree support already provides parallel execution. Roadmap's batch coordination is redundant machinery on top of something the platform does natively.
 
-The review never saw a brief. Here's what a parallel agent actually gets:
+Native worktree gives isolation. Roadmap gives what each agent *receives*.
 
 ```json
 {
@@ -338,22 +335,20 @@ The review never saw a brief. Here's what a parallel agent actually gets:
 }
 ```
 
-An agent getting this brief wrote 62 correct tests on first pass. No human told it what to import. No plan.md told it which convention to use. The brief carried the predecessor's conventions forward automatically.
+This briefing produced 62 correct tests on first pass. No human guidance. No plan.md.
 
 ```
-  parallel batches observed:   1,433       (orient returned 2+ nodes)
+  parallel batches observed:   1,433       (orient returned 2+ steps)
   parallel agents dispatched:  6+          (donjon worktree evidence)
   max batch width:             226         (todo-app first batch)
   agents needing re-orient:    0
 ```
 
-1,433 parallel batches. The review says "most plans have obvious parallelism." Not when the DAG is 116 nodes deep and the first batch is 226 wide.
-
 ### "Validator gates provide false confidence"
 
-The review's framing reveals its deepest misunderstanding. It describes `orient` as checking "did the file get created?" and concludes: "If validators are cheap (artifact-exists only), roadmap proves almost nothing beyond 'the agent wrote a file.' This is barely more useful than checking git status."
+**The claim:** Validators primarily check whether files exist — "barely more useful than checking git status." Worse, this false confidence may actually reduce review thoroughness: reviewers trust the green checkmark and look less carefully. Weak validators are more dangerous than no validators.
 
-Here is what validators actually look like across all active DAGs:
+Validators are the automated checks that run when an agent says "I'm done with this step." Here is what they actually look like:
 
 ```
   validator type distribution — 148 validators across 8 repos
@@ -365,19 +360,7 @@ Here is what validators actually look like across all active DAGs:
   expanded             1   ( 0.7%)  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 ```
 
-**61.5% of all validators are shell commands.** Not file existence checks. Actual execution: `pnpm test`, `pnpm run typecheck`, `cmake -B build`, `npx vitest run tests/frames.test.ts`, `docker run --rm ... colcon build`, `bin/render api --all 2>&1 | grep -q 'float'`. Type checking. Test suites. Build pipelines. Docker container builds. API smoke tests.
-
-The review lists these in its own table — `shell` with `tsc --noEmit`, `shell` with `npm test` — then proceeds to argue as if `artifact-exists` is the primary mechanism. It isn't. It's 25.7%. The other 74.3% runs real commands that prove real properties.
-
-**What those real validators caught:**
-
-```
-  donjon validation checks:   1,288
-  structural catches:           168       shell failures → agent fixed → retried
-  terminal audit catches:         8       incomplete work caught at DAG boundary
-  ──────────────────────────────────────────────────────────────────────────
-  total problems caught:        176       → fixed → retried → passed
-```
+The bar chart is the argument — not an illustration of it. 61.5% shell commands running real test suites, type checkers, build systems. The review's characterization applies to 25.7% of validators.
 
 ```
   shell commands in actual use (sample)
@@ -391,27 +374,24 @@ The review lists these in its own table — `shell` with `tsc --noEmit`, `shell`
   └─ ! grep -q commander package.json              dependency removal check
 ```
 
-176 problems caught. Not by checking if files exist. By running test suites, type checkers, build systems, and container builds. The review's characterization — "barely more useful than checking git status" — applies to 25.7% of validators. The other 74.3% would like a word.
+```
+  donjon validation checks:   1,288
+  structural catches:           168       shell failures → agent fixed → retried
+  terminal audit catches:         8       incomplete work caught at plan boundary
+  ──────────────────────────────────────────────────────────────────────────
+  total problems caught:        176       → fixed → retried → passed
+```
 
-And the validator architecture goes further than the review acknowledges. Beyond shell and artifact-exists:
-
-- **spec-conformance** — validates against the spec that generated the DAG (15 active across repos)
-- **intent** — structured LLM-as-judge evaluation with `evaluator: 'council'` hook (3 active, architecture slot for semantic validation)
-- **artifact-schema** — JSON schema validation against declared schemas
-- **build-produces** — runs a build command and verifies output artifacts exist
-- **launch-check** — starts a service and checks for a success signal
-- **expanded** — verifies plan node decomposition produced child nodes
-
-The review saw this validator catalog in the source. Listed it in a table. Then argued as if only `artifact-exists` matters.
-
-The review frames imperfect checks as worse than no checks: "false confidence can make review less thorough." The alternative is **no checks**. 176 problems shipping silently instead of being caught, fixed, and retried. That's not false confidence. That's the system doing its job.
+Beyond shell and artifact-exists: **spec-conformance** (15 active), **intent** with `evaluator: 'council'` (3 active), **artifact-schema**, **build-produces**, **launch-check**, **expanded**. You can't evaluate a distinction without understanding both sides. The review explained what validators do without asking what they *replace* — the answer is nothing. Without them, 176 problems ship silently.
 
 ### "Autonomous completion creates unreviewable batches"
+
+**The claim:** Autonomous agent execution produces large batches of changes that are difficult for humans to review. The dependency graph structures work into units humans didn't design, making the review surface worse, not better.
 
 ```
   without roadmap                     with roadmap
   ─────────────────────────────────   ──────────────────────────────────
-  agent runs 2 hours                  agent advances N nodes
+  agent runs 2 hours                  agent completes N steps
   47 edits across 30 files            N commits, each scoped to produces[]
   1 commit when "done"                each = one reviewable unit
   reviewer: wall of changes           reviewer: declared contracts
@@ -419,79 +399,62 @@ The review frames imperfect checks as worse than no checks: "false confidence ca
   "where's the bug?": good luck       "where's the bug?": which produces?
 ```
 
-Donjon has 398 git commits. 126 of them (32%) are roadmap-scoped — each covering exactly one node's declared produces. A reviewer evaluates any single commit in isolation: what it was supposed to create, what it consumed, what validators ran.
-
-The review says the DAG creates the review problem. **The DAG structures the review surface.** 126 scoped commits vs 126 freeform commits. Which would you rather review?
+126 roadmap-scoped commits out of 398 total. Each covers one node's produces.
 
 ---
 
 ## 👻 What the Review Doesn't See
 
-The review evaluates roadmap as *task list with validators*. It misses the information architecture — the layer that makes autonomous execution produce *quality* output, not just output.
+The review evaluates each component in isolation — validators alone are modest, orient alone is a file check, the trail alone is a log. But patterns work because of their *relationships*, not their individual properties. The brief system + chain continuation + gap detection + handoff journals compose into something none of them are individually.
 
-### The Brief System — not mentioned once
+### The Brief System
 
-Every node receives a sealed brief: spec context, predecessor code context (imports, exports, naming conventions), handoff journal (what the previous agent discovered and decided), topology (depth, siblings, descendants), and at the terminal node, a 6-layer terminal context.
+Every step receives a sealed mission briefing: what to build, what code already exists nearby (imports, exports, naming conventions), what the previous agent learned, and where this step sits in the overall plan. Position, shape, value — the visual variables that encode information — structured for machines instead of humans. An agent reading a brief starts informed, not from scratch. This produced 191 correct tests from 3 agents that had never seen the codebase. The review never ran `orient` to see this output.
 
-An agent reading a brief is in a fundamentally different information state than an agent reading a markdown file. This is the mechanism that produced 191 correct tests from 3 cold agents. The review can't evaluate it because it never ran `orient` to see the output.
+### Chain Continuation
 
-### Chain Continuation — not mentioned
+When the final step tries to close out, the system audits for gaps — work that was supposed to happen but didn't. If gaps exist, it refuses to mark the plan complete and spawns a successor plan. Donjon: `improvement_cycle_6 → 7 → 8` — three successive plans, each spawned from its predecessor's gaps. fusion-auv-v2: 14-step plan became 27 steps after the audit auto-inserted 13 fix steps.
 
-The system gates terminal completion on detected gaps. `advance term` with gaps returns `done: false, chainRequired: true`. The agent cannot walk away from incomplete work.
+### Gap Detection + Handoff Journals
 
-Donjon's chain: `improvement_cycle_6 → 7 → 8`. Three successive DAGs, each spawned from gaps detected by its predecessor's terminal audit. The system refused to say "done" until the gaps were addressed.
+The gap detector finds inputs that nothing provides and outputs that nothing tests. Triggers chain continuation. Handoff journals carry structured knowledge between agents — what they discovered, what they decided, what the next agent needs to know.
 
-Fusion-auv-v2 hit terminal, audit detected 13 uncovered items, auto-inserted 13 fix nodes. 14-node DAG became a 27-node DAG. The system extended itself to cover what it found missing.
-
-### Gap Detection — not mentioned
-
-Terminal audit runs `detectGaps()` — pure graph analysis finding uncovered consumes and untested produces. The DAG knows what it doesn't know. This is the mechanism that triggers chain continuation.
-
-### Handoff Journals — not mentioned
-
-Structured knowledge transfer between agents: discoveries, key decisions, gotchas, what the next node needs. The mechanism that prevents each agent from starting from zero.
-
-💀 The review spends 2,000 words on subprocess overhead and zero words on the brief system. This is like reviewing an operating system by benchmarking its bootloader.
+💀 2,000 words on subprocess overhead. Zero words on the brief system.
 
 ---
 
 ## 🌊 Where Everything Is Going
 
-The review frames autonomous agent execution as a "narrow use case." Here is what the industry is doing:
+```
+  convergence pattern                  roadmap status
+  ───────────────────────────────────  ──────────────────────────────────
+  MCP — externalized tool access       orient() externalizes state
+  CrewAI/AutoGen/LangGraph — DAGs      37 DAGs archived, running
+  Claude Code — worktrees, bg agents   6 agent worktrees deployed
+  context economics — externalize      state never enters context
+```
 
-- **MCP** — externalizing tool/resource access from conversation context. State lives in servers, not in the agent's memory. Same architecture as orient.
-- **Structured agent frameworks** (CrewAI, AutoGen, LangGraph) — all converging on DAG-like task decomposition with typed handoffs. The pattern roadmap already operates.
-- **Claude Code's own trajectory** — native worktrees, background agents, task tools. Moving toward orchestrated multi-agent execution.
-- **Context window economics** — as agents run longer, context management becomes the bottleneck. Systems that externalize state scale. Systems that hold state in context hit the wall.
-
-Every framework is converging on: externalized state, structured decomposition, typed handoffs, validator-gated completion.
-
-Roadmap has been running this pattern across 9 repositories for 9 days. 691 nodes completed. 37 DAGs archived. 176 problems caught by validators. Three chain iterations in donjon proving the continuation mechanism works.
-
-The question isn't whether this pattern is needed. It's whether the ecosystem catches up before or after the overhead is optimized.
+Every framework is converging here. The question isn't whether this pattern is needed.
 
 ---
 
 ## ⚖️ Verdict
 
-### Where we agree
-
-- **Architecture is clean.** core/runtime split, pure graph algebra, 547 tests. Earned praise.
-- **Validator cost is real.** Worth optimizing. We intend to.
-- **Semantic correctness is the frontier.** `intent` validator with `evaluator: 'council'` is the slot. Not there yet.
-- **Supervised workflows don't need this.** If a human reviews every PR, they are the gate.
-
-### Where we disagree
-
-- **plan.md ≠ orient().** 3,317 successful orients, zero failures. Three open bugs on plan.md. Not equivalent.
-- **Implementation noise ≠ paradigm cost.** 86 nodes/day throughput with the full overhead. Reducible without architectural change.
-- **DAGs make review easier, not harder.** 126 scoped commits > 126 freeform commits. Always.
-- **"Narrow use case" is a snapshot.** Every agent framework is converging here.
-- **The brief system is the primary value.** The review doesn't know it exists.
+```
+  agree                                disagree
+  ───────────────────────────────────  ──────────────────────────────────
+  architecture is clean                plan.md ≠ orient() — 3,317:0
+  validator cost worth optimizing      noise ≠ paradigm cost — 86 steps/day
+  semantic correctness is frontier     DAGs make review easier, not harder
+  supervised workflows don't need it   "narrow use case" is a snapshot
+                                       brief system is the primary value
+```
 
 ---
 
 ## 🦋 Conclusion
+
+🟥🟥🟥🟥🟥🟥🟥🟥🟧🟧🟧🟧🟧🟧🟧🟧🟨🟨🟨🟨🟨🟨🟨🟨🟩🟩🟩🟩🟩🟩🟩🟩🟦🟦🟦🟦🟦🟦🟦🟦🟪🟪🟪🟪🟪🟪🟪🟪
 
 ```
   ┌──────────────────────────────────────────────────────────────────────────┐
@@ -499,10 +462,10 @@ The question isn't whether this pattern is needed. It's whether the ecosystem ca
   │  The review read the codebase and counted subprocesses.                   │
   │  We ran 11,509 commands across 9 repositories in 9 days.                  │
   │                                                                          │
-  │  691 nodes completed. 37 DAGs archived. 176 problems caught.              │
+  │  691 steps completed. 37 plans archived. 176 problems caught.              │
   │  3 chain iterations proving continuation works.                           │
   │  191 tests from 3 cold agents in 7 minutes.                               │
-  │  86 nodes/day sustained throughput.                                       │
+  │  86 steps/day sustained throughput.                                       │
   │  112.8 commands per active hour.                                          │
   │                                                                          │
   │  The review is a cost analysis that forgot to measure revenue.            │
@@ -510,10 +473,8 @@ The question isn't whether this pattern is needed. It's whether the ecosystem ca
   └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-And remember: the only reason we could respond with data instead of opinions is because the system records everything the review calls overhead. The trail.jsonl, the completion receipts, the chain history, the validation evidence — the reviewer looked at these and saw cost. We looked at them and saw the flight recorder.
+The test of ornament vs structure is whether removing it collapses the architecture. Remove the trail.jsonl, the completion receipts, the chain history — and the review's own question becomes unanswerable. The "overhead" is load-bearing. Cut it and the evidence disappears.
 
-The review asked "is this worth it?" and had to guess from source code. We queried the trail and answered in 30 seconds. That asymmetry is the whole argument.
+💎 The remaining question is whether fully autonomous agent execution is a narrow use case or the direction the entire field is moving. 691 steps suggest the latter.
 
-💎 The remaining question is whether fully autonomous agent execution is a narrow use case or the direction the entire field is moving. The review assumes the former. 691 nodes suggest the latter.
-
-💀 "The dev-docs pattern provides compaction-resilient state at near-zero overhead." And a sticky note provides task tracking at near-zero overhead. Doesn't make it a DAG.
+💀 "Near-zero overhead." A sticky note provides task tracking at near-zero overhead. Doesn't make it a DAG.

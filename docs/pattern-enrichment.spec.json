@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "dag_id": "pattern-enrichment",
+  "dag_desc": "Replace inferPattern() with renderPattern() — enriched execution prompts in brief.pattern for spawned agents",
+  "inputs": [
+    {
+      "path": "docs/pattern-enrichment-spec.md",
+      "sha256": "e27752efcc9c497fdebad20e0cc864b940d5453a1ae9f2ee1520b60d723ed3c4",
+      "role": "spec"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "render-pattern",
+      "desc": "Replace inferPattern() with renderPattern() in src/runtime/brief.ts. Interpolates description, produces, consumes, position, mode into a concrete 7-line execution prompt. Execute mode: TASK/PRODUCE/CONSUME/SCOPE/VERIFY/BLOCKED/MODE. Plan mode: TASK/DECOMPOSE/POSITION/OUTPUT/VERIFY. Uses only data already in scope (spec, g.desc, position). No new imports.",
+      "priority": 0,
+      "depends": [],
+      "produces": [
+        "src/runtime/brief.ts"
+      ],
+      "consumes": [],
+      "ambient": ["src/lib/brief.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "grep -q 'renderPattern' src/runtime/brief.ts" },
+        { "type": "shell", "command": "grep -qv 'inferPattern' src/runtime/brief.ts" },
+        {
+          "type": "intent",
+          "statement": "Plan clarity: renderPattern produces a self-contained execution prompt that constrains spawned agents without requiring them to interpret structured JSON",
+          "confidence": 0.9,
+          "evaluator": "self",
+          "expandOnFail": true
+        }
+      ]
+    },
+    {
+      "id": "sync-lib-brief",
+      "desc": "Replace inferPattern() with renderPattern() in src/lib/brief.ts to match runtime/brief.ts. Same function, same output. The lib copy is the agent-facing API (roadmap/agent entry point).",
+      "priority": 1,
+      "depends": ["render-pattern"],
+      "produces": [
+        "src/lib/brief.ts"
+      ],
+      "consumes": [
+        "src/runtime/brief.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "grep -q 'renderPattern' src/lib/brief.ts" },
+        { "type": "shell", "command": "grep -qv 'inferPattern' src/lib/brief.ts" }
+      ]
+    },
+    {
+      "id": "test-pattern",
+      "desc": "Test renderPattern: execute mode contains TASK/PRODUCE/CONSUME/SCOPE/VERIFY lines with actual node data interpolated. Plan mode contains DECOMPOSE. Verify pattern changes when produces/consumes/description change. Verify no data loss vs old inferPattern (all old patterns still matchable as substrings).",
+      "priority": 2,
+      "depends": ["sync-lib-brief"],
+      "produces": [
+        "tests/pattern-enrichment.test.ts"
+      ],
+      "consumes": [
+        "src/runtime/brief.ts",
+        "src/lib/brief.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx vitest run tests/pattern-enrichment.test.ts --reporter=dot" },
+        {
+          "type": "intent",
+          "statement": "Rendered patterns contain interpolated node data (not static strings) and constrain executor scope to produces",
+          "confidence": 0.9,
+          "evaluator": "self",
+          "expandOnFail": true
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-13T00:00:00Z",
+    "compile_hash": "e27752efcc9c497fdebad20e0cc864b940d5453a1ae9f2ee1520b60d723ed3c4"
+  }
+}

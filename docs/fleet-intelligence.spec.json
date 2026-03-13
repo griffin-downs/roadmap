@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "dag_id": "fleet-intelligence",
+  "dag_desc": "Execution mining, trajectory assessment, successor proposals, fleet scheduling — agents autonomously close the intent loop",
+  "inputs": [
+    {
+      "path": "docs/fleet-intelligence-spec.md",
+      "sha256": "9763a9b829c27ff4bc129c462de856962077d21782f6a16b42cdb3af84b8c9a7",
+      "role": "spec"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "fold-loop",
+      "desc": "Remove roadmap loop CLI command. Delete src/cli/loop.ts. Remove loop from bin/roadmap.ts (import, KNOWN_COMMANDS, BRANCH_EXEMPT, switch case). Remove loop schemas from src/lib/schemas.ts. Keep src/runtime/loop.ts (receipt writing, called internally by make --chain and advance). Update help.ts to remove loop references. Router must have zero references to cliLoop.",
+      "priority": 0,
+      "depends": [],
+      "produces": [
+        "bin/roadmap.ts",
+        "src/cli/help.ts"
+      ],
+      "consumes": [],
+      "ambient": ["src/cli/loop.ts", "src/lib/schemas.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "! grep -q 'cliLoop' bin/roadmap.ts" },
+        { "type": "shell", "command": "! grep -q \"'loop'\" bin/roadmap.ts" },
+        { "type": "shell", "command": "! test -f src/cli/loop.ts" },
+        { "type": "shell", "command": "! grep -qi 'loop' src/cli/help.ts" },
+        { "type": "shell", "command": "pnpm build" }
+      ]
+    },
+    {
+      "id": "api-enforcement",
+      "desc": "Create src/lib/api-enforcement.ts — build-time validator that checks: (1) every command in KNOWN_COMMANDS has a schema in schemas.ts, (2) every schema has description + input + output + at least one example, (3) every schema command appears in help text, (4) no orphan schemas. Export validateApiCoverage() → { ok, violations[] }. Add 'roadmap api --validate' subcommand that runs it. Add shell validator to pre-commit or build.",
+      "priority": 0,
+      "depends": [],
+      "produces": [
+        "src/lib/api-enforcement.ts"
+      ],
+      "consumes": [],
+      "ambient": ["src/lib/schemas.ts", "src/cli/help.ts", "src/cli/api.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "grep -q 'validateApiCoverage' src/lib/api-enforcement.ts" }
+      ]
+    },
+    {
+      "id": "register-missing-schemas",
+      "desc": "Run the api-enforcement validator. For every violation it reports (missing schema, missing example, missing description), add the missing entry to src/lib/schemas.ts. Goal: validateApiCoverage().ok === true. This includes adding schemas for dag.log, status, and any other commands currently in the router but missing from the schema registry. Every schema must have description, input, output, and at least one example.",
+      "priority": 1,
+      "depends": ["fold-loop", "api-enforcement"],
+      "produces": [
+        "src/lib/schemas.ts"
+      ],
+      "consumes": [
+        "src/lib/api-enforcement.ts",
+        "bin/roadmap.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build && node dist/roadmap.js api --validate 2>&1 | grep -q '\"ok\":true'" },
+        { "type": "shell", "command": "pnpm build" }
+      ]
+    },
+    {
+      "id": "execution-miner",
+      "desc": "Create src/runtime/execution-miner.ts. Pure function mineExecution(dag, context, attributionWarnings?) → ExecutionFindings. Reads context.handoffs for unaddressed discoveries (discovered[] items where no successor node's desc references them) and unresolved blockers. Reads context.completion for weak evidence (nodes where all shell validators are grep-only). Reads context.scoring for velocity signals (batches with retry > 0 or duration > 2x median). attributionWarnings is the list of files changed outside produces. No IO. No imports from node:. Export ExecutionFindings type.",
+      "priority": 1,
+      "depends": [],
+      "produces": [
+        "src/runtime/execution-miner.ts"
+      ],
+      "consumes": [],
+      "ambient": ["src/runtime/context.ts", "src/runtime/brief.ts", "src/lib/terminal-audit/detected.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "grep -q 'export function mineExecution' src/runtime/execution-miner.ts" },
+        { "type": "shell", "command": "grep -q 'export interface ExecutionFindings' src/runtime/execution-miner.ts" },
+        { "type": "shell", "command": "! grep -q 'node:fs' src/runtime/execution-miner.ts" },
+        { "type": "shell", "command": "! grep -q 'node:path' src/runtime/execution-miner.ts" }
+      ]
+    },
+    {
+      "id": "trajectory-assessor",
+      "desc": "Create src/runtime/trajectory.ts. Pure function assessTrajectory(findings, chainLinks, rootIntent, currentDagId) → TrajectoryAssessment. Compares current ExecutionFindings against previous iterations' execution reports (from ChainLink[].executionReport). Computes trend: converging (findings decreasing), stable (no findings), orbiting (persistent findings across 2+ iterations), diverging (new findings exceed resolved for 2+ iterations). Computes intentDistance based on whether unaddressed items relate to root intent keywords. Export TrajectoryAssessment type.",
+      "priority": 2,
+      "depends": ["execution-miner"],
+      "produces": [
+        "src/runtime/trajectory.ts"
+      ],
+      "consumes": [
+        "src/runtime/execution-miner.ts"
+      ],
+      "ambient": ["src/lib/chain.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "grep -q 'export function assessTrajectory' src/runtime/trajectory.ts" },
+        { "type": "shell", "command": "grep -q 'export interface TrajectoryAssessment' src/runtime/trajectory.ts" },
+        { "type": "shell", "command": "! grep -q 'node:fs' src/runtime/trajectory.ts" }
+      ]
+    },
+    {
+      "id": "successor-proposer",
+      "desc": "Create src/runtime/successor.ts. Pure function proposeSuccessor(assessment, findings, rootIntent, dag) → SuccessorProposal. When trajectory is converging and findings exist: action='continue', build specDraft with nodes mapped from unaddressed discoveries + weak evidence + unresolved blockers. dagId = currentDag.id + '-i' + (iteration+1). When trajectory is orbiting/diverging: action='orbit-break', include diagnosis. When no findings: action='converged'. Export SuccessorProposal type. specDraft.nodes must have concrete produces arrays (not empty).",
+      "priority": 3,
+      "depends": ["trajectory-assessor"],
+      "produces": [
+        "src/runtime/successor.ts"
+      ],
+      "consumes": [
+        "src/runtime/trajectory.ts",
+        "src/runtime/execution-miner.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "grep -q 'export function proposeSuccessor' src/runtime/successor.ts" },
+        { "type": "shell", "command": "grep -q 'export interface SuccessorProposal' src/runtime/successor.ts" },
+        { "type": "shell", "command": "! grep -q 'node:fs' src/runtime/successor.ts" }
+      ]
+    },
+    {
+      "id": "wire-terminal",
+      "desc": "Modify src/cli/advance.ts terminal flow. After building terminalBrief, call mineExecution() → assessTrajectory() → proposeSuccessor(). Add executionFindings, trajectoryAssessment, and successorProposal to the advance response when completing the terminal node. The successor proposal must appear in the JSON output so agents can read it and act. Import the three new modules. Do not change non-terminal advance behavior.",
+      "priority": 4,
+      "depends": ["successor-proposer"],
+      "produces": [
+        "src/cli/advance.ts"
+      ],
+      "consumes": [
+        "src/runtime/execution-miner.ts",
+        "src/runtime/trajectory.ts",
+        "src/runtime/successor.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "grep -q 'mineExecution' src/cli/advance.ts" },
+        { "type": "shell", "command": "grep -q 'assessTrajectory' src/cli/advance.ts" },
+        { "type": "shell", "command": "grep -q 'proposeSuccessor' src/cli/advance.ts" },
+        { "type": "shell", "command": "grep -q 'successorProposal' src/cli/advance.ts" }
+      ]
+    },
+    {
+      "id": "multi-dag-discovery",
+      "desc": "Modify src/runtime/fleet.ts loadFleetContext and src/cli/orient.ts fleet orient. Instead of only reading head.json per repo, also scan heads/*.json. Filter out completed DAGs (those with _lineage.completedAt). Return all active DAGs per repo in fleet status. RepoStatus gains activeDAGs: { dagId, level, batch[], done, remaining }[]. The primary dagId remains head.json's DAG (if exists), but all active heads are visible.",
+      "priority": 4,
+      "depends": ["fold-loop"],
+      "produces": [
+        "src/runtime/fleet.ts",
+        "src/cli/orient.ts"
+      ],
+      "consumes": [
+        "bin/roadmap.ts"
+      ],
+      "ambient": ["src/lib/fleet-types.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "grep -q 'activeDAGs' src/runtime/fleet.ts" },
+        { "type": "shell", "command": "grep -q 'heads/' src/runtime/fleet.ts" }
+      ]
+    },
+    {
+      "id": "unified-frontier",
+      "desc": "Modify src/cli/orient.ts fleet orient to compute a unified frontier. After loading all active DAGs from all repos, resolve cross-repo dependencies (node.consumes referencing files in other repos). Build unified dependency graph. Topological sort across all DAGs. Return globalFrontier: { repo, dagId, nodeId, produces }[] — all nodes unblocked across all repos. Add globalFrontier to fleet orient output. Modify src/lib/fleet-types.ts to add FleetFrontierNode and globalFrontier to FleetStatus.",
+      "priority": 5,
+      "depends": ["multi-dag-discovery"],
+      "produces": [
+        "src/cli/orient.ts",
+        "src/lib/fleet-types.ts"
+      ],
+      "consumes": [
+        "src/runtime/fleet.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "grep -q 'globalFrontier' src/cli/orient.ts" },
+        { "type": "shell", "command": "grep -q 'FleetFrontierNode' src/lib/fleet-types.ts" }
+      ]
+    },
+    {
+      "id": "test-intelligence",
+      "desc": "Write tests/execution-intelligence.test.ts. Test mineExecution: (1) detects unaddressed discoveries from handoffs, (2) detects weak evidence (grep-only validators), (3) detects scope drift from attribution warnings, (4) detects unresolved blockers, (5) returns empty findings for clean execution. Test assessTrajectory: (1) converging when findings decrease, (2) orbiting when persistent findings across iterations, (3) stable when no findings. Test proposeSuccessor: (1) continue with spec draft when findings exist, (2) converged when no findings, (3) orbit-break when trajectory orbiting. All tests use mock Context/ChainLink data — no filesystem.",
+      "priority": 5,
+      "depends": ["wire-terminal"],
+      "produces": [
+        "tests/execution-intelligence.test.ts"
+      ],
+      "consumes": [
+        "src/runtime/execution-miner.ts",
+        "src/runtime/trajectory.ts",
+        "src/runtime/successor.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx vitest run tests/execution-intelligence.test.ts --reporter=dot" }
+      ]
+    },
+    {
+      "id": "test-fleet",
+      "desc": "Write tests/fleet-discovery.test.ts. Test multi-dag discovery: (1) finds DAGs in heads/ when head.json is stale, (2) filters out completed DAGs, (3) returns all active DAGs per repo. Test unified frontier: (1) returns correct frontier for single repo/single DAG, (2) resolves cross-repo dependencies, (3) returns global frontier sorted by dependency order. Tests create temp .roadmap dirs with head.json + heads/*.json fixtures.",
+      "priority": 6,
+      "depends": ["unified-frontier"],
+      "produces": [
+        "tests/fleet-discovery.test.ts"
+      ],
+      "consumes": [
+        "src/runtime/fleet.ts",
+        "src/cli/orient.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx vitest run tests/fleet-discovery.test.ts --reporter=dot" }
+      ]
+    },
+    {
+      "id": "test-api-enforcement",
+      "desc": "Write tests/api-enforcement.test.ts. Test validateApiCoverage: (1) passes when all commands have schemas with required fields, (2) fails when a command is missing a schema, (3) fails when a schema is missing an example, (4) fails when a schema command is not in help text. Use the real schemas.ts registry — this is an integration test that catches real violations.",
+      "priority": 6,
+      "depends": ["register-missing-schemas"],
+      "produces": [
+        "tests/api-enforcement.test.ts"
+      ],
+      "consumes": [
+        "src/lib/api-enforcement.ts",
+        "src/lib/schemas.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx vitest run tests/api-enforcement.test.ts --reporter=dot" }
+      ]
+    },
+    {
+      "id": "term",
+      "desc": "Terminal verification. Run full test suite. Confirm build passes. Confirm API enforcement passes (roadmap api --validate returns ok:true). Verify no references to cliLoop remain. Verify all new modules have @module headers. Verify no node:fs imports in src/runtime/execution-miner.ts, trajectory.ts, successor.ts.",
+      "priority": 7,
+      "depends": ["test-intelligence", "test-fleet", "test-api-enforcement"],
+      "produces": [
+        "docs/fleet-intelligence-verification.md"
+      ],
+      "consumes": [
+        "src/runtime/execution-miner.ts",
+        "src/runtime/trajectory.ts",
+        "src/runtime/successor.ts",
+        "src/runtime/fleet.ts",
+        "src/cli/advance.ts",
+        "src/cli/orient.ts",
+        "src/lib/api-enforcement.ts",
+        "src/lib/schemas.ts",
+        "tests/execution-intelligence.test.ts",
+        "tests/fleet-discovery.test.ts",
+        "tests/api-enforcement.test.ts"
+      ],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx vitest run --reporter=dot" },
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "! grep -rq 'cliLoop' bin/ src/" },
+        { "type": "shell", "command": "! grep -q 'node:fs' src/runtime/execution-miner.ts" },
+        { "type": "shell", "command": "! grep -q 'node:fs' src/runtime/trajectory.ts" },
+        { "type": "shell", "command": "! grep -q 'node:fs' src/runtime/successor.ts" }
+      ]
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-13T11:00:00Z",
+    "compile_hash": ""
+  }
+}
