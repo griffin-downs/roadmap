@@ -4143,5 +4143,25 @@
     "gitSha": "b95b7429ca5a4ebb414682908e6d1732f68a7c63",
     "treeSha": "bbbb6f417df8c6909ff58e82cd04ca7894d907b9",
     "branch": "feat/fleet-loop"
+  },
+  {
+    "nodeId": "test-pattern",
+    "completedAt": "2026-03-13T10:52:51.293Z",
+    "dagId": "pattern-enrichment",
+    "validationChecks": [
+      {
+        "rule": "shell:npx vitest run tests/pattern-enrichment.test.ts --reporter=dot",
+        "passed": true,
+        "evidence": "command passed (exit 0): npx vitest run tests/pattern-enrichment.test.ts --reporter=dot"
+      },
+      {
+        "rule": "artifact-exists:tests/pattern-enrichment.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "46b8c9c298c25b2c61a1ef3dfc91231b2aa348b8",
+    "treeSha": "8cf825d5d85294858212cfd716f9b268f8a03af4",
+    "branch": "feat/fleet-loop"
   }
 ]
