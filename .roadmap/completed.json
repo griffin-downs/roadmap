@@ -2036,8 +2036,8 @@
   },
   {
     "nodeId": "term",
-    "completedAt": "2026-03-13T11:22:12.118Z",
-    "dagId": "fleet-intelligence",
+    "completedAt": "2026-03-14T11:07:28.517Z",
+    "dagId": "fix-discovered-iterable",
     "validationChecks": [
       {
         "rule": "shell:npx vitest run --reporter=dot",
@@ -2050,34 +2050,19 @@
         "evidence": "command passed (exit 0): pnpm build"
       },
       {
-        "rule": "shell:! grep -rq 'cliLoop' bin/ src/",
+        "rule": "shell:npx vitest run tests/execution-intelligence.test.ts --reporter=dot",
         "passed": true,
-        "evidence": "command passed (exit 0): ! grep -rq 'cliLoop' bin/ src/"
+        "evidence": "command passed (exit 0): npx vitest run tests/execution-intelligence.test.ts --reporter=dot"
       },
       {
-        "rule": "shell:! grep -q 'node:fs' src/runtime/execution-miner.ts",
-        "passed": true,
-        "evidence": "command passed (exit 0): ! grep -q 'node:fs' src/runtime/execution-miner.ts"
-      },
-      {
-        "rule": "shell:! grep -q 'node:fs' src/runtime/trajectory.ts",
-        "passed": true,
-        "evidence": "command passed (exit 0): ! grep -q 'node:fs' src/runtime/trajectory.ts"
-      },
-      {
-        "rule": "shell:! grep -q 'node:fs' src/runtime/successor.ts",
-        "passed": true,
-        "evidence": "command passed (exit 0): ! grep -q 'node:fs' src/runtime/successor.ts"
-      },
-      {
-        "rule": "artifact-exists:docs/fleet-intelligence-verification.md",
+        "rule": "artifact-exists:docs/fix-discovered-iterable-verified.md",
         "passed": true,
         "evidence": "file exists"
       }
     ],
-    "gitSha": "9c9be43194ae8403c2ba49e9883ecbabbf8f16ac",
-    "treeSha": "79ea0d20c1c0a009cb8a8d3175110808737d9caf",
-    "branch": "feat/fleet-intelligence"
+    "gitSha": "58b8556917ebc46e522a32550fd8dd920898a5f3",
+    "treeSha": "f05b0640b34d1db383f440b93370764f8108d6eb",
+    "branch": "feat/fix-discovered-iterable"
   },
   {
     "nodeId": "delete-test-files",
