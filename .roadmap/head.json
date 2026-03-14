@@ -26,7 +26,7 @@
     },
     "test-guard": {
       "id": "test-guard",
-      "desc": "Add a test case to tests/execution-intelligence.test.ts: 'handles handoff with missing discovered/blockers arrays'. Create a mock handoff entry where final has no discovered field and no blockers field (both undefined). Call mineExecution with this context. Assert it returns empty findings without throwing. This reproduces the exact crash: term node with a handoff that has no discovered array.",
+      "desc": "Regression test for missing discovered/blockers",
       "produces": [
         "tests/execution-intelligence.test.ts"
       ],

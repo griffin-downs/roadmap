@@ -4518,5 +4518,30 @@
     "gitSha": "5f4aac54ef800aa670dcef7719e7b6a7667df5eb",
     "treeSha": "e4044950f63c53ac88dbd39a6fd70d648fadbf29",
     "branch": "feat/fleet-intelligence"
+  },
+  {
+    "nodeId": "guard-discovered",
+    "completedAt": "2026-03-14T11:05:54.862Z",
+    "dagId": "fix-discovered-iterable",
+    "validationChecks": [
+      {
+        "rule": "shell:pnpm build",
+        "passed": true,
+        "evidence": "command passed (exit 0): pnpm build"
+      },
+      {
+        "rule": "shell:grep -q 'h.discovered ?? ' src/runtime/execution-miner.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): grep -q 'h.discovered ?? ' src/runtime/execution-miner.ts"
+      },
+      {
+        "rule": "artifact-exists:src/runtime/execution-miner.ts",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "ad9daf63c075b42c99e925dfc07c12faee8eed7e",
+    "treeSha": "94ee169a77b9d15270a61e6688e946725ba7b256",
+    "branch": "feat/fix-discovered-iterable"
   }
 ]

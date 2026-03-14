@@ -272,6 +272,25 @@ describe('mineExecution', () => {
     expect(findings.velocitySignals.length).toBeGreaterThanOrEqual(1);
     expect(findings.velocitySignals[0].level).toBe(2);
   });
+
+  it('handles handoff with missing discovered/blockers arrays', () => {
+    const dag = mkGraph('test', {
+      init: { deps: [] },
+      term: { deps: ['init'] },
+    });
+    // Simulate a term node handoff with no discovered/blockers fields
+    const handoffs = new Map<string, HandoffEntry>();
+    handoffs.set('term', {
+      nodeId: 'term',
+      interims: [{ timestamp: '2026-01-01T00:00:00Z', progress: 1, currentFile: '' } as any],
+      final: { timestamp: '2026-01-01T00:00:00Z', progress: 1, currentFile: '', summary: 'done', keyDecisions: [], gotchas: [], nextNodeEntry: { consumes: [], ready: true } } as any,
+    });
+    const context = mkContext({ handoffs });
+    // Should not throw — discovered and blockers may be undefined
+    const findings = mineExecution(dag, context);
+    expect(findings.unaddressedDiscoveries).toEqual([]);
+    expect(findings.unresolvedBlockers).toEqual([]);
+  });
 });
 
 // --- assessTrajectory ---
