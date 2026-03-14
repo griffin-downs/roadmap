@@ -46,7 +46,7 @@
     },
     "term": {
       "id": "term",
-      "desc": "Terminal verification. Run full test suite, confirm build passes, confirm the specific crash scenario (term node handoff with no discovered) no longer throws.",
+      "desc": "Terminal verification",
       "produces": [
         "docs/fix-discovered-iterable-verified.md"
       ],
