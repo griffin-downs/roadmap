@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "dag_id": "fix-discovered-iterable",
+  "dag_desc": "Guard h.discovered iteration in execution-miner — term nodes have no discovered array",
+  "inputs": [
+    { "path": "docs/fix-discovered-iterable.spec.json", "sha256": "e89824aff46b29badd90bfe7298c2f41b7ddf1e14a01735ac5ccd699ff729360", "role": "tasks" }
+  ],
+  "tasks": [
+    {
+      "id": "guard-discovered",
+      "desc": "In src/runtime/execution-miner.ts mineExecution(), line 67: change `for (const item of h.discovered)` to `for (const item of h.discovered ?? [])`. Also guard h.blockers on line ~90 if same pattern exists. Same fix in any other iteration over handoff fields that may be undefined (discovered, blockers, gotchas, keyDecisions). No new imports, no structural changes.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["src/runtime/execution-miner.ts"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "grep -q 'h.discovered ?? ' src/runtime/execution-miner.ts" }
+      ]
+    },
+    {
+      "id": "test-guard",
+      "desc": "Add a test case to tests/execution-intelligence.test.ts: 'handles handoff with missing discovered/blockers arrays'. Create a mock handoff entry where final has no discovered field and no blockers field (both undefined). Call mineExecution with this context. Assert it returns empty findings without throwing. This reproduces the exact crash: term node with a handoff that has no discovered array.",
+      "priority": 1,
+      "depends": ["guard-discovered"],
+      "produces": ["tests/execution-intelligence.test.ts"],
+      "consumes": ["src/runtime/execution-miner.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx vitest run tests/execution-intelligence.test.ts --reporter=dot" }
+      ]
+    },
+    {
+      "id": "term",
+      "desc": "Terminal verification. Run full test suite, confirm build passes, confirm the specific crash scenario (term node handoff with no discovered) no longer throws.",
+      "priority": 2,
+      "depends": ["test-guard"],
+      "produces": ["docs/fix-discovered-iterable-verified.md"],
+      "consumes": ["src/runtime/execution-miner.ts", "tests/execution-intelligence.test.ts"],
+      "mode": "execute",
+      "validate": [
+        { "type": "shell", "command": "npx vitest run --reporter=dot" },
+        { "type": "shell", "command": "pnpm build" },
+        { "type": "shell", "command": "npx vitest run tests/execution-intelligence.test.ts --reporter=dot" }
+      ]
+    }
+  ],
+  "metadata": {
+    "generated": "2026-03-14T09:10:00Z",
+    "compile_hash": ""
+  }
+}
