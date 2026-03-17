@@ -9,6 +9,7 @@ Core commands (mainline execution):
   make <spec>        Create ideal DAG from spec
   orient             Current batch position + produces/consumes
   advance [node-id]  Complete node (run validators, record evidence) or advance batch
+  init               Bootstrap repo: CLAUDE.md fragment + skills install
 
 Command groups (use 'roadmap <group> help' for details):
   spec <sub>         Spec planning: plan (gallery, select, status)
