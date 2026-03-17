@@ -75,13 +75,57 @@ Schema is source of truth. If anything below contradicts it, the API wins.
   say: look at it. not once — until it's right.
 ```
 
-## Nodes
+## Node Descriptions
 
 ```
   self-contained    stranger executes from desc + produces + consumes alone
   one concern       build and test are separate nodes
   falsifiable       every node states what's true after it completes
 ```
+
+The desc is the most important field. It's the prompt the executing agent follows. Weak descs produce weak work.
+
+```
+  ❌ WEAK — the agent will write code and commit without looking:
+
+     "Create GaugeDisplay.vue component. Run vue-tsc. Run vitest."
+
+  ✅ STRONG — the agent is forced to inspect and iterate:
+
+     "Create GaugeDisplay.vue — reactive gauge driven by useEmission().
+      After implementation: launch dev server, screenshot the gauge.
+      READ the screenshot. Can you read the depth number in < 1 second?
+      Is anything clipped or overlapping? Is the severity color correct?
+      Fix what you find. Screenshot again. Repeat until you'd show it
+      to a client. THEN commit."
+
+  ❌ WEAK — functional work with no exercise:
+
+     "Create src/cli.ts entry point. Run pnpm build."
+
+  ✅ STRONG — the agent must run it:
+
+     "Create src/cli.ts entry point with --help and process subcommand.
+      After implementation: run node dist/cli.js --help — verify output.
+      Run node dist/cli.js process test-input.json — verify it produces
+      expected output. If output is wrong, fix and re-run. Do not commit
+      until the CLI produces correct output on real input."
+
+  ❌ WEAK — infrastructure with no proof of life:
+
+     "Write Dockerfile. Run docker build."
+
+  ✅ STRONG — the agent proves it runs:
+
+     "Write Dockerfile for production build. After writing:
+      docker build -t myapp . — must succeed.
+      docker run --rm -p 3000:3000 myapp — must start.
+      curl http://localhost:3000/health — must return 200.
+      If any step fails, fix and rebuild. Do not commit
+      until the container serves a health check."
+```
+
+The pattern: **implementation + inspect + iterate + condition for commit.** Every node desc for visual, functional, or infra work must include what to check and when to stop.
 
 ## Validators
 
