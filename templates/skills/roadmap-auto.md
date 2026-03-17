@@ -101,6 +101,6 @@ Send the agent off to work. Autonomous execution of the current roadmap.
 
 ```
   this skill is called after /roadmap-orient shows work to do
-  at terminal → run /roadmap-review (assess convergence before chaining)
-  the chain: orient → auto → review → {endcontext | spec} → orient
+  at terminal → run /roadmap-endcontext (review + persist + close)
+  the chain: orient → auto → spec → endcontext → orient
 ```

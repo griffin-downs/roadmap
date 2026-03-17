@@ -1,77 +1,84 @@
 ---
 name: roadmap-endcontext
-description: Persist learnings and close session cleanly
+description: Review session, persist learnings, close cleanly
 user-invocable: true
 ---
 
 # roadmap-endcontext
 
-Close a session. The goal is durability — not a summary, not a doc dump.
+End of session. Three steps: review what happened, persist what matters, hand off cleanly.
 
-Run `/roadmap-review` first to catch dropped threads. The human should have already triaged what matters.
+## Step 1: Review
 
-## Mutation Rules
+```
+  scan the conversation for what didn't land
+
+  dropped threads
+    things discussed but never acted on
+    ideas, bugs, concerns that were acknowledged
+    but never became a spec node, handoff, or CLAUDE.md entry
+
+  undocumented decisions
+    "we chose X because Y" said in conversation
+    but never written to docs/ or CLAUDE.md
+
+  execution quality (if a DAG ran)
+    use the thing — screenshot, run, exercise the workflow
+    what's the worst thing about the current state?
+    what would embarrass you if the human saw it now?
+
+  successor completeness (if one was written)
+    does it cover the discoveries?
+    is it narrower than the current DAG?
+    are there dropped threads that should be nodes?
+```
+
+Present what you find. **Don't act — propose.** The human decides what matters.
+
+```
+  ┌─────────────────────────────────────────────────────────┐
+  │  📋 SESSION REVIEW                                      │
+  ├─────────────────────────────────────────────────────────┤
+  │                                                         │
+  │  Dropped threads:                                       │
+  │    • item (discussed, no node)                          │
+  │    • item (mentioned, not investigated)                 │
+  │                                                         │
+  │  Undocumented decisions:                                │
+  │    • decision (not in CLAUDE.md or docs/)               │
+  │                                                         │
+  │  Proposed actions:                                      │
+  │    → add to successor spec?                             │
+  │    → write to CLAUDE.md?                                │
+  │    → fine to drop?                                      │
+  │                                                         │
+  │  Waiting for your call on each item.                    │
+  └─────────────────────────────────────────────────────────┘
+```
+
+## Step 2: Persist
+
+After the human triages, act on decisions:
 
 ```
 ╭─────────────────────────────────────────────────────────────────╮
-│ CLAUDE.md                                                       │
-│   mutate    anchored sections (<!-- topic:start/end -->)         │
-│             architectural knowledge that evolved                 │
-│   append    new anchored references to docs                     │
-│   never     session-specific context (that's a spec)            │
-│             TODOs or task lists (that's a DAG)                  │
-│             delete someone else's section                       │
-╰─────────────────────────────────────────────────────────────────╯
-
-╭─────────────────────────────────────────────────────────────────╮
-│ docs/                                                           │
-│   create    specs, ADRs, design docs — things with shelf life   │
-│   never     session logs, scratch notes, "what I did today"     │
-│             anything that expires — use handoffs instead         │
-│   rule      if it won't matter in 3 DAG iterations, don't file  │
-╰─────────────────────────────────────────────────────────────────╯
-
-╭─────────────────────────────────────────────────────────────────╮
-│ .roadmap/                                                       │
-│   append    trail.jsonl, completed.json, .handoff/*.json        │
-│   mutate    head.json (via roadmap CLI only)                    │
-│   immutable heads/*.json (archived, never edit)                 │
-│   never     direct edits — always through roadmap CLI           │
+│ mutation rules                                                  │
+│                                                                 │
+│ CLAUDE.md     mutate anchored sections, append references       │
+│               never: session context, TODOs, task lists         │
+│                                                                 │
+│ docs/         specs, ADRs, design docs — things with shelf life │
+│               never: session logs, scratch, anything that expires│
+│                                                                 │
+│ .roadmap/     append-only (trail, completed, handoffs)          │
+│               head.json via CLI only. heads/ immutable.         │
+│                                                                 │
+│ ephemeral → handoff.  permanent → CLAUDE.md.  actionable → spec.│
+│ nothing else gets written to the repo.                          │
 ╰─────────────────────────────────────────────────────────────────╯
 ```
 
-## What Goes Where
-
-```
-  ephemeral              → handoff entry (via roadmap advance)
-                           the handoff travels with the DAG lifecycle
-
-  actionable             → successor spec (via /roadmap-spec)
-                           learnings → node descriptions + validators
-                           replaces: TODO lists, session docs, "notes for next time"
-
-  permanent              → CLAUDE.md anchored section
-                           architectural invariants, module boundaries,
-                           known constraints that transcend any single DAG
-
-  cross-repo             → CLAUDE.md in BOTH repos
-                           if work in A affects B, both repos need the note
-
-  nothing else gets written to the repo.
-```
-
-## Step 1: Persist
-
-```
-  act on what /roadmap-review surfaced and the human triaged:
-
-  permanent learning?        → CLAUDE.md (anchor to doc if long)
-  actionable item?           → successor spec node (should already exist)
-  architectural decision?    → docs/adr/NNN-*.md, anchor in CLAUDE.md
-  cross-repo impact?         → note in both repos' CLAUDE.md
-```
-
-## Step 2: Boot Prompt
+## Step 3: Boot Prompt
 
 After everything is durable, the boot prompt is thin — it points, not contains.
 
@@ -87,15 +94,11 @@ Read this repo's CLAUDE.md for execution protocol and known issues.
 
 ## Skills
 
-- `/roadmap-auto` — autonomous execution
-- `/roadmap-spec` — design new spec
-- `/roadmap-review` — session completeness check
-- `/roadmap-endcontext` — when wrapping up
+/roadmap-orient · /roadmap-spec · /roadmap-auto · /roadmap-endcontext
 
 ## State
 
-<branch, clean/dirty>
-<"successor spec created" or "DAG in progress at node X">
+<branch, clean/dirty, successor spec created or DAG in progress>
 
 ## Decisions
 
@@ -109,17 +112,18 @@ Read this repo's CLAUDE.md for execution protocol and known issues.
 ## Values
 
 ```
+  the review is adversarial, not congratulatory
+  surface, don't act — human decides what matters
   the boot prompt is a pointer, not a container
-  if it's ephemeral → handoff. permanent → CLAUDE.md. actionable → spec.
-  the DAG is the session record — trail, handoffs, completions
-  session docs are an antipattern — they're durable but not useful
-  the next agent runs /roadmap-orient and the DAG tells it what to do
+  session docs are an antipattern — use specs and handoffs
+  dropped threads are the highest-value finding
+  decisions not written down are lost forever
 ```
 
 ## Chain
 
 ```
-  this skill is the end of the cycle
-  the boot prompt tells the next agent: /roadmap-orient
-  full chain: orient → auto → spec → review → endcontext → orient
+  this skill closes the cycle
+  boot prompt tells next agent: /roadmap-orient
+  full chain: orient → auto → spec → endcontext → orient
 ```

@@ -161,7 +161,7 @@ export function proposeSuccessor(
     return {
       action: 'orbit-break',
       rationale: `Trend is '${trend}'. Continuing would repeat prior work without resolution.`,
-      suggestedSkill: { skill: '/roadmap-review', reason: 'Orbit detected. Review with human before proceeding.' },
+      suggestedSkill: { skill: '/roadmap-endcontext', reason: 'Orbit detected. Surface to human before proceeding.' },
       orbitDiagnosis:
         `The DAG is ${trend}.${persistentList} ` +
         `${totalFindings} finding(s) remain unresolved. ` +
