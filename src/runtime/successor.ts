@@ -12,6 +12,7 @@ import type { Graph } from '../lib/protocol/types.ts';
 export interface SuccessorProposal {
   action: 'continue' | 'converged' | 'orbit-break';
   rationale: string;
+  suggestedSkill: { skill: string; reason: string };
   specDraft?: {
     dagId: string;
     dagDesc: string;
@@ -148,6 +149,7 @@ export function proposeSuccessor(
     return {
       action: 'converged',
       rationale: 'No findings remain and trajectory is clean. The root intent appears satisfied.',
+      suggestedSkill: { skill: '/roadmap-endcontext', reason: 'Work converged. Persist learnings and close session.' },
     };
   }
 
@@ -159,6 +161,7 @@ export function proposeSuccessor(
     return {
       action: 'orbit-break',
       rationale: `Trend is '${trend}'. Continuing would repeat prior work without resolution.`,
+      suggestedSkill: { skill: '/roadmap-review', reason: 'Orbit detected. Review with human before proceeding.' },
       orbitDiagnosis:
         `The DAG is ${trend}.${persistentList} ` +
         `${totalFindings} finding(s) remain unresolved. ` +
@@ -181,6 +184,7 @@ export function proposeSuccessor(
     rationale:
       `${totalFindings} finding(s) remain (trend: ${trend}). ` +
       `Successor DAG '${dagId}' drafted with ${allNodes.length} node(s).`,
+    suggestedSkill: { skill: '/roadmap-spec', reason: 'Findings remain. Use /roadmap-spec to design the successor — do not write spec.json directly.' },
     specDraft: {
       dagId,
       dagDesc: rootIntent,
