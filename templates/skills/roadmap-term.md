@@ -20,6 +20,15 @@ You're at the terminal node. This is the assessment moment — not a formality.
   visual work   → screenshot it. look at it.
   functional    → run it. exercise the workflow.
   infra         → deploy it. hit the endpoint.
+
+  read the trail — .roadmap/trail.jsonl
+    this is the flight recorder. append-only. the agent can't edit it.
+    look at the last 50-100 entries. what jumps out?
+    many orients between advances = agent was lost
+    advance rejections = validator failures (what broke?)
+    long gaps between events = agent was stuck
+    mutation events = DAG changed during execution (why?)
+    the trail tells you what actually happened, not what was reported
 ```
 
 ## 2. Review Dropped Threads
