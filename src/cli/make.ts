@@ -163,6 +163,14 @@ export async function run(
     }, `Failed to convert spec: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Auto-inject successor spec into term node produces
+  const _dagIdForSuccessor = dag.id ?? parsed.dag_id ?? 'unknown';
+  const successorSpecFile = `docs/${_dagIdForSuccessor}-successor.spec.json`;
+  const termNode = dag.nodes[dag.term];
+  if (termNode && !termNode.produces.includes(successorSpecFile)) {
+    termNode.produces = [...termNode.produces, successorSpecFile];
+  }
+
   // Validate the DAG
   const isDryRun = args.includes('--dry-run');
   const allErrors = collectMakeErrors(dag, { skipTerminalIntent: args.includes('--skip-terminal-intent') });
@@ -216,6 +224,17 @@ export async function run(
   writeFileSync(headPath, JSON.stringify(dag, null, 2) + '\n');
 
   saveDagHead(repoRoot, dagId, dag);
+
+  // Auto-complete init node (synthetic, no real work)
+  const initNode = dag.nodes[dag.init];
+  if (initNode?.idempotent && initNode.id === 'init') {
+    try {
+      const { saveCompletionWithEvidence } = await import('../runtime/completion.ts');
+      saveCompletionWithEvidence(repoRoot, initNode.id, [
+        { rule: 'auto-init', passed: true, evidence: 'Synthetic init auto-completed at make time' },
+      ]);
+    } catch { /* best-effort */ }
+  }
 
   // Commit
   let commitWarning: string | undefined;
