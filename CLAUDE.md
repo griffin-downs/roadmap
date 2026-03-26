@@ -387,4 +387,40 @@ cd ~/.local/share/roadmap && pnpm install && pnpm link --global
 
 If this repo has no `.roadmap/head.json`: write a spec and run `roadmap make`.
 
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
+## North Star
+
+```
+  "Compiling Agent State" — ML Prague 2026 (accepted)
+  ~/docs/Downs-CompilingAgentState-MLPrague2026.pdf
+
+  the paper describes the graph as compiled execution state.
+  the thesis: the process is ephemeral, the graph is permanent.
+
+  what the paper covers:
+    graph as execution state, static analysis, parallel batches,
+    recovery via orient(), convergence chains, proven completion,
+    append-only trail. 198 iterations, 1794 completions, 3425 events.
+
+  what the paper doesn't cover (built since submission):
+    fleet scheduling (globalFrontier across repos)
+    skill contagion (/roadmap-spec, /roadmap-auto, /roadmap-term)
+    observation-first spec design
+    enriched term pattern (root intent + chain context)
+    roadmap init (bootstrap any repo)
+    successor spec as structural requirement at term
+
+  open source target: ML Prague conference (2026)
+  the tool + skills + templates ship as one package
+  roadmap init is the on-ramp for adopters
+
+  integration north star:
+    orient as native Claude Code tool (not Bash shell-out)
+    brief appears in agent context automatically at session start
+    suggestedSkill triggers skill invocation directly
+    term pattern loads /roadmap-term without explicit invoke
+    MCP server for cross-session DAG awareness
+```
+
 🟥🟥🟥🟥🟥🟥🟥🟥🟧🟧🟧🟧🟧🟧🟧🟧🟨🟨🟨🟨🟨🟨🟨🟨🟩🟩🟩🟩🟩🟩🟩🟩🟦🟦🟦🟦🟦🟦🟦🟦🟪🟪🟪🟪🟪🟪🟪🟪
