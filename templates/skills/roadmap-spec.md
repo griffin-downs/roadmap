@@ -10,7 +10,7 @@ user-invocable: true
   completion = working output, not harnesses
 ```
 
-A roadmap spec is a bet that converges on intent. The terminal node is where you find out if you won.
+Every section below traces to this line. If a spec doesn't produce working output, the spec is wrong.
 
 ## Schema
 
@@ -18,249 +18,167 @@ A roadmap spec is a bet that converges on intent. The terminal node is where you
 roadmap api make
 ```
 
-Schema is source of truth. If anything below contradicts it, the API wins.
+Structure source of truth. If this document contradicts the API, the API wins.
 
-## Before writing
-
-```
-╭─────────────────────────────────────────────────────────────────╮
-│ ask                                                             │
-│                                                                 │
-│   what does "done" look like to the human who asked for this?   │
-│   not "files exist" — what would they do to check?              │
-│   they'd open it. run it. click through it. try the workflow.   │
-│                                                                 │
-│   your terminal validator does that same thing.                 │
-╰─────────────────────────────────────────────────────────────────╯
-```
+## Read What Came Before
 
 ```
-╭─────────────────────────────────────────────────────────────────╮
-│ trace                                                           │
-│                                                                 │
-│   what was the original intent?                                 │
-│   not what the implementation looks like —                      │
-│   what was the human asking for?                                │
-│                                                                 │
-│   "build a gauge component" ← implementation                    │
-│   "see depth readings update in real-time" ← intent             │
-│                                                                 │
-│   the terminal verifies intent, not implementation.             │
-╰─────────────────────────────────────────────────────────────────╯
+  .roadmap/heads/*.json — archived DAGs that completed
+  .roadmap/trail.jsonl — what actually happened during execution
+  .roadmap/.handoff/*.json — what agents discovered
+
+  before writing a new spec, read 2-3 recent completed DAGs
+  in this repo. look for:
+
+    shape        how many nodes? how wide are the batches?
+                 what's the observation/implementation/verify ratio?
+
+    validators   what kinds of validators actually worked here?
+                 what does "terminal" look like in this repo?
+
+    nodes        what's the idiom for decomposition?
+                 are build and test split? are components their own nodes?
+
+    friction     grep trail for "advance" — which nodes got rejected?
+                 those are the hard spots worth a second look.
+
+  your spec should fit the repo's grain. a python project specs
+  differently than a vue project. the archived heads tell you how.
 ```
 
-## Observation First
+## The Bet
+
+A spec is a bet. The agent proposes: *if I execute these nodes in this order, I will satisfy this intent.* The terminal node is where the bet pays out or doesn't.
 
 ```
-  the first spec you write from assumptions will be wrong
-  at the boundaries between systems.
+  before writing, answer out loud:
 
-  every spec starts with observation:
-    what exists today?
-    what are the boundaries between systems?
-    what will surprise us?
+    intent       what was the human actually asking for?
+                 not the implementation. the need.
+                 "build a gauge" ← implementation
+                 "see depth in real time" ← intent
 
-  the first batch is not "build the thing"
-  the first batch is "learn what we don't know"
+    done         what would a human do to check?
+                 open it. run it. click through it.
+                 your terminal validator does that.
 
-  ❌ jumping straight to implementation:
-     "build mesh → test mesh → ship mesh" (24 nodes)
-
-  ✅ observation then implementation:
-     "mine 6 repos for patterns → extract boundary contracts →
-      design from findings → build → verify against findings" (35 nodes)
-
-  the observation batch is naturally wide — reading 6 repos
-  is 6 parallel nodes. the implementation narrows because it
-  has dependencies. verification widens again for parallel testing.
+    risk         what will surprise us?
+                 most bugs live at boundaries between systems.
+                 observation nodes go in the first batch.
 ```
 
-## Boundary Questions
+## What Kills Specs
+
+Four failure modes, all from real sessions:
 
 ```
-  most bugs live at boundaries, not inside components.
-  before writing implementation nodes, answer:
+  1. assumption-first
 
-  ownership        who owns this data? what happens when two
-                   systems claim the same resource?
+     agent writes "build mesh → test mesh → ship mesh" (24 nodes)
+     turns out 6 other repos have mesh patterns nobody mined
+     the spec was wrong because it skipped observation
 
-  merge semantics  when system A pushes an update and system B
-                   has local state, who wins? which fields
-                   are preserved vs overwritten?
+     fix: first batch is observation, not implementation.
+     "mine 6 repos for patterns" is 6 parallel nodes.
+     implementation comes after, consuming findings.
 
-  stacking/layers  for visual work: what renders above what?
-                   z-index manifest. blend modes. does it work
-                   with position:fixed? with backdrop-filter?
+  2. boundary blindness
 
-  process inventory what long-running processes does this depend on?
-                   how are they started, stopped, verified current?
-                   zombie processes will waste hours.
+     agent builds gauge component. shader fights backdrop-filter.
+     z-index stacks wrong against position:fixed. scoped CSS
+     fails to reach child. 3 hours of debugging at the boundary.
 
-  performance budget what's the frame/latency budget?
-                   what does each pass cost today?
-                   measure BEFORE implementing, not after.
+     fix: ask "what can go wrong at the boundaries?" before
+     writing implementation nodes. ownership, merge semantics,
+     stacking order, process inventory, perf budget, scope
+     leaks. each answer is an observation node.
 
-  scope leaks      does this CSS/style/config reach into child
-                   components? across iframes? into shadow DOM?
-                   scoped styles fail silently.
+  3. weak validators
 
-  these become observation nodes in the first batch.
-  each one produces a findings document.
-  implementation nodes consume those findings.
+     agent writes "Run vue-tsc. Run vitest." commits. ships.
+     the thing renders but the gauge label is cut off.
+     nobody looked at the screen.
+
+     fix: the validator answers "how would a human check this?"
+     if a human would look at the screen, the validator
+     screenshots and evaluates. "it compiles" is not proof.
+
+  4. self-graded success
+
+     agent writes intent validator, agent grades at 0.95,
+     agent advances, DAG closes, nothing works.
+
+     fix: no intent validators on execute nodes. plan nodes only.
+     execute nodes need shell validators that run real things.
+     the validator command must reference a file from produces.
 ```
 
-## Two Loops
+## Writing the Spec
 
 ```
-  the DAG loop is across nodes and iterations
-  observe → build → verify → discover → narrow
+  shape      observe wide → implement narrow → verify wide
+             first batch: parallel observation nodes (read repos,
+             extract contracts, answer boundary questions)
+             middle: implementation with dependencies
+             last: parallel verification + terminal
 
-  but there's a second loop inside every node:
-  produce → inspect your own output → fix → produce again
+  nodes      self-contained — a stranger executes from desc alone
+             one concern — build and test are separate nodes
+             falsifiable — desc states what's true after it completes
 
-  the agent looks at what it made before committing
-  compile to PNG? READ the PNG. launch dev server? SCREENSHOT it.
-  build a CLI? RUN it and read the output.
+  validators invoke produced files by path
+             refuse grep as behavioral evidence
+             refuse artifact-exists as terminal validator
+             refuse "it compiles" as proof of correctness
 
-  validators are the floor — "did it compile, does the file exist"
-  the agent's own inspection is the ceiling
-
-  design node descriptions that tell the agent to iterate:
-    "compile, visually inspect every page, fix issues, recompile.
-     do not commit until you've verified the output yourself."
-
-  the agent has multimodal vision. it can see rendered output.
-  it can read images. it can screenshot browsers.
-  use that. if the node produces visual output, the desc should
-  say: look at it. not once — until it's right.
+  descs      implementation + inspect + iterate + condition for commit
 ```
 
-## Node Descriptions
+## Strong vs Weak Descs
 
 ```
-  self-contained    stranger executes from desc + produces + consumes alone
-  one concern       build and test are separate nodes
-  falsifiable       every node states what's true after it completes
-```
+  ❌ "Create GaugeDisplay.vue. Run vue-tsc. Run vitest."
 
-The desc is the most important field. It's the prompt the executing agent follows. Weak descs produce weak work.
-
-```
-  ❌ WEAK — the agent will write code and commit without looking:
-
-     "Create GaugeDisplay.vue component. Run vue-tsc. Run vitest."
-
-  ✅ STRONG — the agent is forced to inspect and iterate:
-
-     "Create GaugeDisplay.vue — reactive gauge driven by useEmission().
-      After implementation: launch dev server, screenshot the gauge.
+  ✅ "Create GaugeDisplay.vue — reactive gauge driven by useEmission().
+      After: launch dev server, screenshot the gauge.
       READ the screenshot. Can you read the depth number in < 1 second?
-      Is anything clipped or overlapping? Is the severity color correct?
-      Fix what you find. Screenshot again. Repeat until you'd show it
-      to a client. THEN commit."
+      Is anything clipped? Is the severity color correct?
+      Fix what you find. Screenshot again. Commit only when you'd
+      show it to a client."
 
-  ❌ WEAK — functional work with no exercise:
+  ❌ "Write Dockerfile. Run docker build."
 
-     "Create src/cli.ts entry point. Run pnpm build."
-
-  ✅ STRONG — the agent must run it:
-
-     "Create src/cli.ts entry point with --help and process subcommand.
-      After implementation: run node dist/cli.js --help — verify output.
-      Run node dist/cli.js process test-input.json — verify it produces
-      expected output. If output is wrong, fix and re-run. Do not commit
-      until the CLI produces correct output on real input."
-
-  ❌ WEAK — infrastructure with no proof of life:
-
-     "Write Dockerfile. Run docker build."
-
-  ✅ STRONG — the agent proves it runs:
-
-     "Write Dockerfile for production build. After writing:
-      docker build -t myapp . — must succeed.
-      docker run --rm -p 3000:3000 myapp — must start.
-      curl http://localhost:3000/health — must return 200.
-      If any step fails, fix and rebuild. Do not commit
-      until the container serves a health check."
+  ✅ "Write Dockerfile for production build. After writing:
+      docker build must succeed.
+      docker run — container must start and bind port.
+      curl /health must return 200.
+      If any step fails, fix and rebuild. Do not commit until
+      the container serves a health check."
 ```
 
-The pattern: **implementation + inspect + iterate + condition for commit.** Every node desc for visual, functional, or infra work must include what to check and when to stop.
+The pattern: **implement → inspect → iterate → condition for commit.** Every desc for visual, functional, or infra work follows it.
 
-## Validators
+## Before You Submit
 
-```
-  question          how would you know this works if you couldn't read the code?
-
-  visual work       launch dev server → screenshot → evaluate
-  functional work   run the thing → check output → verify behavior
-  infrastructure    build container → run it → health check
-
-  refuse            grep as behavioral evidence
-  refuse            artifact-exists as terminal validator
-  refuse            "it compiles" as proof of correctness
-  surface           when you can't write a real validator — say so
-```
-
-## Convergence
+Three judgment calls, not a checklist:
 
 ```
-  observe → build → verify → discover → narrow
+  approve    the first batch observes before it builds.
+             every validator invokes a produced file.
+             the terminal uses the thing the way a human would.
+             → run roadmap make. ship it.
 
-  one pass is never enough
-  terminal discovers what's still wrong
-  discoveries become successor scope
-  each iteration narrower than the last
+  redirect   something's off. one of:
+             - implementation-first with no observation
+             - validators that don't name files from produces
+             - terminal that only checks existence
+             - a node doing two concerns (build AND test)
+             → fix it. re-run this skill.
 
-  orbiting = same findings across iterations → stop, surface to human
-```
-
-## End-to-end
-
-```
-  the most important validator runs the complete workflow
-
-  not "login component renders"
-  → start app, navigate to login, enter credentials, see dashboard
-
-  not "CLI has --help"
-  → create test input, run CLI, read output, verify it matches
-
-  at least one node exercises the full path a user would take
-```
-
-## Self-check
-
-```
-  □ does the first batch observe before it builds?
-  □ are boundary questions answered before implementation starts?
-  □ stranger can execute every node from desc alone?
-  □ terminal uses the thing the way a human would?
-  □ verifying intent, not implementation?
-  □ full workflow exercised end-to-end?
-  □ no grep/exists as behavioral evidence?
-  □ for visual work: does terminal screenshot and evaluate?
-  □ for functional work: does terminal exercise actual behavior?
-  □ for infrastructure: does terminal run the pipeline end-to-end?
-```
-
-## Presentation
-
-```
-  the human watching execution should see the DAG come alive
-
-  every scroll lands on something worth looking at
-  show, don't tell — diagram alone, never diagram + restatement
-  color fields (🟥🟧🟨🟩🟦🟪) as dividers and progress
-  box drawing for structure, emoji for status
-
-  on orient     show the shape — what's done, what's next, where you are
-  on dispatch   banner — what agents are working on, what they produce
-  on complete   advancement — what passed, what's next
-  on terminal   the full result — trajectory, convergence, successor
-
-  the user should never have to ask "what's happening?"
-  if they have to ask, you aren't showing enough
+  stop       you don't know the boundaries yet.
+             you're guessing at the intent.
+             you haven't read any archived heads.
+             → go read. come back.
 ```
 
 ## Create
@@ -273,7 +191,5 @@ roadmap orient --note "begin <dag-id>"
 ## Chain
 
 ```
-  this skill is called when you need a new DAG
-  after make + orient → /roadmap-auto to execute
-  the chain: orient → spec → make → orient → auto → term → orient
+  orient → spec → make → orient → auto → term → orient
 ```
