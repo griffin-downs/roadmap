@@ -3,6 +3,7 @@
 // @exports run
 
 import { readFileSync, existsSync, writeFileSync, appendFileSync, mkdirSync } from 'node:fs';
+import { persistDAG } from '../lib/persist-dag.ts';
 import { join, resolve, basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { execSync } from 'node:child_process';
@@ -188,9 +189,7 @@ async function planSelect(
     process.exit(1);
   }
 
-  const roadmapDir = join(repoRoot, '.roadmap');
-  if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
-  writeFileSync(headPath, JSON.stringify(selected.dag, null, 2) + '\n');
+  persistDAG(repoRoot, selected.dag as any);
 
   try {
     execSync('git add .roadmap/head.json', { cwd: repoRoot, stdio: 'pipe' });

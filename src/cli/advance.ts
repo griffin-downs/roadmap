@@ -2,7 +2,8 @@
 // @description Advance command: single-node validation + evidence recording, batch advancement.
 // @exports run
 
-import { readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+import { persistDAG } from '../lib/persist-dag.ts';
 import { join, resolve, basename } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
@@ -216,8 +217,7 @@ async function advanceNode(
               completedAt,
               executionReport,
             });
-            const headPath = join(repoRoot, '.roadmap', 'head.json');
-            writeFileSync(headPath, JSON.stringify(builtDag, null, 2) + '\n');
+            persistDAG(repoRoot, builtDag);
             chained = true;
           } else if (specContent.init && specContent.term && specContent.nodes) {
             define(specContent); verify(specContent); check(specContent);
@@ -233,8 +233,7 @@ async function advanceNode(
               completedAt,
               executionReport,
             });
-            const headPath = join(repoRoot, '.roadmap', 'head.json');
-            writeFileSync(headPath, JSON.stringify(specContent, null, 2) + '\n');
+            persistDAG(repoRoot, specContent as any);
             chained = true;
           }
         } catch (e: any) {

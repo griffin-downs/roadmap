@@ -2,14 +2,14 @@
 // @description Make command: create ideal DAG from spec, validate, commit.
 // @exports run
 
-import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { join, resolve, basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { execSync } from 'node:child_process';
 import { tasksToDAG } from '../lib/intake/speckit-import.ts';
 import { collectMakeErrors } from '../lib/make-validation.ts';
 import type { SpecOrigin } from '../lib/intake/spec-origin.ts';
-import { saveDagHead } from '../lib/multi-dag.ts';
+import { persistDAG } from '../lib/persist-dag.ts';
 import { RoadmapError } from '../errors.ts';
 import type { OutputOpts } from '../lib/cli-envelope.ts';
 import { loadDAG, crossOrientWithState, appendTrail, safeReadFile, json } from './shared.ts';
@@ -220,16 +220,12 @@ export async function run(
     dagId,
   };
 
-  // Embed _origin into DAG before writing head.json
+  // Embed _origin into DAG before persisting
   (dag as any)._origin = origin;
 
-  // Write head.json
-  const headPath = join(repoRoot, '.roadmap', 'head.json');
-  const roadmapDir = join(repoRoot, '.roadmap');
-  if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
-  writeFileSync(headPath, JSON.stringify(dag, null, 2) + '\n');
-
-  saveDagHead(repoRoot, dagId, dag);
+  // persistDAG writes head.json + heads/<dagId>.json atomically so
+  // cli-auto-merge cannot race a mutator out of existence.
+  persistDAG(repoRoot, dag);
 
   // Auto-complete init node (synthetic, no real work)
   const initNode = dag.nodes[dag.init];

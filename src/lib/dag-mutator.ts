@@ -6,10 +6,11 @@
 // DAG mutation engine. All mutations to head.json go through here.
 // Provenance receipts flow through trail.jsonl via the trailAppender callback.
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { define, verify, check } from '../protocol.ts';
 import type { Graph, NodeSpec } from '../protocol.ts';
+import { persistDAG } from './persist-dag.ts';
 
 export interface MutationRecord {
   op: 'insert' | 'remove' | 'modify';
@@ -242,19 +243,20 @@ export function modifyNode(
 }
 
 // Persist mutated DAG and record receipt.
-// trailAppender: optional callback that receives the receipt for trail logging (injected by caller).
+//
+// Delegates to persistDAG which writes BOTH head.json and heads/<dag.id>.json
+// so cli-auto-merge's cache-eviction cascade cannot silently revert the
+// mutation on the next orient tick.
+//
+// trailAppender: optional callback that receives the receipt for trail logging
+// (injected by caller).
 export function commitMutation(
   repoRoot: string,
   dag: Graph<string>,
   receipt: MutationRecord,
   trailAppender?: (receipt: MutationRecord) => void,
 ): void {
-  const headPath = join(repoRoot, '.roadmap', 'head.json');
-  const roadmapDir = join(repoRoot, '.roadmap');
-
-  if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
-
-  writeFileSync(headPath, JSON.stringify(dag, null, 2) + '\n');
+  persistDAG(repoRoot, dag);
   trailAppender?.(receipt);
 }
 
