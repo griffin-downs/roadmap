@@ -9,7 +9,6 @@ governance/promotion/
 .roadmap/tokens/
 .roadmap/receipts/
 .roadmap/git-state.json
-.roadmap/trail.jsonl
 
 # Test artifacts
 evidence-test-*/
