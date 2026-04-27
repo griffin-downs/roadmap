@@ -1,0 +1,14 @@
+{
+  "node": "skill-sync-roadmap-spec",
+  "verdict": "GREEN",
+  "artifacts": [
+    "templates/skills/roadmap-spec.md"
+  ],
+  "commits": [],
+  "verify": {
+    "cmd": "diff ~/.claude/skills/roadmap-spec/SKILL.md /home/griffin/src/.dev/roadmap/templates/skills/roadmap-spec.md",
+    "exit": 0,
+    "summary": "byte-identical after sync"
+  },
+  "notes": "Drift was 3 cosmetic banner lines (rainbow square row + 💀 footer) present in template but absent from live SKILL.md. Per audit direction (live → template), banner block at top (lines 7-8) and footer block at bottom (lines 261-264) removed from template. diff -q now empty."
+}

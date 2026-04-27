@@ -4,8 +4,6 @@ description: Generate convergence-oriented roadmap specs
 user-invocable: true
 ---
 
-🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
-
 # roadmap-spec
 
 A spec is a bet: *if I execute these nodes in this order, I satisfy this intent.*
@@ -259,7 +257,3 @@ roadmap orient --note "begin <dag-id>"
 ```
 orient → spec → make → orient → auto → term → orient
 ```
-
-🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
-
-💀 *the spec is the contract · convergence is the verdict*
