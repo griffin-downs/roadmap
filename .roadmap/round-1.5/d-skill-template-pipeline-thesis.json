@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-pipeline-thesis",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/pipeline-thesis.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/pipeline-thesis/SKILL.md templates/skills/pipeline-thesis.md", "exit": 0},
+  "source_sha": "c9ffc1990ddf80c7ff576af0b7ea907d9aec8f48a7f9baf753a52a1b893bf3cb",
+  "bytes": 1736,
+  "notes": "byte-identical port"
+}

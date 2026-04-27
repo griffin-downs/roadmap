@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-linear-audit",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/linear-audit.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/linear-audit/SKILL.md templates/skills/linear-audit.md", "exit": 0},
+  "source_sha": "04d58834347101779c8c92c4bb32fb4924ca9c19b6ef9ce80c5613d6adcd6480",
+  "bytes": 5901,
+  "notes": "byte-identical port"
+}

@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-meta-directives",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/meta-directives.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/meta-directives/SKILL.md templates/skills/meta-directives.md", "exit": 0},
+  "source_sha": "bb46057109f9a2bd5b0f73d6a825735fe366619b3d5e62bed5da2171b7a88b2f",
+  "bytes": 6243,
+  "notes": "byte-identical port"
+}

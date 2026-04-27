@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-cross-page-sweep",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/cross-page-sweep.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/cross-page-sweep/SKILL.md templates/skills/cross-page-sweep.md", "exit": 0},
+  "source_sha": "53d02323c81f233b79225dc76f35658939ed4724c1f01d07de981a0efa5467de",
+  "bytes": 3448,
+  "notes": "byte-identical port"
+}

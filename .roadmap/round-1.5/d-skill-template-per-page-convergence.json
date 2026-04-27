@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-per-page-convergence",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/per-page-convergence.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/per-page-convergence/SKILL.md templates/skills/per-page-convergence.md", "exit": 0},
+  "source_sha": "f93a8fb4cfd4f4525b96f760b83218947515affaf29ae04ba03df25393ab6897",
+  "bytes": 13789,
+  "notes": "byte-identical port"
+}

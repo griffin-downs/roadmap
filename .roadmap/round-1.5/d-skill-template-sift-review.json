@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-sift-review",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/sift-review.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/sift-review/SKILL.md templates/skills/sift-review.md", "exit": 0},
+  "source_sha": "c4055c225d87bad77c8bea8a6d75b65c2b48d0fff273ad1cf08ba042d7fb0b37",
+  "bytes": 12156,
+  "notes": "byte-identical port"
+}

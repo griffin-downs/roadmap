@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-core-loop",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/core-loop.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/core-loop/SKILL.md templates/skills/core-loop.md", "exit": 0},
+  "source_sha": "06979acce003e97fa0d2f7c21643b5793732184db08f92d5ce944d823001c8c8",
+  "bytes": 4064,
+  "notes": "byte-identical port"
+}

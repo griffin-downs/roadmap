@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-rovmk3-thesis",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/rovmk3-thesis.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/rovmk3-thesis/SKILL.md templates/skills/rovmk3-thesis.md", "exit": 0},
+  "source_sha": "d616d0c2168f03e1ca3662c7dc7d44c24894f784035c9807aef961248882e3a6",
+  "bytes": 2601,
+  "notes": "byte-identical port"
+}

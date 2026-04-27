@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-demo",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/demo.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/demo/SKILL.md templates/skills/demo.md", "exit": 0},
+  "source_sha": "2e4a7d995230be085413232cd637b62a6fe8a9d946154d25e6254188d6fb3ef9",
+  "bytes": 807,
+  "notes": "byte-identical port"
+}

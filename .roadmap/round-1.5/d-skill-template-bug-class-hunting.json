@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-bug-class-hunting",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/bug-class-hunting.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/bug-class-hunting/SKILL.md templates/skills/bug-class-hunting.md", "exit": 0},
+  "source_sha": "70cbdbfe3f033bfe6ca24190a58727ee68e44af210d7821469cec2fa12033890",
+  "bytes": 6541,
+  "notes": "byte-identical port"
+}
