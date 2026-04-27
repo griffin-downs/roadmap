@@ -5465,5 +5465,35 @@
     "gitSha": "4fa5187dca7ffad3337fbfe2e65db4ec994f5e35",
     "treeSha": "9babfba4dd908e0f7db707d8c3754cfbb81af471",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-node-side-panel",
+    "completedAt": "2026-04-27T10:55:11.131Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/components/NodeSidePanel.vue",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/components/NodeSidePanel.vue"
+      },
+      {
+        "rule": "shell:! grep -E 'fetch\\(|axios' viewer/src/components/NodeSidePanel.vue",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -E 'fetch\\(|axios' viewer/src/components/NodeSidePanel.vue"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/NodeSidePanel.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-node-side-panel.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "43f2503e217b3ec1ff4e1f744fb6b9189ff23d02",
+    "treeSha": "c832afa0fe4e3da719298d24c6e51eb246d2fd68",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]

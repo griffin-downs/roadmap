@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "node_id": "viewer-build-node-side-panel",
+  "dag_id": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+  "outcome": "GREEN",
+  "summary": "NodeSidePanel.vue + ReceiptTree.vue. DUMB inspector — props { node, status, receipt, commits } in, close event out. No fetch / no setInterval / no JSON.parse — caller pre-shapes inputs (§Dumb-components). Live status badge driven by upstream realtimeBridge wiring. Receipt rendered via recursive ReceiptTree.vue (collapsible JSON tree, primitive-typed coloring). Validators rendered as pass/fail checklist with rule + evidence. Produces[] linked as code paths; commits[] shown with sha+subject+date.",
+  "produces": [
+    "viewer/src/components/NodeSidePanel.vue",
+    ".roadmap/round-1.5/d-viewer-build-node-side-panel.json"
+  ],
+  "validation": [
+    {
+      "rule": "artifact-exists:viewer/src/components/NodeSidePanel.vue",
+      "passed": true,
+      "evidence": "ls viewer/src/components/NodeSidePanel.vue"
+    },
+    {
+      "rule": "no-fetch-in-component",
+      "passed": true,
+      "evidence": "! grep -E 'fetch\\(|axios' viewer/src/components/NodeSidePanel.vue → exit 0"
+    },
+    {
+      "rule": "tsc-clean",
+      "passed": true,
+      "evidence": "cd viewer && pnpm exec vue-tsc --noEmit → exit 0"
+    }
+  ]
+}
