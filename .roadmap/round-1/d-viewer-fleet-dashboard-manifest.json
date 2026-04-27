@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "node": "viewer-locate-fleet-dashboard",
+  "source_root": "/home/griffin/src/fleet/dashboard",
+  "entry": {
+    "html": "index.html",
+    "main": "src/main.ts",
+    "router": "src/router.ts",
+    "root_component": "src/App.vue"
+  },
+  "components": [
+    "src/App.vue",
+    "src/pages/Overview.vue",
+    "src/pages/Roadmap.vue",
+    "src/pages/Device.vue",
+    "src/pages/Model.vue",
+    "src/pages/Specs.vue",
+    "src/pages/Assay.vue",
+    "src/pages/Hmi.vue",
+    "src/pages/Services.vue",
+    "src/components/CoverageBar.vue",
+    "src/components/DagViewer.vue",
+    "src/components/PanelState.vue",
+    "src/components/ShortcutOverlay.vue",
+    "src/components/PanelColophon.vue",
+    "src/components/MetricsBar.vue",
+    "src/components/RoadmapTrail.vue",
+    "src/composables/useAssayGate.ts",
+    "src/composables/useAssayStatus.ts",
+    "src/composables/shortcutActions.ts",
+    "src/composables/useDagLayout.ts",
+    "src/composables/useKeyboardShortcuts.ts",
+    "src/composables/useTransitions.ts",
+    "src/composables/useWakeLock.ts",
+    "src/composables/useColophon.ts"
+  ],
+  "data_sources": [
+    {"kind": "http", "path": "/api/device", "server": "src/services/adbReader.server.ts", "client": "src/services/adbReader.ts"},
+    {"kind": "http", "path": "/api/specs", "server": "src/services/specCatalog.server.ts", "client": "src/services/specCatalog.ts"},
+    {"kind": "http", "path": "/api/services", "server": "src/services/serviceWatch.server.ts", "client": "src/services/serviceWatch.ts"},
+    {"kind": "http", "path": "/api/roadmap", "server": "src/services/roadmapReader.server.ts", "client": "src/services/roadmapReader.ts"},
+    {"kind": "http", "path": "/api/roadmap-dag", "server": "src/services/dagReader.server.ts", "client": "src/services/dagReader.ts"},
+    {"kind": "http", "path": "/api/roadmap-trail", "server": "src/services/trailReader.server.ts", "client": "src/services/trailReader.ts"},
+    {"kind": "http", "path": "/api/assay", "server": "src/services/assayPanel.server.ts", "client": "src/services/assayPanel.ts"},
+    {"kind": "http", "path": "/api/cockpit-meta", "server": "src/services/cockpitMeta.server.ts"},
+    {"kind": "sse", "path": "/api/events", "server": "src/services/realtimeBridge.ts"},
+    {"kind": "ws-proxy", "path": "/ws", "target": "ws://localhost:8765"},
+    {"kind": "fs", "path": "/home/griffin/src/fleet/.roadmap/head.json"},
+    {"kind": "fs", "path": "/home/griffin/src/fleet/.roadmap/fleet.json"},
+    {"kind": "fs", "path": "/home/griffin/src/fleet/.roadmap/completed.json"},
+    {"kind": "fs", "path": "/home/griffin/src/fleet/.roadmap/trail.jsonl"},
+    {"kind": "fs", "path": "/home/griffin/src/fleet/.cache/assay-receipts.json"},
+    {"kind": "fs", "path": "/home/griffin/src/assay/specs/fixture-{a,b,c,d}.json"}
+  ],
+  "build": {
+    "bundler": "vite",
+    "config": "vite.config.ts",
+    "scripts": {"dev": "vite", "build": "vite build", "typecheck": "vue-tsc --noEmit", "preview": "vite preview"},
+    "tsconfig": "tsconfig.json",
+    "css": {"engine": "tailwindcss-v4", "vite_plugin": "@tailwindcss/vite", "postcss": "postcss.config.js", "config": "tailwind.config.js"},
+    "server_plugins": ["adbPlugin", "specCatalogPlugin", "servicesPlugin", "roadmapPlugin", "dagPlugin", "trailPlugin", "assayPanelPlugin", "cockpitMetaPlugin", "eventsPlugin"],
+    "ws_proxy": {"/ws": "ws://localhost:8765"}
+  },
+  "deps": {
+    "prod": ["pinia@^2.1.0", "vue@^3.4.0", "vue-router@^4.6.4"],
+    "dev": ["@tailwindcss/vite@^4.2.2", "@vitejs/plugin-vue@^6.0.5", "tailwindcss@^4.2.2", "typescript@^5.4.0", "vite@^7.0.0", "vitest@^4.1.0", "vue-tsc@^2.0.0"]
+  },
+  "total_loc": 8212,
+  "loc_scope": "src/**/*.{vue,ts,tsx}",
+  "tests": [
+    "src/services/modelLoader.test.ts",
+    "src/services/serviceWatch.test.ts",
+    "src/services/specCatalog.test.ts",
+    "src/services/roadmapReader.test.ts",
+    "src/services/processRun.test.ts",
+    "src/services/adbReader.test.ts",
+    "src/services/integration.test.ts",
+    "src/services/assayReader.test.ts"
+  ],
+  "preview_harness": "src/preview/panelStatePreview.ts",
+  "must_port": {
+    "core_viewer": [
+      "src/pages/Roadmap.vue",
+      "src/components/DagViewer.vue",
+      "src/components/RoadmapTrail.vue",
+      "src/composables/useDagLayout.ts",
+      "src/services/dagReader.ts",
+      "src/services/dagReader.server.ts",
+      "src/services/roadmapReader.ts",
+      "src/services/roadmapReader.server.ts",
+      "src/services/trailReader.ts",
+      "src/services/trailReader.server.ts",
+      "src/services/realtimeBridge.ts"
+    ],
+    "shell_chrome": [
+      "src/App.vue",
+      "src/main.ts",
+      "src/router.ts",
+      "src/components/CoverageBar.vue",
+      "src/components/MetricsBar.vue",
+      "src/components/PanelState.vue",
+      "src/components/PanelColophon.vue",
+      "src/components/ShortcutOverlay.vue",
+      "src/composables/useKeyboardShortcuts.ts",
+      "src/composables/shortcutActions.ts",
+      "src/composables/useTransitions.ts",
+      "src/composables/useWakeLock.ts",
+      "src/composables/useColophon.ts"
+    ],
+    "build_files": ["index.html", "vite.config.ts", "tsconfig.json", "tailwind.config.js", "postcss.config.js", "package.json"]
+  },
+  "drop_or_replace": {
+    "fleet_specific_pages": ["src/pages/Device.vue", "src/pages/Model.vue", "src/pages/Specs.vue", "src/pages/Assay.vue", "src/pages/Hmi.vue", "src/pages/Services.vue", "src/pages/Overview.vue"],
+    "fleet_specific_services": [
+      "src/services/adbReader.{ts,server.ts}",
+      "src/services/specCatalog.{ts,server.ts}",
+      "src/services/serviceWatch.{ts,server.ts}",
+      "src/services/assayPanel.{ts,server.ts}",
+      "src/services/assayReader.ts",
+      "src/services/assayCoverage.ts",
+      "src/services/cockpitMeta.server.ts",
+      "src/services/modelLoader.ts",
+      "src/services/keelScenario.ts",
+      "src/services/processRun.ts"
+    ],
+    "rationale": "Roadmap viewer in engine repo only needs DAG + trail + roadmap-state slice. Fleet device/model/spec/assay/service surfaces are fleet-cockpit concerns and stay in fleet."
+  },
+  "path_rewrites": [
+    {"from": "/home/griffin/src/fleet/.roadmap/", "to": "<repoRoot>/.roadmap/", "reason": "viewer reads its host repo's roadmap, not fleet's"},
+    {"from": "/home/griffin/src/fleet-polish/.roadmap/", "to": "drop", "reason": "polish-fork watcher is fleet-specific"}
+  ],
+  "vendor_or_replace": {
+    "vendor_as_is": ["pinia", "vue", "vue-router", "vite", "@vitejs/plugin-vue", "tailwindcss", "@tailwindcss/vite", "vue-tsc", "typescript", "vitest"],
+    "replace": [],
+    "external_runtime": [{"name": "ws bridge :8765", "decision": "drop unless engine grows a live-keel surface"}]
+  },
+  "notes": [
+    "Server plugins are inlined in vite.config.ts via apiPlugin factory — port the factory + only the dag/trail/roadmap/events plugins.",
+    "realtimeBridge currently hard-codes fleet/fleet-polish paths; rewrite to scan the host repo's .roadmap dir.",
+    "Tailwind v4 (vite plugin form) — no postcss config strictly required but file is present.",
+    "Total source LOC = 8212 across 56 files (src/**/*.{vue,ts,tsx}); core viewer slice + shell chrome ≈ 1.5k LOC estimated subset."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "node": "skill-port-roadmap-night",
+  "verdict": "GREEN",
+  "artifacts": [
+    "templates/skills/roadmap-night.md"
+  ],
+  "commits": [],
+  "verify": {
+    "cmd": "diff ~/.claude/skills/roadmap-night/SKILL.md /home/griffin/src/.dev/roadmap/templates/skills/roadmap-night.md",
+    "exit": 0,
+    "summary": "byte-identical port; 179 LOC"
+  },
+  "notes": "live SKILL.md copied verbatim into templates/skills/roadmap-night.md"
+}
