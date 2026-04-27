@@ -5260,5 +5260,30 @@
     "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
     "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-sweep-validator",
+    "completedAt": "2026-04-27T10:44:04.207Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-sweep-validator.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-sweep-validator.json"
+      },
+      {
+        "rule": "shell:jq -e '(.authored + .punted_with_reason) == 21' .roadmap/round-1.5/d-skill-template-sweep-validator.json",
+        "passed": true,
+        "evidence": "command passed (exit 0): jq -e '(.authored + .punted_with_reason) == 21' .roadmap/round-1.5/d-skill-template-sweep-validator.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-sweep-validator.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "895e0ec374d7c00ce0e8996eeebed6ae167295c9",
+    "treeSha": "154d92bdffeecb2a91f6da0319dd57a85aa6ab14",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]

@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-04-27T10:40:48.550Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "byte-identical port",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "templates/skills/core-loop.md",
+      ".roadmap/round-1.5/d-skill-template-core-loop.json"
+    ],
+    "ready": true
+  }
+}

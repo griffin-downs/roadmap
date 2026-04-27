@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-04-27T10:43:10.019Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "shell:jq -e '(.authored + .punted_with_reason) == 21' .roadmap/round-1.5/d-skill-template-sweep-validator.json"
+  ],
+  "currentFile": ""
+}

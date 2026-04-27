@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-04-27T10:40:50.610Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "byte-identical port",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "templates/skills/stance.md",
+      ".roadmap/round-1.5/d-skill-template-stance.json"
+    ],
+    "ready": true
+  }
+}
