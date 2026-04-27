@@ -1,0 +1,35 @@
+{
+  "node": "pr-merge-stance-register",
+  "round": 1,
+  "date": "2026-04-27",
+  "outcome": "GREEN",
+  "operation": "direct-merge · no-PR",
+  "merges": [
+    {
+      "into": "main",
+      "from": "feat/stance-register-skills",
+      "strategy": "no-ff",
+      "sha": "30b34b0",
+      "message": "merge · feat/stance-register-skills · /stance register",
+      "files_changed": 2,
+      "insertions": 369,
+      "deletions": 180
+    },
+    {
+      "into": "feat/r1-skill-maintenance-and-viewer",
+      "from": "main",
+      "strategy": "no-ff",
+      "sha": "f627154",
+      "message": "sync · main into r1 branch"
+    }
+  ],
+  "self_review": {
+    "diff_cmd": "git diff main...feat/stance-register-skills -- templates/skills/{roadmap-spec,roadmap-auto}.md",
+    "stance_register_language_present": true,
+    "evidence": "register · /stance found in both roadmap-spec.md and roadmap-auto.md on feat branch",
+    "well_formed": true
+  },
+  "pre_commit_hook": "did not block · merge to main clean",
+  "remote_push": "deferred · Griffin pushes manually",
+  "notes": "PR-workflow framing in spec ignored per Griffin standing instruction · direct push rights"
+}
