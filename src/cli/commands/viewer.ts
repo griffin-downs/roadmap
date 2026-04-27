@@ -1,16 +1,22 @@
-// @module cli/viewer
-// @description `roadmap viewer` subcommand stub. Spawns viewer dev server pointed at host repo's .roadmap/.
+// @module cli/commands/viewer
+// @description `roadmap viewer` first-class subcommand. Spawns viewer dev/preview
+//              server pointed at the host repo's .roadmap/. Wired into bin/roadmap.ts
+//              command registry alongside make/orient/advance/init.
 // @exports run
-// Scope (r1.5 stub): minimal scaffolding only. Subsequent r1.5 nodes (viewer-extract-scaffold,
-// viewer-port-*, viewer-build-*) populate ./viewer/ with the actual Vite/Vue app. Until then
-// this command surfaces a clear NOT_READY envelope so calling it pre-scaffold fails loudly
-// rather than silently spawning against an empty directory (§Fail-hard · no legacy support).
+//
+// Flags:
+//   --preview            run vite preview against viewer/dist (instead of dev mode)
+//   --port <n>           override default port
+//   --host-repo <path>   override host repo (defaults to $PWD)
+//
+// HOST_REPO is exported into the spawned child so realtimeBridge + readers
+// resolve the host's .roadmap/ rather than the engine repo's own.
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
-import { emit } from '../lib/cli-envelope.ts';
-import type { OutputOpts } from '../lib/cli-envelope.ts';
+import { emit } from '../../lib/cli-envelope.ts';
+import type { OutputOpts } from '../../lib/cli-envelope.ts';
 
 interface ViewerFlags {
   help: boolean;
@@ -44,7 +50,11 @@ function printHelp(opts: OutputOpts): void {
       '--port <n>': 'Override default port',
       '--host-repo <path>': 'Override host repo (defaults to $PWD)',
     },
-    note: 'r1.5 stub — viewer/ scaffold lands in viewer-extract-scaffold node.',
+    examples: [
+      'roadmap viewer',
+      'roadmap viewer --port 5174',
+      'roadmap viewer --preview --host-repo /home/griffin/src/fleet',
+    ],
   } }, opts);
 }
 
@@ -56,10 +66,13 @@ export async function run(args: string[], repoRoot: string, _note: string, opts:
   const viewerPkg = join(viewerDir, 'package.json');
   if (!existsSync(viewerPkg)) {
     emit({ ok: false, cmd: 'viewer', error: {
-      code: 'VIEWER_NOT_SCAFFOLDED',
-      message: `viewer/ not yet scaffolded at ${viewerDir}`,
-      fix: ['Wait for r1.5 viewer-extract-scaffold node to land', 'Then re-run: roadmap viewer'],
-      hint: 'This is the r1.5 stub. Subcommand registered, app not yet present.',
+      code: 'VIEWER_MISSING',
+      message: `viewer/package.json not found at ${viewerPkg}`,
+      fix: [
+        'Reinstall the engine: viewer/ should ship with the package',
+        'If running from a checkout, run: pnpm install at the repo root',
+      ],
+      hint: 'Engine ships viewer/ as a sibling Vite app; missing means broken install.',
     } }, opts);
     process.exit(1);
   }

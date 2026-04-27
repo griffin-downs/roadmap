@@ -32,7 +32,7 @@ import * as cliHelp from '../src/cli/help.ts';
 import * as cliDag from '../src/cli/dag.ts';
 import * as cliSpec from '../src/cli/spec.ts';
 import * as cliInit from '../src/cli/init.ts';
-import * as cliViewer from '../src/cli/viewer.ts';
+import * as cliViewer from '../src/cli/commands/viewer.ts';
 
 // --- Init ---
 const rawArgs = process.argv.slice(2);

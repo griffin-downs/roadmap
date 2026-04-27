@@ -1,0 +1,28 @@
+{
+  "node": "viewer-cli-register-subcommand",
+  "verdict": "GREEN",
+  "artifacts": [
+    "src/cli/commands/viewer.ts",
+    "bin/roadmap.ts"
+  ],
+  "verify": {
+    "cmd": "node bin/roadmap.ts help | grep '^  viewer'",
+    "exit": 0,
+    "evidence": "viewer listed in core commands; KNOWN_COMMANDS includes 'viewer'; viewer subcommand routes to cliViewer.run()"
+  },
+  "design": {
+    "path_canonicalization": "moved src/cli/viewer.ts -> src/cli/commands/viewer.ts (matches spec produces path); bin/roadmap.ts import updated atomically per §Fail-hard rename rule",
+    "stub_to_first_class": "removed 'r1.5 stub' language and VIEWER_NOT_SCAFFOLDED error; replaced with VIEWER_MISSING (broken-install diagnostic)",
+    "flags": ["--preview", "--port <n>", "--host-repo <path>", "--help / -h"],
+    "host_repo_env": "HOST_REPO=$flags.hostRepo (defaults to process.cwd()) exported into spawned child so realtimeBridge resolves host's .roadmap/",
+    "registry_wiring": [
+      "KNOWN_COMMANDS set in bin/roadmap.ts includes 'viewer'",
+      "switch dispatch case 'viewer' calls cliViewer.run(args, repoRoot, note, opts)",
+      "NOTE_EXEMPT includes 'viewer' (long-running dev-server doesn't need a trail note)",
+      "BRANCH_EXEMPT includes 'viewer' (works on any branch)",
+      "help.ts core-commands list shows: 'viewer  Start the roadmap viewer dev server (host repo's .roadmap/)'"
+    ]
+  },
+  "loc": { "src/cli/commands/viewer.ts": 78 },
+  "notes": "Path canonicalization + stub-to-first-class upgrade. Subcommand was already wired in bin/roadmap.ts (KNOWN_COMMANDS + dispatch + help text); this node moves source to spec'd path, removes stub-era error language, and adds usage examples."
+}
