@@ -5590,5 +5590,35 @@
     "gitSha": "63d8d9db014d3ccff91fd18f2cafdef32e7bec60",
     "treeSha": "69257723b086a1502ec1c2979b8725b756afea0f",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-cli-register-subcommand",
+    "completedAt": "2026-04-27T11:06:21.255Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:roadmap help 2>&1 | grep -q viewer",
+        "passed": true,
+        "evidence": "command passed (exit 0): roadmap help 2>&1 | grep -q viewer"
+      },
+      {
+        "rule": "shell:roadmap viewer --help 2>&1 | grep -qi 'host.repo\\|HOST_REPO'",
+        "passed": true,
+        "evidence": "command passed (exit 0): roadmap viewer --help 2>&1 | grep -qi 'host.repo\\|HOST_REPO'"
+      },
+      {
+        "rule": "artifact-exists:src/cli/commands/viewer.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-cli-register-subcommand.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "bf54af957a353068c23e4040224416048544ba05",
+    "treeSha": "db8f949799d6b7ad7a32b7b6f6438358070bbc9c",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]
