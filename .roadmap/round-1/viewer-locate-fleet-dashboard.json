@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "node": "viewer-locate-fleet-dashboard",
+  "round": 1,
+  "outcome": "GREEN",
+  "produces": [".roadmap/round-1/d-viewer-fleet-dashboard-manifest.json"],
+  "claims": [
+    {"claim": "fleet/dashboard total LOC", "claim_count": 8212, "jq_probe_cmd": "find /home/griffin/src/fleet/dashboard/src -type f \\( -name '*.vue' -o -name '*.ts' -o -name '*.tsx' \\) | xargs wc -l | tail -1"},
+    {"claim": "must-port file count", "claim_count": 30, "jq_probe_cmd": "jq '[.must_port.core_viewer[], .must_port.shell_chrome[], .must_port.build_files[]] | length' .roadmap/round-1/d-viewer-fleet-dashboard-manifest.json"},
+    {"claim": "data sources enumerated", "claim_count": 16, "jq_probe_cmd": "jq '.data_sources | length' .roadmap/round-1/d-viewer-fleet-dashboard-manifest.json"}
+  ],
+  "summary": "Inventoried fleet/dashboard · vite+vue3+pinia+tailwind-v4 · 56 src files / 8212 LOC · 9 server-side vite plugins · SSE realtime + WS proxy · core viewer slice = Roadmap.vue + DagViewer + RoadmapTrail + dag/trail/roadmap readers + realtimeBridge."
+}
