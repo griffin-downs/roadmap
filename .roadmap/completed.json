@@ -5375,5 +5375,40 @@
     "gitSha": "239343223cbe3f683adf7c83bcf9b6077b2652e3",
     "treeSha": "300b1a7081cdfe72d8f06f89661582121daa412e",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-port-dag-component",
+    "completedAt": "2026-04-27T10:50:44.877Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:cd viewer && pnpm exec vue-tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm exec vue-tsc --noEmit"
+      },
+      {
+        "rule": "shell:! grep -E 'fetch\\(|axios|setTimeout|new XMLHttpRequest' viewer/src/components/DagViewer.vue",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -E 'fetch\\(|axios|setTimeout|new XMLHttpRequest' viewer/src/components/DagViewer.vue"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/DagViewer.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/composables/useDagLayout.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-port-dag-component.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4e29bd34b6c703e57d0c0d917591f0aa889fc850",
+    "treeSha": "c2068043a907b811ecf3954bf4b4dd8062be84ea",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]

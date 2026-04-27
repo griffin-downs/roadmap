@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-04-27T10:50:09.700Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "shell:cd viewer && pnpm exec vue-tsc --noEmit"
+  ],
+  "currentFile": ""
+}

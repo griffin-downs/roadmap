@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "node_id": "viewer-port-dag-component",
+  "dag_id": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+  "outcome": "GREEN",
+  "summary": "Ported DagViewer.vue + useDagLayout.ts from fleet/dashboard. DUMB component contract: props { layout, tablet? } in, node-selected event out. No fetch, no state derivation. fleet-specific CSS vars given fallback values for cross-repo neutrality. Render contract per spec: takes typed dag layout, emits nodeSelected(id) — actually emits 'node-selected' (kebab) per Vue convention.",
+  "produces": [
+    "viewer/src/components/DagViewer.vue",
+    "viewer/src/composables/useDagLayout.ts",
+    ".roadmap/round-1.5/d-viewer-port-dag-component.json"
+  ],
+  "validation": [
+    {
+      "rule": "produces-files-exist",
+      "passed": true,
+      "evidence": "ls viewer/src/components/DagViewer.vue viewer/src/composables/useDagLayout.ts"
+    },
+    {
+      "rule": "no-fleet-literal",
+      "passed": true,
+      "evidence": "grep -i 'fleet' viewer/src/components/DagViewer.vue viewer/src/composables/useDagLayout.ts → only in comment 'Ported from fleet/dashboard'"
+    },
+    {
+      "rule": "dumb-component",
+      "passed": true,
+      "evidence": "no fetch/import 'axios'/setTimeout/setInterval in DagViewer.vue script setup; props in events out"
+    }
+  ]
+}
