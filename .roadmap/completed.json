@@ -5435,5 +5435,35 @@
     "gitSha": "cdae5c1b97cde8502e7651538ed3de75b1167364",
     "treeSha": "1f5c679bd4442d346ead0e431fb2202cf65cc1b2",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-cross-lane-rollup",
+    "completedAt": "2026-04-27T10:53:29.793Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/components/CrossLaneRollup.vue",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/components/CrossLaneRollup.vue"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/CrossLaneRollup.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/laneRollupReader.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-cross-lane-rollup.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4fa5187dca7ffad3337fbfe2e65db4ec994f5e35",
+    "treeSha": "9babfba4dd908e0f7db707d8c3754cfbb81af471",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]
