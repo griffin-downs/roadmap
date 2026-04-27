@@ -10,6 +10,7 @@ Core commands (mainline execution):
   orient             Current batch position + produces/consumes
   advance [node-id]  Complete node (run validators, record evidence) or advance batch
   init               Bootstrap repo: CLAUDE.md fragment + skills install
+  viewer             Start the roadmap viewer dev server (host repo's .roadmap/)
 
 Command groups (use 'roadmap <group> help' for details):
   spec <sub>         Spec planning: plan (gallery, select, status)

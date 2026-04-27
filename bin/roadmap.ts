@@ -32,6 +32,7 @@ import * as cliHelp from '../src/cli/help.ts';
 import * as cliDag from '../src/cli/dag.ts';
 import * as cliSpec from '../src/cli/spec.ts';
 import * as cliInit from '../src/cli/init.ts';
+import * as cliViewer from '../src/cli/viewer.ts';
 
 // --- Init ---
 const rawArgs = process.argv.slice(2);
@@ -69,7 +70,7 @@ if (_humanRenderers[_outputOpts.cmd]) {
 }
 
 // --- Known commands gate ---
-const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'init', 'status', 'spec', 'dag', 'api', 'help', '--help', '-h']);
+const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'init', 'status', 'spec', 'dag', 'api', 'help', 'viewer', '--help', '-h']);
 if (!KNOWN_COMMANDS.has(cmd)) {
   const available = listCommands().map(c => c.command);
   emit({ ok: false, cmd: _outputOpts.cmd, error: {
@@ -90,7 +91,7 @@ if (args.slice(1).some(a => a === '--help' || a === '-h')) {
 }
 
 // --- Note requirement ---
-const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec', 'dag', 'api', 'init']);
+const NOTE_EXEMPT = new Set(['help', '--help', '-h', 'spec', 'dag', 'api', 'init', 'viewer']);
 const isOrientCheck = (cmd === 'orient') && args.includes('--check');
 if (isOrientCheck) NOTE_EXEMPT.add('orient');
 
@@ -151,7 +152,7 @@ async function main() {
   const note = _note;
 
   // Branch enforcement for DAG-mutating commands
-  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient', 'advance', 'status', 'spec', 'init']);
+  const BRANCH_EXEMPT = new Set(['help', '--help', '-h', 'api', 'orient', 'advance', 'status', 'spec', 'init', 'viewer']);
   if (!BRANCH_EXEMPT.has(cmd) && !(cmd === 'make' && args.includes('--dry-run'))) {
     enforceMainBranch(repoRoot);
   }
@@ -165,6 +166,7 @@ async function main() {
       case 'spec':      return await cliSpec.run(args, repoRoot, note, _outputOpts);
       case 'dag':       return await cliDag.run(args, repoRoot, note, hasLocalDAG, _outputOpts);
       case 'init':      return await cliInit.run(args, repoRoot, note ?? '', _outputOpts);
+      case 'viewer':    return await cliViewer.run(args, repoRoot, note ?? '', _outputOpts);
       case 'api':       return cliApi.run(args, _outputOpts);
       case 'help':
       case '--help':

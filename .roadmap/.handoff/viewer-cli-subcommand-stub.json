@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-04-27T10:31:24.416Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "stub registered · pnpm dev spawn confirmed via vite v7.3.2",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "src/cli/viewer.ts",
+      ".roadmap/round-1/d-viewer-cli-stub.json"
+    ],
+    "ready": true
+  }
+}

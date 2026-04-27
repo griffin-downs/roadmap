@@ -4700,5 +4700,35 @@
     "gitSha": "fe6935cc84b95cda41146bf9360a9f648cbcbe33",
     "treeSha": "60dc458dbc3b09adb2b8f6717de8972d9b8d2900",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-cli-subcommand-stub",
+    "completedAt": "2026-04-27T10:31:24.414Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/viewer.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/viewer.ts"
+      },
+      {
+        "rule": "shell:node dist/cli.js viewer --help 2>&1 | grep -qi viewer || npx tsx src/cli.ts viewer --help 2>&1 | grep -qi viewer",
+        "passed": true,
+        "evidence": "command passed (exit 0): node dist/cli.js viewer --help 2>&1 | grep -qi viewer || npx tsx src/cli.ts viewer --help 2>&1 | grep -qi viewer"
+      },
+      {
+        "rule": "artifact-exists:src/cli/viewer.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-cli-stub.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "dcf35f6a7c582f8eb213e746a5e7351a1ceb4b17",
+    "treeSha": "4a478d0f2161e027b292acf59329441e556bcfb0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]

@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-04-27T10:30:53.055Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "shell:node dist/cli.js viewer --help 2>&1 | grep -qi viewer || npx tsx src/cli.ts viewer --help 2>&1 | grep -qi viewer"
+  ],
+  "currentFile": ""
+}

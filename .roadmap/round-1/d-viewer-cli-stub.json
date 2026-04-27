@@ -1,0 +1,46 @@
+{
+  "node_id": "viewer-cli-subcommand-stub",
+  "round": "r1",
+  "dag_id": "roadmap-r1-skill-maintenance-viewer-migration",
+  "ts": "2026-04-27T10:30:04Z",
+  "branch": "feat/r1-skill-maintenance-and-viewer",
+  "head_before": "dcf35f6a7c582f8eb213e746a5e7351a1ceb4b17",
+  "produces": [
+    "src/cli/viewer.ts",
+    "bin/roadmap.ts",
+    "src/cli/help.ts"
+  ],
+  "summary": "Registered `roadmap viewer` as first-class CLI subcommand. TypeScript stub (Griffin doctrine: glue is TS, no .sh helpers).",
+  "behavior": {
+    "with_scaffold": "Spawns `pnpm --dir viewer dev` (or `vite preview` with --preview) with HOST_REPO=$PWD",
+    "without_scaffold": "Emits VIEWER_NOT_SCAFFOLDED envelope with fix pointer to viewer-extract-scaffold node (§Fail-hard)",
+    "flags": ["--help", "--preview", "--port <n>", "--host-repo <path>"]
+  },
+  "registry_changes": {
+    "KNOWN_COMMANDS": "added 'viewer'",
+    "NOTE_EXEMPT": "added 'viewer' (dev server, no DAG mutation)",
+    "BRANCH_EXEMPT": "added 'viewer'",
+    "help_text": "viewer line added under init"
+  },
+  "smoke_tests": [
+    {
+      "cmd": "roadmap help",
+      "expect": "lists viewer alongside init/make/orient/advance",
+      "result": "PASS"
+    },
+    {
+      "cmd": "roadmap viewer",
+      "expect": "viewer/ exists (already scaffolded by viewer-extract-scaffold) → spawns vite, listening on http://localhost:5177/",
+      "result": "PASS — observed VITE v7.3.2 ready"
+    }
+  ],
+  "doctrine_anchors": ["§Fail-hard · no legacy support", "§Goldilocks-size (~75 LOC, single concern)"],
+  "validators": [
+    {
+      "type": "artifact-exists",
+      "target": ".roadmap/round-1/d-viewer-cli-stub.json",
+      "result": "PASS (this file)"
+    }
+  ],
+  "next": "viewer-smoke-test-self-host (depends on this) · viewer-per-page-convergence"
+}
