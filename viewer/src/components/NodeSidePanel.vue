@@ -43,6 +43,28 @@
         <ReceiptTree :node="receipt" :depth="0" :path="''" />
       </section>
 
+      <section class="panel-section">
+        <h3 class="section-title">
+          <button type="button" class="raw-toggle" @click="rawOpen = !rawOpen">
+            raw fields {{ rawOpen ? '−' : '+' }}
+          </button>
+        </h3>
+        <div v-if="rawOpen" class="raw-block">
+          <input
+            v-model="rawSearch"
+            type="search"
+            class="raw-search"
+            placeholder="filter keys/values…"
+            aria-label="filter raw fields"
+          />
+          <FieldExpander
+            :data="node"
+            :path="`$.nodes[${JSON.stringify(node.id)}]`"
+            :search="rawSearchDebounced"
+          />
+        </div>
+      </section>
+
       <section v-if="commits.length > 0" class="panel-section">
         <h3 class="section-title">git log (produces)</h3>
         <ul class="commit-list">
@@ -65,9 +87,10 @@
 //
 // New for r1.5 (viewer-build-node-side-panel) — NICER feature #2.
 
-import { computed } from "vue";
-import type { ComputedRef } from "vue";
+import { computed, ref, watch } from "vue";
+import type { ComputedRef, Ref } from "vue";
 import ReceiptTree from "./ReceiptTree.vue";
+import FieldExpander from "./FieldExpander.vue";
 
 export type NodeStatus = "pending" | "in-progress" | "green" | "red";
 
@@ -116,6 +139,15 @@ const hasValidators: ComputedRef<boolean> = computed<boolean>(() => validatorChe
 const validatorChecks: ComputedRef<ValidatorCheck[]> = computed<ValidatorCheck[]>(() => {
   const list = props.node?.validators;
   return Array.isArray(list) ? list : [];
+});
+
+const rawOpen: Ref<boolean> = ref<boolean>(false);
+const rawSearch: Ref<string> = ref<string>("");
+const rawSearchDebounced: Ref<string> = ref<string>("");
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
+watch(rawSearch, (q) => {
+  if (searchTimer !== null) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { rawSearchDebounced.value = q; }, 80);
 });
 
 function emitClose(): void {
@@ -204,4 +236,26 @@ function emitClose(): void {
 .commit-sha { color: var(--accent-red, #d33); }
 .commit-subject { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .commit-date { color: var(--text-meta, #888); font-size: 10px; text-align: right; }
+.raw-toggle {
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+.raw-toggle:hover { color: var(--accent-red, #d33); }
+.raw-block { display: flex; flex-direction: column; gap: 4px; }
+.raw-search {
+  background: var(--chrome-10, #161616);
+  border: 1px solid var(--chrome-25, #333);
+  color: var(--text-primary, #eee);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  padding: 3px 5px;
+  width: 100%;
+}
+.raw-search:focus { outline: 1px solid var(--accent-red, #d33); }
 </style>
