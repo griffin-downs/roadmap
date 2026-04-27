@@ -1,17 +1,73 @@
 <script setup lang="ts">
-// Roadmap viewer shell — minimal composition exposing field-expander panels
-// for roadmap-level + node-level inspection. Real DAG composition still
-// lands in the dedicated port nodes; this shell is a usable inspector now.
+// Roadmap viewer shell — composes the DAG renderer (hierarchical default,
+// force topology selectable) with a side pane for full node detail and a
+// collapsible field-expander for raw head.json / completed / intentEvals.
+//
+// §Dumb-components: this shell composes; DagViewer/DagTopology are pure
+// props-in/events-out. No fetch/state-derivation lives in their script
+// setup. Click on any node bubbles up to open NodeSidePanel here.
 
 import { computed, ref, watch } from "vue";
 import type { ComputedRef, Ref } from "vue";
 import FieldExpander from "./components/FieldExpander.vue";
 import NodeSidePanel from "./components/NodeSidePanel.vue";
 import type { InspectedNode } from "./components/NodeSidePanel.vue";
+import DagViewer from "./components/DagViewer.vue";
+import DagTopology from "./components/DagTopology.vue";
 import { useDagPayload } from "./services/dagReader";
+import { DEFAULT_LAYOUT_OPTIONS, useDagLayout } from "./composables/useDagLayout";
+import {
+  DEFAULT_FORCE_OPTIONS,
+  useForceLayout,
+  type ForceLayoutOptions,
+} from "./composables/useForceLayout";
 
 const payload = useDagPayload();
-const detailsOpen: Ref<boolean> = ref<boolean>(true);
+
+// view mode: hierarchical is the parity-with-dashboard default
+const viewMode: Ref<"hierarchical" | "topology"> = ref<"hierarchical" | "topology">(
+  "hierarchical",
+);
+
+// hierarchical layout
+const layoutOptions = ref(DEFAULT_LAYOUT_OPTIONS);
+const layout = useDagLayout(payload, layoutOptions);
+
+// topology layout (force-directed alt view)
+const completedSet: ComputedRef<Set<string>> = computed<Set<string>>(() => {
+  const p = payload.value;
+  return new Set<string>(p === null ? [] : p.completed);
+});
+const groupBy: Ref<"depth" | "cluster"> = ref<"depth" | "cluster">("depth");
+const forceOptions: Ref<ForceLayoutOptions> = ref<ForceLayoutOptions>({
+  ...DEFAULT_FORCE_OPTIONS,
+  groupBy: groupBy.value,
+});
+watch(groupBy, (next) => {
+  forceOptions.value = { ...forceOptions.value, groupBy: next };
+});
+const force = useForceLayout(payload, completedSet, forceOptions);
+watch(viewMode, (next) => {
+  if (next === "topology") force.start();
+  else force.stop();
+});
+
+// node selection → side panel
+const selectedNodeId: Ref<string> = ref<string>("");
+const selectedNode: ComputedRef<InspectedNode | null> = computed(() => {
+  const p = payload.value;
+  if (p === null || !selectedNodeId.value) return null;
+  const n = p.head.nodes[selectedNodeId.value];
+  if (!n) return null;
+  return n as unknown as InspectedNode;
+});
+
+function onNodeSelected(nodeId: string): void {
+  selectedNodeId.value = nodeId;
+}
+
+// raw inspector (collapsed by default — DAG is the headline)
+const detailsOpen: Ref<boolean> = ref<boolean>(false);
 const tab: Ref<"head" | "completed" | "intent"> = ref("head");
 const search: Ref<string> = ref<string>("");
 const searchDebounced: Ref<string> = ref<string>("");
@@ -30,29 +86,59 @@ const tabData: ComputedRef<unknown> = computed(() => {
 });
 const tabPath: ComputedRef<string> = computed(() => `$.${tab.value}`);
 
-const selectedNodeId: Ref<string> = ref<string>("");
-const selectedNode: ComputedRef<InspectedNode | null> = computed(() => {
-  const p = payload.value;
-  if (p === null || !selectedNodeId.value) return null;
-  const n = p.head.nodes[selectedNodeId.value];
-  if (!n) return null;
-  return n as unknown as InspectedNode;
-});
-const nodeIds: ComputedRef<string[]> = computed(() => {
-  const p = payload.value;
-  return p === null ? [] : Object.keys(p.head.nodes);
-});
+const dagId: ComputedRef<string> = computed<string>(() =>
+  payload.value === null ? "loading…" : payload.value.dagId,
+);
 </script>
 
 <template>
   <main class="viewer-shell">
     <header class="viewer-head">
-      <h1>roadmap viewer</h1>
+      <h1>roadmap viewer · <span class="dag-id">{{ dagId }}</span></h1>
+      <div class="view-toggle">
+        <button
+          type="button"
+          class="toggle-btn"
+          :class="{ 'toggle-btn--active': viewMode === 'hierarchical' }"
+          @click="viewMode = 'hierarchical'"
+        >hierarchical</button>
+        <button
+          type="button"
+          class="toggle-btn"
+          :class="{ 'toggle-btn--active': viewMode === 'topology' }"
+          @click="viewMode = 'topology'"
+        >topology</button>
+      </div>
+    </header>
+
+    <section class="dag-pane">
+      <DagViewer
+        v-if="viewMode === 'hierarchical'"
+        :layout="layout"
+        export-name="roadmap-dag"
+        @node-selected="onNodeSelected"
+      />
+      <DagTopology
+        v-else
+        :nodes="force.nodes.value"
+        :links="force.links.value"
+        :width="1200"
+        :height="700"
+        :group-by="groupBy"
+        :zoom="1"
+        :pan="{ x: 0, y: 0 }"
+        export-name="roadmap-dag"
+        @select="onNodeSelected"
+        @update:group-by="groupBy = $event"
+        @reheat="force.reheat()"
+      />
+    </section>
+
+    <header class="details-head">
       <button type="button" class="head-toggle" @click="detailsOpen = !detailsOpen">
         roadmap details {{ detailsOpen ? '▾' : '▸' }}
       </button>
     </header>
-
     <section v-if="detailsOpen" class="details">
       <div class="tabs">
         <button
@@ -89,16 +175,6 @@ const nodeIds: ComputedRef<string[]> = computed(() => {
       <p v-else class="placeholder">loading head.json…</p>
     </section>
 
-    <section class="node-pick">
-      <label>
-        node:
-        <select v-model="selectedNodeId">
-          <option value="">— select —</option>
-          <option v-for="id in nodeIds" :key="id" :value="id">{{ id }}</option>
-        </select>
-      </label>
-    </section>
-
     <NodeSidePanel
       :node="selectedNode"
       @close="selectedNodeId = ''"
@@ -110,7 +186,7 @@ const nodeIds: ComputedRef<string[]> = computed(() => {
 .viewer-shell {
   font-family: var(--font-mono, ui-monospace, monospace);
   color: var(--text-primary, #eee);
-  background: var(--chrome-00, #050505);
+  background: var(--chrome-00, #000);
   min-height: 100vh;
   padding: 16px;
   display: flex;
@@ -118,7 +194,33 @@ const nodeIds: ComputedRef<string[]> = computed(() => {
   gap: 12px;
 }
 .viewer-head { display: flex; justify-content: space-between; align-items: baseline; }
-.viewer-head h1 { margin: 0; font-size: 16px; }
+.viewer-head h1 { margin: 0; font-size: 16px; font-weight: 600; }
+.viewer-head .dag-id { color: var(--text-meta, #888); font-weight: 400; }
+.view-toggle { display: flex; gap: 4px; }
+.toggle-btn {
+  background: var(--chrome-05, #0a0a0a);
+  border: 1px solid var(--chrome-25, #333);
+  color: var(--text-secondary, #ccc);
+  font: inherit;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.toggle-btn--active {
+  border-color: var(--accent-red, #d33);
+  color: var(--text-primary, #eee);
+}
+.dag-pane {
+  flex: 1 1 auto;
+  min-height: 70vh;
+  border: 1px solid var(--chrome-25, #333);
+  background: var(--chrome-00, #000);
+  position: relative;
+}
+.details-head {
+  display: flex;
+  justify-content: flex-start;
+}
 .head-toggle {
   background: var(--chrome-05, #0a0a0a);
   border: 1px solid var(--chrome-25, #333);
@@ -130,7 +232,7 @@ const nodeIds: ComputedRef<string[]> = computed(() => {
 .details {
   border: 1px solid var(--chrome-25, #333);
   padding: 10px;
-  max-height: 50vh;
+  max-height: 40vh;
   overflow: auto;
   background: var(--chrome-05, #0a0a0a);
 }
@@ -156,12 +258,4 @@ const nodeIds: ComputedRef<string[]> = computed(() => {
 }
 .search:focus { outline: 1px solid var(--accent-red, #d33); }
 .placeholder { color: var(--text-meta, #888); font-style: italic; }
-.node-pick { font-size: 12px; }
-.node-pick select {
-  background: var(--chrome-10, #161616);
-  border: 1px solid var(--chrome-25, #333);
-  color: var(--text-primary, #eee);
-  font: inherit;
-  padding: 3px 6px;
-}
 </style>
