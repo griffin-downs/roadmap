@@ -4680,5 +4680,25 @@
     "gitSha": "a907f2fb1b9168124378f75d040621c120323dcd",
     "treeSha": "54d5369ef7792c3559026fe5400a32be933404b6",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-vendor-or-link-deps",
+    "completedAt": "2026-04-27T10:24:01.204Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-deps-decision.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1/d-viewer-deps-decision.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-deps-decision.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "fe6935cc84b95cda41146bf9360a9f648cbcbe33",
+    "treeSha": "60dc458dbc3b09adb2b8f6717de8972d9b8d2900",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]

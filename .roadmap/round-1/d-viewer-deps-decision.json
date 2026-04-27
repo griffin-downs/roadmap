@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "node": "viewer-vendor-or-link-deps",
+  "round": 1,
+  "dag_id": "roadmap-r1-skill-maintenance-viewer-migration",
+  "date": "2026-04-27",
+  "decision": "extract-clean",
+  "decision_summary": "Viewer owns its own package.json declaring the same dep set as fleet/dashboard (manifest commit 196220e). Neither vendor (copy of source) nor cross-repo link (path:../../fleet/dashboard). Source files port across in subsequent r1.5 nodes (viewer-extract-scaffold, viewer-port-*); deps are independently resolved in roadmap-engine repo so the viewer is buildable standalone.",
+  "options_considered": [
+    {
+      "option": "vendor",
+      "form": "Copy fleet/dashboard/src + package.json wholesale into viewer/. License banner per template-license-banners.",
+      "rejected_because": "Two truths · drift inevitable · breaks §Fail-hard. Same Vue files exist in two repos with no canonical owner."
+    },
+    {
+      "option": "link",
+      "form": "viewer/package.json declares dependencies via { \"@fleet/dashboard\": \"file:../../fleet/dashboard\" } or pnpm workspace ref.",
+      "rejected_because": "Hard cross-repo coupling · fleet must exist on disk to build viewer · violates roadmap-engine independence (the engine repo must be stand-alone shippable). Also leaks fleet-shaped data sources (SSE+WS-proxy hardcoded for fleet) into the engine."
+    },
+    {
+      "option": "extract-clean",
+      "form": "viewer/package.json owns vue3 + vite + pinia + vue-router + tailwind-v4 + @vitejs/plugin-vue + vue-tsc + vitest at the same major versions as fleet (commit 196220e manifest). Subsequent r1.5 nodes port src/ files. realtimeBridge rewritten to read host-repo .roadmap/ instead of hardcoded /home/griffin/src/fleet/.roadmap/.",
+      "selected_because": "One canonical path · viewer self-contained · fleet/dashboard remains independent (its own thing for fleet's HMI domain) · roadmap-engine ships standalone."
+    }
+  ],
+  "fleet_dashboard_manifest_ref": {
+    "path": "/home/griffin/src/fleet/dashboard/package.json",
+    "fleet_repo_head": "cd4d5e1e5a0ae61ab5576750a6687aab4ec10556",
+    "manifest_doc": ".roadmap/round-1/d-viewer-fleet-dashboard-manifest.json",
+    "manifest_doc_sha256": "ef8d07f55d88da04472d8fee7303f04c04b1d524e419ed17cc6570daa8bcbf61"
+  },
+  "deps_declared": {
+    "prod": ["pinia@^2.1.0", "vue@^3.4.0", "vue-router@^4.6.4"],
+    "dev": [
+      "@tailwindcss/vite@^4.2.2",
+      "@vitejs/plugin-vue@^6.0.5",
+      "tailwindcss@^4.2.2",
+      "typescript@^5.4.0",
+      "vite@^7.0.0",
+      "vitest@^4.1.0",
+      "vue-tsc@^2.0.0"
+    ]
+  },
+  "server_plugins_note": "9 server plugins (adbPlugin · specCatalogPlugin · servicesPlugin · roadmapPlugin · dagPlugin · trailPlugin · assayPanelPlugin · cockpitMetaPlugin · eventsPlugin) currently hardcoded for fleet · only roadmapPlugin/dagPlugin/trailPlugin/eventsPlugin port to roadmap-engine viewer; SSE bridge rewritten to host-repo .roadmap/. WS-proxy and adb/specs/services/assay/cockpitMeta plugins are fleet-specific and DO NOT port. Documented for viewer-rewrite-realtime-bridge node.",
+  "artifacts_produced": [
+    "viewer/package.json",
+    "viewer/pnpm-lock.yaml",
+    "viewer/node_modules/ (gitignored)",
+    ".roadmap/round-1/d-viewer-deps-decision.json"
+  ],
+  "validate": [
+    {
+      "check": "pnpm install succeeded in viewer/",
+      "result": "PASS",
+      "evidence": "+96 packages · pinia 2.3.1 · vue 3.5.33 · vue-router 4.6.4 · vite 7.3.2 · tailwindcss 4.2.4 · vue-tsc 2.2.12 · vitest 4.1.5 · Done in 1.3s using pnpm v10.28.2"
+    }
+  ],
+  "fail_hard_compliance": "ONE canonical path (extract-clean) · no graceful both-paths · viewer/ self-resolves deps · no fallback to fleet/dashboard.",
+  "next_dependent_node": "viewer-data-source-adapter (consumes this decision · ports realtimeBridge.ts + dagReader.ts + roadmapReader.ts + trailReader.ts into viewer/src/services/ pointed at host-repo .roadmap/)"
+}
