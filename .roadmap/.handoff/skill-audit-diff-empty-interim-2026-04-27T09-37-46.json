@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-04-27T09:37:46.103Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "shell:jq -e '.diff_empty == true or (.desync_count | tonumber) == 0' .roadmap/round-1/d-skill-audit-report.json"
+  ],
+  "currentFile": ""
+}

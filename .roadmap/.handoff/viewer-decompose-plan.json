@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-04-27T10:20:06.779Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "expanded into r1.5 spec · skill-sweep + viewer-extract",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      ".roadmap/round-1/d-viewer-decompose-plan.json"
+    ],
+    "ready": true
+  }
+}

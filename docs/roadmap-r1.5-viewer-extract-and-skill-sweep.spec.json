@@ -1,0 +1,844 @@
+{
+  "schema_version": 1,
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "dag_id": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+  "dag_desc": "r1.5 sub-DAG · expansion of viewer-decompose-plan per Griffin-directed scope. Two parallel sweeps: (A) skill-template parity for the 21 live skills currently lacking templates (finite, mechanical, per-skill node); (B) extract fleet's dashboard out of /home/griffin/src/fleet/dashboard/ into this repo at ./viewer/, then rebuild it roadmap-FIRST with a strictly nicer UX than fleet's (real-time DAG topology · per-node side panel · cross-lane rollup · trail timeline · search/filter · dark+light · PNG/SVG export). Migrate realtimeBridge off hard-coded fleet paths to read host-repo `.roadmap/`. Closes with per-page convergence loop on the new viewer.",
+  "inputs": [
+    {
+      "path": "docs/roadmap-r1.5-viewer-extract-and-skill-sweep.spec.json",
+      "sha256": "afcfe33d84fe06377022437642a1ab8e6ec8f74da0ad086bcb3f2b54a8e2d58c",
+      "role": "spec"
+    },
+    {
+      "path": ".roadmap/round-1/d-skill-audit-report.json",
+      "sha256": "d82182a367ec0095a9c1e34a18afdebf919161679fadf2cb47332862b23d391a",
+      "role": "manifest-skills"
+    },
+    {
+      "path": ".roadmap/round-1/d-viewer-fleet-dashboard-manifest.json",
+      "sha256": "ef8d07f55d88da04472d8fee7303f04c04b1d524e419ed17cc6570daa8bcbf61",
+      "role": "manifest-viewer"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "viewer-extract-init",
+      "desc": "Synthetic init for r1.5. Creates the ./viewer/ directory in /home/griffin/src/.dev/roadmap and writes a placeholder marker. Both sweeps (skill-template parity · dashboard extract) root from this init.",
+      "priority": 0,
+      "depends": [],
+      "produces": [
+        "viewer/.r1.5-init.marker"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "viewer/.r1.5-init.marker"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-bug-class-hunting",
+      "desc": "Author templates/skills/bug-class-hunting.md by reading ~/.claude/skills/bug-class-hunting/SKILL.md and committing a byte-identical (or banner-augmented) template. Owned-by-roadmap-engine question: this skill is currently live-only · decide if roadmap-engine should own its template (yes if cited from roadmap-spec/auto/orient/term/threads/night skill family). Receipt records ownership decision.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        "templates/skills/bug-class-hunting.md",
+        ".roadmap/round-1.5/d-skill-template-bug-class-hunting.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-bug-class-hunting.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-core-loop",
+      "desc": "Author templates/skills/core-loop.md from live ~/.claude/skills/core-loop/SKILL.md. Cited by user-global CLAUDE.md as §Core-loop summary pointer; high-value template to ship.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        "templates/skills/core-loop.md",
+        ".roadmap/round-1.5/d-skill-template-core-loop.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-core-loop.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-cross-page-sweep",
+      "desc": "Author templates/skills/cross-page-sweep.md from live SKILL.md. Sibling to core-loop; cited in user-global CLAUDE.md.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        "templates/skills/cross-page-sweep.md",
+        ".roadmap/round-1.5/d-skill-template-cross-page-sweep.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-cross-page-sweep.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-demo",
+      "desc": "Author templates/skills/demo.md from live SKILL.md. Trivial scaffolding skill; ship template for completeness.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        "templates/skills/demo.md",
+        ".roadmap/round-1.5/d-skill-template-demo.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-demo.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-fleet-doctrine",
+      "desc": "Author templates/skills/fleet-doctrine.md from live SKILL.md. Fleet-owned · ownership decision likely PUNT to fleet repo · receipt records punt rationale if so (don't fabricate parity).",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-fleet-doctrine.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-fleet-doctrine.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-fleet-doctrine-history",
+      "desc": "Author templates/skills/fleet-doctrine-history.md from live SKILL.md. Same fleet-ownership question as fleet-doctrine; likely PUNT.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-fleet-doctrine-history.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-fleet-doctrine-history.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-griffin-voice",
+      "desc": "Author templates/skills/griffin-voice.md from live SKILL.md. User-global · decide if roadmap-engine ships it or punts to user-global skills repo.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-griffin-voice.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-griffin-voice.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-keel-boundary-thesis",
+      "desc": "Author templates/skills/keel-boundary-thesis.md from live SKILL.md. Fleet-owned doctrine; PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-keel-boundary-thesis.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-keel-boundary-thesis.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-linear-audit",
+      "desc": "Author templates/skills/linear-audit.md from live SKILL.md. Fleet-specific Linear protocol; PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-linear-audit.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-linear-audit.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-meta-directives",
+      "desc": "Author templates/skills/meta-directives.md from live SKILL.md. Cross-cutting (cited in fleet CLAUDE.md AND user-global). Ship in roadmap-engine because the 8 directives govern any agent loop.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        "templates/skills/meta-directives.md",
+        ".roadmap/round-1.5/d-skill-template-meta-directives.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-meta-directives.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-pcode-ir-lowering",
+      "desc": "Author templates/skills/pcode-ir-lowering.md from live SKILL.md. Fleet-specific Ghidra/IR doctrine; PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-pcode-ir-lowering.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-pcode-ir-lowering.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-peon-ping-config",
+      "desc": "Author templates/skills/peon-ping-config.md from live SKILL.md. User-global UX skill; PUNT candidate to peon-ping repo.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-peon-ping-config.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-peon-ping-config.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-peon-ping-log",
+      "desc": "Author templates/skills/peon-ping-log.md from live SKILL.md. PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-peon-ping-log.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-peon-ping-log.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-peon-ping-toggle",
+      "desc": "Author templates/skills/peon-ping-toggle.md from live SKILL.md. PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-peon-ping-toggle.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-peon-ping-toggle.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-peon-ping-use",
+      "desc": "Author templates/skills/peon-ping-use.md from live SKILL.md. PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-peon-ping-use.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-peon-ping-use.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-per-page-convergence",
+      "desc": "Author templates/skills/per-page-convergence.md from live SKILL.md. Used DIRECTLY by the viewer convergence loop in this same DAG; ship template.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        "templates/skills/per-page-convergence.md",
+        ".roadmap/round-1.5/d-skill-template-per-page-convergence.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-per-page-convergence.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-pipeline-thesis",
+      "desc": "Author templates/skills/pipeline-thesis.md from live SKILL.md. Fleet-specific; PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-pipeline-thesis.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-pipeline-thesis.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-pixel-diffuse",
+      "desc": "Author templates/skills/pixel-diffuse.md from live SKILL.md. Fleet-specific; PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-pixel-diffuse.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-pixel-diffuse.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-rovmk3-thesis",
+      "desc": "Author templates/skills/rovmk3-thesis.md from live SKILL.md. Fleet-specific; PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-rovmk3-thesis.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-rovmk3-thesis.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-sift-review",
+      "desc": "Author templates/skills/sift-review.md from live SKILL.md. C++ review · fleet-specific; PUNT candidate.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-sift-review.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-sift-review.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-stance",
+      "desc": "Author templates/skills/stance.md from live SKILL.md. User-global voice doctrine; ship in roadmap-engine because /stance register is invoked by roadmap-spec/auto.",
+      "priority": 1,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        "templates/skills/stance.md",
+        ".roadmap/round-1.5/d-skill-template-stance.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-stance.json"
+        }
+      ]
+    },
+    {
+      "id": "skill-template-sweep-validator",
+      "desc": "Aggregator + validator for the 21 skill-template nodes. Re-run skill-audit on the populated templates/ tree, emit a delta report: {authored, punted_with_reason, still_missing}. Asserts authored + punted == 21 (no dropped intent). §Honest-zero discipline: punted-with-reason is GREEN, dropped-without-reason is RED.",
+      "priority": 2,
+      "depends": [
+        "skill-template-bug-class-hunting",
+        "skill-template-core-loop",
+        "skill-template-cross-page-sweep",
+        "skill-template-demo",
+        "skill-template-fleet-doctrine",
+        "skill-template-fleet-doctrine-history",
+        "skill-template-griffin-voice",
+        "skill-template-keel-boundary-thesis",
+        "skill-template-linear-audit",
+        "skill-template-meta-directives",
+        "skill-template-pcode-ir-lowering",
+        "skill-template-peon-ping-config",
+        "skill-template-peon-ping-log",
+        "skill-template-peon-ping-toggle",
+        "skill-template-peon-ping-use",
+        "skill-template-per-page-convergence",
+        "skill-template-pipeline-thesis",
+        "skill-template-pixel-diffuse",
+        "skill-template-rovmk3-thesis",
+        "skill-template-sift-review",
+        "skill-template-stance"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-skill-template-sweep-validator.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-skill-template-sweep-validator.json"
+        },
+        {
+          "type": "shell",
+          "command": "jq -e '(.authored + .punted_with_reason) == 21' .roadmap/round-1.5/d-skill-template-sweep-validator.json"
+        }
+      ]
+    },
+    {
+      "id": "viewer-extract-scaffold",
+      "desc": "Create ./viewer/ as a sibling to ./templates/ in the roadmap-engine repo. Initialize package.json (vue@^3.4 + vue-router@^4.6 + pinia@^2.1 + vite@^7 + vitest@^4 + tailwindcss@^4 · mirror fleet/dashboard manifest deps), tsconfig.json, vite.config.ts (no fleet hard-codes — host repo discovered via env or CLI flag), index.html, src/main.ts, src/App.vue placeholder. NO copy from fleet yet · just the empty shell.",
+      "priority": 2,
+      "depends": [
+        "viewer-extract-init"
+      ],
+      "produces": [
+        "viewer/package.json",
+        "viewer/tsconfig.json",
+        "viewer/vite.config.ts",
+        "viewer/index.html",
+        "viewer/src/main.ts",
+        "viewer/src/App.vue",
+        ".roadmap/round-1.5/d-viewer-extract-scaffold.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "test -f viewer/package.json && test -f viewer/vite.config.ts"
+        },
+        {
+          "type": "shell",
+          "command": "cd viewer && pnpm install --frozen-lockfile=false && pnpm exec vue-tsc --noEmit"
+        }
+      ]
+    },
+    {
+      "id": "viewer-port-core-readers",
+      "desc": "Port the core-viewer readers from fleet/dashboard into viewer/src/services/: dagReader{,server}.ts, roadmapReader{,server}.ts, trailReader{,server}.ts. Generalize: replace any /home/griffin/src/fleet hard-codes with a HOST_REPO env (default cwd). Keep the test files (.test.ts) — port them too and adapt fixtures to the roadmap-engine repo's own .roadmap/ as a self-test corpus.",
+      "priority": 3,
+      "depends": [
+        "viewer-extract-scaffold"
+      ],
+      "produces": [
+        "viewer/src/services/dagReader.ts",
+        "viewer/src/services/dagReader.server.ts",
+        "viewer/src/services/roadmapReader.ts",
+        "viewer/src/services/roadmapReader.server.ts",
+        "viewer/src/services/trailReader.ts",
+        "viewer/src/services/trailReader.server.ts",
+        ".roadmap/round-1.5/d-viewer-port-core-readers.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "cd viewer && pnpm vitest run src/services/dagReader.test.ts src/services/roadmapReader.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -RIn '/home/griffin/src/fleet' viewer/src"
+        }
+      ]
+    },
+    {
+      "id": "viewer-rewrite-realtime-bridge",
+      "desc": "Rewrite realtimeBridge.ts off fleet's hard-coded paths. New design: SSE server reads HOST_REPO/.roadmap/{head.json,trail.jsonl,completed.json,heads/} via fs.watch · emits a typed event stream with discriminated union (head-changed · trail-appended · node-advanced · batch-rolled). Multi-lane aware: HOST_REPO can be a fleet.json registry pointing at sibling repos · bridge merges streams.",
+      "priority": 3,
+      "depends": [
+        "viewer-extract-scaffold"
+      ],
+      "produces": [
+        "viewer/src/services/realtimeBridge.ts",
+        "viewer/src/services/realtimeBridge.test.ts",
+        ".roadmap/round-1.5/d-viewer-rewrite-realtime-bridge.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "cd viewer && pnpm vitest run src/services/realtimeBridge.test.ts"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -n 'fleet' viewer/src/services/realtimeBridge.ts"
+        }
+      ]
+    },
+    {
+      "id": "viewer-port-dag-component",
+      "desc": "Port DagViewer.vue + useDagLayout.ts composable from fleet. Strip any fleet-specific assumptions (e.g. cluster names hard-coded). Render contract: takes typed `dag: DagSnapshot`, emits `nodeSelected(id)`. NO data fetching in component — props in, events out (§Dumb-components).",
+      "priority": 4,
+      "depends": [
+        "viewer-port-core-readers"
+      ],
+      "produces": [
+        "viewer/src/components/DagViewer.vue",
+        "viewer/src/composables/useDagLayout.ts",
+        ".roadmap/round-1.5/d-viewer-port-dag-component.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "cd viewer && pnpm exec vue-tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -E 'fetch\\(|axios|setTimeout|new XMLHttpRequest' viewer/src/components/DagViewer.vue"
+        }
+      ]
+    },
+    {
+      "id": "viewer-build-force-layout",
+      "desc": "NICER-THAN-FLEET feature #1: force-directed DAG topology layout with d3-force (or equivalent). Interactive zoom/pan · group-by-depth and group-by-cluster toggles. Replaces fleet's static dagre-only layout. Composable: useForceLayout(dag, opts) returns reactive {nodes, edges} positions.",
+      "priority": 5,
+      "depends": [
+        "viewer-port-dag-component"
+      ],
+      "produces": [
+        "viewer/src/composables/useForceLayout.ts",
+        "viewer/src/components/DagTopology.vue",
+        ".roadmap/round-1.5/d-viewer-build-force-layout.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "viewer/src/components/DagTopology.vue"
+        },
+        {
+          "type": "shell",
+          "command": "cd viewer && pnpm exec vue-tsc --noEmit"
+        }
+      ]
+    },
+    {
+      "id": "viewer-build-node-side-panel",
+      "desc": "NICER feature #2: NodeSidePanel.vue — selecting any DAG node opens a panel with full desc · validators (rendered as checklist with pass/fail icons) · receipt JSON pretty-printed (collapsible jq-like tree) · git log of files in produces[] · live status badge (pending/in-progress/green/red driven off realtimeBridge stream).",
+      "priority": 5,
+      "depends": [
+        "viewer-port-dag-component",
+        "viewer-rewrite-realtime-bridge"
+      ],
+      "produces": [
+        "viewer/src/components/NodeSidePanel.vue",
+        ".roadmap/round-1.5/d-viewer-build-node-side-panel.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "viewer/src/components/NodeSidePanel.vue"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -E 'fetch\\(|axios' viewer/src/components/NodeSidePanel.vue"
+        }
+      ]
+    },
+    {
+      "id": "viewer-build-cross-lane-rollup",
+      "desc": "NICER feature #3: CrossLaneRollup.vue — reads fleet.json multi-lane registry · per-repo health cards (lane name · DAG id · current batch · ready/blocked count · last-trail-event timestamp) · 7-day throughput sparkline computed from each lane's trail.jsonl. This is the headline differentiator from fleet's dashboard, which is single-repo-centric.",
+      "priority": 5,
+      "depends": [
+        "viewer-rewrite-realtime-bridge"
+      ],
+      "produces": [
+        "viewer/src/components/CrossLaneRollup.vue",
+        "viewer/src/services/laneRollupReader.ts",
+        ".roadmap/round-1.5/d-viewer-build-cross-lane-rollup.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "viewer/src/components/CrossLaneRollup.vue"
+        }
+      ]
+    },
+    {
+      "id": "viewer-build-trail-timeline",
+      "desc": "NICER feature #4: TrailTimeline.vue — scrollable virtualized timeline of trail.jsonl events across all lanes. Each event is a row: timestamp · lane · node-id · event-kind · short summary · click-to-jump to NodeSidePanel. Filter chips: by kind, by lane, by date range.",
+      "priority": 5,
+      "depends": [
+        "viewer-port-core-readers"
+      ],
+      "produces": [
+        "viewer/src/components/TrailTimeline.vue",
+        ".roadmap/round-1.5/d-viewer-build-trail-timeline.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "viewer/src/components/TrailTimeline.vue"
+        }
+      ]
+    },
+    {
+      "id": "viewer-build-search-filter",
+      "desc": "NICER feature #5: global search/filter bar. Index across all loaded DAGs: by status, owner, tag, anchor cite (e.g. `cite:§Spec-as-typed-knowledge-graph`), free-text on desc. Composable useViewerSearch(query) returns {nodes, trailEvents, lanes} matches.",
+      "priority": 6,
+      "depends": [
+        "viewer-build-node-side-panel",
+        "viewer-build-trail-timeline"
+      ],
+      "produces": [
+        "viewer/src/composables/useViewerSearch.ts",
+        "viewer/src/components/SearchBar.vue",
+        ".roadmap/round-1.5/d-viewer-build-search-filter.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "viewer/src/components/SearchBar.vue"
+        }
+      ]
+    },
+    {
+      "id": "viewer-build-themes-and-export",
+      "desc": "NICER feature #6+#7: dark/light theme toggle (CSS variables · prefers-color-scheme default · persisted to localStorage) AND PNG/SVG export of current DAG topology view (for paper figures · uses canvas/svg serialization). One node because both are presentation-layer polish.",
+      "priority": 6,
+      "depends": [
+        "viewer-build-force-layout"
+      ],
+      "produces": [
+        "viewer/src/composables/useTheme.ts",
+        "viewer/src/services/dagExport.ts",
+        ".roadmap/round-1.5/d-viewer-build-themes-and-export.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "viewer/src/services/dagExport.ts"
+        }
+      ]
+    },
+    {
+      "id": "viewer-cli-register-subcommand",
+      "desc": "Register `roadmap viewer` as a first-class CLI subcommand. Spawns `pnpm --dir viewer dev` (or `vite preview` against viewer/dist if pre-built) with HOST_REPO=$PWD. `roadmap viewer --help` documents flags. Updates roadmap CLI's command registry; help-text in `roadmap help` lists viewer alongside make/orient/advance.",
+      "priority": 6,
+      "depends": [
+        "viewer-build-themes-and-export",
+        "viewer-build-search-filter",
+        "viewer-build-cross-lane-rollup"
+      ],
+      "produces": [
+        "src/cli/commands/viewer.ts",
+        ".roadmap/round-1.5/d-viewer-cli-register-subcommand.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "roadmap help 2>&1 | grep -q viewer"
+        },
+        {
+          "type": "shell",
+          "command": "roadmap viewer --help 2>&1 | grep -qi 'host.repo\\|HOST_REPO'"
+        }
+      ]
+    },
+    {
+      "id": "viewer-smoke-test-self-host",
+      "desc": "Self-hosting smoke test: `roadmap viewer` against this repo's own .roadmap/ MUST render the live r1 DAG · current batch · trail events from the last 24h. Headless-Chromium screenshot diff against an enshrined reference (committed under tests/viewer/baseline/r1-self-host.png · re-baselined by Griffin only).",
+      "priority": 7,
+      "depends": [
+        "viewer-cli-register-subcommand"
+      ],
+      "produces": [
+        "tests/viewer/self-host.spec.ts",
+        "tests/viewer/baseline/r1-self-host.png",
+        ".roadmap/round-1.5/d-viewer-smoke-test-self-host.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "shell",
+          "command": "cd viewer && pnpm vitest run tests/viewer/self-host.spec.ts"
+        }
+      ]
+    },
+    {
+      "id": "viewer-per-page-convergence",
+      "desc": "Apply /per-page-convergence skill to the new viewer. Pages = top-level routes (Topology · Lanes · Trail · Search · NodeDetail). Per-page DAG: enshrined screenshot · functional-clickability checklist · pixel-similarity ≥0.95 against baseline. Closes only when all pages converge OR explicit punt with named successor.",
+      "priority": 8,
+      "depends": [
+        "viewer-smoke-test-self-host"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-viewer-convergence-topology.json",
+        ".roadmap/round-1.5/d-viewer-convergence-lanes.json",
+        ".roadmap/round-1.5/d-viewer-convergence-trail.json",
+        ".roadmap/round-1.5/d-viewer-convergence-search.json",
+        ".roadmap/round-1.5/d-viewer-convergence-nodedetail.json",
+        ".roadmap/round-1.5/d-viewer-per-page-convergence.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-viewer-per-page-convergence.json"
+        },
+        {
+          "type": "shell",
+          "command": "jq -e '.pages_converged + .pages_punted_with_successor == 5' .roadmap/round-1.5/d-viewer-per-page-convergence.json"
+        }
+      ]
+    },
+    {
+      "id": "viewer-r1.5-validator",
+      "desc": "Round-terminal validator. Aggregates skill-template-sweep-validator + viewer-per-page-convergence + viewer-smoke-test-self-host into one rollup. Asserts: (a) all 21 skill rows accounted for (authored or punted-with-reason), (b) viewer renders self-host without error, (c) all 5 viewer pages converged-or-punted, (d) NO `/home/griffin/src/fleet` strings in viewer/src/. Emits LATE doctrine §Roadmap-viewer-as-host-repo-renderer if landed GREEN.",
+      "priority": 9,
+      "depends": [
+        "skill-template-sweep-validator",
+        "viewer-per-page-convergence"
+      ],
+      "produces": [
+        ".roadmap/round-1.5/d-viewer-r1.5-validator.json"
+      ],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1.5/d-viewer-r1.5-validator.json"
+        },
+        {
+          "type": "shell",
+          "command": "jq -e '.outcome == \"GREEN\" or .outcome == \"GREEN-WITH-PUNTS\"' .roadmap/round-1.5/d-viewer-r1.5-validator.json"
+        },
+        {
+          "type": "shell",
+          "command": "! grep -RIn '/home/griffin/src/fleet' viewer/src"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "generated": "2026-04-27T00:00:00Z",
+    "compile_hash": "r1.5-viewer-extract-and-skill-sweep-v1"
+  }
+}

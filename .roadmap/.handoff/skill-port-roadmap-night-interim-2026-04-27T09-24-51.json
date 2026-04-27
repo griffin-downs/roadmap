@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-04-27T09:24:51.846Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "artifact-exists:.roadmap/round-1/d-skill-port-roadmap-night.json"
+  ],
+  "currentFile": ""
+}

@@ -4630,5 +4630,55 @@
     "gitSha": "f627154469687738ce7727396a5228dd49ab7db7",
     "treeSha": "615813d487e7213280d0732ddb705fc857f6d93d",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-audit-diff-empty",
+    "completedAt": "2026-04-27T09:42:27.807Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-skill-audit-report.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1/d-skill-audit-report.json"
+      },
+      {
+        "rule": "shell:jq -e '.diff_empty == true or (.desync_count | tonumber) == 0' .roadmap/round-1/d-skill-audit-report.json",
+        "passed": true,
+        "evidence": "command passed (exit 0): jq -e '.diff_empty == true or (.desync_count | tonumber) == 0' .roadmap/round-1/d-skill-audit-report.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-skill-audit-report.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a907f2fb1b9168124378f75d040621c120323dcd",
+    "treeSha": "54d5369ef7792c3559026fe5400a32be933404b6",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-decompose-plan",
+    "completedAt": "2026-04-27T10:20:06.778Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-decompose-plan.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1/d-viewer-decompose-plan.json"
+      },
+      {
+        "rule": "shell:jq -e '.children | length >= 3' .roadmap/round-1/d-viewer-decompose-plan.json",
+        "passed": true,
+        "evidence": "command passed (exit 0): jq -e '.children | length >= 3' .roadmap/round-1/d-viewer-decompose-plan.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-decompose-plan.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a907f2fb1b9168124378f75d040621c120323dcd",
+    "treeSha": "54d5369ef7792c3559026fe5400a32be933404b6",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]
