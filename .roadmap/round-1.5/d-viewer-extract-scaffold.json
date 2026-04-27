@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "node": "viewer-extract-scaffold",
+  "dag": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+  "date": "2026-04-27",
+  "outcome": "GREEN",
+  "mode": "execute",
+  "produces": [
+    "viewer/package.json",
+    "viewer/tsconfig.json",
+    "viewer/vite.config.ts",
+    "viewer/index.html",
+    "viewer/src/main.ts",
+    "viewer/src/App.vue",
+    ".roadmap/round-1.5/d-viewer-extract-scaffold.json"
+  ],
+  "consumes": [],
+  "actions": [
+    "verified viewer/package.json preexisted from tick-12 with correct deps (vue@^3.4 · vue-router@^4.6 · pinia@^2.1 · vite@^7 · vitest@^4 · tailwindcss@^4) — left intact",
+    "wrote viewer/tsconfig.json (ES2022 · Bundler · strict · composite · DOM lib · removed fleet's typeRoots reference into ../../chorus)",
+    "wrote viewer/vite.config.ts with HOST-REPO discovery via ROADMAP_HOST_REPO env (NOT hard-coded to /home/griffin/src/fleet) · plugins: vue + tailwindcss only · API/SSE/WS plugins deferred to viewer-port-core-readers + viewer-rewrite-realtime-bridge",
+    "wrote viewer/index.html (title 'roadmap viewer' · #app mount · /src/main.ts entry)",
+    "wrote viewer/src/main.ts (createApp · mount '#app' · no router yet — router lands when pages port)",
+    "wrote viewer/src/App.vue placeholder (script setup · static template · scaffold marker)"
+  ],
+  "fail_hard_compliance": [
+    "vite.config.ts has ZERO references to /home/griffin/src/fleet · host repo resolved via env or cwd",
+    "no fleet API plugins copied — would create a 'support both' fork; deferred to dedicated port nodes"
+  ],
+  "claims": [
+    {"claim": "package.json exists", "jq_probe_cmd": "test -f viewer/package.json && echo ok"},
+    {"claim": "tsconfig.json exists", "jq_probe_cmd": "test -f viewer/tsconfig.json && echo ok"},
+    {"claim": "vite.config.ts exists", "jq_probe_cmd": "test -f viewer/vite.config.ts && echo ok"},
+    {"claim": "index.html exists", "jq_probe_cmd": "test -f viewer/index.html && echo ok"},
+    {"claim": "src/main.ts exists", "jq_probe_cmd": "test -f viewer/src/main.ts && echo ok"},
+    {"claim": "src/App.vue exists", "jq_probe_cmd": "test -f viewer/src/App.vue && echo ok"},
+    {"claim": "no fleet hard-codes in vite.config.ts", "jq_probe_cmd": "! grep -q '/home/griffin/src/fleet' viewer/vite.config.ts && echo ok"}
+  ],
+  "next": "frontier expands to viewer-port-core-readers (depth-2) and viewer-rewrite-realtime-bridge (depth-2) · skill-template parity sweep continues in parallel"
+}

@@ -4750,5 +4750,515 @@
     "gitSha": "d0959858833c8bee6e0a0067dd1c6955dc6583cb",
     "treeSha": "8f7bad14028b7686f1c68a91590d9d9afad10379",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-bug-class-hunting",
+    "completedAt": "2026-04-27T10:40:48.447Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-bug-class-hunting.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-bug-class-hunting.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/bug-class-hunting.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-bug-class-hunting.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-core-loop",
+    "completedAt": "2026-04-27T10:40:48.549Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-core-loop.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-core-loop.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/core-loop.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-core-loop.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-cross-page-sweep",
+    "completedAt": "2026-04-27T10:40:48.651Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-cross-page-sweep.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-cross-page-sweep.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/cross-page-sweep.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-cross-page-sweep.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-demo",
+    "completedAt": "2026-04-27T10:40:48.762Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-demo.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-demo.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/demo.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-demo.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-fleet-doctrine",
+    "completedAt": "2026-04-27T10:40:48.872Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-fleet-doctrine.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-fleet-doctrine.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-fleet-doctrine.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-fleet-doctrine-history",
+    "completedAt": "2026-04-27T10:40:48.973Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-fleet-doctrine-history.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-fleet-doctrine-history.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-fleet-doctrine-history.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-griffin-voice",
+    "completedAt": "2026-04-27T10:40:49.079Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-griffin-voice.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-griffin-voice.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-griffin-voice.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-keel-boundary-thesis",
+    "completedAt": "2026-04-27T10:40:49.177Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-keel-boundary-thesis.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-keel-boundary-thesis.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-keel-boundary-thesis.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-linear-audit",
+    "completedAt": "2026-04-27T10:40:49.279Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-linear-audit.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-linear-audit.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-linear-audit.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-meta-directives",
+    "completedAt": "2026-04-27T10:40:49.388Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-meta-directives.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-meta-directives.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/meta-directives.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-meta-directives.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-pcode-ir-lowering",
+    "completedAt": "2026-04-27T10:40:49.501Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pcode-ir-lowering.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-pcode-ir-lowering.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pcode-ir-lowering.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-peon-ping-config",
+    "completedAt": "2026-04-27T10:40:49.613Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-config.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-peon-ping-config.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-config.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-peon-ping-log",
+    "completedAt": "2026-04-27T10:40:49.716Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-log.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-peon-ping-log.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-log.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-peon-ping-toggle",
+    "completedAt": "2026-04-27T10:40:49.840Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-toggle.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-peon-ping-toggle.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-toggle.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-peon-ping-use",
+    "completedAt": "2026-04-27T10:40:49.955Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-use.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-peon-ping-use.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-use.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-per-page-convergence",
+    "completedAt": "2026-04-27T10:40:50.059Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-per-page-convergence.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-per-page-convergence.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/per-page-convergence.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-per-page-convergence.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-pipeline-thesis",
+    "completedAt": "2026-04-27T10:40:50.172Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pipeline-thesis.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-pipeline-thesis.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pipeline-thesis.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-pixel-diffuse",
+    "completedAt": "2026-04-27T10:40:50.279Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pixel-diffuse.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-pixel-diffuse.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pixel-diffuse.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-rovmk3-thesis",
+    "completedAt": "2026-04-27T10:40:50.393Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-rovmk3-thesis.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-rovmk3-thesis.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-rovmk3-thesis.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-sift-review",
+    "completedAt": "2026-04-27T10:40:50.498Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-sift-review.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-sift-review.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-sift-review.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-stance",
+    "completedAt": "2026-04-27T10:40:50.609Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-stance.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-stance.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/stance.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-stance.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-extract-scaffold",
+    "completedAt": "2026-04-27T10:41:44.928Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:test -f viewer/package.json && test -f viewer/vite.config.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test -f viewer/package.json && test -f viewer/vite.config.ts"
+      },
+      {
+        "rule": "shell:cd viewer && pnpm install --frozen-lockfile=false && pnpm exec vue-tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm install --frozen-lockfile=false && pnpm exec vue-tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:viewer/package.json",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/tsconfig.json",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/vite.config.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/index.html",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/main.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/App.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-extract-scaffold.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]
