@@ -4,6 +4,8 @@ description: Surface conversation threads — status, completion, dropped/obviat
 user-invocable: true
 ---
 
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
 # threads
 
 Scan the conversation. Surface every thread. Show status in a table.
@@ -93,3 +95,7 @@ Scan the conversation. Surface every thread. Show status in a table.
   end of session            run before /roadmap-term
   after a dense exchange    surface what might have been missed
 ```
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
+💀 *every thread surfaced · nothing dropped silently*

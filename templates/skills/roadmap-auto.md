@@ -232,3 +232,7 @@ called after /roadmap-orient shows work
 at terminal → /roadmap-term
 chain: orient → auto → spec → term → orient
 ```
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
+💀 *the DAG executes itself · the orchestrator stays out of the dirt*

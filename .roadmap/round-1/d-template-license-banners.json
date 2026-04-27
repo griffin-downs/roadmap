@@ -1,0 +1,39 @@
+{
+  "node": "template-license-banners",
+  "verdict": "GREEN",
+  "artifacts": [
+    "templates/skills/roadmap-auto.md",
+    "templates/skills/roadmap-spec.md",
+    "templates/skills/roadmap-orient.md",
+    "templates/skills/roadmap-term.md",
+    "templates/skills/threads.md",
+    ".roadmap/round-1/d-template-license-banners.json"
+  ],
+  "commits": [],
+  "verify": {
+    "cmd": "for f in templates/skills/*.md; do head -10 $f | grep -c '🟥🟧🟨🟩🟦🟪'; tail -5 $f | grep -cE '💎|💀|😂'; done",
+    "exit": 0,
+    "summary": "all 6 templates: opening banner=1 closer=1"
+  },
+  "audit": {
+    "before": {
+      "roadmap-auto": {"banner": 1, "closer": 0},
+      "roadmap-night": {"banner": 1, "closer": 1},
+      "roadmap-orient": {"banner": 0, "closer": 0},
+      "roadmap-spec": {"banner": 1, "closer": 0},
+      "roadmap-term": {"banner": 0, "closer": 0},
+      "threads": {"banner": 0, "closer": 0}
+    },
+    "after": {
+      "roadmap-auto": {"banner": 1, "closer": 1},
+      "roadmap-night": {"banner": 1, "closer": 1},
+      "roadmap-orient": {"banner": 1, "closer": 1},
+      "roadmap-spec": {"banner": 1, "closer": 1},
+      "roadmap-term": {"banner": 1, "closer": 1},
+      "threads": {"banner": 1, "closer": 1}
+    }
+  },
+  "claim_count": 6,
+  "jq_probe_cmd": "for f in templates/skills/*.md; do head -10 $f | grep -q '🟥🟧🟨🟩🟦🟪' && tail -5 $f | grep -qE '💎|💀|😂' && echo ok; done | wc -l",
+  "notes": "drift fixed in 5 templates; roadmap-night already compliant. Per /stance walk-back the rainbow-banner discipline survives INFECTION-clause narrowing. Diff vs live SKILL.md will widen for 4 of 6 — reconciled by skill-sync-roadmap-auto/spec (deps not yet executed) and a follow-up sync sweep for orient/term/threads which the upstream sync nodes do not cover; nominate r2 successor: skill-sync-orient-term-threads to round-trip new banners+closers into ~/.claude/skills/<name>/SKILL.md and preserve §Skill-template-must-match-live."
+}
