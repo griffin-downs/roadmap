@@ -12,12 +12,14 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "d3-force": "^3.0.0",
     "pinia": "^2.1.0",
     "vue": "^3.4.0",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
+    "@types/d3-force": "^3.0.10",
     "@vitejs/plugin-vue": "^6.0.5",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.4.0",

@@ -5495,5 +5495,40 @@
     "gitSha": "43f2503e217b3ec1ff4e1f744fb6b9189ff23d02",
     "treeSha": "c832afa0fe4e3da719298d24c6e51eb246d2fd68",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-force-layout",
+    "completedAt": "2026-04-27T10:58:18.659Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/components/DagTopology.vue",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/components/DagTopology.vue"
+      },
+      {
+        "rule": "shell:cd viewer && pnpm exec vue-tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm exec vue-tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/composables/useForceLayout.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/DagTopology.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-force-layout.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "5ecae932ffdae533aeaf8d40e671ad601fc4a411",
+    "treeSha": "3c5078bda3578d3d9afa2b1ab36fe0800d8bd406",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]
