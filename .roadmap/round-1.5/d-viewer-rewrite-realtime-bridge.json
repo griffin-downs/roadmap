@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "node": "viewer-rewrite-realtime-bridge",
+  "dag": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+  "date": "2026-04-27",
+  "outcome": "GREEN",
+  "mode": "execute",
+  "produces": [
+    "viewer/src/services/realtimeBridge.ts",
+    "viewer/src/services/realtimeBridge.test.ts",
+    ".roadmap/round-1.5/d-viewer-rewrite-realtime-bridge.json"
+  ],
+  "consumes": [],
+  "actions": [
+    "rewrote realtimeBridge.ts off hard-coded host paths · resolves HOST via ROADMAP_HOST_REPO env (fail-hard if unset · §Fail-hard) with optional opts.hostRepo override for tests",
+    "watches HOST/.roadmap/{head.json,trail.jsonl,completed.json,heads/} via node fs.watch (parent-dir fallback when target missing) plus per-lane round-* directory watch · poll fallback at 2000ms when fs.watch unsupported",
+    "emits discriminated-union RealtimeEvent: head-changed | trail-appended | node-appended (node-advanced) | batch-rolled · debounced 100ms · each event tagged with lane id",
+    "multi-lane aware: discovers registry at HOST/.roadmap/<registry> · reads lanes[].repoPath · attaches a watcher slot per sibling .roadmap/ · merges streams into one subscriber callback",
+    "wrote realtimeBridge.test.ts (6 vitest cases): fail-hard on missing env · head-changed emit · trail-appended emit · node-advanced emit · snapshot lanes/subscribers/slots · idempotent startBridge",
+    "validator-gates passed: pnpm vitest run = 6/6 GREEN · grep -n 'fleet' realtimeBridge.ts → exit 1 (no match)"
+  ],
+  "fail_hard_compliance": [
+    "ROADMAP_HOST_REPO unset throws · no silent default to cwd · no 'support both' fallback path",
+    "subscribe() before startBridge() throws · enforces lifecycle order rather than auto-init",
+    "registry file missing → still produces single host lane · registry malformed JSON → throws (no try/catch swallow)"
+  ],
+  "claims": [
+    {"claim": "realtimeBridge.ts exists", "jq_probe_cmd": "test -f viewer/src/services/realtimeBridge.ts && echo ok"},
+    {"claim": "realtimeBridge.test.ts exists", "jq_probe_cmd": "test -f viewer/src/services/realtimeBridge.test.ts && echo ok"},
+    {"claim": "no 'fleet' literal in realtimeBridge.ts", "jq_probe_cmd": "! grep -q fleet viewer/src/services/realtimeBridge.ts && echo ok"},
+    {"claim": "vitest 6/6 pass", "jq_probe_cmd": "cd viewer && pnpm vitest run src/services/realtimeBridge.test.ts 2>&1 | grep -q '6 passed' && echo ok"},
+    {"claim": "discriminated-union exported", "jq_probe_cmd": "grep -q 'export type RealtimeEvent' viewer/src/services/realtimeBridge.ts && echo ok"}
+  ],
+  "next": "frontier advances to viewer-port-core-readers (sibling) and downstream viewer-port-dag-component · realtimeBridge now mountable behind an SSE handler in a future viewer-sse-handler node"
+}

@@ -5285,5 +5285,95 @@
     "gitSha": "895e0ec374d7c00ce0e8996eeebed6ae167295c9",
     "treeSha": "154d92bdffeecb2a91f6da0319dd57a85aa6ab14",
     "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-rewrite-realtime-bridge",
+    "completedAt": "2026-04-27T10:45:58.699Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:cd viewer && pnpm vitest run src/services/realtimeBridge.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm vitest run src/services/realtimeBridge.test.ts"
+      },
+      {
+        "rule": "shell:! grep -n 'fleet' viewer/src/services/realtimeBridge.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -n 'fleet' viewer/src/services/realtimeBridge.ts"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/realtimeBridge.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/realtimeBridge.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-rewrite-realtime-bridge.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "239343223cbe3f683adf7c83bcf9b6077b2652e3",
+    "treeSha": "300b1a7081cdfe72d8f06f89661582121daa412e",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-port-core-readers",
+    "completedAt": "2026-04-27T10:45:57.949Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:cd viewer && pnpm vitest run src/services/dagReader.test.ts src/services/roadmapReader.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm vitest run src/services/dagReader.test.ts src/services/roadmapReader.test.ts"
+      },
+      {
+        "rule": "shell:! grep -RIn '/home/griffin/src/fleet' viewer/src",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -RIn '/home/griffin/src/fleet' viewer/src"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/dagReader.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/dagReader.server.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/roadmapReader.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/roadmapReader.server.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/trailReader.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/trailReader.server.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-port-core-readers.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "239343223cbe3f683adf7c83bcf9b6077b2652e3",
+    "treeSha": "300b1a7081cdfe72d8f06f89661582121daa412e",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]
