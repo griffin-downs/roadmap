@@ -298,6 +298,45 @@ describe('dag-mutator', () => {
     const log = loadMutationLog(root);
     expect(log.mutations).toEqual([]);
   });
+
+  // Multi-DAG topology: commitMutation must write through to heads/<dagId>.json,
+  // because that's the file orient reads in fleet/multi-DAG repos.
+  it('writes through to heads/<dagId>.json when that topology exists', () => {
+    const dag = makeDag();
+    const headsDir = join(root, '.roadmap', 'heads');
+    const perDagPath = join(headsDir, `${dag.id}.json`);
+    mkdirSync(headsDir, { recursive: true });
+    writeFileSync(perDagPath, JSON.stringify({ ...dag, _lineage: { iteration: 0 } }, null, 2) + '\n');
+
+    const { dag: mutated, receipt } = insertNode(dag, {
+      id: 'extra', desc: 'new', produces: ['extra.ts'], consumes: [], deps: ['init'],
+    }, 'add extra');
+    commitMutation(root, mutated, receipt);
+
+    const written = JSON.parse(readFileSync(perDagPath, 'utf-8'));
+    expect(written.nodes.extra).toBeDefined();
+    expect(written.nodes.extra.id).toBe('extra');
+    // _lineage must be preserved
+    expect(written._lineage).toEqual({ iteration: 0 });
+
+    // head.json should also reflect the mutation
+    const head = JSON.parse(readFileSync(join(root, '.roadmap', 'head.json'), 'utf-8'));
+    expect(head.nodes.extra).toBeDefined();
+  });
+
+  it('modifyNode propagates to heads/<dagId>.json', () => {
+    const dag = makeDag();
+    const headsDir = join(root, '.roadmap', 'heads');
+    const perDagPath = join(headsDir, `${dag.id}.json`);
+    mkdirSync(headsDir, { recursive: true });
+    writeFileSync(perDagPath, JSON.stringify(dag, null, 2) + '\n');
+
+    const { dag: mutated, receipt } = modifyNode(dag, 'middle', { desc: 'updated desc' }, 'tweak');
+    commitMutation(root, mutated, receipt);
+
+    const written = JSON.parse(readFileSync(perDagPath, 'utf-8'));
+    expect(written.nodes.middle.desc).toBe('updated desc');
+  });
 });
 
 // Pre-commit gate: mutation receipt check

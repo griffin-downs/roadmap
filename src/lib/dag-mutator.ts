@@ -249,12 +249,54 @@ export function commitMutation(
   receipt: MutationRecord,
   trailAppender?: (receipt: MutationRecord) => void,
 ): void {
-  const headPath = join(repoRoot, '.roadmap', 'head.json');
   const roadmapDir = join(repoRoot, '.roadmap');
+  const headPath = join(roadmapDir, 'head.json');
+  const headsDir = join(roadmapDir, 'heads');
+  const perDagPath = join(headsDir, `${dag.id}.json`);
 
   if (!existsSync(roadmapDir)) mkdirSync(roadmapDir, { recursive: true });
 
+  // Multi-DAG topology: heads/<dagId>.json is the source of truth that
+  // orient reads (see cli/orient.ts). Write through to it whenever the
+  // heads/ directory exists, otherwise mutations are invisible to orient.
+  let perDagWritten = false;
+  if (existsSync(headsDir) || existsSync(perDagPath)) {
+    if (!existsSync(headsDir)) mkdirSync(headsDir, { recursive: true });
+    // Preserve _lineage and any other extra fields already in heads/<dagId>.json
+    let merged: Record<string, unknown> = dag as unknown as Record<string, unknown>;
+    if (existsSync(perDagPath)) {
+      try {
+        const existing = JSON.parse(readFileSync(perDagPath, 'utf-8')) as Record<string, unknown>;
+        merged = { ...existing, ...(dag as unknown as Record<string, unknown>) };
+      } catch { /* fall back to bare dag */ }
+    }
+    writeFileSync(perDagPath, JSON.stringify(merged, null, 2) + '\n');
+    perDagWritten = true;
+  }
+
+  // Always keep head.json in sync as the legacy/auto-merge cache.
   writeFileSync(headPath, JSON.stringify(dag, null, 2) + '\n');
+
+  // Post-write invariant: confirm the mutation actually landed on the path
+  // orient will read. Surface as a thrown error so the CLI returns ok:false
+  // instead of silently reporting success.
+  const verifyPath = perDagWritten ? perDagPath : headPath;
+  try {
+    const written = JSON.parse(readFileSync(verifyPath, 'utf-8')) as { nodes?: Record<string, unknown> };
+    const expectedIds = Object.keys(dag.nodes as Record<string, unknown>);
+    const actualIds = new Set(Object.keys(written.nodes ?? {}));
+    const missing = expectedIds.filter(id => !actualIds.has(id));
+    if (missing.length > 0) {
+      throw new Error(`post-write verification failed at ${verifyPath}: missing nodes [${missing.join(', ')}]`);
+    }
+  } catch (e) {
+    throw new MutationError(
+      `commitMutation post-write verification failed`,
+      [e instanceof Error ? e.message : String(e)],
+      receipt,
+    );
+  }
+
   trailAppender?.(receipt);
 }
 
