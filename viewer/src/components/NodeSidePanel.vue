@@ -1,5 +1,5 @@
 <template>
-  <aside class="node-panel" :aria-label="node ? `Node ${node.id}` : 'No node selected'">
+  <aside class="node-panel dag-foil-halo" :aria-label="node ? `Node ${node.id}` : 'No node selected'">
     <div v-if="node === null" class="node-panel-empty">
       <p>select a node from the DAG</p>
     </div>
@@ -157,6 +157,7 @@ function emitClose(): void {
 
 <style scoped>
 .node-panel {
+  position: relative;
   width: 100%;
   height: 100%;
   background: var(--chrome-05, #0a0a0a);

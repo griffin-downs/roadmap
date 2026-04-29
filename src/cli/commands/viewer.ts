@@ -13,10 +13,28 @@
 // resolve the host's .roadmap/ rather than the engine repo's own.
 
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { emit } from '../../lib/cli-envelope.ts';
 import type { OutputOpts } from '../../lib/cli-envelope.ts';
+
+// Resolve the engine install root from this module's own location, NOT cwd.
+// Source layout: <engine>/src/cli/commands/viewer.ts → ../../../ = <engine>.
+// Bundled layout: <engine>/dist/roadmap.js → ../ = <engine>.
+// Walk upward looking for a sibling `viewer/package.json`.
+function resolveEngineRoot(): string {
+  const here = dirname(fileURLToPath(import.meta.url));
+  let dir = here;
+  for (let i = 0; i < 6; i++) {
+    if (existsSync(join(dir, 'viewer', 'package.json'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  // Fallback: assume source layout (3 up from src/cli/commands/).
+  return resolve(here, '..', '..', '..');
+}
 
 interface ViewerFlags {
   help: boolean;
@@ -62,7 +80,8 @@ export async function run(args: string[], repoRoot: string, _note: string, opts:
   const flags = parseFlags(args, repoRoot);
   if (flags.help) return printHelp(opts);
 
-  const viewerDir = join(repoRoot, 'viewer');
+  const engineRoot = resolveEngineRoot();
+  const viewerDir = join(engineRoot, 'viewer');
   const viewerPkg = join(viewerDir, 'package.json');
   if (!existsSync(viewerPkg)) {
     emit({ ok: false, cmd: 'viewer', error: {
@@ -78,7 +97,13 @@ export async function run(args: string[], repoRoot: string, _note: string, opts:
   }
 
   const mode = flags.preview ? 'preview' : 'dev';
-  const env: NodeJS.ProcessEnv = { ...process.env, HOST_REPO: flags.hostRepo };
+  // Set both ROADMAP_HOST_REPO (canonical · what vite.config + readers consume)
+  // and HOST_REPO (legacy alias) so child env stays compatible either way.
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    ROADMAP_HOST_REPO: flags.hostRepo,
+    HOST_REPO: flags.hostRepo,
+  };
   if (flags.port) env.PORT = String(flags.port);
 
   const child = spawn('pnpm', ['--dir', viewerDir, mode], { stdio: 'inherit', env });

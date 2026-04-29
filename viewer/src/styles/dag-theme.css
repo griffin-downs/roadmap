@@ -104,6 +104,14 @@
 /* Drop shadows: applied via filter to node groups. Defined per status in
    DagViewer's <defs>. The shadow offsets and blurs live there. */
 
+/* Status → fill mapping (legible at distance · supplements stroke).
+ *   done         → cool-green tint   rgba(40, 60, 50, 0.85)
+ *   in-progress  → warm-amber tint   rgba(60, 50, 30, 0.85)
+ *   blocked      → cool-violet tint  rgba(40, 40, 50, 0.85)  + dashed stroke (kept)
+ *   ready        → neutral card-fill + foil stroke
+ *   red-honest   → red tint          rgba(60, 30, 30, 0.85)
+ * Color carries status; dasharray remains as a redundant high-LOD cue. */
+
 /* Foil border colors for SVG node-rect strokes. Stroke widths set in
    component CSS so per-status differences (dashed/double-thickness) read. */
 .dag-svg .node-rect {
@@ -131,7 +139,7 @@
   stroke: var(--ink-dim);
   stroke-width: 1;
   stroke-dasharray: 4 3;
-  fill: var(--card-fill);
+  fill: rgba(40, 40, 50, 0.85);
 }
 .dag-svg .node--plan-mode .node-rect,
 .dag-svg .node--gbd-r43 .node-rect {
@@ -229,5 +237,3 @@
   }
   .dag-foil-halo::before { opacity: 0.45; }
 }
-</content>
-</invoke>

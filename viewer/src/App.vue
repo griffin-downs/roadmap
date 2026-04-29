@@ -157,7 +157,7 @@ const dagId: ComputedRef<string> = computed<string>(() =>
 
 <template>
   <main class="viewer-shell">
-    <header class="viewer-head">
+    <header class="viewer-head dag-foil-halo">
       <h1>roadmap viewer · <span class="dag-id">{{ dagId }}</span></h1>
       <div class="view-toggle">
         <button
@@ -192,7 +192,7 @@ const dagId: ComputedRef<string> = computed<string>(() =>
         @pin-to-side="pinTooltipToSide"
       />
       <DagTopology
-        v-else
+        v-if="viewMode === 'topology'"
         :nodes="force.nodes.value"
         :links="force.links.value"
         :width="1200"
@@ -266,8 +266,19 @@ const dagId: ComputedRef<string> = computed<string>(() =>
   flex-direction: column;
   gap: 12px;
 }
-.viewer-head { display: flex; justify-content: space-between; align-items: baseline; }
-.viewer-head h1 { margin: 0; font-size: 16px; font-weight: 600; }
+.viewer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 12px;
+}
+.viewer-head h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--foil, #D7A432);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+}
 .viewer-head .dag-id { color: var(--text-meta, #888); font-weight: 400; }
 .view-toggle { display: flex; gap: 4px; }
 .toggle-btn {

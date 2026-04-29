@@ -3,10 +3,9 @@
     <div
       v-if="nodeData"
       ref="paneRef"
-      class="dag-tooltip"
+      class="dag-tooltip dag-foil-halo"
       :class="{
         'dag-tooltip--expanded': expanded,
-        'dag-foil-halo': inProgress,
       }"
       :style="paneStyle"
       role="dialog"
@@ -107,11 +106,6 @@ const hasProduces: ComputedRef<boolean> = computed(() =>
 const hasValidate: ComputedRef<boolean> = computed(() =>
   Array.isArray(props.nodeData?.validate) && (props.nodeData?.validate?.length ?? 0) > 0,
 );
-const inProgress: ComputedRef<boolean> = computed(() => {
-  const s = props.nodeData?.status;
-  return s === "in-progress" || s === "frontier" || s === "ready";
-});
-
 const paneStyle: ComputedRef<Record<string, string>> = computed<Record<string, string>>(() => {
   const a = props.anchorRect;
   if (a === null) return { display: "none" } as Record<string, string>;

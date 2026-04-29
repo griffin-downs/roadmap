@@ -47,6 +47,7 @@
         </linearGradient>
       </defs>
 
+      <g ref="zoomGroupRef" class="zoom-pan-group">
       <g class="edges">
         <path
           v-for="edge in layout.edges"
@@ -95,6 +96,7 @@
           <text v-if="!tablet" :x="8" :y="36" class="node-status">{{ node.status }}</text>
         </g>
       </g>
+      </g>
     </svg>
   </div>
 </template>
@@ -106,8 +108,10 @@
 //
 // Ported from fleet/dashboard at r1.5 (viewer-port-dag-component).
 
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import type { ComputedRef, Ref } from "vue";
+import * as d3 from "d3-selection";
+import { zoom, type D3ZoomEvent } from "d3-zoom";
 import type { DagLayout, LaidOutEdge, LaidOutNode } from "../composables/useDagLayout";
 import { useGraphExport } from "../composables/useGraphExport";
 
@@ -129,7 +133,24 @@ const emit = defineEmits<{
 
 const hoveredId: Ref<string | null> = ref<string | null>(null);
 const svgRef: Ref<SVGSVGElement | null> = ref<SVGSVGElement | null>(null);
+const zoomGroupRef: Ref<SVGGElement | null> = ref<SVGGElement | null>(null);
+const transform: Ref<{ k: number; x: number; y: number }> = ref({ k: 1, x: 0, y: 0 });
 const { exporting, exportSvg, exportPng } = useGraphExport();
+
+onMounted(() => {
+  if (!svgRef.value || !zoomGroupRef.value) return;
+  const sel = d3.select(svgRef.value as SVGSVGElement);
+  const z = zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.2, 4])
+    .on("zoom", (e: D3ZoomEvent<SVGSVGElement, unknown>) => {
+      const t = e.transform;
+      transform.value = { k: t.k, x: t.x, y: t.y };
+      zoomGroupRef.value!.setAttribute("transform", `translate(${t.x},${t.y}) scale(${t.k})`);
+    });
+  sel.call(z);
+});
+
+defineExpose({ transform });
 const hasGraph: ComputedRef<boolean> = computed<boolean>(() => props.layout.nodes.length > 0);
 
 async function onExportSvg(): Promise<void> {
