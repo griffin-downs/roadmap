@@ -49,15 +49,17 @@ export interface LayoutOptions {
   columnGap: number;
   marginX: number;
   marginY: number;
+  direction?: 'TB' | 'LR';
 }
 
 export const DEFAULT_LAYOUT_OPTIONS: LayoutOptions = {
-  nodeWidth: 180,
-  nodeHeight: 56,
+  nodeWidth: 220,
+  nodeHeight: 72,
   levelGap: 110,
   columnGap: 32,
   marginX: 40,
   marginY: 40,
+  direction: 'TB',
 };
 
 export const TABLET_LAYOUT_OPTIONS: LayoutOptions = {
@@ -160,7 +162,15 @@ function computeFrontier(
   return frontier;
 }
 
-function buildEdgePath(fromNode: LaidOutNode, toNode: LaidOutNode): string {
+function buildEdgePath(fromNode: LaidOutNode, toNode: LaidOutNode, direction: 'TB' | 'LR'): string {
+  if (direction === 'LR') {
+    const startX = fromNode.x + fromNode.width;
+    const startY = fromNode.y + fromNode.height / 2;
+    const endX = toNode.x;
+    const endY = toNode.y + toNode.height / 2;
+    const midX = (startX + endX) / 2;
+    return `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+  }
   const startX = fromNode.x + fromNode.width / 2;
   const startY = fromNode.y + fromNode.height;
   const endX = toNode.x + toNode.width / 2;
@@ -173,10 +183,23 @@ function positionLevel(
   ordered: string[],
   level: number,
   options: LayoutOptions,
-  totalWidth: number,
+  totalCross: number,
 ): Array<Pick<LaidOutNode, "id" | "x" | "y" | "indexInLevel" | "level">> {
+  const direction = options.direction ?? 'TB';
+  if (direction === 'LR') {
+    const levelHeight = ordered.length * options.nodeHeight + (ordered.length - 1) * options.columnGap;
+    const startY = Math.max(options.marginY, (totalCross - levelHeight) / 2);
+    const x = options.marginX + level * (options.nodeWidth + options.levelGap);
+    return ordered.map((id, indexInLevel) => ({
+      id,
+      x,
+      y: startY + indexInLevel * (options.nodeHeight + options.columnGap),
+      indexInLevel,
+      level,
+    }));
+  }
   const levelWidth = ordered.length * options.nodeWidth + (ordered.length - 1) * options.columnGap;
-  const startX = Math.max(options.marginX, (totalWidth - levelWidth) / 2);
+  const startX = Math.max(options.marginX, (totalCross - levelWidth) / 2);
   const y = options.marginY + level * (options.nodeHeight + options.levelGap);
   return ordered.map((id, indexInLevel) => ({
     id,
@@ -191,8 +214,14 @@ function computeCanvasSize(
   buckets: Map<number, string[]>,
   options: LayoutOptions,
 ): { width: number; height: number } {
+  const direction = options.direction ?? 'TB';
   const widestLevel = Math.max(...Array.from(buckets.values()).map((ids) => ids.length), 1);
   const levelCount = buckets.size;
+  if (direction === 'LR') {
+    const width = levelCount * options.nodeWidth + (levelCount - 1) * options.levelGap + options.marginX * 2;
+    const height = widestLevel * options.nodeHeight + (widestLevel - 1) * options.columnGap + options.marginY * 2;
+    return { width, height };
+  }
   const width =
     widestLevel * options.nodeWidth + (widestLevel - 1) * options.columnGap + options.marginX * 2;
   const height =
@@ -207,6 +236,8 @@ function layoutOnce(payload: DagPayload, options: LayoutOptions): DagLayout {
   const levels = topologicalLevels(nodes);
   const buckets = groupByLevel(levels);
   const canvas = computeCanvasSize(buckets, options);
+  const direction = options.direction ?? 'TB';
+  const crossDim = direction === 'LR' ? canvas.height : canvas.width;
 
   const completed = new Set(payload.completed);
   const frontier = computeFrontier(nodes, completed);
@@ -217,7 +248,7 @@ function layoutOnce(payload: DagPayload, options: LayoutOptions): DagLayout {
   sortedLevels.forEach((level) => {
     const raw = buckets.get(level) ?? [];
     const ordered = orderLevelByBarycenter(raw, nodes, orderIndex);
-    const placed = positionLevel(ordered, level, options, canvas.width);
+    const placed = positionLevel(ordered, level, options, crossDim);
     placed.forEach((entry) => {
       orderIndex.set(entry.id, entry.indexInLevel);
       positions.set(entry.id, {
@@ -233,19 +264,20 @@ function layoutOnce(payload: DagPayload, options: LayoutOptions): DagLayout {
   });
 
   const nodeList = Array.from(positions.values());
-  const edges = buildEdges(nodes, positions);
+  const edges = buildEdges(nodes, positions, direction);
   return { nodes: nodeList, edges, width: canvas.width, height: canvas.height, empty: false };
 }
 
 function buildEdges(
   nodes: Record<string, RoadmapNode>,
   positions: Map<string, LaidOutNode>,
+  direction: 'TB' | 'LR',
 ): LaidOutEdge[] {
   const edges: LaidOutEdge[] = [];
   Object.values(nodes).forEach((node) => {
     const toNode = positions.get(node.id);
     if (toNode === undefined) return;
-    node.deps.forEach((depId) => appendEdge(edges, depId, toNode, positions));
+    node.deps.forEach((depId) => appendEdge(edges, depId, toNode, positions, direction));
   });
   return edges;
 }
@@ -255,10 +287,11 @@ function appendEdge(
   fromId: string,
   toNode: LaidOutNode,
   positions: Map<string, LaidOutNode>,
+  direction: 'TB' | 'LR',
 ): void {
   const fromNode = positions.get(fromId);
   if (fromNode === undefined) return;
-  edges.push({ from: fromId, to: toNode.id, dFromPath: buildEdgePath(fromNode, toNode) });
+  edges.push({ from: fromId, to: toNode.id, dFromPath: buildEdgePath(fromNode, toNode, direction) });
 }
 
 export function useDagLayout(

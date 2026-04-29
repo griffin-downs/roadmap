@@ -8,7 +8,7 @@
       <header class="node-panel-head">
         <span class="status-badge" :data-status="status">{{ status }}</span>
         <h2 class="node-id">{{ node.id }}</h2>
-        <button type="button" class="close-btn" aria-label="close panel" @click="emitClose">×</button>
+        <button v-if="!printMode" type="button" class="close-btn" aria-label="close panel" @click="emitClose">×</button>
       </header>
 
       <p class="node-desc">{{ node.desc }}</p>
@@ -119,12 +119,14 @@ interface Props {
   /** parsed receipt JSON object — not the raw string */
   receipt?: unknown | null;
   commits?: CommitEntry[];
+  printMode?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   status: "pending",
   receipt: undefined,
   commits: () => [],
+  printMode: false,
 });
 
 const emit = defineEmits<{ (event: "close"): void }>();

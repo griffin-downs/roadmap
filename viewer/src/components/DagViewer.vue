@@ -1,6 +1,6 @@
 <template>
   <div class="dag-viewer" :class="{ 'dag-viewer--tablet': tablet }">
-    <div v-if="hasGraph" class="dag-viewer__toolbar">
+    <div v-if="hasGraph && !printMode" class="dag-viewer__toolbar">
       <button
         type="button"
         class="dag-viewer__btn"
@@ -20,6 +20,7 @@
       :width="layout.width"
       :height="layout.height"
       class="dag-svg"
+      :class="{ 'dag-svg--print': printMode }"
       role="img"
       aria-label="Roadmap DAG"
     >
@@ -31,6 +32,62 @@
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
+        <!-- r2-hero: cloud-blob glow primitives · extended filter regions
+             so blur is not clipped to element bbox (the rectangle artifact
+             we are escaping). -->
+        <filter id="glow-edge-soft"
+                filterUnits="userSpaceOnUse"
+                x="-5000" y="-5000" width="20000" height="20000">
+          <feGaussianBlur stdDeviation="1.2" />
+        </filter>
+        <filter id="glow-soft" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
+        <filter id="glow-medium" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="14" />
+        </filter>
+        <filter id="glow-heavy" x="-150%" y="-150%" width="400%" height="400%">
+          <feGaussianBlur stdDeviation="28" />
+        </filter>
+        <filter id="glow-massive" x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="48" />
+        </filter>
+        <radialGradient id="cloud-cream" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#F5E5D0" stop-opacity="0.95"/>
+          <stop offset="40%" stop-color="#F5E5D0" stop-opacity="0.55"/>
+          <stop offset="80%" stop-color="#F5E5D0" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#F5E5D0" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="cloud-pink" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#FF8FB5" stop-opacity="0.90"/>
+          <stop offset="35%" stop-color="#FFC8DC" stop-opacity="0.55"/>
+          <stop offset="80%" stop-color="#FFC8DC" stop-opacity="0.10"/>
+          <stop offset="100%" stop-color="#FFC8DC" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="cloud-lavender" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#9D7EE6" stop-opacity="0.85"/>
+          <stop offset="35%" stop-color="#C8B0F0" stop-opacity="0.55"/>
+          <stop offset="80%" stop-color="#C8B0F0" stop-opacity="0.10"/>
+          <stop offset="100%" stop-color="#C8B0F0" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="cloud-peach" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#FFB07A" stop-opacity="0.85"/>
+          <stop offset="35%" stop-color="#FFD8C0" stop-opacity="0.55"/>
+          <stop offset="80%" stop-color="#FFD8C0" stop-opacity="0.10"/>
+          <stop offset="100%" stop-color="#FFD8C0" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="cloud-mint" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#5BC97A" stop-opacity="0.85"/>
+          <stop offset="35%" stop-color="#C0E8C8" stop-opacity="0.50"/>
+          <stop offset="80%" stop-color="#C0E8C8" stop-opacity="0.10"/>
+          <stop offset="100%" stop-color="#C0E8C8" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="cloud-periwinkle" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#7BA0E0" stop-opacity="0.80"/>
+          <stop offset="35%" stop-color="#A8C0E8" stop-opacity="0.50"/>
+          <stop offset="80%" stop-color="#A8C0E8" stop-opacity="0.10"/>
+          <stop offset="100%" stop-color="#A8C0E8" stop-opacity="0"/>
+        </radialGradient>
         <linearGradient id="dag-rainbow-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#C68080" />
           <stop offset="20%" stop-color="#C69870" />
@@ -45,57 +102,345 @@
           <stop offset="66%" stop-color="#80C690" />
           <stop offset="100%" stop-color="#9080C6" />
         </linearGradient>
+        <linearGradient id="dag-card-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1F1A38" stop-opacity="0.92" />
+          <stop offset="1" stop-color="#1F1A38" stop-opacity="0.70" />
+        </linearGradient>
+        <linearGradient id="dag-card-fill-done" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1A2D24" stop-opacity="0.92" />
+          <stop offset="1" stop-color="#1A2D24" stop-opacity="0.70" />
+        </linearGradient>
+        <!-- r2-hero · holographic card overlays · stencil + holo + diffuse stack -->
+        <linearGradient id="holo-cool" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#FFC8DC" stop-opacity="0.6"/>
+          <stop offset="33%"  stop-color="#9D7EE6" stop-opacity="0.45"/>
+          <stop offset="66%"  stop-color="#A8C0E8" stop-opacity="0.45"/>
+          <stop offset="100%" stop-color="#7AE695" stop-opacity="0.55"/>
+        </linearGradient>
+        <linearGradient id="holo-warm" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#F5E5D0" stop-opacity="0.6"/>
+          <stop offset="33%"  stop-color="#FFB07A" stop-opacity="0.45"/>
+          <stop offset="66%"  stop-color="#FFC8DC" stop-opacity="0.45"/>
+          <stop offset="100%" stop-color="#9D7EE6" stop-opacity="0.55"/>
+        </linearGradient>
+        <linearGradient id="holo-rainbow" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#FFC8DC" stop-opacity="0.7"/>
+          <stop offset="20%"  stop-color="#FFB07A" stop-opacity="0.55"/>
+          <stop offset="40%"  stop-color="#F5E5D0" stop-opacity="0.55"/>
+          <stop offset="60%"  stop-color="#7AE695" stop-opacity="0.55"/>
+          <stop offset="80%"  stop-color="#A8C0E8" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#9D7EE6" stop-opacity="0.7"/>
+        </linearGradient>
+        <linearGradient id="diffuse-highlight" x1="0.2" y1="0" x2="0.8" y2="1">
+          <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.55"/>
+          <stop offset="40%"  stop-color="#FFFFFF" stop-opacity="0.10"/>
+          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+        </linearGradient>
+        <marker
+          id="tip-arrow"
+          viewBox="0 0 10 10"
+          refX="5" refY="5"
+          markerWidth="6" markerHeight="6"
+          orient="auto"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 Z" fill="#F5E5D0"/>
+        </marker>
+        <linearGradient id="edge-holo-gradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="2400" y2="0">
+          <stop offset="0%"   stop-color="#FFC8DC" stop-opacity="0.95"/>
+          <stop offset="33%"  stop-color="#FFD8C0" stop-opacity="0.85"/>
+          <stop offset="66%"  stop-color="#A8C0E8" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="#C8B0F0" stop-opacity="0.95"/>
+        </linearGradient>
+        <radialGradient id="milky-way" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stop-color="#C8B0F0" stop-opacity="0.55"/>
+          <stop offset="55%"  stop-color="#A8C0E8" stop-opacity="0.4"/>
+          <stop offset="85%"  stop-color="#FFC8DC" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#080418" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="milky-blur"
+                filterUnits="userSpaceOnUse"
+                x="-5000" y="-5000" width="20000" height="20000">
+          <feGaussianBlur stdDeviation="140" />
+        </filter>
       </defs>
 
       <g ref="zoomGroupRef" class="zoom-pan-group">
-      <g class="edges">
-        <path
-          v-for="edge in layout.edges"
-          :key="`${edge.from}->${edge.to}`"
-          :d="edge.dFromPath"
-          class="edge"
-          :class="edgeClass(edge)"
-          fill="none"
+        <ellipse
+          v-if="printMode"
+          class="milky-way-band"
+          :cx="layout.width / 2"
+          :cy="layout.height / 2"
+          :rx="Math.max(0, layout.width / 2 - 80)"
+          :ry="layout.height * 0.45"
+          fill="url(#milky-way)"
+          filter="url(#milky-blur)"
+          aria-hidden="true"
         />
-      </g>
-
-      <g class="nodes">
-        <g
-          v-for="node in layout.nodes"
-          :key="node.id"
-          class="node"
-          :class="nodeClass(node)"
-          :transform="`translate(${node.x}, ${node.y})`"
-          :filter="node.isFrontier ? 'url(#dag-frontier-glow)' : undefined"
-          @mouseenter="hoveredId = node.id"
-          @mouseleave="clearHover"
-          @click.stop="emitClick(node.id, $event)"
-        >
-          <rect
-            :width="node.width"
-            :height="node.height"
-            rx="0"
-            ry="0"
-            class="node-rect"
-          />
-          <rect
-            v-if="node.status === 'in-progress'"
-            :width="node.width"
-            :height="node.height"
-            rx="0"
-            ry="0"
-            class="node-rainbow-rect"
-          />
-          <text :x="8" :y="18" class="node-id">{{ node.id }}</text>
-          <text
-            v-if="selectedNodeId === node.id"
-            :x="8"
-            :y="18"
-            class="node-id-shimmer"
-          >{{ node.id }}</text>
-          <text v-if="!tablet" :x="8" :y="36" class="node-status">{{ node.status }}</text>
+        <g class="edges">
+          <template v-if="printMode">
+            <g
+              v-for="edge in layout.edges"
+              :key="`${edge.from}->${edge.to}`"
+              class="edge-pair"
+            >
+              <path
+                :d="edge.dFromPath"
+                class="edge edge--stencil"
+                :class="edgeClass(edge)"
+                fill="none"
+                filter="url(#glow-edge-soft)"
+              />
+              <path
+                :d="edge.dFromPath"
+                class="edge edge--holo"
+                :class="edgeClass(edge)"
+                stroke="url(#edge-holo-gradient)"
+                fill="none"
+                filter="url(#glow-edge-soft)"
+              />
+            </g>
+          </template>
+          <template v-else>
+            <path
+              v-for="edge in layout.edges"
+              :key="`${edge.from}->${edge.to}`"
+              :d="edge.dFromPath"
+              class="edge"
+              :class="edgeClass(edge)"
+              fill="none"
+            />
+          </template>
         </g>
-      </g>
+
+        <g class="nodes">
+          <!-- print mode · cloud-blob node treatment · stacked radial-gradient
+               ellipses with extended-region SVG filters · NO bounding rect. -->
+          <template v-if="printMode">
+            <g
+              v-for="node in layout.nodes"
+              :key="node.id"
+              class="node"
+              :class="nodeClass(node)"
+              @mouseenter="hoveredId = node.id"
+              @mouseleave="clearHover"
+              @click.stop="emitClick(node.id, $event)"
+            >
+              <!-- selected-only · gentler 3-stack halo · focal but not blinding -->
+              <template v-if="selectedNodeId === node.id">
+                <ellipse
+                  :cx="node.x + node.width / 2"
+                  :cy="node.y + rectHeight(node) / 2"
+                  rx="220"
+                  ry="170"
+                  fill="#FFC8DC"
+                  filter="url(#glow-massive)"
+                  opacity="0.35"
+                />
+                <ellipse
+                  :cx="node.x + node.width / 2"
+                  :cy="node.y + rectHeight(node) / 2"
+                  rx="160"
+                  ry="120"
+                  fill="#FFB07A"
+                  filter="url(#glow-heavy)"
+                  opacity="0.45"
+                />
+                <ellipse
+                  :cx="node.x + node.width / 2"
+                  :cy="node.y + rectHeight(node) / 2"
+                  rx="100"
+                  ry="80"
+                  fill="#F5E5D0"
+                  filter="url(#glow-medium)"
+                  opacity="0.55"
+                />
+              </template>
+              <!-- ghost halo · cloud-y diffuse aura · scaled per-node -->
+              <ellipse
+                :cx="node.x + node.width / 2"
+                :cy="node.y + rectHeight(node) / 2"
+                :rx="node.width * 0.9"
+                :ry="rectHeight(node) * 1.1"
+                :fill="`url(#${cloudFor(node)})`"
+                opacity="0.55"
+                filter="url(#glow-heavy)"
+              />
+              <ellipse
+                :cx="node.x + node.width / 2"
+                :cy="node.y + rectHeight(node) / 2"
+                :rx="node.width * 0.42"
+                :ry="rectHeight(node) * 0.5"
+                :fill="`url(#${cloudFor(node)})`"
+                opacity="0.95"
+                filter="url(#glow-medium)"
+              />
+              <!-- selected · hard offset card-on-table shadow + glow ring -->
+              <template v-if="selectedNodeId === node.id">
+                <rect
+                  :x="node.x + 8"
+                  :y="node.y + 8"
+                  :width="node.width"
+                  :height="rectHeight(node)"
+                  rx="12" ry="12"
+                  fill="#000000"
+                  opacity="0.85"
+                />
+                <rect
+                  :x="node.x - 4"
+                  :y="node.y - 4"
+                  :width="node.width + 8"
+                  :height="rectHeight(node) + 8"
+                  rx="14" ry="14"
+                  fill="none"
+                  stroke="#F5E5D0"
+                  stroke-width="3"
+                  opacity="0.35"
+                  filter="url(#glow-medium)"
+                />
+              </template>
+              <!-- card drop shadow · solid offset · cheap (no filter) -->
+              <rect
+                :x="node.x + 6"
+                :y="node.y + 6"
+                :width="node.width"
+                :height="rectHeight(node)"
+                rx="10" ry="10"
+                fill="#000000"
+                opacity="0.45"
+              />
+              <!-- STENCIL · solid opaque base · WCAG anchor -->
+              <rect
+                :x="node.x"
+                :y="node.y"
+                :width="node.width"
+                :height="rectHeight(node)"
+                rx="10" ry="10"
+                fill="#1A0E2A"
+                :fill-opacity="selectedNodeId === node.id ? 0.96 : 0.92"
+                class="card-stencil"
+              />
+              <!-- HOLOGRAPHIC · rainbow gradient overlay · screen blend -->
+              <rect
+                :x="node.x"
+                :y="node.y"
+                :width="node.width"
+                :height="rectHeight(node)"
+                rx="10" ry="10"
+                :fill="`url(#holo-${cardHoloId(node)})`"
+                fill-opacity="0.32"
+                style="mix-blend-mode: screen"
+                class="card-holo"
+              />
+              <!-- DIFFUSE HIGHLIGHT · top-left catch-light -->
+              <rect
+                :x="node.x"
+                :y="node.y"
+                :width="node.width"
+                :height="rectHeight(node) * 0.42"
+                rx="10" ry="10"
+                fill="url(#diffuse-highlight)"
+                fill-opacity="0.45"
+                class="card-diffuse"
+              />
+              <!-- BORDER · cream/foil rim · contrast cue -->
+              <rect
+                :x="node.x"
+                :y="node.y"
+                :width="node.width"
+                :height="rectHeight(node)"
+                rx="10" ry="10"
+                fill="none"
+                :stroke="cardStrokeFor(node)"
+                :stroke-width="selectedNodeId === node.id ? 4 : 2.5"
+                class="card-border"
+              />
+              <text
+                v-if="isMilestone(node.id)"
+                :x="node.x + node.width / 2"
+                :y="node.y + rectHeight(node) / 2 - (wrapId(node.id).length - 1) * 17 + 10"
+                class="node-id"
+                text-anchor="middle"
+              >
+                <tspan
+                  v-for="(line, i) in wrapId(node.id)"
+                  :key="i"
+                  :x="node.x + node.width / 2"
+                  :dy="i === 0 ? 0 : 34"
+                  :textLength="line.length > 12 ? (node.width - 32) : undefined"
+                  lengthAdjust="spacingAndGlyphs"
+                  class="node-id-line"
+                >{{ line }}</tspan>
+              </text>
+              <!-- frontier mark · peach indicator dot in upper-right corner -->
+              <circle
+                v-if="node.status === 'in-progress'"
+                :cx="node.x + node.width - 14"
+                :cy="node.y + 14"
+                r="6"
+                fill="#FFB07A"
+                filter="url(#glow-soft)"
+                class="frontier-mark"
+              />
+            </g>
+          </template>
+          <template v-else>
+            <g
+              v-for="node in layout.nodes"
+              :key="node.id"
+              class="node"
+              :class="nodeClass(node)"
+              :transform="`translate(${node.x}, ${node.y})`"
+              :filter="node.isFrontier ? 'url(#dag-frontier-glow)' : undefined"
+              @mouseenter="hoveredId = node.id"
+              @mouseleave="clearHover"
+              @click.stop="emitClick(node.id, $event)"
+            >
+              <rect
+                :width="node.width"
+                :height="rectHeight(node)"
+                rx="0"
+                ry="0"
+                class="node-rect"
+              />
+              <rect
+                v-if="node.status === 'in-progress'"
+                :width="node.width"
+                :height="rectHeight(node)"
+                rx="0"
+                ry="0"
+                class="node-rainbow-rect"
+              />
+              <text :x="8" :y="18" class="node-id">
+                <tspan
+                  v-for="(line, i) in wrapSlug(node.id)"
+                  :key="i"
+                  :x="8"
+                  :dy="i === 0 ? 0 : 16"
+                  class="node-id-line"
+                >{{ line }}</tspan>
+              </text>
+              <text
+                v-if="selectedNodeId === node.id"
+                :x="8"
+                :y="18"
+                class="node-id-shimmer"
+              >
+                <tspan
+                  v-for="(line, i) in wrapSlug(node.id)"
+                  :key="i"
+                  :x="8"
+                  :dy="i === 0 ? 0 : 16"
+                >{{ line }}</tspan>
+              </text>
+              <text
+                v-if="!tablet"
+                :x="8"
+                :y="rectHeight(node) - 8"
+                class="node-status"
+              >{{ node.status }}</text>
+            </g>
+          </template>
+        </g>
       </g>
     </svg>
   </div>
@@ -106,12 +451,13 @@
 // No fetch / no state derivation / no fleet-specific assumptions. Layout
 // is computed upstream by useDagLayout(payload, options).
 //
-// Ported from fleet/dashboard at r1.5 (viewer-port-dag-component).
+// r2-hero: LOD tiers (far/mid chip-mode + cluster-hulls) ripped out — one
+// render path. Print mode is a CSS-only overlay driven by ?print=1.
 
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import type { ComputedRef, Ref } from "vue";
 import * as d3 from "d3-selection";
-import { zoom, type D3ZoomEvent } from "d3-zoom";
+import { zoom, zoomIdentity, type D3ZoomEvent, type ZoomBehavior } from "d3-zoom";
 import type { DagLayout, LaidOutEdge, LaidOutNode } from "../composables/useDagLayout";
 import { useGraphExport } from "../composables/useGraphExport";
 
@@ -120,13 +466,23 @@ interface Props {
   tablet?: boolean;
   exportName?: string;
   selectedNodeId?: string;
+  printMode?: boolean;
+  milestones?: string[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   tablet: false,
   exportName: "roadmap-dag",
   selectedNodeId: "",
+  printMode: false,
+  milestones: () => [],
 });
+const milestoneSet = computed<Set<string>>(() => new Set(props.milestones));
+function isMilestone(id: string): boolean {
+  // sentinel "none" → all tokens, no labels
+  if (milestoneSet.value.has("__none__")) return false;
+  return milestoneSet.value.size === 0 || milestoneSet.value.has(id);
+}
 const emit = defineEmits<{
   (event: "node-selected", nodeId: string, anchorRect: DOMRect): void;
 }>();
@@ -136,21 +492,95 @@ const svgRef: Ref<SVGSVGElement | null> = ref<SVGSVGElement | null>(null);
 const zoomGroupRef: Ref<SVGGElement | null> = ref<SVGGElement | null>(null);
 const transform: Ref<{ k: number; x: number; y: number }> = ref({ k: 1, x: 0, y: 0 });
 const { exporting, exportSvg, exportPng } = useGraphExport();
+let zoomBehavior: ZoomBehavior<SVGSVGElement, unknown> | null = null;
+// Only the FIRST URL-pin centers the camera. Subsequent clicks change the
+// selection but must NOT snap the viewport — user complaint from r2-hero.
+let initialPinDone = false;
+
+function centerSelected(): void {
+  if (!props.selectedNodeId) return;
+  if (!svgRef.value || !zoomBehavior) return;
+  const target = props.layout.nodes.find((n) => n.id === props.selectedNodeId);
+  if (!target) return;
+  // Work entirely in SVG user-coords. The svg's viewBox is "0 0 layoutW layoutH"
+  // and that user-space maps 1:1 onto the visible SVG element. The d3-zoom
+  // transform's translate() is in user-coords too (post-viewBox-mapping).
+  const svg = svgRef.value as SVGSVGElement;
+  const rect = svg.getBoundingClientRect();
+  const layoutW = props.layout.width;
+  const layoutH = props.layout.height;
+  // viewBox preserveAspectRatio defaults to xMidYMid meet — letterbox.
+  // Compute the user-units-per-screen-px ratio (min of x and y scales).
+  const sx = rect.width > 0 ? layoutW / rect.width : 1;
+  const sy = rect.height > 0 ? layoutH / rect.height : 1;
+  const userPerPx = Math.max(sx, sy); // meet → contain · larger ratio wins
+  const panelOccUserX = props.printMode ? 520 * userPerPx : 0;
+  const visibleUserW = Math.max(layoutW - panelOccUserX, 1);
+  const visibleCenterUserX = visibleUserW / 2;
+  const visibleCenterUserY = layoutH / 2;
+  const cx = target.x + target.width / 2;
+  const cy = target.y + rectHeight(target) / 2;
+  const k = transform.value.k || 1;
+  const tx = visibleCenterUserX - cx * k;
+  const ty = visibleCenterUserY - cy * k;
+  const sel = d3.select(svg);
+  sel.call(zoomBehavior.transform, zoomIdentity.translate(tx, ty).scale(k));
+}
 
 onMounted(() => {
   if (!svgRef.value || !zoomGroupRef.value) return;
   const sel = d3.select(svgRef.value as SVGSVGElement);
   const z = zoom<SVGSVGElement, unknown>()
     .scaleExtent([0.2, 4])
+    // §click-passthrough · let mousedown on a .node element bypass d3-zoom so
+    // pan-drag does not capture the pointer and swallow the subsequent click.
+    // Wheel + mousedown on background still pan/zoom normally.
+    .filter((event: Event) => {
+      const t = event.target as Element | null;
+      if (t?.closest?.(".node")) return false;
+      // Default d3-zoom filter: ignore secondary buttons + ctrl-key wheel.
+      const me = event as MouseEvent;
+      return (!me.ctrlKey || event.type === "wheel") && (me.button === 0 || me.button === undefined);
+    })
     .on("zoom", (e: D3ZoomEvent<SVGSVGElement, unknown>) => {
       const t = e.transform;
       transform.value = { k: t.k, x: t.x, y: t.y };
       zoomGroupRef.value!.setAttribute("transform", `translate(${t.x},${t.y}) scale(${t.k})`);
     });
   sel.call(z);
+  zoomBehavior = z;
+  // Initial pin · seed identity then center after layout settles
+  sel.call(z.transform, zoomIdentity);
+  nextTick(() => {
+    if (props.selectedNodeId) {
+      centerSelected();
+      initialPinDone = true;
+      setTimeout(() => centerSelected(), 50);
+      setTimeout(() => centerSelected(), 200);
+    }
+  });
 });
 
-defineExpose({ transform });
+// Re-center only if the layout hasn't yet seeded a viewport for the URL-pin.
+// Once initialPinDone is true, clicks change selection without snapping camera.
+watch(
+  () => [props.selectedNodeId, props.printMode, props.layout.nodes.length] as const,
+  () => {
+    if (initialPinDone) return;
+    nextTick(() => {
+      if (props.selectedNodeId) {
+        centerSelected();
+        initialPinDone = true;
+      }
+    });
+  },
+);
+
+defineExpose({ transform, centerSelected });
+// Expose globally for capture-hero.mjs · puppeteer can re-center after zoom
+if (typeof window !== "undefined") {
+  (window as unknown as { __recenterDag?: () => void }).__recenterDag = centerSelected;
+}
 const hasGraph: ComputedRef<boolean> = computed<boolean>(() => props.layout.nodes.length > 0);
 
 async function onExportSvg(): Promise<void> {
@@ -196,10 +626,140 @@ function nodeClass(node: LaidOutNode): Record<string, boolean> {
 function edgeClass(edge: LaidOutEdge): Record<string, boolean> {
   const hovered = hoveredId.value;
   const touchesHover = hovered !== null && (edge.from === hovered || edge.to === hovered);
+  const sel = props.selectedNodeId;
+  const touchesSelected = !!sel && (edge.from === sel || edge.to === sel);
   return {
     "edge--active": touchesHover,
     "edge--dim": hovered !== null && !touchesHover,
+    "edge--to-selected": touchesSelected,
   };
+}
+
+function cardStrokeFor(node: LaidOutNode): string {
+  if (props.selectedNodeId === node.id) return "#F5E5D0";
+  if (node.status === "in-progress") return "#FFB07A";
+  if (node.status === "blocked") return "#9D7EE6";
+  if (node.status === "ready") return "#FF8FB5";
+  if (node.status === "done") return "#5BC97A";
+  return "#F5E5D0";
+}
+
+function cardHoloId(node: LaidOutNode): string {
+  if (props.selectedNodeId === node.id) return "rainbow";
+  if (node.status === "in-progress" || node.status === "ready") return "warm";
+  return "cool";
+}
+
+function wrapSlug(id: string, maxLineChars: number = 14): string[] {
+  const parts = id.split("-");
+  const lines: string[] = [];
+  let cur = "";
+  for (const p of parts) {
+    const next = cur ? `${cur}-${p}` : p;
+    if (next.length > maxLineChars && cur) {
+      lines.push(cur);
+      cur = p;
+    } else {
+      cur = next;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines.length > 0 ? lines : [id];
+}
+
+/**
+ * Derive a short descriptive label from a node id.
+ * Strips common cluster-prefix tokens and round-refs, keeps meaningful tail.
+ */
+const ACRONYMS = new Set(["qr", "jq", "url", "api", "json", "svg", "png", "pdf"]);
+
+function shortLabel(id: string): string {
+  if (id === "_term") return "Term";
+  if (id === "init-r2") return "Init r2";
+  if (id === "init-r2-hero") return "Init r2 hero";
+  const stripped = id
+    .replace(/^(c|d|e|i|p|v|s|pap|pst|pre|post|term)-/, "")
+    .replace(/^A-/, "")
+    .replace(/-r\d+(?=-|$)/g, "")
+    .replace(/^r\d+(?=-|$)/, "");
+  const parts = stripped.split("-").filter(Boolean);
+  if (parts.length === 0) return id;
+  let kept = parts.slice(0, 3);
+  while (kept.join(" ").length > 22 && kept.length > 1) kept.pop();
+  return kept.map((p, i) => {
+    if (ACRONYMS.has(p.toLowerCase())) return p.toUpperCase();
+    return i === 0 ? p[0].toUpperCase() + p.slice(1) : p;
+  }).join(" ");
+}
+
+function wrapId(id: string, maxLineChars: number = 10): string[] {
+  // hyphens become spaces so labels read as natural words; wrap on word breaks
+  const words = id.split("-");
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w;
+    if (next.length > maxLineChars && cur) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      cur = next;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines.length > 0 ? lines : [id];
+}
+
+function wrapShortLabel(id: string, maxLineChars: number = 10): string[] {
+  const label = shortLabel(id);
+  const words = label.split(" ");
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w;
+    if (next.length > maxLineChars && cur) {
+      lines.push(cur);
+      cur = w;
+    } else {
+      cur = next;
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines.length > 0 ? lines : [label];
+}
+
+function rectHeight(node: LaidOutNode): number {
+  if (props.printMode) {
+    const lines = wrapId(node.id).length;
+    const lineHeight = 28;
+    const padding = 32;
+    return Math.max(node.height, lines * lineHeight + padding);
+  }
+  const lines = wrapSlug(node.id).length;
+  const dynamic = lines * 26 + 36;
+  return Math.max(node.height, dynamic);
+}
+
+function cloudFor(node: LaidOutNode): string {
+  // Status takes precedence for live signal · in-progress / blocked / ready
+  // are visually distinct regardless of cluster.
+  if (node.status === "in-progress") return "cloud-peach";
+  if (node.status === "blocked") return "cloud-periwinkle";
+  if (node.status === "ready") return "cloud-pink";
+  // For 'done' (most common in this DAG), tint by round/cluster so the
+  // graph is multicolor instead of monochromatic mint.
+  const m = node.id.match(/(?:^|-)r(\d+)(?:-|$)/);
+  if (m) {
+    const round = parseInt(m[1], 10);
+    if (round === 1) return "cloud-periwinkle";
+    if (round === 41) return "cloud-lavender";
+    if (round === 2) return "cloud-mint";
+  }
+  if (node.id.startsWith("pap-")) return "cloud-pink";
+  if (node.id.startsWith("pst-")) return "cloud-peach";
+  if (node.id.startsWith("c-")) return "cloud-mint";
+  if (node.id.startsWith("p-")) return "cloud-lavender";
+  return "cloud-cream";
 }
 
 function clearHover(): void {
