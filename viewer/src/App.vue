@@ -352,7 +352,7 @@ const stars: Ref<Star[]> = ref<Star[]>([]);
 function buildStars(): Star[] {
   const arr: Star[] = [];
   const palette = ["#F5E5D0", "#FFC8DC", "#A8C0E8", "#FFFFFF"];
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 240; i++) {
     const r = Math.random();
     const tier: "small" | "mid" | "big" | "huge" =
       r < 0.55 ? "small" : (r < 0.88 ? "mid" : (r < 0.95 ? "big" : "huge"));
@@ -384,8 +384,19 @@ function buildStars(): Star[] {
             />
             <circle cx="0" cy="0" r="2" fill="#FFFFFF" opacity="0.9"/>
           </symbol>
-          <filter id="sparkle-glow" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="1.2"/>
+          <filter id="sparkle-glow" x="-200%" y="-200%" width="500%" height="500%">
+            <feGaussianBlur stdDeviation="3" result="blur1"/>
+            <feMerge>
+              <feMergeNode in="blur1"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="sparkle-bloom" x="-200%" y="-200%" width="500%" height="500%">
+            <feGaussianBlur stdDeviation="6" result="b"/>
+            <feMerge>
+              <feMergeNode in="b"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
           </filter>
         </defs>
         <g class="sparkles">
@@ -403,7 +414,7 @@ function buildStars(): Star[] {
               animationDelay: s.delay + 's',
               color: s.color,
             }"
-            filter="url(#sparkle-glow)"
+            :filter="s.tier === 'huge' || s.tier === 'big' ? 'url(#sparkle-bloom)' : 'url(#sparkle-glow)'"
           />
         </g>
       </svg>
