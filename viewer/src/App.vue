@@ -346,6 +346,7 @@ interface Star {
   x: number; y: number; size: number;
   tier: "small" | "mid" | "big" | "huge";
   dur: number; delay: number; color: string;
+  rot: number;
 }
 // r2-hero · stars are computed ONCE on mount · static positions (no flicker)
 const stars: Ref<Star[]> = ref<Star[]>([]);
@@ -366,6 +367,7 @@ function buildStars(): Star[] {
       dur: 3 + Math.random() * 5,
       delay: -Math.random() * 8,
       color: palette[Math.floor(Math.random() * palette.length)],
+      rot: Math.random() * 360,
     });
   }
   return arr;
@@ -400,22 +402,35 @@ function buildStars(): Star[] {
           </filter>
         </defs>
         <g class="sparkles">
-          <use
+          <g
             v-for="(s, i) in stars"
             :key="i"
-            href="#sparkle"
-            :x="s.x"
-            :y="s.y"
-            :width="s.size"
-            :height="s.size"
-            :class="['star', `star--${s.tier}`]"
-            :style="{
-              animationDuration: s.dur + 's',
-              animationDelay: s.delay + 's',
-              color: s.color,
-            }"
-            :filter="s.tier === 'huge' || s.tier === 'big' ? 'url(#sparkle-bloom)' : 'url(#sparkle-glow)'"
-          />
+            :transform="`rotate(${s.rot} ${s.x + s.size/2} ${s.y + s.size/2})`"
+          >
+            <!-- per-star diffuse halo · soft circular glow under the sparkle -->
+            <circle
+              :cx="s.x + s.size/2"
+              :cy="s.y + s.size/2"
+              :r="s.size * (s.tier === 'huge' ? 1.4 : s.tier === 'big' ? 1.1 : 0.85)"
+              :fill="s.color"
+              :opacity="s.tier === 'huge' ? 0.28 : s.tier === 'big' ? 0.22 : 0.16"
+              filter="url(#sparkle-bloom)"
+            />
+            <use
+              href="#sparkle"
+              :x="s.x"
+              :y="s.y"
+              :width="s.size"
+              :height="s.size"
+              :class="['star', `star--${s.tier}`]"
+              :style="{
+                animationDuration: s.dur + 's',
+                animationDelay: s.delay + 's',
+                color: s.color,
+              }"
+              :filter="s.tier === 'huge' || s.tier === 'big' ? 'url(#sparkle-bloom)' : 'url(#sparkle-glow)'"
+            />
+          </g>
         </g>
       </svg>
     </div>

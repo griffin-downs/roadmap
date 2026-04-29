@@ -384,10 +384,11 @@
 }
 .dag-svg--print .node--in-progress .node-rect {
   stroke: var(--portrait-peach);
-  stroke-width: 3;
+  stroke-width: 4.5;
   filter:
-    drop-shadow(0 0 14px rgba(255, 216, 192, 0.85))
-    drop-shadow(0 0 32px rgba(255, 176, 122, 0.5));
+    drop-shadow(0 0 18px rgba(255, 216, 192, 1))
+    drop-shadow(0 0 42px rgba(255, 176, 122, 0.85))
+    drop-shadow(0 0 80px rgba(255, 140, 90, 0.55));
 }
 .dag-svg--print .node--blocked .node-rect {
   stroke: var(--portrait-lavender);
