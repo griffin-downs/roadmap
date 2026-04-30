@@ -1,5 +1,5 @@
 {
-  "name": "roadmap",
+  "name": "@ocean-synaptics/roadmap",
   "version": "0.2.0",
   "type": "module",
   "bin": {
@@ -29,5 +29,39 @@
   },
   "dependencies": {
     "zod": "^4.3.6"
+  },
+  "license": "MIT",
+  "description": "DAG-governed development protocol — declare typed graphs of work, validate structure, track position via filesystem state",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ocean-Synaptics/roadmap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ocean-Synaptics/roadmap/issues"
+  },
+  "homepage": "https://github.com/Ocean-Synaptics/roadmap#readme",
+  "keywords": [
+    "dag",
+    "workflow",
+    "agent",
+    "claude-code",
+    "typescript",
+    "cli",
+    "build-tool",
+    "governance",
+    "ml-prague-2026"
+  ],
+  "author": "Griffin Downs / Ocean Synaptics <griffin.downs@oceansynaptics.com>",
+  "files": [
+    "dist/",
+    "bin/",
+    "LICENSE",
+    "README.md",
+    "CLAUDE.md",
+    "docs/SETUP.md",
+    "templates/"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
