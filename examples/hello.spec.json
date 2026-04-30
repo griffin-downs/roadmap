@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "dag_id": "hello",
+  "dag_desc": "Smallest working DAG · single produce + terminal · five-line walkthrough.",
+  "metadata": { "generated": "2026-05-01T00:00:00Z", "compile_hash": "init" },
+  "inputs": [
+    { "path": "examples/hello.spec.json", "sha256": "0000000000000000000000000000000000000000000000000000000000000000", "role": "spec" }
+  ],
+  "tasks": [
+    { "id": "init",  "desc": "start", "produces": [], "consumes": [], "deps": [], "validate": [] },
+    { "id": "build", "desc": "produce hello.txt", "produces": ["hello.txt"], "consumes": [], "deps": ["init"],
+      "validate": [{ "type": "artifact-exists", "target": "hello.txt" }] },
+    { "id": "term",  "desc": "done", "produces": [], "consumes": ["hello.txt"], "deps": ["build"], "validate": [] }
+  ]
+}

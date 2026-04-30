@@ -59,6 +59,8 @@ roadmap advance build --note "wrote hello"
 # 5. continue until terminal
 ```
 
+More worked examples in [examples/](examples/) (hello + parallel-build).
+
 ## Concepts
 
 Each node declares:
@@ -129,7 +131,7 @@ verify(g);  // all consumes satisfied by predecessor produces?
 
 ## Origins
 
-Developed by Ocean Synaptics for managing complex agent-driven workflows. Presented as a poster at **ML Prague 2026** — see [Compiling Agent State](docs/Downs-CompilingAgentState-MLPrague2026.pdf) for the conceptual underpinning (the graph as compiled execution state; the process is ephemeral, the graph is permanent).
+Developed by Ocean Synaptics for managing complex agent-driven workflows. Presented as a poster at **ML Prague 2026** under the title *Compiling Agent State* — the conceptual underpinning being that the graph is compiled execution state: the process is ephemeral, the graph is permanent.
 
 ## License
 

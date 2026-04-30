@@ -45,12 +45,13 @@
   ],
   "author": "Griffin Downs / Ocean Synaptics <griffin.downs@oceansynaptics.com>",
   "files": [
-    "dist/",
-    "bin/",
+    "CLAUDE.md",
     "LICENSE",
     "README.md",
-    "CLAUDE.md",
+    "bin/",
+    "dist/",
     "docs/SETUP.md",
+    "examples/",
     "templates/"
   ],
   "publishConfig": {

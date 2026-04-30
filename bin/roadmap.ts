@@ -37,13 +37,24 @@ const repoRoot = findRepoRoot(process.cwd());
 setRepoRoot(repoRoot);
 
 const { note: _note, positional: args } = extractNote(rawArgs);
-const cmd = args[0] || 'help';
+
+// Normalize top-level help/version flags into commands so the envelope is uniform.
+let cmd = args[0] || 'help';
+if (cmd === '--help' || cmd === '-h') cmd = 'help';
+if (cmd === '--version' || cmd === '-v') cmd = 'version';
 
 // --- Output opts ---
 const _outputOpts = parseOutputOpts(rawArgs, cmd);
 
+// --- version short-circuit ---
+if (cmd === 'version') {
+  const { readPackageVersion } = await import('../src/lib/version.ts');
+  emit({ ok: true, cmd: 'version', data: { version: readPackageVersion() } }, _outputOpts);
+  process.exit(0);
+}
+
 // --- Known commands gate ---
-const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'init', 'status', 'dag', 'api', 'help', 'viewer', '--help', '-h']);
+const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'init', 'status', 'dag', 'api', 'help', 'viewer']);
 if (!KNOWN_COMMANDS.has(cmd)) {
   const available = listCommands().map(c => c.command);
   emit({ ok: false, cmd: _outputOpts.cmd, error: {

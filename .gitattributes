@@ -1,0 +1,10 @@
+* text=auto eol=lf
+
+# binary files
+*.png binary
+*.jpg binary
+*.pdf binary
+
+# generated
+pnpm-lock.yaml linguist-generated=true
+*.snap linguist-generated=true
