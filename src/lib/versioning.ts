@@ -43,11 +43,7 @@ export async function loadDAG(
     }
 
     const migrator = new DAGMigrator();
-    const plan = migrator.getPlan(rawDAG.protocolVersion, targetVersion);
-    console.log(`Migrating DAG: ${plan.steps.join(' → ')}`);
-
     dag = await migrator.migrate(rawDAG, targetVersion);
-    console.log(`✓ Migration complete`);
   }
 
   // Validate + return

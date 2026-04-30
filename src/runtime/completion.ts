@@ -145,12 +145,12 @@ export function loadCompletionsWithEvidence(repoRoot: string): Map<string, Compl
         const record = validateEntry(entry) ? entry : migrateEntry(entry as Record<string, unknown>);
         records.set(record.nodeId, record);
       }
-    } else {
-      console.error(`WARNING: ${completionPath} is not a JSON array (got ${typeof data}). Completion data ignored — orient will show all nodes as incomplete. Fix: delete the file and re-advance nodes.`);
     }
+    // Non-array or unparseable completion files degrade silently; orient
+    // surfaces "no nodes done" via its JSON envelope. The repair path is to
+    // delete .roadmap/completed.json and re-advance.
     return records;
-  } catch (e) {
-    console.error(`WARNING: Failed to parse ${completionPath}: ${e instanceof Error ? e.message : String(e)}`);
+  } catch {
     return new Map();
   }
 }

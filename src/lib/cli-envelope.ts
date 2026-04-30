@@ -1,5 +1,5 @@
 // @module cli-envelope
-// @exports emit, emitError, parseOutputOpts, CliEnvelope, CliError, OutputOpts, OutputFormat, ErrorCode, SCHEMA_VERSION, RenderV1, RenderSection, Hint
+// @exports emit, emitError, parseOutputOpts, CliEnvelope, CliError, OutputOpts, ErrorCode, SCHEMA_VERSION, RenderV1, RenderSection, Hint
 // @entry roadmap/cli-envelope
 
 import { readFileSync } from 'node:fs';
@@ -48,13 +48,9 @@ export interface CliError {
   [key: string]: unknown;  // Additional context fields from RoadmapError
 }
 
-export type OutputFormat = 'json' | 'human';
-
 export interface OutputOpts {
-  format: OutputFormat;
   quiet: boolean;
   cmd: string;
-  humanRenderer?: (data: unknown) => string;
 }
 
 // --- Error codes ---
@@ -110,14 +106,7 @@ export function getRepoRoot(): string {
  * Precedence: default=json, --human=human, --json overrides --human.
  */
 export function parseOutputOpts(args: string[], cmd: string): OutputOpts {
-  const hasHuman = args.includes('--human');
-  const hasJson = args.includes('--json');
-  const hasQuiet = args.includes('--quiet');
-
-  let format: OutputFormat = 'json';
-  if (hasHuman && !hasJson) format = 'human';
-
-  return { format, quiet: hasQuiet, cmd };
+  return { quiet: args.includes('--quiet'), cmd };
 }
 
 // --- Emit ---
@@ -127,9 +116,7 @@ type EmitResult =
   | { ok: false; cmd: string; error: CliError };
 
 interface EmitOpts {
-  format: OutputFormat;
   quiet: boolean;
-  humanRenderer?: (data: unknown) => string;
   render?: RenderV1;
 }
 
@@ -154,13 +141,6 @@ export function emit(result: EmitResult, opts: EmitOpts): void {
   }
 
   if (opts.quiet && result.ok) return;
-
-  if (opts.format === 'human' && opts.humanRenderer && result.ok) {
-    process.stdout.write(opts.humanRenderer(result.data) + '\n');
-    return;
-  }
-
-  // json format, or human without renderer — fall back to JSON
   process.stdout.write(JSON.stringify(envelope, null, 2) + '\n');
 }
 
@@ -170,15 +150,12 @@ export function emitError(
   code: string,
   message: string,
   fix?: string[],
-  opts?: { format?: OutputFormat; quiet?: boolean },
+  opts?: { quiet?: boolean },
 ): never {
   const error: CliError = { code, message };
   if (fix && fix.length > 0) error.fix = fix;
 
-  emit(
-    { ok: false, cmd, error },
-    { format: opts?.format ?? 'json', quiet: opts?.quiet ?? false },
-  );
+  emit({ ok: false, cmd, error }, { quiet: opts?.quiet ?? false });
 
   process.exit(1);
 }

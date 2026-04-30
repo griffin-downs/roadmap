@@ -7,7 +7,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 import { loadClaims, annotateWithClaims } from '../lib/claims/claims.ts';
-import { readPackageVersion } from '../lib/install-skills.ts';
+import { readPackageVersion } from '../lib/version.ts';
 import { requireValidOrigin, checkSpecDrift } from '../lib/intake/runtime-gate.ts';
 import { getBrief } from '../lib/brief.ts';
 import { loadContext } from '../runtime/context.ts';

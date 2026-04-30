@@ -1,5 +1,8 @@
 // @module cli/init
-// @description Print setup instructions for adapting roadmap to the user's environment.
+// @description Emit setup instructions as JSON. The `setup_doc` field carries the
+//              full markdown of docs/SETUP.md so an agent (or `jq -r .data.setup_doc`)
+//              can paste it into context. No human-format stdout — the envelope is
+//              the surface.
 // @exports run
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -23,11 +26,8 @@ export async function run(
   outputOpts: OutputOpts,
 ): Promise<void> {
   const doc = findSetupDoc();
-  if (doc) {
-    console.log(readFileSync(doc, 'utf-8'));
-  } else {
-    console.log('See https://github.com/Ocean-Synaptics/roadmap/blob/main/docs/SETUP.md');
-    console.log('Paste the prompt from the "TL;DR for Claude Code users" section into your agent.');
-  }
-  emit({ ok: true, cmd: outputOpts.cmd, data: { printed: !!doc } }, outputOpts);
+  const data = doc
+    ? { setup_doc_path: doc, setup_doc: readFileSync(doc, 'utf-8') }
+    : { setup_doc_path: null, setup_doc: null, hint: 'See https://github.com/Ocean-Synaptics/roadmap/blob/main/docs/SETUP.md' };
+  emit({ ok: true, cmd: outputOpts.cmd, data }, outputOpts);
 }

@@ -26,22 +26,26 @@ export async function run(
 ): Promise<void> {
   const sub = args[1];
   if (!sub || sub === 'help') {
-    console.log(`roadmap dag — DAG mutation commands
-
-  insert   Insert a new node into the DAG
-  remove   Remove a node (--cascade to remove dependents)
-  modify   Modify an existing node's fields
-  log      Show mutation history
-
-All mutations validate the DAG (define/verify/check) before committing.
-Provenance receipts are recorded in .roadmap/trail.jsonl.
-
-Examples:
-  roadmap dag insert --node '{"id":"x","desc":"...","produces":[],"consumes":[],"deps":["init"]}' --note "why"
-  roadmap dag remove my-node --note "why" --cascade
-  roadmap dag modify my-node --set '{"desc":"new desc"}' --note "why"
-  roadmap dag log
-`);
+    emit({ ok: true, cmd: outputOpts.cmd, data: {
+      group: 'dag',
+      desc: 'DAG mutation commands',
+      subcommands: [
+        { sub: 'insert', desc: 'Insert a new node into the DAG' },
+        { sub: 'remove', desc: 'Remove a node (--cascade to remove dependents)' },
+        { sub: 'modify', desc: 'Modify an existing node fields' },
+        { sub: 'log',    desc: 'Show mutation history' },
+      ],
+      invariants: [
+        'all mutations validate the DAG (define/verify/check) before committing',
+        'provenance receipts are recorded in .roadmap/trail.jsonl',
+      ],
+      examples: [
+        { sub: 'insert', cmd: "roadmap dag insert --node '{\"id\":\"x\",\"desc\":\"...\",\"produces\":[],\"consumes\":[],\"deps\":[\"init\"]}' --note \"why\"" },
+        { sub: 'remove', cmd: 'roadmap dag remove my-node --note "why" --cascade' },
+        { sub: 'modify', cmd: 'roadmap dag modify my-node --set \'{"desc":"new desc"}\' --note "why"' },
+        { sub: 'log',    cmd: 'roadmap dag log' },
+      ],
+    } }, outputOpts);
     return;
   }
 

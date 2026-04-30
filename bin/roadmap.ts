@@ -11,8 +11,6 @@ import { RoadmapError } from '../src/errors.ts';
 import { emit, emitError, parseOutputOpts, ErrorCode, setRepoRoot } from '../src/lib/cli-envelope.ts';
 import type { OutputOpts } from '../src/lib/cli-envelope.ts';
 import { resolveWidth } from '../src/lib/render/layout.ts';
-import { renderOrient } from '../src/lib/cli-human.ts';
-import type { OrientData } from '../src/lib/cli-human.ts';
 import { lookupSchema, listCommands, schemaToJsonSchema } from '../src/lib/schemas.ts';
 import { getMakeInvariants } from '../src/lib/api-invariants.ts';
 import type { RenderOpts } from '../src/lib/render/index.ts';
@@ -43,14 +41,6 @@ const cmd = args[0] || 'help';
 
 // --- Output opts ---
 const _outputOpts = parseOutputOpts(rawArgs, cmd);
-
-// --- Human renderers ---
-const _humanRenderers: Record<string, (data: unknown) => string> = {
-  orient: (d) => renderOrient(d as OrientData),
-};
-if (_humanRenderers[_outputOpts.cmd]) {
-  _outputOpts.humanRenderer = _humanRenderers[_outputOpts.cmd];
-}
 
 // --- Known commands gate ---
 const KNOWN_COMMANDS = new Set(['orient', 'advance', 'make', 'init', 'status', 'dag', 'api', 'help', 'viewer', '--help', '-h']);

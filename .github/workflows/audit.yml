@@ -1,0 +1,53 @@
+name: audit
+
+# Forensic / hygiene gates. Don't block PRs; surface drift on schedule + on demand.
+# Companion to test.yml; checks that age out (dead code, circulars, unused deps).
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 13 * * 1'  # mondays 13:37 UTC
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'src/**'
+      - 'tests/**'
+      - 'bin/**'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: knip — unused exports / files
+        run: npx -y knip --no-progress --reporter compact
+        continue-on-error: true
+
+      - name: madge — circular dependencies (hard fail; circulars compound)
+        run: npx -y madge --circular --extensions ts src/
+        continue-on-error: false
+
+      - name: depcheck — unused / missing deps
+        run: npx -y depcheck --skip-missing
+        continue-on-error: true
+
+      - name: publint — npm package shape
+        run: npx -y publint
+        continue-on-error: true
+
+      - name: arethetypeswrong — ESM/CJS exports
+        run: npx -y @arethetypeswrong/cli --pack
+        continue-on-error: true
