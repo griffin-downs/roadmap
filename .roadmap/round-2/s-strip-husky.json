@@ -1,0 +1,43 @@
+{
+  "node": "s-strip-husky",
+  "verdict": "GREEN",
+  "artifacts": [
+    "scripts/dev-hooks/pre-commit",
+    "scripts/dev-hooks/commit-msg",
+    "scripts/dev-hooks/prepare-commit-msg",
+    "scripts/dev-hooks/post-commit",
+    "scripts/dev-hooks/post-push",
+    "scripts/dev-hooks/README.md",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "moved_files": [
+    "scripts/dev-hooks/pre-commit",
+    "scripts/dev-hooks/commit-msg",
+    "scripts/dev-hooks/prepare-commit-msg",
+    "scripts/dev-hooks/post-commit",
+    "scripts/dev-hooks/post-push"
+  ],
+  "removed_dirs": [".husky"],
+  "package_json_changes": [
+    "devDependencies.husky removed",
+    "prepare script simplified to 'pnpm run build'"
+  ],
+  "commits": [],
+  "verify": {
+    "cmd": "pnpm run check",
+    "exit": 2,
+    "note": "typecheck failure is from parallel agent's WIP on bin/roadmap.ts (out of this node's scope: src/cli/spec.ts removal + viewer subcommand changes). All husky-related verifies pass: .husky absent, hooks executable, husky absent from package.json + pnpm-lock.yaml, no /home/griffin in post-push."
+  },
+  "verify_husky_specific": {
+    "husky_dir_absent": true,
+    "husky_in_devdeps": false,
+    "husky_in_prepare_script": false,
+    "husky_in_lockfile": false,
+    "post_push_no_hardcoded_paths": true,
+    "pre_commit_no_gitsafe_or_dag_origin": true,
+    "dev_hooks_executable": true,
+    "readme_present": true
+  },
+  "notes": "Hooks were already relocated by a prior commit (43f6b4f c-scrub-claude-md). This node finalised the husky devDep removal, prepare-script simplification, lockfile regen, README authoring, and confirmed sanitized hook content (no gitsafe gate, no DAG-origin gate, post-push uses ROADMAP_PROD_CLONE/ROADMAP_DEV_CLONE env vars)."
+}
