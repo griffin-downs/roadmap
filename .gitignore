@@ -2,13 +2,21 @@ node_modules/
 dist/
 .boot/
 .vitest-results.json
-governance/promotion/
+governance/
 
-# Roadmap runtime artifacts (checkpoints, tokens, receipts, git state)
+# Build artifacts
+*.tsbuildinfo
+
+# Roadmap runtime state (gitignored — only the example DAG ships)
 .roadmap/checkpoints/
 .roadmap/tokens/
 .roadmap/receipts/
 .roadmap/git-state.json
+.roadmap/trail.jsonl
+.roadmap/completed.json
+.roadmap/.handoff/
+.roadmap/round-*/
+.roadmap/tasks/
 .roadmap/*.local.json
 .roadmap/*.local/
 
@@ -17,3 +25,11 @@ evidence-test-*/
 
 # Spec working files (documentation only)
 .specify/
+
+# Stray init markers
+*.marker
+init.marker
+
+# Old maintainer notes (private)
+BRANCH_INTENT_GAPS.txt
+ROADMAP_TOPOLOGY.txt

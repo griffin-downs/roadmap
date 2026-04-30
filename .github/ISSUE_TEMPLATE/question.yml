@@ -1,0 +1,34 @@
+name: Question
+description: How do I do X with roadmap?
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Phase 1 has Discussions disabled, so questions go through issues for now.
+        After ~2026-05-15, please use Discussions for open-ended questions.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: What are you trying to do?
+      description: Concrete scenario, not abstract architecture questions.
+      placeholder: "I want to model a 3-stage build with conditional branching..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      description: Commands run, specs authored, error messages encountered.
+    validations:
+      required: false
+
+  - type: input
+    id: roadmap-version
+    attributes:
+      label: roadmap version
+      placeholder: "v0.2.0"
+    validations:
+      required: false

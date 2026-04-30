@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Rollout timeline
+    url: https://github.com/Ocean-Synaptics/roadmap/blob/main/docs/ROLLOUT.md
+    about: Why PRs are deferred until ~2026-05-15 and what's coming in phase 2.
+  - name: ML Prague 2026 paper
+    url: https://github.com/Ocean-Synaptics/roadmap#origins
+    about: Read the paper for the conceptual underpinning.

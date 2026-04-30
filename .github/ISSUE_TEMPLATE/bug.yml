@@ -1,0 +1,74 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. The maintainer is at ML Prague through ~2026-05-15;
+        triage may be slower than usual. See [docs/ROLLOUT.md](https://github.com/Ocean-Synaptics/roadmap/blob/main/docs/ROLLOUT.md).
+
+  - type: input
+    id: roadmap-version
+    attributes:
+      label: roadmap version
+      description: Output of `roadmap api 2>&1 | head -1` or git SHA if installed from source.
+      placeholder: "v0.2.0 or 7a1633a"
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node version
+      description: Output of `node --version`.
+      placeholder: "v22.11.0"
+    validations:
+      required: true
+
+  - type: input
+    id: pkg-mgr
+    attributes:
+      label: Package manager + version
+      placeholder: "pnpm 9.12.0 / npm 10.9.0 / yarn 4.5.1"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: "Linux 6.19 / macOS 15.2 / Windows 11 + WSL2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Repro steps
+      description: Minimal command sequence we can paste to reproduce. Include the spec or DAG file if relevant.
+      placeholder: |
+        1. git clone <small repro repo>
+        2. roadmap make ...
+        3. roadmap orient
+        Expected: ...
+        Actual: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Error output
+      description: Paste full output (stdout + stderr). Use a code fence.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Workarounds you tried, related issues, hypotheses about cause.
+    validations:
+      required: false
