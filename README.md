@@ -32,6 +32,10 @@ cat > my-spec.json <<'EOF'
   "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
   "dag_id": "hello",
   "dag_desc": "first DAG",
+  "metadata": { "generated": "2026-05-01T00:00:00Z", "compile_hash": "init" },
+  "inputs": [
+    { "path": "my-spec.json", "sha256": "0000000000000000000000000000000000000000000000000000000000000000", "role": "spec" }
+  ],
   "tasks": [
     { "id": "init", "desc": "start", "produces": [], "consumes": [], "deps": [], "validate": [] },
     { "id": "build", "desc": "produce hello.txt", "produces": ["hello.txt"], "consumes": [], "deps": ["init"],
@@ -41,8 +45,8 @@ cat > my-spec.json <<'EOF'
 }
 EOF
 
-# 2. compile spec to DAG
-roadmap make my-spec.json --note "first DAG"
+# 2. compile spec to DAG (--skip-input-verification because we used a placeholder sha256)
+roadmap make my-spec.json --note "first DAG" --skip-input-verification
 
 # 3. find current position
 roadmap orient --note "begin"
