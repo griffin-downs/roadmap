@@ -1,5 +1,8 @@
 # roadmap
 
+[![test](https://github.com/Ocean-Synaptics/roadmap/actions/workflows/test.yml/badge.svg)](https://github.com/Ocean-Synaptics/roadmap/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 DAG-governed development protocol. Define a typed graph of work — nodes produce artifacts, edges encode dependencies. The system validates structure, tracks position, and enforces completion.
 
 ## Install
