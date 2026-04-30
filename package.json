@@ -5,14 +5,7 @@
   "bin": {
     "roadmap": "./dist/roadmap.js"
   },
-  "exports": {
-    ".": "./dist/src/index.js",
-    "./protocol": "./dist/src/protocol.js",
-    "./recovery": "./dist/src/index.recovery.js",
-    "./validation": "./dist/src/index.validation.js",
-    "./versioning": "./dist/src/index.versioning.js",
-    "./agent": "./dist/src/index.agent.js"
-  },
+  "exports": "./dist/src/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json && esbuild bin/roadmap.ts --bundle --outfile=dist/roadmap.js --format=esm --platform=node --packages=external",
     "check": "tsc --noEmit",
