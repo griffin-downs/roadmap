@@ -17,6 +17,7 @@ governance/
 .roadmap/.handoff/
 .roadmap/round-*/
 .roadmap/tasks/
+.roadmap/heads/
 .roadmap/*.local.json
 .roadmap/*.local/
 
