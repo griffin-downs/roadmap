@@ -1,15 +1,14 @@
 // @module cli/shared
 // @description Shared CLI infrastructure extracted from bin/roadmap.ts.
-// @exports loadDAG, appendTrail, recordTrailError, enforceMainBranch, safeReadFile,
+// @exports loadDAG, appendTrail, recordTrailError,
 //          extractNote, hasFlag, json, retiredSet, crossOrientWithState, loadSpecGoal,
-//          initGitsafe, getCurrentBranch, isWorktree, loadDAGSync
+//          getCurrentBranch, isWorktree, loadDAGSync
 
 import { readFileSync, existsSync, appendFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { join, resolve, basename, dirname } from 'node:path';
 import { SPEC_ORIGIN_PATH } from '../lib/intake/spec-origin.ts';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
-import { createGitSafeLoader } from '../lib/gitsafe-loader.ts';
 import { orient } from '../core/orient.ts';
 import { RoadmapError } from '../errors.ts';
 import { CompletionStore } from '../runtime/completion.ts';
@@ -19,21 +18,7 @@ import { migrateSingleHead } from '../lib/multi-dag.ts';
 import { emit, setRepoRoot, type OutputOpts } from '../lib/cli-envelope.ts';
 import type { Graph } from '../lib/protocol/types.ts';
 
-// ── Gitsafe ─────────────────────────────────────────────────────────────
-
-let _gitsafe: ReturnType<typeof createGitSafeLoader> | null = null;
-
-/** Initialize gitsafe loader for a repo root. Call once at CLI entry. */
-export function initGitsafe(repoRoot: string): void {
-  _gitsafe = createGitSafeLoader(repoRoot);
-}
-
-function getGitsafe(repoRoot: string): ReturnType<typeof createGitSafeLoader> {
-  if (!_gitsafe) _gitsafe = createGitSafeLoader(repoRoot);
-  return _gitsafe;
-}
-
-// ── Branch enforcement ──────────────────────────────────────────────────
+// ── Branch helpers ──────────────────────────────────────────────────────
 
 export function getCurrentBranch(repoRoot: string): string {
   try {
@@ -50,36 +35,6 @@ export function isWorktree(repoRoot: string): boolean {
   } catch {
     return false;
   }
-}
-
-export function enforceMainBranch(repoRoot: string): void {
-  if (isWorktree(repoRoot)) return;
-
-  const branch = getCurrentBranch(repoRoot);
-  if (branch === 'main' || branch === 'HEAD'
-      || branch.startsWith('feat/') || branch.startsWith('wip/')) {
-    return;
-  }
-
-  console.error(JSON.stringify({
-    error: 'gitsafe: DAG-mutating operations require main, feat/*, or wip/* branch',
-    currentBranch: branch,
-    fix: `Switch branch: git checkout main (or use feat/${branch} / wip/${branch})`,
-  }));
-  process.exit(1);
-}
-
-// ── Safe file reading ───────────────────────────────────────────────────
-
-export function safeReadFile(path: string, repoRoot: string): string {
-  const gitsafe = getGitsafe(repoRoot);
-  const relative = path.startsWith(repoRoot)
-    ? path.slice(repoRoot.length + 1)
-    : path;
-  if (!gitsafe.isAllowed(relative)) {
-    throw new Error(`gitsafe: file access denied (denylist): ${relative}`);
-  }
-  return readFileSync(path, 'utf-8');
 }
 
 // ── Arg parsing ─────────────────────────────────────────────────────────
@@ -199,7 +154,7 @@ export async function loadDAG(repoRoot: string, dagPath?: string): Promise<Graph
         entry: 'roadmap orient',
       }, `DAG file not found: ${dagPath}`);
     }
-    return JSON.parse(safeReadFile(dagPath, repoRoot));
+    return JSON.parse(readFileSync(dagPath, 'utf-8'));
   }
 
   const headPath = join(repoRoot, '.roadmap', 'head.json');
@@ -215,7 +170,7 @@ export async function loadDAG(repoRoot: string, dagPath?: string): Promise<Graph
     const result = await loadDAGWithAutoMerge(repoRoot);
     return result.graph;
   } catch {
-    return JSON.parse(safeReadFile(headPath, repoRoot));
+    return JSON.parse(readFileSync(headPath, 'utf-8'));
   }
 }
 
@@ -228,7 +183,7 @@ export function loadDAGSync(repoRoot: string): Graph<string> {
       entry: 'roadmap orient',
     }, 'No .roadmap/head.json found.');
   }
-  return JSON.parse(safeReadFile(headPath, repoRoot));
+  return JSON.parse(readFileSync(headPath, 'utf-8'));
 }
 
 /** Consolidation: ensure multi-head DAGs are merged. Non-fatal on failure. */
