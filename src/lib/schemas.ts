@@ -34,7 +34,11 @@ const specIRTask = z.object({
     line: z.number().optional(),
     section: z.string().optional(),
   }).optional().describe('Source location in spec'),
-}).describe('A single task in SpecIR format');
+  // §Sidecar-as-ambient-context · ad-hoc per-task fields land here, not flat-as-siblings.
+  // Engine ignores contents · agents put domain knowledge here · §Sidecar-promotion-rule
+  // lifts recurring keys out of sidecar into first-class fields when ≥3 specs use them.
+  sidecar: z.record(z.string(), z.unknown()).optional().describe('Ad-hoc per-task fields · jq-queryable · promotion-eligible'),
+}).strict().describe('A single task in SpecIR format · strict: unknown flat fields rejected · use sidecar.{} for ad-hoc');
 
 const specIR = z.object({
   schema_version: z.literal(1),

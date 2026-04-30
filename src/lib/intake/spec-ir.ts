@@ -25,6 +25,13 @@ export interface SpecIRTask {
   validate: ValidationRule[];
   ambient?: string[];
   provenance?: { file: string; line?: number; section?: string };
+  /**
+   * §Sidecar-as-ambient-context · ad-hoc per-task fields.
+   * Engine ignores contents; agents put domain knowledge here.
+   * §Sidecar-promotion-rule lifts recurring keys out into first-class fields
+   * when ≥3 specs use them. Flat unknowns at task level are rejected — use this slot.
+   */
+  sidecar?: Record<string, unknown>;
 }
 
 export interface SpecIR {

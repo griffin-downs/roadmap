@@ -1,0 +1,26 @@
+{
+  "node": "viewer-build-force-layout",
+  "verdict": "GREEN",
+  "artifacts": [
+    "viewer/src/composables/useForceLayout.ts",
+    "viewer/src/components/DagTopology.vue"
+  ],
+  "verify": {
+    "cmd": "cd viewer && pnpm exec vue-tsc --noEmit",
+    "exit": 0
+  },
+  "deps_added": ["d3-force@^3.0.0", "@types/d3-force (devDep)"],
+  "design": {
+    "composable": "useForceLayout(payload, completed, options) -> { nodes, links, start, stop, reheat }",
+    "simulation_lifecycle": "owned by composable; rebuilds on payload/completed/options change; ticks reassign nodes ref to drive Vue reactivity",
+    "groupBy_modes": ["depth (layered force on topo depth)", "cluster (y-bucketed by deps[0])"],
+    "forces": ["link", "manyBody (charge=-240)", "center", "y (strength=0.25)", "collide(r=36)"]
+  },
+  "dumb_component_compliance": {
+    "rule": "§Dumb-components",
+    "DagTopology_vue": "props in (nodes, links, width, height, groupBy, zoom, pan); events out (select, hover, update:groupBy, reheat, zoom); zero fetch/async/setTimeout/imperative DOM in <script setup>; only computed projection of link endpoints to render coords",
+    "intelligence_location": "useForceLayout.ts composable owns all state and simulation"
+  },
+  "loc": { "useForceLayout.ts": 231, "DagTopology.vue": 192 },
+  "notes": "Composable + dumb component pair. Force-directed with two grouping modes (depth/cluster) replacing static dagre-only layout. Pan/zoom state delegated to caller (props in)."
+}

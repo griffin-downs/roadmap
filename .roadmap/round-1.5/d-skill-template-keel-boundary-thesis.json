@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-keel-boundary-thesis",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/keel-boundary-thesis.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/keel-boundary-thesis/SKILL.md templates/skills/keel-boundary-thesis.md", "exit": 0},
+  "source_sha": "bd61af8d0613368f8c6315080768f786454d4e3dafd34b11b1fab12a7df99d5f",
+  "bytes": 9216,
+  "notes": "byte-identical port"
+}

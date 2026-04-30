@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-04-27T10:50:44.880Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "ported DagViewer.vue + useDagLayout.ts · DUMB · node-selected event",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "viewer/src/components/DagViewer.vue",
+      "viewer/src/composables/useDagLayout.ts",
+      ".roadmap/round-1.5/d-viewer-port-dag-component.json"
+    ],
+    "ready": true
+  }
+}

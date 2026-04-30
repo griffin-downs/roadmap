@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-griffin-voice",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/griffin-voice.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/griffin-voice/SKILL.md templates/skills/griffin-voice.md", "exit": 0},
+  "source_sha": "59f7025969172ae657ac29d08d887e72ca61cdb0e494d9841a62a1ea4c9b569b",
+  "bytes": 8873,
+  "notes": "byte-identical port"
+}

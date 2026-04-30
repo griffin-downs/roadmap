@@ -1,0 +1,15 @@
+{
+  "node": "skill-sync-roadmap-auto",
+  "verdict": "GREEN",
+  "artifacts": [
+    "templates/skills/roadmap-auto.md",
+    "/home/griffin/.claude/skills/roadmap-auto/SKILL.md"
+  ],
+  "commits": [],
+  "verify": {
+    "cmd": "diff -q ~/.claude/skills/roadmap-auto/SKILL.md /home/griffin/src/.dev/roadmap/templates/skills/roadmap-auto.md",
+    "exit": 0,
+    "summary": "byte-identical after sync"
+  },
+  "notes": "Two-part landing. (1) Structural fix in LIVE skill: replaced impossible 'spawn ONE dispatcher' subagent pattern under '## The orchestrator is precious' — subagents cannot spawn subagents. New text names main conversation as the dispatcher; main spawns workers directly; workers return ≤10-line status; main never reads raw orient or raw receipts. (2) Drift sync direction live→template: prior template had a 48-square rainbow banner + 💀 footer absent from live; copied live over template after the structural fix so both files are byte-identical. diff -q empty."
+}

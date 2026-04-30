@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-04-27T09:27:44.051Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "direct-push merge · no PR",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      ".roadmap/round-1/d-pr-merge-stance-register.json"
+    ],
+    "ready": true
+  }
+}

@@ -1,0 +1,6 @@
+r1.5-init
+dag: roadmap-r1.5-viewer-extract-and-skill-sweep
+node: viewer-extract-init
+date: 2026-04-27
+roots: skill-template-parity-sweep + dashboard-extract-sweep
+preexisting: tick-12 viewer-vendor-or-link-deps populated package.json + node_modules (vue3+vite+pinia+tailwind4)

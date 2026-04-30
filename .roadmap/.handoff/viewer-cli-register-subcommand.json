@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-04-27T11:06:21.257Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "viewer canonical path + first-class help",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "src/cli/commands/viewer.ts",
+      ".roadmap/round-1.5/d-viewer-cli-register-subcommand.json"
+    ],
+    "ready": true
+  }
+}

@@ -4,8 +4,6 @@ description: Autonomous roadmap execution with rich reporting
 user-invocable: true
 ---
 
-🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
-
 # roadmap-auto
 
 The DAG executes itself. The node desc IS the agent brief. The orchestrator routes and synthesizes — does not do dirty work.
@@ -26,22 +24,21 @@ The DAG executes itself. The node desc IS the agent brief. The orchestrator rout
 
 ## The orchestrator is precious · stay out of the dirt
 
-Context window is the scarcest resource. The orchestrator coordinates and synthesizes; subagents do work. If the orchestrator finds itself parsing 297KB orient output or reading 600-line receipts, the dispatch pattern is wrong.
+Context window is the scarcest resource. **The main conversation IS the dispatcher** — there is no separate "dispatcher subagent" to spawn, because subagents cannot spawn subagents. Only the main conversation has that capability. If the main conversation finds itself parsing 297KB orient output or reading 600-line receipts, the dispatch pattern is wrong.
 
-**Streaming dispatch agent.** When ≥2 nodes are READY, spawn ONE dispatcher whose job is:
+**Direct worker dispatch.** Main conversation runs `roadmap orient`, summarizes the frontier internally, and:
 
 ```
-- read briefs in .roadmap/round-N/briefs/ for every READY node
-- dispatch one agent per node, parallel where independent
-- as each agent completes, re-orient and dispatch any newly-ready nodes
-- collect agent reports
-- return a tight ≤10-line status to the orchestrator:
-    {ready: [ids], completed: [ids], failed: [{id, reason}],
-     surfaces: [carrier-ids], frontier: [next-ready ids]}
-- the orchestrator never sees raw orient or raw agent receipts
+- reads briefs in .roadmap/round-N/briefs/ for every READY node
+- spawns one WORKER agent per node, parallel where independent
+- each worker does: orient (own scope) → produce → write receipt → return ≤10-line status
+  {node, verdict, artifacts, commits, surfaces, blockers}
+- as workers complete, main re-runs `roadmap orient`, dispatches newly-ready nodes
+- main NEVER reads raw orient output verbatim or raw agent receipts —
+  only the ≤10-line status replies and the JSON receipt files via tight queries
 ```
 
-For solo-ready dispatch, call the single agent directly.
+Workers are leaves in the spawn tree. Routing, synthesis, and the next-frontier decision stay in the main conversation. For solo-ready dispatch, call the single worker directly.
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 

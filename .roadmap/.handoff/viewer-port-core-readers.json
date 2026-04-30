@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-04-27T10:45:57.951Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "ported core readers · ROADMAP_HOST_REPO env · 9/9 self-tests pass",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "viewer/src/services/dagReader.ts",
+      "viewer/src/services/dagReader.server.ts",
+      "viewer/src/services/roadmapReader.ts",
+      "viewer/src/services/roadmapReader.server.ts",
+      "viewer/src/services/trailReader.ts",
+      "viewer/src/services/trailReader.server.ts",
+      ".roadmap/round-1.5/d-viewer-port-core-readers.json"
+    ],
+    "ready": true
+  }
+}

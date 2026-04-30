@@ -121,16 +121,18 @@
   },
   {
     "nodeId": "init",
-    "completedAt": "2026-03-03T22:32:13.578Z",
+    "completedAt": "2026-04-27T09:09:10.460Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
     "validationChecks": [
       {
-        "rule": "artifact-exists:init.marker",
+        "rule": "auto-init",
         "passed": true,
-        "evidence": "file exists"
+        "evidence": "Synthetic init auto-completed at make time"
       }
     ],
-    "gitSha": "f628167e42e03a77d06bc57aae1473349b8ec6d0",
-    "treeSha": "1a2ee9acc3b08ac1282b03e513c4b0469580bccf"
+    "gitSha": "323c44872eadc643be4874306fdc474667408264",
+    "treeSha": "0c658fe8cdb70ce14dac7fef451d92527159074a",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   },
   {
     "nodeId": "orient-forward-pointer",
@@ -4548,5 +4550,1075 @@
     "gitSha": "341a3d255ad14d1e40c12d9a30344938e999576a",
     "treeSha": "556b5ca185d88107bff256f3dda413dacb9aaff7",
     "branch": "feat/fix-discovered-iterable"
+  },
+  {
+    "nodeId": "skill-port-roadmap-night",
+    "completedAt": "2026-04-27T09:24:55.548Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:templates/skills/roadmap-night.md",
+        "passed": true,
+        "evidence": "artifact exists: templates/skills/roadmap-night.md"
+      },
+      {
+        "rule": "shell:diff -q ~/.claude/skills/roadmap-night/SKILL.md templates/skills/roadmap-night.md",
+        "passed": true,
+        "evidence": "command passed (exit 0): diff -q ~/.claude/skills/roadmap-night/SKILL.md templates/skills/roadmap-night.md"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/roadmap-night.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-skill-port-roadmap-night.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "31a3e2113609ca7bde5278015110e3ae42ca3286",
+    "treeSha": "3a65e7e1afad34d5db5a6bc644a0d31c22abb72b",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-locate-fleet-dashboard",
+    "completedAt": "2026-04-27T09:25:24.986Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-fleet-dashboard-manifest.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1/d-viewer-fleet-dashboard-manifest.json"
+      },
+      {
+        "rule": "shell:jq -e '.files | length > 0' .roadmap/round-1/d-viewer-fleet-dashboard-manifest.json",
+        "passed": true,
+        "evidence": "command passed (exit 0): jq -e '.files | length > 0' .roadmap/round-1/d-viewer-fleet-dashboard-manifest.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-fleet-dashboard-manifest.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "7442b0a7f01ef2f77dd57d5e1680502c951a8be7",
+    "treeSha": "e48e2e81b703f0c75551e8641a7252df14c5d8b6",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "pr-merge-stance-register",
+    "completedAt": "2026-04-27T09:27:44.050Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-pr-merge-stance-register.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1/d-pr-merge-stance-register.json"
+      },
+      {
+        "rule": "shell:git log --oneline main | head -5 | grep -qi 'stance.*register\\|register.*skills' || echo retained-as-feat-branch",
+        "passed": true,
+        "evidence": "command passed (exit 0): git log --oneline main | head -5 | grep -qi 'stance.*register\\|register.*skills' || echo retained-as-feat-branch"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-pr-merge-stance-register.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "f627154469687738ce7727396a5228dd49ab7db7",
+    "treeSha": "615813d487e7213280d0732ddb705fc857f6d93d",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-audit-diff-empty",
+    "completedAt": "2026-04-27T09:42:27.807Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-skill-audit-report.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1/d-skill-audit-report.json"
+      },
+      {
+        "rule": "shell:jq -e '.diff_empty == true or (.desync_count | tonumber) == 0' .roadmap/round-1/d-skill-audit-report.json",
+        "passed": true,
+        "evidence": "command passed (exit 0): jq -e '.diff_empty == true or (.desync_count | tonumber) == 0' .roadmap/round-1/d-skill-audit-report.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-skill-audit-report.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a907f2fb1b9168124378f75d040621c120323dcd",
+    "treeSha": "54d5369ef7792c3559026fe5400a32be933404b6",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-decompose-plan",
+    "completedAt": "2026-04-27T10:20:06.778Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-decompose-plan.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1/d-viewer-decompose-plan.json"
+      },
+      {
+        "rule": "shell:jq -e '.children | length >= 3' .roadmap/round-1/d-viewer-decompose-plan.json",
+        "passed": true,
+        "evidence": "command passed (exit 0): jq -e '.children | length >= 3' .roadmap/round-1/d-viewer-decompose-plan.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-decompose-plan.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "a907f2fb1b9168124378f75d040621c120323dcd",
+    "treeSha": "54d5369ef7792c3559026fe5400a32be933404b6",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-vendor-or-link-deps",
+    "completedAt": "2026-04-27T10:24:01.204Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-deps-decision.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1/d-viewer-deps-decision.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-deps-decision.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "fe6935cc84b95cda41146bf9360a9f648cbcbe33",
+    "treeSha": "60dc458dbc3b09adb2b8f6717de8972d9b8d2900",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-cli-subcommand-stub",
+    "completedAt": "2026-04-27T10:31:24.414Z",
+    "dagId": "roadmap-r1-skill-maintenance-viewer-migration",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:src/cli/viewer.ts",
+        "passed": true,
+        "evidence": "artifact exists: src/cli/viewer.ts"
+      },
+      {
+        "rule": "shell:node dist/cli.js viewer --help 2>&1 | grep -qi viewer || npx tsx src/cli.ts viewer --help 2>&1 | grep -qi viewer",
+        "passed": true,
+        "evidence": "command passed (exit 0): node dist/cli.js viewer --help 2>&1 | grep -qi viewer || npx tsx src/cli.ts viewer --help 2>&1 | grep -qi viewer"
+      },
+      {
+        "rule": "artifact-exists:src/cli/viewer.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1/d-viewer-cli-stub.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "dcf35f6a7c582f8eb213e746a5e7351a1ceb4b17",
+    "treeSha": "4a478d0f2161e027b292acf59329441e556bcfb0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-extract-init",
+    "completedAt": "2026-04-27T10:34:56.076Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/.r1.5-init.marker",
+        "passed": true,
+        "evidence": "artifact exists: viewer/.r1.5-init.marker"
+      },
+      {
+        "rule": "artifact-exists:viewer/.r1.5-init.marker",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "d0959858833c8bee6e0a0067dd1c6955dc6583cb",
+    "treeSha": "8f7bad14028b7686f1c68a91590d9d9afad10379",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-bug-class-hunting",
+    "completedAt": "2026-04-27T10:40:48.447Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-bug-class-hunting.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-bug-class-hunting.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/bug-class-hunting.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-bug-class-hunting.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-core-loop",
+    "completedAt": "2026-04-27T10:40:48.549Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-core-loop.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-core-loop.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/core-loop.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-core-loop.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-cross-page-sweep",
+    "completedAt": "2026-04-27T10:40:48.651Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-cross-page-sweep.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-cross-page-sweep.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/cross-page-sweep.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-cross-page-sweep.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-demo",
+    "completedAt": "2026-04-27T10:40:48.762Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-demo.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-demo.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/demo.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-demo.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-fleet-doctrine",
+    "completedAt": "2026-04-27T10:40:48.872Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-fleet-doctrine.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-fleet-doctrine.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-fleet-doctrine.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-fleet-doctrine-history",
+    "completedAt": "2026-04-27T10:40:48.973Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-fleet-doctrine-history.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-fleet-doctrine-history.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-fleet-doctrine-history.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-griffin-voice",
+    "completedAt": "2026-04-27T10:40:49.079Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-griffin-voice.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-griffin-voice.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-griffin-voice.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-keel-boundary-thesis",
+    "completedAt": "2026-04-27T10:40:49.177Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-keel-boundary-thesis.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-keel-boundary-thesis.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-keel-boundary-thesis.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-linear-audit",
+    "completedAt": "2026-04-27T10:40:49.279Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-linear-audit.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-linear-audit.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-linear-audit.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-meta-directives",
+    "completedAt": "2026-04-27T10:40:49.388Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-meta-directives.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-meta-directives.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/meta-directives.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-meta-directives.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-pcode-ir-lowering",
+    "completedAt": "2026-04-27T10:40:49.501Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pcode-ir-lowering.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-pcode-ir-lowering.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pcode-ir-lowering.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-peon-ping-config",
+    "completedAt": "2026-04-27T10:40:49.613Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-config.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-peon-ping-config.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-config.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-peon-ping-log",
+    "completedAt": "2026-04-27T10:40:49.716Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-log.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-peon-ping-log.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-log.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-peon-ping-toggle",
+    "completedAt": "2026-04-27T10:40:49.840Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-toggle.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-peon-ping-toggle.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-toggle.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-peon-ping-use",
+    "completedAt": "2026-04-27T10:40:49.955Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-use.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-peon-ping-use.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-peon-ping-use.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-per-page-convergence",
+    "completedAt": "2026-04-27T10:40:50.059Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-per-page-convergence.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-per-page-convergence.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/per-page-convergence.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-per-page-convergence.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-pipeline-thesis",
+    "completedAt": "2026-04-27T10:40:50.172Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pipeline-thesis.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-pipeline-thesis.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pipeline-thesis.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-pixel-diffuse",
+    "completedAt": "2026-04-27T10:40:50.279Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pixel-diffuse.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-pixel-diffuse.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-pixel-diffuse.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-rovmk3-thesis",
+    "completedAt": "2026-04-27T10:40:50.393Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-rovmk3-thesis.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-rovmk3-thesis.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-rovmk3-thesis.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-sift-review",
+    "completedAt": "2026-04-27T10:40:50.498Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-sift-review.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-sift-review.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-sift-review.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-stance",
+    "completedAt": "2026-04-27T10:40:50.609Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-stance.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-stance.json"
+      },
+      {
+        "rule": "artifact-exists:templates/skills/stance.md",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-stance.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-extract-scaffold",
+    "completedAt": "2026-04-27T10:41:44.928Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:test -f viewer/package.json && test -f viewer/vite.config.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): test -f viewer/package.json && test -f viewer/vite.config.ts"
+      },
+      {
+        "rule": "shell:cd viewer && pnpm install --frozen-lockfile=false && pnpm exec vue-tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm install --frozen-lockfile=false && pnpm exec vue-tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:viewer/package.json",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/tsconfig.json",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/vite.config.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/index.html",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/main.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/App.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-extract-scaffold.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4a57521d78d1b503b4de38ee021eeb0a4a0e76ae",
+    "treeSha": "c4cefd83dd3893996172b32bfd6f18e862f02dc0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "skill-template-sweep-validator",
+    "completedAt": "2026-04-27T10:44:04.207Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-sweep-validator.json",
+        "passed": true,
+        "evidence": "artifact exists: .roadmap/round-1.5/d-skill-template-sweep-validator.json"
+      },
+      {
+        "rule": "shell:jq -e '(.authored + .punted_with_reason) == 21' .roadmap/round-1.5/d-skill-template-sweep-validator.json",
+        "passed": true,
+        "evidence": "command passed (exit 0): jq -e '(.authored + .punted_with_reason) == 21' .roadmap/round-1.5/d-skill-template-sweep-validator.json"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-skill-template-sweep-validator.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "895e0ec374d7c00ce0e8996eeebed6ae167295c9",
+    "treeSha": "154d92bdffeecb2a91f6da0319dd57a85aa6ab14",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-rewrite-realtime-bridge",
+    "completedAt": "2026-04-27T10:45:58.699Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:cd viewer && pnpm vitest run src/services/realtimeBridge.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm vitest run src/services/realtimeBridge.test.ts"
+      },
+      {
+        "rule": "shell:! grep -n 'fleet' viewer/src/services/realtimeBridge.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -n 'fleet' viewer/src/services/realtimeBridge.ts"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/realtimeBridge.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/realtimeBridge.test.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-rewrite-realtime-bridge.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "239343223cbe3f683adf7c83bcf9b6077b2652e3",
+    "treeSha": "300b1a7081cdfe72d8f06f89661582121daa412e",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-port-core-readers",
+    "completedAt": "2026-04-27T10:45:57.949Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:cd viewer && pnpm vitest run src/services/dagReader.test.ts src/services/roadmapReader.test.ts",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm vitest run src/services/dagReader.test.ts src/services/roadmapReader.test.ts"
+      },
+      {
+        "rule": "shell:! grep -RIn '/home/griffin/src/fleet' viewer/src",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -RIn '/home/griffin/src/fleet' viewer/src"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/dagReader.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/dagReader.server.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/roadmapReader.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/roadmapReader.server.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/trailReader.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/trailReader.server.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-port-core-readers.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "239343223cbe3f683adf7c83bcf9b6077b2652e3",
+    "treeSha": "300b1a7081cdfe72d8f06f89661582121daa412e",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-port-dag-component",
+    "completedAt": "2026-04-27T10:50:44.877Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:cd viewer && pnpm exec vue-tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm exec vue-tsc --noEmit"
+      },
+      {
+        "rule": "shell:! grep -E 'fetch\\(|axios|setTimeout|new XMLHttpRequest' viewer/src/components/DagViewer.vue",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -E 'fetch\\(|axios|setTimeout|new XMLHttpRequest' viewer/src/components/DagViewer.vue"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/DagViewer.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/composables/useDagLayout.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-port-dag-component.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4e29bd34b6c703e57d0c0d917591f0aa889fc850",
+    "treeSha": "c2068043a907b811ecf3954bf4b4dd8062be84ea",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-trail-timeline",
+    "completedAt": "2026-04-27T10:52:03.626Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/components/TrailTimeline.vue",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/components/TrailTimeline.vue"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/TrailTimeline.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-trail-timeline.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "cdae5c1b97cde8502e7651538ed3de75b1167364",
+    "treeSha": "1f5c679bd4442d346ead0e431fb2202cf65cc1b2",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-cross-lane-rollup",
+    "completedAt": "2026-04-27T10:53:29.793Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/components/CrossLaneRollup.vue",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/components/CrossLaneRollup.vue"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/CrossLaneRollup.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/laneRollupReader.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-cross-lane-rollup.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "4fa5187dca7ffad3337fbfe2e65db4ec994f5e35",
+    "treeSha": "9babfba4dd908e0f7db707d8c3754cfbb81af471",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-node-side-panel",
+    "completedAt": "2026-04-27T10:55:11.131Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/components/NodeSidePanel.vue",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/components/NodeSidePanel.vue"
+      },
+      {
+        "rule": "shell:! grep -E 'fetch\\(|axios' viewer/src/components/NodeSidePanel.vue",
+        "passed": true,
+        "evidence": "command passed (exit 0): ! grep -E 'fetch\\(|axios' viewer/src/components/NodeSidePanel.vue"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/NodeSidePanel.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-node-side-panel.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "43f2503e217b3ec1ff4e1f744fb6b9189ff23d02",
+    "treeSha": "c832afa0fe4e3da719298d24c6e51eb246d2fd68",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-force-layout",
+    "completedAt": "2026-04-27T10:58:18.659Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/components/DagTopology.vue",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/components/DagTopology.vue"
+      },
+      {
+        "rule": "shell:cd viewer && pnpm exec vue-tsc --noEmit",
+        "passed": true,
+        "evidence": "command passed (exit 0): cd viewer && pnpm exec vue-tsc --noEmit"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/composables/useForceLayout.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/DagTopology.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-force-layout.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "5ecae932ffdae533aeaf8d40e671ad601fc4a411",
+    "treeSha": "3c5078bda3578d3d9afa2b1ab36fe0800d8bd406",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-search-filter",
+    "completedAt": "2026-04-27T11:01:33.217Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/components/SearchBar.vue",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/components/SearchBar.vue"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/composables/useViewerSearch.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/components/SearchBar.vue",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-search-filter.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "243e54b95c830f73862d118dfe229b834c7b2db3",
+    "treeSha": "5e1d46b27f5b0147cc253c73d129f6daa8b031f0",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-build-themes-and-export",
+    "completedAt": "2026-04-27T11:03:09.263Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "artifact-exists:viewer/src/services/dagExport.ts",
+        "passed": true,
+        "evidence": "artifact exists: viewer/src/services/dagExport.ts"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/composables/useTheme.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:viewer/src/services/dagExport.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-build-themes-and-export.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "63d8d9db014d3ccff91fd18f2cafdef32e7bec60",
+    "treeSha": "69257723b086a1502ec1c2979b8725b756afea0f",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
+  },
+  {
+    "nodeId": "viewer-cli-register-subcommand",
+    "completedAt": "2026-04-27T11:06:21.255Z",
+    "dagId": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "validationChecks": [
+      {
+        "rule": "shell:roadmap help 2>&1 | grep -q viewer",
+        "passed": true,
+        "evidence": "command passed (exit 0): roadmap help 2>&1 | grep -q viewer"
+      },
+      {
+        "rule": "shell:roadmap viewer --help 2>&1 | grep -qi 'host.repo\\|HOST_REPO'",
+        "passed": true,
+        "evidence": "command passed (exit 0): roadmap viewer --help 2>&1 | grep -qi 'host.repo\\|HOST_REPO'"
+      },
+      {
+        "rule": "artifact-exists:src/cli/commands/viewer.ts",
+        "passed": true,
+        "evidence": "file exists"
+      },
+      {
+        "rule": "artifact-exists:.roadmap/round-1.5/d-viewer-cli-register-subcommand.json",
+        "passed": true,
+        "evidence": "file exists"
+      }
+    ],
+    "gitSha": "bf54af957a353068c23e4040224416048544ba05",
+    "treeSha": "db8f949799d6b7ad7a32b7b6f6438358070bbc9c",
+    "branch": "feat/r1-skill-maintenance-and-viewer"
   }
 ]

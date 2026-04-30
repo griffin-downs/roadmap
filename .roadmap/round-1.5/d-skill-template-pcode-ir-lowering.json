@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-pcode-ir-lowering",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/pcode-ir-lowering.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/pcode-ir-lowering/SKILL.md templates/skills/pcode-ir-lowering.md", "exit": 0},
+  "source_sha": "08cf3953212e79730e2e63a6694a0b2b17f5aa18a1d8b9d5b7a165c9c6f0f6f4",
+  "bytes": 10888,
+  "notes": "byte-identical port"
+}

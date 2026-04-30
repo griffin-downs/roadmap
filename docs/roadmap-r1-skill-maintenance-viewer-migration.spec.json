@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "dag_id": "roadmap-r1-skill-maintenance-viewer-migration",
+  "dag_desc": "Roadmap engine repo · r1 · skill-template hygiene + fleet-dashboard → roadmap-viewer migration. Plumbing-and-cleanup round: merge feat/stance-register-skills, sync templates with live skills, port the untracked roadmap-night template, register `roadmap viewer` as a first-class subcommand (PLAN-MODE expansion at runtime), refresh docs, capture LATE doctrine on §Skill-template-must-match-live and §Roadmap-viewer-as-first-class-subcommand. Narrower-by-design than fleet rounds — engine repo owns its own round, fleet's lane registry knits them.",
+  "inputs": [
+    {
+      "path": "CLAUDE.md",
+      "sha256": "46aa0891dd9dbea091b965605a2fe10b733b42747f32fb8726f733a7fd45951e",
+      "role": "spec"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "pr-merge-stance-register",
+      "desc": "Merge feat/stance-register-skills → main. Open or update the PR (https://github.com/Ocean-Synaptics/roadmap/pull/new/feat/stance-register-skills), self-review the /stance-register diff against templates/skills/{roadmap-spec,roadmap-auto}.md, fast-merge with squash. If the branch is explicitly retained as a long-lived feat branch, write a named-successor reason into the receipt instead. Pre-commit hook blocks main; merge must go through the PR path.",
+      "priority": 0,
+      "depends": [],
+      "produces": [".roadmap/round-1/d-pr-merge-stance-register.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-pr-merge-stance-register.json" },
+        { "type": "shell", "command": "git log --oneline main | head -5 | grep -qi 'stance.*register\\|register.*skills' || echo retained-as-feat-branch" }
+      ]
+    },
+    {
+      "id": "skill-port-roadmap-night",
+      "desc": "Port live ~/.claude/skills/roadmap-night/SKILL.md (179 lines) into templates/skills/roadmap-night.md. The file is currently untracked and a prior session left it there; this commits the synced version. Diff-empty between live and template after this node.",
+      "priority": 0,
+      "depends": [],
+      "produces": ["templates/skills/roadmap-night.md", ".roadmap/round-1/d-skill-port-roadmap-night.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": "templates/skills/roadmap-night.md" },
+        { "type": "shell", "command": "diff -q ~/.claude/skills/roadmap-night/SKILL.md templates/skills/roadmap-night.md" }
+      ]
+    },
+    {
+      "id": "skill-audit-diff-empty",
+      "desc": "Diff every templates/skills/*.md against its corresponding live skill at ~/.claude/skills/<name>/SKILL.md. Produce a desync report: which templates need sync, which are diff-empty, which lack a live counterpart (templates that aren't installed). §Underused-IR-verb-audit analog applied to skills. Don't ship desync — open follow-up nodes if any survive.",
+      "priority": 1,
+      "depends": ["skill-port-roadmap-night", "pr-merge-stance-register"],
+      "produces": [".roadmap/round-1/d-skill-audit-report.json"],
+      "consumes": [],
+      "ambient": ["templates/skills/"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-skill-audit-report.json" },
+        { "type": "shell", "command": "jq -e '.diff_empty == true or (.desync_count | tonumber) == 0' .roadmap/round-1/d-skill-audit-report.json" }
+      ]
+    },
+    {
+      "id": "skill-sync-roadmap-auto",
+      "desc": "Sync templates/skills/roadmap-auto.md against live ~/.claude/skills/roadmap-auto/SKILL.md (currently differs · likely the /stance register clause not yet round-tripped). Walk both directions: if live has clauses worth templating, pull them in; if template has clauses missing live, push out via /stance register or note divergence rationale.",
+      "priority": 1,
+      "depends": ["skill-audit-diff-empty"],
+      "produces": ["templates/skills/roadmap-auto.md", ".roadmap/round-1/d-skill-sync-roadmap-auto.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-skill-sync-roadmap-auto.json" },
+        { "type": "shell", "command": "diff -q ~/.claude/skills/roadmap-auto/SKILL.md templates/skills/roadmap-auto.md" }
+      ]
+    },
+    {
+      "id": "skill-sync-roadmap-spec",
+      "desc": "Sync templates/skills/roadmap-spec.md against live ~/.claude/skills/roadmap-spec/SKILL.md (currently differs). Same walk as roadmap-auto: bidirectional, prefer-live for newly landed clauses, document divergence if any survives.",
+      "priority": 1,
+      "depends": ["skill-audit-diff-empty"],
+      "produces": ["templates/skills/roadmap-spec.md", ".roadmap/round-1/d-skill-sync-roadmap-spec.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-skill-sync-roadmap-spec.json" },
+        { "type": "shell", "command": "diff -q ~/.claude/skills/roadmap-spec/SKILL.md templates/skills/roadmap-spec.md" }
+      ]
+    },
+    {
+      "id": "template-license-banners",
+      "desc": "Templates carry rainbow banners + emoji headers per /stance form discipline (without /stance being the doctrine source — /stance is voice-not-roadmap-engine). Audit templates/skills/*.md for: (1) opening rainbow banner, (2) emoji section markers, (3) 💀 closer. Fix any drift. /stance walk-back narrowed INFECTION clause to human-facing only — the rainbow-banner styling discipline survives intact.",
+      "priority": 2,
+      "depends": ["skill-sync-roadmap-auto", "skill-sync-roadmap-spec", "skill-port-roadmap-night"],
+      "produces": [".roadmap/round-1/d-template-license-banners.json"],
+      "consumes": [],
+      "ambient": ["templates/skills/"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-template-license-banners.json" }
+      ]
+    },
+    {
+      "id": "viewer-locate-fleet-dashboard",
+      "desc": "Locate fleet's roadmap-state dashboard code: /home/griffin/src/fleet/dashboard/ (confirmed exists). Inventory: components, data sources, build pipeline, deps, render entry. Output a manifest naming every file that must travel and every dependency that must be vendored or replaced. §Probe-before-anchor — don't assume structure.",
+      "priority": 1,
+      "depends": [],
+      "produces": [".roadmap/round-1/d-viewer-fleet-dashboard-manifest.json"],
+      "consumes": [],
+      "ambient": ["/home/griffin/src/fleet/dashboard/"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-viewer-fleet-dashboard-manifest.json" },
+        { "type": "shell", "command": "jq -e '.files | length > 0' .roadmap/round-1/d-viewer-fleet-dashboard-manifest.json" }
+      ]
+    },
+    {
+      "id": "viewer-decompose-plan",
+      "desc": "PLAN-MODE parent: decompose fleet-dashboard → roadmap-viewer migration into executable sub-nodes based on the manifest. Expansion at runtime — exact sub-node count depends on what fleet's dashboard actually contains. Likely children: vendor-or-link-deps, port-render-entry, adapt-data-source-to-roadmap-context, register-cli-subcommand, smoke-test, docs. Plan-children-executor-doctrine applies: this node's executor ONLY decomposes, doesn't implement.",
+      "priority": 2,
+      "depends": ["viewer-locate-fleet-dashboard"],
+      "produces": [".roadmap/round-1/d-viewer-decompose-plan.json"],
+      "consumes": [],
+      "mode": "plan",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-viewer-decompose-plan.json" },
+        { "type": "shell", "command": "jq -e '.children | length >= 3' .roadmap/round-1/d-viewer-decompose-plan.json" }
+      ]
+    },
+    {
+      "id": "viewer-cli-subcommand-stub",
+      "desc": "Register `roadmap viewer` as a first-class subcommand in src/cli/. Body may be a stub or first-page placeholder this round — the point is to claim the namespace and document the expansion path. `roadmap viewer --help` returns 0 and prints a meaningful help string. §Roadmap-viewer-as-first-class-subcommand lands here.",
+      "priority": 3,
+      "depends": ["viewer-decompose-plan"],
+      "produces": ["src/cli/viewer.ts", ".roadmap/round-1/d-viewer-cli-stub.json"],
+      "consumes": [],
+      "ambient": ["src/cli/"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": "src/cli/viewer.ts" },
+        { "type": "shell", "command": "node dist/cli.js viewer --help 2>&1 | grep -qi viewer || npx tsx src/cli.ts viewer --help 2>&1 | grep -qi viewer" }
+      ]
+    },
+    {
+      "id": "viewer-vendor-or-link-deps",
+      "desc": "Make fleet's dashboard renderable from this repo. Either vendor (copy + license) the dashboard's runtime deps into this repo, or document the cross-repo link path with explicit pre-requisite. Decision recorded with rationale. §Fail-hard — pick ONE canonical path, no graceful both-paths.",
+      "priority": 3,
+      "depends": ["viewer-decompose-plan"],
+      "produces": [".roadmap/round-1/d-viewer-deps-decision.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-viewer-deps-decision.json" }
+      ]
+    },
+    {
+      "id": "viewer-data-source-adapter",
+      "desc": "Adapt fleet's dashboard data source (currently fleet-shaped roadmap state) to roadmap-engine context: read .roadmap/head.json, .roadmap/round-N/, .roadmap/trail.jsonl via existing roadmap CLI/lib functions. Pure adapter — fleet-flavored shape mapped to engine-flavored shape. Tests cover: empty round, partial round, completed round.",
+      "priority": 4,
+      "depends": ["viewer-cli-subcommand-stub", "viewer-vendor-or-link-deps"],
+      "produces": ["src/viewer/data-source.ts", "tests/viewer-data-source.test.ts", ".roadmap/round-1/d-viewer-data-source.json"],
+      "consumes": [],
+      "ambient": ["src/lib/"],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": "src/viewer/data-source.ts" },
+        { "type": "shell", "command": "npx tsx tests/viewer-data-source.test.ts" }
+      ]
+    },
+    {
+      "id": "viewer-smoke-test",
+      "desc": "End-to-end smoke: `roadmap viewer` invoked against this repo's own .roadmap/ produces the expected first-page artifact (HTML or terminal output). The viewer doesn't have to be feature-complete — it has to render SOMETHING from real engine state without crashing. SHOW-DON'T-ASSERT.",
+      "priority": 5,
+      "depends": ["viewer-data-source-adapter"],
+      "produces": [".roadmap/round-1/d-viewer-smoke.json", ".roadmap/round-1/artifacts/viewer-smoke.html"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/artifacts/viewer-smoke.html" },
+        { "type": "shell", "command": "test -s .roadmap/round-1/artifacts/viewer-smoke.html" }
+      ]
+    },
+    {
+      "id": "doc-audit-readme",
+      "desc": "Audit README.md against this round's skill changes and viewer registration. Update sections that mention skill list (now includes roadmap-night), CLI subcommand list (now includes viewer). Don't bloat — additive, surgical edits.",
+      "priority": 4,
+      "depends": ["template-license-banners", "viewer-cli-subcommand-stub"],
+      "produces": ["README.md", ".roadmap/round-1/d-doc-audit-readme.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-doc-audit-readme.json" }
+      ]
+    },
+    {
+      "id": "doc-audit-claudemd",
+      "desc": "Audit CLAUDE.md (currently 21295 bytes — already over the conceptual 16K target). Acceptance scenario says ≤16K bytes; either trim toward target or explicitly defer with rationale. §No-doctrine-in-CLAUDE-md applies: pointer file, not doctrine library. Anchored-section mutation only.",
+      "priority": 4,
+      "depends": ["template-license-banners"],
+      "produces": ["CLAUDE.md", ".roadmap/round-1/d-doc-audit-claudemd.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-doc-audit-claudemd.json" },
+        { "type": "shell", "command": "test $(wc -c < CLAUDE.md) -le 16384 || jq -e '.deferred == true and (.rationale | length > 0)' .roadmap/round-1/d-doc-audit-claudemd.json" }
+      ]
+    },
+    {
+      "id": "doc-audit-topology",
+      "desc": "Audit ROADMAP_TOPOLOGY.txt against post-round state: skill list reflects roadmap-night addition, viewer subcommand registered, template/live sync invariant codified.",
+      "priority": 4,
+      "depends": ["template-license-banners", "viewer-cli-subcommand-stub"],
+      "produces": ["ROADMAP_TOPOLOGY.txt", ".roadmap/round-1/d-doc-audit-topology.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-doc-audit-topology.json" }
+      ]
+    },
+    {
+      "id": "doctrine-skill-template-must-match-live",
+      "desc": "LATE-doctrine §Skill-template-must-match-live: every templates/skills/<x>.md MUST be diff-empty against ~/.claude/skills/<x>/SKILL.md at round-close. Test: `for f in templates/skills/*.md; do diff -q $f ~/.claude/skills/$(basename $f .md)/SKILL.md; done` returns clean. Empirical anchor: r1 — roadmap-night untracked + roadmap-auto/spec divergence. Author into the appropriate doctrine surface (NOT CLAUDE.md per §No-doctrine-in-CLAUDE-md).",
+      "priority": 5,
+      "depends": ["skill-audit-diff-empty", "template-license-banners"],
+      "produces": [".roadmap/round-1/d-doctrine-skill-template-must-match-live.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-doctrine-skill-template-must-match-live.json" }
+      ]
+    },
+    {
+      "id": "doctrine-viewer-as-subcommand",
+      "desc": "LATE-doctrine §Roadmap-viewer-as-first-class-subcommand: visualization is part of the engine, not an external viewer. The viewer migrates from fleet-internal dashboard to `roadmap viewer` because the engine repo owns its own observability surface. Empirical anchor: r1 — fleet dashboard promoted. Captures §Sidecar-promotion-rule for the viewer specifically.",
+      "priority": 5,
+      "depends": ["viewer-cli-subcommand-stub"],
+      "produces": [".roadmap/round-1/d-doctrine-viewer-as-subcommand.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-doctrine-viewer-as-subcommand.json" }
+      ]
+    },
+    {
+      "id": "doctrine-late-r1-bundle",
+      "desc": "Bundle late-doctrine-r1 receipts. Both new §-anchors land in the roadmap repo's doctrine surface (skill or doc — NOT CLAUDE.md). Receipt cross-references load-bearing prior doctrine: §Spec-as-typed-knowledge-graph cluster, §Sidecar-promotion-rule, §Validator-as-process, §Plan-children-executor-doctrine, §No-doctrine-in-CLAUDE-md, §Doctrine-author-cannot-violate.",
+      "priority": 6,
+      "depends": ["doctrine-skill-template-must-match-live", "doctrine-viewer-as-subcommand"],
+      "produces": [".roadmap/round-1/d-doctrine-late-r1-bundle.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-doctrine-late-r1-bundle.json" }
+      ]
+    },
+    {
+      "id": "gap-survey-pass-1",
+      "desc": "Final round survey: enumerate gaps remaining after this round (viewer is stub-not-feature-complete · any surviving skill desync · any deferred CLAUDE.md trim). Each gap gets a successor node nominated for r2. §Validator-as-process: every count claim paired with jq_probe_cmd.",
+      "priority": 6,
+      "depends": ["viewer-smoke-test", "doc-audit-readme", "doc-audit-claudemd", "doc-audit-topology", "doctrine-late-r1-bundle"],
+      "produces": [".roadmap/round-1/d-gap-survey-pass-1.json"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-gap-survey-pass-1.json" },
+        { "type": "shell", "command": "jq -e '.gaps | type == \"array\"' .roadmap/round-1/d-gap-survey-pass-1.json" }
+      ]
+    },
+    {
+      "id": "term-r1",
+      "desc": "Round terminal: convergence assessment, write successor (r2 scope: viewer feature-completeness + any spillover from gap-survey), close cleanly via /roadmap-term. Stratum-cadence n/a for this repo. Doctrine output goes to skills not CLAUDE.md (§No-doctrine-in-CLAUDE-md round-terminal clause).",
+      "priority": 7,
+      "depends": ["gap-survey-pass-1"],
+      "produces": [".roadmap/round-1/d-term-r1.json", ".roadmap/round-1/successor.md"],
+      "consumes": [],
+      "mode": "execute",
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-1/d-term-r1.json" },
+        { "type": "artifact-exists", "target": ".roadmap/round-1/successor.md" }
+      ]
+    }
+  ],
+  "metadata": {
+    "generated": "2026-04-26T00:00:00Z",
+    "compile_hash": "46aa0891dd9dbea091b965605a2fe10b733b42747f32fb8726f733a7fd45951e",
+    "round": "r1",
+    "repo": "roadmap",
+    "lane_coordination": "fleet-r41 lane registry",
+    "load_bearing_doctrine": [
+      "§Spec-as-typed-knowledge-graph",
+      "§Sidecar-promotion-rule",
+      "§Validator-as-process",
+      "§Plan-children-executor-doctrine",
+      "§No-doctrine-in-CLAUDE-md",
+      "§Doctrine-author-cannot-violate"
+    ]
+  }
+}

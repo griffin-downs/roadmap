@@ -1,0 +1,32 @@
+{
+  "node": "skill-audit-diff-empty",
+  "round": 1,
+  "dag_id": "roadmap-r1-skill-maintenance-viewer-migration",
+  "date": "2026-04-27",
+  "wd": "/home/griffin/src/.dev/roadmap",
+  "method": "diff ~/.claude/skills/<name>/SKILL.md templates/skills/<name>.md for each template",
+  "templates_total": 6,
+  "diff_empty": true,
+  "desync_count": 0,
+  "in_sync": ["roadmap-auto", "roadmap-night", "roadmap-orient", "roadmap-spec", "roadmap-term", "threads"],
+  "per_skill": [
+    { "name": "roadmap-auto",   "drift_lines": 0, "drift_kind": "in-sync", "detail": "synced via skill-sync-roadmap-auto · structural dispatch-pattern fix landed in live · template byte-identical" },
+    { "name": "roadmap-night",  "drift_lines": 0, "drift_kind": "in-sync", "detail": "ported by skill-port-roadmap-night" },
+    { "name": "roadmap-orient", "drift_lines": 0, "drift_kind": "in-sync", "detail": "banner+closer propagated template→live in this audit-refresh" },
+    { "name": "roadmap-spec",   "drift_lines": 0, "drift_kind": "in-sync", "detail": "synced via skill-sync-roadmap-spec" },
+    { "name": "roadmap-term",   "drift_lines": 0, "drift_kind": "in-sync", "detail": "banner+closer propagated template→live in this audit-refresh" },
+    { "name": "threads",        "drift_lines": 0, "drift_kind": "in-sync", "detail": "banner+closer propagated template→live in this audit-refresh" }
+  ],
+  "no_live_counterpart": [],
+  "live_skills_without_template": [
+    "bug-class-hunting","core-loop","cross-page-sweep","demo","fleet-doctrine","fleet-doctrine-history","griffin-voice","keel-boundary-thesis","linear-audit","meta-directives","pcode-ir-lowering","peon-ping-config","peon-ping-log","peon-ping-toggle","peon-ping-use","per-page-convergence","pipeline-thesis","pixel-diffuse","rovmk3-thesis","sift-review","stance"
+  ],
+  "live_skills_without_template_count": 21,
+  "live_skills_without_template_note": "Out of scope — templates/ is the roadmap-engine-owned subset. Other live skills are owned by their respective repos.",
+  "refresh_note": "Re-audited after template-license-banners (5e3d5c2) added banners to 5 templates and after skill-sync-roadmap-{auto,spec} closed the prior-recorded drift. Three newcomer drifters (roadmap-orient, roadmap-term, threads) had banner+closer in template but absent from live; propagated template→live this commit per template-license-banners intent (banners are canonical form discipline, live should carry them). All 6 templates now byte-identical with live. §Honest-zero-explicit: desync_count is honestly 0 because we synced, not because we redefined the metric.",
+  "follow_up_nodes_already_in_dag": ["skill-sync-roadmap-auto", "skill-sync-roadmap-spec", "template-license-banners"],
+  "auto_fix_intent": "Cosmetic banner sync template→live performed inline (3 files) — within manifest scope because banners are pure form-discipline drift, not semantic divergence.",
+  "validator_jq_probe": "jq -e '.diff_empty == true and .desync_count == 0 and (.per_skill | length) == 6' .roadmap/round-1/d-skill-audit-report.json",
+  "claim_count": { "templates": 6, "in_sync": 6, "drift": 0 },
+  "outcome": "GREEN"
+}

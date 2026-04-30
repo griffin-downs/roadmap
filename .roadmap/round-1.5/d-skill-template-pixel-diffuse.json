@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-pixel-diffuse",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/pixel-diffuse.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/pixel-diffuse/SKILL.md templates/skills/pixel-diffuse.md", "exit": 0},
+  "source_sha": "ac88a548fe92ce7ea3b79935a9e09f481298fad2a0179268a134b0b1ef21e15e",
+  "bytes": 6289,
+  "notes": "byte-identical port"
+}

@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-04-27T10:41:44.930Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "viewer scaffold landed · no fleet hard-codes · host repo via env",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "viewer/package.json",
+      "viewer/tsconfig.json",
+      "viewer/vite.config.ts",
+      "viewer/index.html",
+      "viewer/src/main.ts",
+      "viewer/src/App.vue",
+      ".roadmap/round-1.5/d-viewer-extract-scaffold.json"
+    ],
+    "ready": true
+  }
+}

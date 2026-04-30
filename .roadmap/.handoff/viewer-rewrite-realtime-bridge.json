@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-04-27T10:45:58.700Z",
+  "progress": 1,
+  "discovered": [],
+  "blockers": [],
+  "currentFile": "",
+  "summary": "rewrite complete · 6/6 vitest GREEN · grep gate clean · multi-lane registry-aware",
+  "keyDecisions": [],
+  "gotchas": [],
+  "nextNodeEntry": {
+    "consumes": [
+      "viewer/src/services/realtimeBridge.ts",
+      "viewer/src/services/realtimeBridge.test.ts",
+      ".roadmap/round-1.5/d-viewer-rewrite-realtime-bridge.json"
+    ],
+    "ready": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-stance",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/stance.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/stance/SKILL.md templates/skills/stance.md", "exit": 0},
+  "source_sha": "f32d73f718a7c902cb2746c3112f8cb39f6bf3df5b49b38328157ecebc633da5",
+  "bytes": 11626,
+  "notes": "byte-identical port"
+}

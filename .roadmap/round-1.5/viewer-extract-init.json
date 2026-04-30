@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "node": "viewer-extract-init",
+  "dag": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+  "date": "2026-04-27",
+  "outcome": "GREEN",
+  "mode": "execute",
+  "produces": ["viewer/.r1.5-init.marker"],
+  "consumes": [],
+  "actions": [
+    "verified viewer/ preexists (package.json + node_modules from tick-12)",
+    "wrote viewer/.r1.5-init.marker without clobber",
+    "created .roadmap/round-1.5/ for r1.5 receipts"
+  ],
+  "preexisting_viewer_contents": ["package.json", "pnpm-lock.yaml", "node_modules"],
+  "claims": [
+    {
+      "claim": "marker exists",
+      "jq_probe_cmd": "test -f viewer/.r1.5-init.marker && echo ok"
+    }
+  ],
+  "roots": ["skill-template-parity-sweep", "dashboard-extract-sweep"],
+  "next": "frontier opens to both parallel sweeps"
+}

@@ -1,0 +1,24 @@
+{
+  "node": "viewer-build-themes-and-export",
+  "verdict": "GREEN",
+  "artifacts": [
+    "viewer/src/composables/useTheme.ts",
+    "viewer/src/services/dagExport.ts"
+  ],
+  "verify": {
+    "cmd": "cd viewer && pnpm exec vue-tsc --noEmit",
+    "exit": 0
+  },
+  "design": {
+    "useTheme": "three-way mode (dark|light|system); resolved theme reactively flips data-theme on <html>; persisted to localStorage[viewer.theme]; system mode subscribes to prefers-color-scheme media query",
+    "dagExport": "exportSvg(svg, opts) -> Blob; exportPng(svg, opts) -> Promise<Blob>; SVG inlines computed styles for standalone rendering; PNG rasterises via off-screen <img> + <canvas> at 2x default scale; downloadBlob helper",
+    "presentation_layer": "both are presentation-layer polish · grouped per spec scope"
+  },
+  "dumb_component_compliance": {
+    "rule": "§Dumb-components",
+    "useTheme": "pure composable, no Vue templates; intelligence (mode resolution + DOM root attribute) lives here, not in any consumer's <script setup>",
+    "dagExport": "pure service module · no component, no Vue · caller passes live SVGSVGElement"
+  },
+  "loc": { "useTheme.ts": 110, "dagExport.ts": 180 },
+  "notes": "Theme toggle + DAG topology export. SVG export inlines a curated subset of computed styles (fill/stroke/opacity/font-*) so paper-figure exports render standalone without the viewer stylesheet. PNG export uses 2x scale by default."
+}

@@ -1,0 +1,23 @@
+{
+  "node": "skill-template-sweep-validator",
+  "round": "r1.5",
+  "date": "2026-04-27",
+  "validates_commit": "4a57521d",
+  "method": "diff -q ~/.claude/skills/<n>/SKILL.md templates/skills/<n>.md",
+  "skills_checked": 21,
+  "authored": 21,
+  "punted_with_reason": 0,
+  "skills": [
+    "bug-class-hunting", "core-loop", "cross-page-sweep", "demo",
+    "fleet-doctrine", "fleet-doctrine-history", "griffin-voice",
+    "keel-boundary-thesis", "linear-audit", "meta-directives",
+    "pcode-ir-lowering", "peon-ping-config", "peon-ping-log",
+    "peon-ping-toggle", "peon-ping-use", "per-page-convergence",
+    "pipeline-thesis", "pixel-diffuse", "rovmk3-thesis",
+    "sift-review", "stance"
+  ],
+  "claim_count": { "desync_count": 0, "missing_live": 0, "missing_tmpl": 0 },
+  "jq_probe_cmd": "for s in $(jq -r '.skills[]' d-skill-template-sweep-validator.json); do diff -q ~/.claude/skills/$s/SKILL.md templates/skills/$s.md; done | wc -l",
+  "outcome": "GREEN",
+  "note": "21/21 byte-identical · sweep landed at 4a57521d remains in parity with live skills"
+}

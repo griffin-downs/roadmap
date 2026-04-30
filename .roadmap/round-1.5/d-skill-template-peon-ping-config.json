@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-peon-ping-config",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/peon-ping-config.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/peon-ping-config/SKILL.md templates/skills/peon-ping-config.md", "exit": 0},
+  "source_sha": "62be0c6a56fb7a22f52ac5ff28abe42e366c0453c746b219ed5f950b92dac042",
+  "bytes": 4473,
+  "notes": "byte-identical port"
+}

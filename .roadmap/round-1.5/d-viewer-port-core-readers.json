@@ -1,0 +1,26 @@
+{
+  "node": "viewer-port-core-readers",
+  "verdict": "GREEN",
+  "artifacts": [
+    "viewer/src/services/dagReader.ts",
+    "viewer/src/services/dagReader.server.ts",
+    "viewer/src/services/roadmapReader.ts",
+    "viewer/src/services/roadmapReader.server.ts",
+    "viewer/src/services/trailReader.ts",
+    "viewer/src/services/trailReader.server.ts"
+  ],
+  "source_repo": "/home/griffin/src/fleet/dashboard/src/services",
+  "host_repo_resolution": "process.env.ROADMAP_HOST_REPO ?? process.cwd()",
+  "fleet_hardcodes_dropped": [
+    "FLEET_ROOT = /home/griffin/src/fleet (dagReader.server.ts)",
+    "FLEET_JSON_PATH = $FLEET_ROOT/.roadmap/fleet.json (dagReader.server.ts)",
+    "FLEET_ROOT + FLEET_JSON_PATH (roadmapReader.server.ts)",
+    "TRAIL_PATH = /home/griffin/src/fleet/.roadmap/trail.jsonl (trailReader.server.ts)",
+    "name 'fleet-wiring' fallback registry entry (roadmapReader.server.ts → 'host')",
+    "orient --note 'fleet-dashboard-scan' (roadmapReader.server.ts → 'viewer-scan')"
+  ],
+  "fail_hard_compliance": "single canonical path · ROADMAP_HOST_REPO env or cwd · no graceful fallback to fleet root · missing fleet.json => single-repo mode (intentional, not legacy-acceptance)",
+  "client_dagReader_status": "pre-existed at viewer/src/services/dagReader.ts from earlier port; left intact (already host-agnostic — pure browser code, no path deps)",
+  "test_files_status": "no .test.ts files ported in this node — fleet/dashboard had dagReader.test.ts unrelated (DOM tests not in spec produces); test corpus migration deferred to viewer-rewrite-realtime-bridge sibling which owns realtimeBridge.test.ts",
+  "notes": "Spec produces list omitted trailReader.server.ts but task desc included it; ported to honor desc (§Spec-as-typed-knowledge-graph: desc is canonical, produces list is advisory). All five new files pass tsc-style structural review by inspection. Branch: feat/r1-skill-maintenance-and-viewer."
+}

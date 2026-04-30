@@ -4,6 +4,8 @@ description: Self-orient at session start — roadmap position, fleet state, wha
 user-invocable: true
 ---
 
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
 # roadmap-orient
 
 First thing every session. Find out where you are before you do anything.
@@ -113,3 +115,7 @@ After orient, read the repo's CLAUDE.md. It may have:
 - Architecture decisions that constrain your work
 
 Orient tells you *where*. CLAUDE.md tells you *how*.
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
+💀 *position is truth · find out where you are before you do anything*

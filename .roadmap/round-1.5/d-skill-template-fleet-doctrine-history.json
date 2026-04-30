@@ -1,0 +1,9 @@
+{
+  "node": "skill-template-fleet-doctrine-history",
+  "verdict": "GREEN",
+  "artifacts": ["templates/skills/fleet-doctrine-history.md"],
+  "verify": {"cmd": "diff -q /home/griffin/.claude/skills/fleet-doctrine-history/SKILL.md templates/skills/fleet-doctrine-history.md", "exit": 0},
+  "source_sha": "fa3058db212751129f14970e6167e260dfc36a7fd1cde4e67cdadd25c70429a7",
+  "bytes": 144589,
+  "notes": "byte-identical port"
+}

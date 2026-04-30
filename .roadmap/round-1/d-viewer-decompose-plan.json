@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "node": "viewer-decompose-plan",
+  "dag_id": "roadmap-r1-skill-maintenance-viewer-migration",
+  "round": 1,
+  "date": "2026-04-27",
+  "wd": "/home/griffin/src/.dev/roadmap",
+  "mode": "plan",
+  "children": [
+    "viewer-extract-init",
+    "skill-template-sweep-validator",
+    "viewer-extract-scaffold",
+    "viewer-port-core-readers",
+    "viewer-rewrite-realtime-bridge",
+    "viewer-port-dag-component",
+    "viewer-build-force-layout",
+    "viewer-build-node-side-panel",
+    "viewer-build-cross-lane-rollup",
+    "viewer-build-trail-timeline",
+    "viewer-build-search-filter",
+    "viewer-build-themes-and-export",
+    "viewer-cli-register-subcommand",
+    "viewer-smoke-test-self-host",
+    "viewer-per-page-convergence",
+    "viewer-r1.5-validator"
+  ],
+  "decomposition": {
+    "successor_spec": "docs/roadmap-r1.5-viewer-extract-and-skill-sweep.spec.json",
+    "successor_dag_id": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+    "successor_node_count": 36,
+    "decomposition_summary": "Two parallel sweeps under one r1.5 sub-DAG: (A) 21 skill-template parity nodes (one per live skill currently lacking a template) + 1 sweep-validator; (B) 12 viewer-extract+rebuild nodes (scaffold · core-readers port · realtimeBridge rewrite off fleet hard-codes · DagViewer port · NICER features: force layout · node side panel · cross-lane rollup · trail timeline · search/filter · themes+export · CLI subcommand registration · self-host smoke test · per-page convergence) + 1 round-terminal validator. Total = 1 init + 21 skill + 1 skill-validator + 12 viewer + 1 r1.5-validator = 36 nodes."
+  },
+  "griffin_directed_scope": {
+    "frame": "skill parity (mostly done; finite residual sweep) + dashboard EXTRACTION from fleet/dashboard/ to .dev/roadmap/viewer/ + roadmap-FIRST rebuild strictly nicer than fleet's",
+    "nicer_features": [
+      "force-directed DAG topology with zoom/pan/group-by-depth/cluster",
+      "per-node side panel: desc + validator checklist + receipt JSON tree + git log + live status badge",
+      "cross-lane rollup with per-repo health + 7-day throughput sparkline",
+      "scrollable virtualized trail timeline with filter chips",
+      "global search/filter by status/owner/tag/anchor cite",
+      "dark+light themes (CSS vars · prefers-color-scheme)",
+      "PNG/SVG export of DAG state for paper figures"
+    ],
+    "migration_off_fleet": "realtimeBridge rewritten · HOST_REPO env · multi-lane fleet.json registry support · ZERO /home/griffin/src/fleet/ strings in viewer/src (validator-enforced)"
+  },
+  "skill_residual_count": 21,
+  "skill_residual_method": "enumerated from .roadmap/round-1/d-skill-audit-report.json#live_skills_without_template",
+  "auto_fix_intent": "Plan-children-executor doctrine: this receipt indexes the successor spec; implementation happens in r1.5 nodes.",
+  "validator_jq_probe": "jq -e '.decomposition.successor_node_count == 36 and (.decomposition.successor_spec | endswith(\".spec.json\"))' .roadmap/round-1/d-viewer-decompose-plan.json",
+  "claim_count": { "successor_nodes": 36, "skill_template_nodes": 21, "viewer_nodes": 12, "validator_nodes": 2, "init_nodes": 1 },
+  "outcome": "GREEN"
+}

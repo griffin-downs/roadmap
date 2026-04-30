@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "node_id": "viewer-build-trail-timeline",
+  "dag_id": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+  "outcome": "GREEN",
+  "summary": "TrailTimeline.vue · DUMB virtualized timeline · props { events, rowHeight?, overscan? } · emits row-selected. Filter chips for kind + lane (multi-select toggle) · date range inputs · reset. Virtualization: scrollTop -> firstVisibleIndex with overscan, only renders the window slice via translateY. Caller responsible for shaping trail.jsonl into TimelineEvent rows (lane resolution + summary formatting belong in a thin parent wiring layer per §Dumb-components).",
+  "produces": [
+    "viewer/src/components/TrailTimeline.vue",
+    ".roadmap/round-1.5/d-viewer-build-trail-timeline.json"
+  ],
+  "validation": [
+    {
+      "rule": "artifact-exists:viewer/src/components/TrailTimeline.vue",
+      "passed": true,
+      "evidence": "ls viewer/src/components/TrailTimeline.vue"
+    },
+    {
+      "rule": "dumb-component",
+      "passed": true,
+      "evidence": "no fetch/axios/setInterval in <script setup>; only window resize listener for viewport height"
+    },
+    {
+      "rule": "virtualization-present",
+      "passed": true,
+      "evidence": "firstVisibleIndex/lastVisibleIndex computed from scrollTop · windowSlice slices visible · spacer height = total"
+    }
+  ]
+}

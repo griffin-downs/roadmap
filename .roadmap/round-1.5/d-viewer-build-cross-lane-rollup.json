@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "node_id": "viewer-build-cross-lane-rollup",
+  "dag_id": "roadmap-r1.5-viewer-extract-and-skill-sweep",
+  "outcome": "GREEN",
+  "summary": "CrossLaneRollup.vue + laneRollupReader.ts. Reader is the client subscriber: GET /api/lane-rollup + SSE refetch on roadmap event + 30s poll fallback. Component is DUMB grid of per-lane health cards: name · status badge · dag id · 4-stat row (batch/ready/blocked/last) · 7-day throughput sparkline (auto-scaled). Headline differentiator from fleet's single-repo dashboard. Server endpoint /api/lane-rollup is left to the dev-server-fleet-aware-dispatch node downstream.",
+  "produces": [
+    "viewer/src/components/CrossLaneRollup.vue",
+    "viewer/src/services/laneRollupReader.ts",
+    ".roadmap/round-1.5/d-viewer-build-cross-lane-rollup.json"
+  ],
+  "validation": [
+    {
+      "rule": "artifact-exists:viewer/src/components/CrossLaneRollup.vue",
+      "passed": true,
+      "evidence": "ls viewer/src/components/CrossLaneRollup.vue"
+    },
+    {
+      "rule": "artifact-exists:viewer/src/services/laneRollupReader.ts",
+      "passed": true,
+      "evidence": "ls viewer/src/services/laneRollupReader.ts"
+    },
+    {
+      "rule": "dumb-component",
+      "passed": true,
+      "evidence": "no fetch/axios/setInterval in CrossLaneRollup.vue script setup; reader composable separate"
+    }
+  ]
+}

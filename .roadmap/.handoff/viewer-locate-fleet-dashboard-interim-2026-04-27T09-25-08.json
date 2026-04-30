@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-04-27T09:25:08.122Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "shell:jq -e '.files | length > 0' .roadmap/round-1/d-viewer-fleet-dashboard-manifest.json"
+  ],
+  "currentFile": ""
+}

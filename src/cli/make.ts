@@ -140,6 +140,37 @@ export async function run(
     }
   }
 
+  // Hard cutover · §Sidecar-as-ambient-context · per-task ad-hoc fields go in sidecar.{},
+  // not flat-as-siblings. Engine invariant fields are the allowlist below; any extra
+  // top-level key on a task throws — agents move it to sidecar.{} and re-compile.
+  const TASK_INVARIANTS = new Set([
+    'id', 'desc', 'description', 'priority', 'depends', 'deps',
+    'produces', 'consumes', 'mode', 'validate',
+    'ambient', 'provenance', 'idempotent', 'sidecar',
+  ]);
+  const sidecarErrors: Array<{ taskId: string; flatKeys: string[] }> = [];
+  for (const t of parsed.tasks as any[]) {
+    if (!t || typeof t !== 'object') continue;
+    const flat = Object.keys(t).filter(k => !TASK_INVARIANTS.has(k));
+    if (flat.length > 0) sidecarErrors.push({ taskId: t.id ?? '<unknown>', flatKeys: flat });
+  }
+  if (sidecarErrors.length > 0) {
+    const fixLines = sidecarErrors.slice(0, 10).map(e =>
+      `  ${e.taskId}: move ${e.flatKeys.map(k => `"${k}"`).join(', ')} into sidecar.{}`
+    );
+    throw new RoadmapError('VALIDATION_FAILED', {
+      sidecarErrors,
+      fix: [
+        '§Sidecar-as-ambient-context · ad-hoc per-task fields must live under tasks[].sidecar.{}',
+        'not flat as siblings to required fields. Engine-allowed top-level keys:',
+        `  ${[...TASK_INVARIANTS].join(', ')}`,
+        'Migration:',
+        ...fixLines,
+        sidecarErrors.length > 10 ? `  ... and ${sidecarErrors.length - 10} more tasks` : '',
+      ].filter(Boolean).join('\n'),
+    }, `${sidecarErrors.length} task(s) have flat ad-hoc fields · use sidecar.{} per §Sidecar-promotion-rule`);
+  }
+
   // Normalize tasks
   const specAmbient = Array.isArray(parsed.inputs)
     ? parsed.inputs.map((inp: any) => inp.path).filter(Boolean)

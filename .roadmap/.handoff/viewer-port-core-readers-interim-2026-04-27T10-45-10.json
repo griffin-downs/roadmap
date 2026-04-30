@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-04-27T10:45:10.046Z",
+  "progress": 0.5,
+  "discovered": [],
+  "blockers": [
+    "shell:cd viewer && pnpm vitest run src/services/dagReader.test.ts src/services/roadmapReader.test.ts"
+  ],
+  "currentFile": ""
+}

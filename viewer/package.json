@@ -1,0 +1,36 @@
+{
+  "name": "@roadmap/viewer",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "roadmap-engine first-class viewer · extracted cleanly from fleet/dashboard · owns its own deps (no vendor copy · no cross-repo link · §Fail-hard one canonical path).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "d3-force": "^3.0.0",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
+    "pinia": "^2.1.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/d3-force": "^3.0.10",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.4.0",
+    "vite": "^7.0.0",
+    "vitest": "^4.1.0",
+    "vue-tsc": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=10.0.0"
+  }
+}

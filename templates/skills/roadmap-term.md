@@ -4,6 +4,8 @@ description: Assess convergence, review session, write successor, close cleanly
 user-invocable: true
 ---
 
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
 # roadmap-term
 
 You're at the terminal node. This is the assessment moment — not a formality.
@@ -163,3 +165,7 @@ Read CLAUDE.md for execution protocol and known issues.
   boot prompt tells next agent: /roadmap-orient
   chain: orient → auto → spec → term → orient
 ```
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
+💀 *the assessment moment is not a formality · close cleanly or do not close*

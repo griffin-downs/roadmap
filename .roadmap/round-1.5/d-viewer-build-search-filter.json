@@ -1,0 +1,26 @@
+{
+  "node": "viewer-build-search-filter",
+  "verdict": "GREEN",
+  "artifacts": [
+    "viewer/src/composables/useViewerSearch.ts",
+    "viewer/src/components/SearchBar.vue"
+  ],
+  "verify": {
+    "cmd": "cd viewer && pnpm exec vue-tsc --noEmit",
+    "exit": 0
+  },
+  "design": {
+    "composable": "useViewerSearch(query, inputs) -> Ref<SearchResult>",
+    "inputs": "payloads + completed + trails + lanes (all reactive, keyed by lane name)",
+    "structured_prefixes": ["status:", "lane:", "tag:", "owner:", "cite:§"],
+    "free_text": "case-insensitive substring; AND across tokens; matches node id/desc, trail cmd/note, lane name",
+    "empty_query_policy": "returns empty result; caller decides fallback"
+  },
+  "dumb_component_compliance": {
+    "rule": "§Dumb-components",
+    "SearchBar_vue": "props in (modelValue, hitCounts, placeholder); events out (update:modelValue, submit, clear); zero fetch/async/setTimeout/imperative DOM in <script setup>",
+    "intelligence_location": "useViewerSearch.ts composable owns all parsing + indexing"
+  },
+  "loc": { "useViewerSearch.ts": 200, "SearchBar.vue": 110 },
+  "notes": "Global search/filter index across all loaded DAGs. Cheap structured prefixes (status:/lane:/tag:/owner:/cite:§) without committing to a query DSL. Pure composable: caller injects payloads/completed/trails/lanes, no fetch."
+}
