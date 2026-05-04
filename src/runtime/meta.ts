@@ -10,10 +10,9 @@
 import type { ValidationRule, IntentDiagnosis, NodeSpec, Graph, TermGate, SpecMeta } from '../lib/protocol/types.ts';
 import type { CoreNodeSpec } from '../core/types.ts';
 
-/** Runtime/orchestration metadata — everything NodeSpec carries beyond the 5-field core. */
+/** Runtime/orchestration metadata — everything NodeSpec carries beyond the core fields. */
 export interface NodeMeta {
   readonly validate: readonly ValidationRule[];
-  readonly idempotent: boolean;
   readonly mode?: 'execute' | 'plan';
   readonly nodeType?: 'execute' | 'emit-gallery';
   readonly track?: number;
@@ -24,9 +23,9 @@ export interface NodeMeta {
     readonly requireEmptyProposals?: boolean;
     readonly minWallClockDeltaMs?: number;
   };
-  readonly ambient?: readonly string[];
   readonly _intentDiagnosis?: IntentDiagnosis;
   readonly affects?: readonly string[];
+  readonly sidecar?: Record<string, unknown>;
 }
 
 /** A node that carries both the core contract and runtime metadata. */
@@ -46,16 +45,16 @@ export interface ManagedGraph<T extends string = string> {
 
 // --- Defaults for optional NodeMeta fields ---
 
-const META_DEFAULTS: Omit<NodeMeta, 'validate' | 'idempotent'> = {
+const META_DEFAULTS: Omit<NodeMeta, 'validate'> = {
   mode: undefined,
   nodeType: undefined,
   track: undefined,
   expandedFrom: undefined,
   loopTarget: undefined,
   convergenceCheck: undefined,
-  ambient: undefined,
   _intentDiagnosis: undefined,
   affects: undefined,
+  sidecar: undefined,
 };
 
 /**

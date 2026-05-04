@@ -140,13 +140,13 @@ export async function run(
     }
   }
 
-  // Hard cutover · §Sidecar-as-ambient-context · per-task ad-hoc fields go in sidecar.{},
+  // Hard cutover · §Sidecar-slot · per-task ad-hoc fields go in sidecar.{},
   // not flat-as-siblings. Engine invariant fields are the allowlist below; any extra
   // top-level key on a task throws — agents move it to sidecar.{} and re-compile.
   const TASK_INVARIANTS = new Set([
-    'id', 'desc', 'description', 'priority', 'depends', 'deps',
+    'id', 'desc', 'description',
     'produces', 'consumes', 'mode', 'validate',
-    'ambient', 'provenance', 'idempotent', 'sidecar',
+    'sidecar',
   ]);
   const sidecarErrors: Array<{ taskId: string; flatKeys: string[] }> = [];
   for (const t of parsed.tasks as any[]) {
@@ -161,7 +161,7 @@ export async function run(
     throw new RoadmapError('VALIDATION_FAILED', {
       sidecarErrors,
       fix: [
-        '§Sidecar-as-ambient-context · ad-hoc per-task fields must live under tasks[].sidecar.{}',
+        '§Sidecar-slot · ad-hoc per-task fields must live under tasks[].sidecar.{}',
         'not flat as siblings to required fields. Engine-allowed top-level keys:',
         `  ${[...TASK_INVARIANTS].join(', ')}`,
         'Migration:',
@@ -172,16 +172,10 @@ export async function run(
   }
 
   // Normalize tasks
-  const specAmbient = Array.isArray(parsed.inputs)
-    ? parsed.inputs.map((inp: any) => inp.path).filter(Boolean)
-    : [];
-  const normalizedTasks = (parsed.tasks as any[]).map((t: any, i: number) => ({
+  const normalizedTasks = (parsed.tasks as any[]).map((t: any) => ({
     ...t,
-    depends: t.depends ?? t.deps ?? [],
-    priority: t.priority ?? i,
     mode: t.mode ?? 'execute',
     desc: t.desc ?? t.description ?? '',
-    ambient: [...(t.ambient ?? []), ...specAmbient],
   }));
 
   // Convert spec to DAG
@@ -231,7 +225,7 @@ export async function run(
     return;
   }
 
-  // Build spec-origin provenance
+  // Build spec-origin lineage
   const dagId = dag.id ?? parsed.dag_id ?? parsed.id ?? 'ideal-dag';
   const specHash = createHash('sha256').update(specContent).digest('hex');
 
@@ -260,7 +254,7 @@ export async function run(
 
   // Auto-complete init node (synthetic, no real work)
   const initNode = dag.nodes[dag.init];
-  if (initNode?.idempotent && initNode.id === 'init') {
+  if (initNode && initNode.id === 'init') {
     try {
       const { saveCompletionWithEvidence } = await import('../runtime/completion.ts');
       saveCompletionWithEvidence(repoRoot, initNode.id, [

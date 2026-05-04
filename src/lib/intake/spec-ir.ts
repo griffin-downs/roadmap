@@ -17,16 +17,12 @@ export interface SpecInput {
 export interface SpecIRTask {
   id: string;
   desc: string;
-  priority: number;
-  depends: string[];
   produces: string[];
   consumes: string[];
   mode: 'execute' | 'plan';
   validate: ValidationRule[];
-  ambient?: string[];
-  provenance?: { file: string; line?: number; section?: string };
   /**
-   * §Sidecar-as-ambient-context · ad-hoc per-task fields.
+   * §Sidecar-slot · ad-hoc per-task fields.
    * Engine ignores contents; agents put domain knowledge here.
    * §Sidecar-promotion-rule lifts recurring keys out into first-class fields
    * when ≥3 specs use them. Flat unknowns at task level are rejected — use this slot.
@@ -35,7 +31,7 @@ export interface SpecIRTask {
 }
 
 export interface SpecIR {
-  schema_version: 1;
+  schema_version: 2;
   engine: { name: string; version: string | null; config_hash: string | null };
   dag_id: string;
   dag_desc?: string;
@@ -81,17 +77,16 @@ import type { ParsedTask, ImportOptions } from './speckit-import.ts';
 import { tasksToDAG } from './speckit-import.ts';
 import type { Graph } from '../../protocol.ts';
 
+// Bridge to legacy ParsedTask (speckit-import.ts) — k-stub-speckit-import collapses this.
 export function irTasksToParsed(tasks: SpecIRTask[]): ParsedTask[] {
   return tasks.map(t => ({
     id: t.id,
     desc: t.desc,
-    priority: t.priority,
-    depends: t.depends,
     produces: t.produces,
     consumes: t.consumes,
     mode: t.mode,
     validate: t.validate,
-  }));
+  })) as unknown as ParsedTask[];
 }
 
 export function compileIR(ir: SpecIR): Graph<string> {
@@ -102,7 +97,7 @@ export function compileIR(ir: SpecIR): Graph<string> {
 
 export function parseIRFile(content: string): SpecIR {
   const ir = JSON.parse(content);
-  if (ir.schema_version !== 1) {
+  if (ir.schema_version !== 2) {
     throw new Error(`Unsupported spec-compiled schema version: ${ir.schema_version}`);
   }
   if (!Array.isArray(ir.tasks) || ir.tasks.length === 0) {

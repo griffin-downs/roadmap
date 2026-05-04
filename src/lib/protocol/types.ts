@@ -115,16 +115,15 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly consumes: readonly (ConsumeSpec)[];
   readonly deps: readonly TAll[];
   readonly validate: readonly ValidationRule[]; // ← REQUIRED
-  readonly idempotent: boolean; // ← REQUIRED: true=re-runnable, false=manual/state-changing
   readonly mode?: 'execute' | 'plan'; // default: 'execute'. 'plan' = decompose, output is DAG expansion
   readonly nodeType?: 'execute' | 'emit-gallery'; // dispatch dimension: pipeline type (orthogonal to mode)
-  readonly expandedFrom?: string; // provenance: which plan node spawned this node via expansion
+  readonly expandedFrom?: string; // which plan node spawned this node via expansion
   readonly loopTarget?: string; // re-entry node when convergence check fails (soft loop)
   readonly convergenceCheck?: { readonly maxCoverageDelta?: number; readonly requireEmptyProposals?: boolean; readonly minWallClockDeltaMs?: number }; // loop termination criteria
-  readonly ambient?: readonly string[]; // agent reads these for context; not a dep, not validated, never gates readiness
-  readonly _intentDiagnosis?: IntentDiagnosis; // provenance: what failing intent triggered this fix node's creation
+  readonly _intentDiagnosis?: IntentDiagnosis; // what failing intent triggered this fix node's creation
   readonly track?: number; // governance track index (e.g., 0=default, 1=security, 2=perf)
   readonly affects?: readonly string[]; // file paths or areas this node modifies beyond produces
+  readonly sidecar?: Record<string, unknown>; // ad-hoc per-node fields · jq-queryable · promotion-eligible
 }
 
 export interface EmitGalleryNodeSpec {
@@ -158,7 +157,7 @@ export interface TermGate {
   readonly expandOnFail?: boolean;  // if true, expand DAG when this gate fails
 }
 
-// Spec provenance metadata — compiled hash, engine version, and source inputs.
+// Spec lineage metadata — compiled hash, engine version, and source inputs.
 export interface SpecMeta {
   readonly compiled_sha256: string;
   readonly engine: { readonly name: string; readonly version: string | null };
@@ -172,7 +171,7 @@ export interface Graph<T extends string> {
   readonly term: string;
   readonly nodes: { readonly [N in T]: NodeSpec<T, N> };
   readonly termGates?: readonly TermGate[];  // stacked term gates (optional, for new DAGs)
-  readonly spec?: SpecMeta;  // FR-SPEC-003: compiled spec provenance
+  readonly spec?: SpecMeta;  // FR-SPEC-003: compiled spec lineage
 }
 
 // Optimizer types — hallucinate-validate dependency minimization

@@ -34,9 +34,7 @@ export interface FixNodeSpec {
   expandedFrom: string;
   produces: string[];
   consumes: string[];
-  ambient?: string[];
   validate: ValidationRule[];
-  idempotent: boolean;
   _intentDiagnosis: {
     statement: string;
     achievedConfidence: number;
@@ -137,7 +135,6 @@ export function generateIntentExpansion(
   parentId: string,
   parentProduces: readonly string[],
   parentConsumes: readonly string[],
-  parentAmbient: readonly string[] | undefined,
   parentValidate: readonly ValidationRule[],
   failures: IntentFailure[],
   depth: number,
@@ -154,8 +151,7 @@ export function generateIntentExpansion(
       id: 'temp', desc: 'temp', expandedFrom: parentId,
       produces: resolveProduces(parentProduces, f),
       consumes: [...parentProduces],
-      ambient: parentAmbient ? [...parentAmbient] : undefined,
-      validate: [], idempotent: true,
+      validate: [],
       _intentDiagnosis: {
         statement: f.statement, achievedConfidence: f.achieved, threshold: f.threshold,
         reasoning: f.reasoning, evidence: f.evidence, expansionDepth: depth + 1,
@@ -191,9 +187,7 @@ export function generateIntentExpansion(
       expandedFrom: parentId,
       produces: resolveProduces(parentProduces, f),
       consumes: [...parentProduces],
-      ambient: parentAmbient ? [...parentAmbient] : undefined,
       validate: [{ ...f.rule, expandOnFail: canExpandFurther, maxExpansionDepth: f.rule.maxExpansionDepth }, ...deterministicRules],
-      idempotent: true,
       _intentDiagnosis: {
         statement: f.statement, achievedConfidence: f.achieved, threshold: f.threshold,
         reasoning: f.reasoning, evidence: f.evidence, expansionDepth: depth + 1,
@@ -216,7 +210,6 @@ export function generateInitGateExpansion(
   parentId: string,
   parentProduces: readonly string[],
   parentConsumes: readonly string[],
-  parentAmbient: readonly string[] | undefined,
   parentValidate: readonly ValidationRule[],
   failure: IntentFailure,
   depth: number,
@@ -226,7 +219,7 @@ export function generateInitGateExpansion(
 ): ExpansionResult {
   if (!isInitGateFailure(failure)) {
     return generateIntentExpansion(
-      parentId, parentProduces, parentConsumes, parentAmbient, parentValidate,
+      parentId, parentProduces, parentConsumes, parentValidate,
       [failure], depth, limits, modelAllocation, cumulativeCost,
     );
   }
@@ -241,8 +234,7 @@ export function generateInitGateExpansion(
       id: 'temp', desc: 'temp', expandedFrom: parentId,
       produces: parentProduces.length > 0 ? [...parentProduces] : ['clarity-spec.md'],
       consumes: parentProduces.length > 0 ? [...parentProduces] : [],
-      ambient: parentAmbient ? [...parentAmbient] : undefined,
-      validate: [], idempotent: true,
+      validate: [],
       _intentDiagnosis: {
         statement: failure.statement, achievedConfidence: failure.achieved, threshold: failure.threshold,
         reasoning: failure.reasoning, evidence: failure.evidence, expansionDepth: depth + 1,
@@ -294,12 +286,10 @@ export function generateInitGateExpansion(
       expandedFrom: parentId,
       produces,
       consumes: parentProduces.length > 0 ? [...parentProduces] : [],
-      ambient: parentAmbient ? [...parentAmbient] : undefined,
       validate: [
         { type: 'intent', statement: `Plan is now clear for: ${gap.type}`, confidence: 0.95, evaluator: 'self' as const, expandOnFail: canExpandFurther, maxExpansionDepth: failure.rule.maxExpansionDepth },
         ...deterministicRules,
       ],
-      idempotent: true,
       _intentDiagnosis: {
         statement: `${descMap[gap.type]} — ${gap.detail}`,
         achievedConfidence: failure.achieved, threshold: failure.threshold,

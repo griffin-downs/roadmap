@@ -37,7 +37,7 @@ export async function run(
       ],
       invariants: [
         'all mutations validate the DAG (define/verify/check) before committing',
-        'provenance receipts are recorded in .roadmap/trail.jsonl',
+        'mutation receipts are recorded in .roadmap/trail.jsonl',
       ],
       examples: [
         { sub: 'insert', cmd: "roadmap dag insert --node '{\"id\":\"x\",\"desc\":\"...\",\"produces\":[],\"consumes\":[],\"deps\":[\"init\"]}' --note \"why\"" },

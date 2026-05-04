@@ -92,7 +92,7 @@ function buildReceipt(
 
 export function insertNode(
   dag: Graph<string>,
-  node: { id: string; desc: string; produces: string[]; consumes: string[]; deps: string[]; validate?: any[]; idempotent?: boolean; mode?: 'execute' | 'plan' },
+  node: { id: string; desc: string; produces: string[]; consumes: string[]; deps: string[]; validate?: any[]; mode?: 'execute' | 'plan'; sidecar?: Record<string, unknown> },
   note: string,
 ): { dag: Graph<string>; receipt: MutationRecord } {
   const result = cloneGraph(dag);
@@ -118,9 +118,9 @@ export function insertNode(
     consumes: node.consumes ?? [],
     deps: node.deps ?? [],
     validate: node.validate ?? [{ type: 'artifact-exists' as const }],
-    idempotent: node.idempotent ?? true,
   };
   if (node.mode) spec.mode = node.mode;
+  if (node.sidecar) spec.sidecar = node.sidecar;
 
   nodes[node.id] = spec;
 
@@ -211,7 +211,7 @@ export function removeNode(
 export function modifyNode(
   dag: Graph<string>,
   nodeId: string,
-  changes: Partial<{ desc: string; produces: string[]; consumes: string[]; deps: string[]; validate: any[]; idempotent: boolean; mode: 'execute' | 'plan' }>,
+  changes: Partial<{ desc: string; produces: string[]; consumes: string[]; deps: string[]; validate: any[]; mode: 'execute' | 'plan'; sidecar: Record<string, unknown> }>,
   note: string,
 ): { dag: Graph<string>; receipt: MutationRecord } {
   const result = cloneGraph(dag);

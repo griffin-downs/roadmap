@@ -47,7 +47,7 @@ export interface Brief {
   handoffJournal: (InterimHandoff | FinalHandoff)[];
   /** Remaining nodes in roadmap */
   remaining: number;
-  /** Spec context: ambient files and full description */
+  /** Spec context: full description */
   specContext?: SpecContext;
   /** Ancestor code context: convention samples from backward cone */
   codeContext?: AncestorContext;

@@ -113,8 +113,6 @@ export function readNodeCache(
 export interface SpecContext {
   /** Full task description from spec (no truncation) */
   description: string;
-  /** Ambient files referenced by the node or spec inputs */
-  ambient: string[];
 }
 
 export interface AncestorContext {
@@ -312,7 +310,6 @@ export function briefSlice(
   // Layer 1: Spec context
   const specContext: SpecContext = {
     description: spec.desc,
-    ambient: (spec as any).ambient ?? [],
   };
 
   // Layer 2: Ancestor context via backward cone

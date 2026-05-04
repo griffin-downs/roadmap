@@ -22,26 +22,18 @@ const validationRule = z.union([
 const specIRTask = z.object({
   id: z.string().describe('Unique node identifier'),
   desc: z.string().describe('Human-readable description'),
-  priority: z.number().describe('Execution priority (lower = higher)'),
-  depends: z.array(z.string()).describe('Node IDs this task depends on'),
   produces: z.array(z.string()).describe('File paths this task creates'),
   consumes: z.array(z.string()).describe('File paths this task reads'),
   mode: z.enum(['execute', 'plan']).describe('execute = build artifacts, plan = decompose into sub-nodes'),
   validate: z.array(validationRule).describe('Acceptance criteria'),
-  ambient: z.array(z.string()).optional().describe('Context files (not gated)'),
-  provenance: z.object({
-    file: z.string(),
-    line: z.number().optional(),
-    section: z.string().optional(),
-  }).optional().describe('Source location in spec'),
-  // §Sidecar-as-ambient-context · ad-hoc per-task fields land here, not flat-as-siblings.
+  // §Sidecar-slot · ad-hoc per-task fields land here, not flat-as-siblings.
   // Engine ignores contents · agents put domain knowledge here · §Sidecar-promotion-rule
   // lifts recurring keys out of sidecar into first-class fields when ≥3 specs use them.
   sidecar: z.record(z.string(), z.unknown()).optional().describe('Ad-hoc per-task fields · jq-queryable · promotion-eligible'),
 }).strict().describe('A single task in SpecIR format · strict: unknown flat fields rejected · use sidecar.{} for ad-hoc');
 
 const specIR = z.object({
-  schema_version: z.literal(1),
+  schema_version: z.literal(2),
   engine: z.object({
     name: z.string(),
     version: z.string().nullable(),
@@ -68,9 +60,8 @@ const nodeSpecInput = z.object({
   consumes: z.array(z.string()).default([]).describe('File paths this node reads'),
   deps: z.array(z.string()).describe('Predecessor node IDs'),
   validate: z.array(validationRule).default([]).describe('Acceptance criteria'),
-  idempotent: z.boolean().default(true).describe('true = re-runnable'),
   mode: z.enum(['execute', 'plan']).optional().describe('Execution mode'),
-  ambient: z.array(z.string()).optional().describe('Context files (not gated)'),
+  sidecar: z.record(z.string(), z.unknown()).optional().describe('Ad-hoc per-node fields'),
 }).describe('Node specification for DAG insertion');
 
 // --- Per-command schemas ---
@@ -98,11 +89,11 @@ export const schemas: Record<string, CommandSchema> = {
     }),
     examples: [{
       input: {
-        schema_version: 1,
+        schema_version: 2,
         engine: { name: 'spec-kit', version: '1.0.0', config_hash: null },
         dag_id: 'auth-phase',
         tasks: [
-          { id: 'setup', desc: 'Project setup', priority: 0, depends: [], produces: ['package.json'], consumes: [], mode: 'execute', validate: [{ type: 'artifact-exists' }] },
+          { id: 'setup', desc: 'Project setup', produces: ['package.json'], consumes: [], mode: 'execute', validate: [{ type: 'artifact-exists' }] },
         ],
         metadata: { generated: '2026-03-03T00:00:00Z', compile_hash: 'abc123' },
       },
@@ -162,9 +153,8 @@ export const schemas: Record<string, CommandSchema> = {
         consumes: [],
         deps: ['setup'],
         validate: [{ type: 'artifact-exists' }],
-        idempotent: true,
       },
-      cli: 'roadmap dag insert --node \'{"id":"add-auth","desc":"Add authentication module","produces":["src/auth.ts"],"consumes":[],"deps":["setup"],"validate":[{"type":"artifact-exists"}],"idempotent":true}\' --note "add auth node"',
+      cli: 'roadmap dag insert --node \'{"id":"add-auth","desc":"Add authentication module","produces":["src/auth.ts"],"consumes":[],"deps":["setup"],"validate":[{"type":"artifact-exists"}]}\' --note "add auth node"',
     }],
   },
 
