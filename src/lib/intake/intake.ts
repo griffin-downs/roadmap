@@ -10,8 +10,8 @@
 // NOTE: spec-kit markdown intake (tasks.md → DAG) is no longer supported.
 // The canonical spec path is SpecIR JSON (schema_version: 2) — see
 // src/lib/intake/spec-ir.ts. Callers loading specs should run
-// assertNotSpecKitMarkdown() to fail fast with a migration pointer when
-// presented with a legacy markdown payload. See docs/MIGRATION.md.
+// assertNotSpecKitMarkdown() to fail fast when presented with a legacy
+// markdown payload.
 
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -276,7 +276,7 @@ export function assertNotSpecKitMarkdown(spec: unknown): void {
   if (isSpecKit && isMarkdown && !hasIRTasks) {
     throw new Error(
       'spec-kit markdown format is no longer supported. ' +
-      'Migrate to SpecIR JSON (schema_version: 2). See docs/MIGRATION.md.',
+      'Use SpecIR JSON (schema_version: 2) — see `roadmap api make` for the schema.',
     );
   }
 }

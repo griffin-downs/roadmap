@@ -5,7 +5,7 @@
 
 // Shared graph-construction logic used by the canonical SpecIR path
 // (src/lib/intake/spec-ir.ts → compileIR). The markdown-tasks surface is
-// no longer supported — see docs/MIGRATION.md.
+// no longer supported.
 //
 // Ordering rule (post r-rewrite-dependency-resolver):
 //   Edges between tasks are derived EXCLUSIVELY from consumes ↔ produces.
@@ -37,11 +37,11 @@ export interface ImportOptions {
 
 /**
  * Spec-kit markdown parsing has been removed. The roadmap intake path is now
- * SpecIR (JSON, schema_version: 2). See docs/MIGRATION.md for migration steps.
+ * SpecIR (JSON, schema_version: 2) — run `roadmap api make` for the schema.
  */
 export function parseTasksMd(_content: string): ParsedTask[] {
   throw new Error(
-    'spec-kit markdown format is no longer supported. See docs/MIGRATION.md.',
+    'spec-kit markdown format is no longer supported. Use SpecIR JSON (schema_version: 2).',
   );
 }
 

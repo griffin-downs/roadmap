@@ -195,7 +195,7 @@ describe('CLI intake enforcement', () => {
 
   // --- v0.4.0 engine cut: dead-field + wiring enforcement ---
 
-  it('rejects spec with depends field on a task (points at MIGRATION.md)', () => {
+  it('rejects spec with depends field on a task (v2 enforcement)', () => {
     const spec = validSpec();
     spec.tasks[1] = { ...spec.tasks[1], depends: ['setup'] };
     writeFileSync(join(repo, 'spec.json'), JSON.stringify(spec));
@@ -203,7 +203,7 @@ describe('CLI intake enforcement', () => {
     const result = runRoadmap(repo, `make spec.json --note "test"`);
     expect(result.exitCode).not.toBe(0);
     expect(result.stdout).toContain('depends');
-    expect(result.stdout).toContain('MIGRATION.md');
+    expect(result.stdout).toContain('consumes');
   });
 
   it('rejects non-init node with empty consumes (gate-without-data-flow)', () => {

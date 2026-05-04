@@ -135,7 +135,7 @@ export function collectMakeErrors(
       errors.push({
         gate: 'consumes-non-empty',
         message: msg,
-        fix: 'Add at least one consumes entry — wire upstream produces or a ratification receipt. See docs/MIGRATION.md.',
+        fix: 'Add at least one consumes entry — wire upstream produces or a ratification receipt.',
       });
     }
   } catch (e) {

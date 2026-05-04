@@ -46,7 +46,7 @@ export async function run(
     }, `Failed to parse spec: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  // Reject v1 specs that use the removed `depends` field — point at MIGRATION.md
+  // Reject v1 specs that use the removed `depends` field
   if (parsed && Array.isArray(parsed.tasks)) {
     const offenders = (parsed.tasks as any[])
       .filter((t) => t && typeof t === 'object' && 'depends' in t)
@@ -55,11 +55,11 @@ export async function run(
       throw new RoadmapError('VALIDATION_FAILED', {
         offenders,
         fix: [
-          "field 'depends' is removed in v2 — use consumes ↔ produces wiring.",
-          'See docs/MIGRATION.md.',
+          "field 'depends' is removed in v2 — express ordering via consumes ↔ produces wiring.",
+          'For an init gate with no upstream artifacts, have init produce a ratification receipt (e.g. .roadmap/init.json) and have downstream nodes consume it.',
           `tasks with 'depends': ${offenders.join(', ')}`,
         ].join('\n'),
-      }, "field 'depends' is removed in v2 — use consumes ↔ produces wiring. See docs/MIGRATION.md.");
+      }, "field 'depends' is removed in v2 — express ordering via consumes ↔ produces wiring");
     }
   }
 

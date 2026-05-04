@@ -368,7 +368,7 @@ export function validateConsumesNonEmpty(g: Graph<any>): ValidationResult {
     if (consumes.length === 0) {
       errors.push(
         `node ${node.id} has empty consumes — every gate must be consumes-of-an-upstream-produces; ` +
-        `add a ratification receipt or wire a real artifact. See docs/MIGRATION.md.`
+        `add a ratification receipt or wire a real artifact.`
       );
     }
   }

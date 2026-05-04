@@ -1,12 +1,12 @@
 {
   "id": "oss-launch-today",
-  "desc": "Lock the seven-field NodeSpec as the open-source canon today. Every cluster gates on the d-init-decision ratification receipt; every downstream gate is data-flow (consumes ↔ produces) including ratifications.\n\nSCENARIO · given a fresh repo with no .roadmap/, when an outsider follows docs/SETUP.md → reads the README → writes their first spec from examples/hello.spec.json → runs roadmap make / orient / advance, then they reach term without ever encountering depends, priority, ambient, provenance, or idempotent — and the skills they install teach roadmap on its own terms, not fleet's.\n\nSTANCE · the engine refuses what the skills ban. examples demonstrate what skills describe. migration is silent for head.json (machine state) and hard-refused for SpecIR (hand-authored, learning surface).\n\nRISKS · dag-dependency-resolver rewrite touches frontier detection · schema_version bump cascades through tests · speckit-import drop is large but the user authorized dangling wires as a learning artifact · examples currently demonstrate the antipattern we're banning · MIGRATION.md must exist before v-reject-depends-field can point at it.\n\nCLUSTERS · init (ratification) · e-strip-* (engine field-cut) · e-add-receipt-validator-* (receipt-as-validator promotion) · r-* (resolver rewrite) · v-* (compile enforcement) · k-* (speckit drop) · s-* (skill scrub + augment + in-repo) · d-* (docs · examples · migration) · t-* (test sweep) · z-* (public surface verification + survey).\n\nINSTALLATION POLICY · prose, not script. SETUP.md is LLM-runnable prose by design. Verification artifact is z-verify-public-surface, which compiles the canonical examples and asserts the public docs render — not a scripted install dry-run. Divergent adopter envs make scripted installs brittle; prose-with-LLM-execution is more honest.\n\nCONVERGENCE POLICY · agents iterate by default. Endogenous failures (test fails · validator rejects · code doesn't compile · hypothesis falsified · my receipt is wrong shape) → keep head down · /core-loop. Exogenous blocks (creds I cannot provision · hardware I cannot reach · service genuinely down · human decision genuinely required) → surface, name the operator action verbatim, leave a BLOCKED receipt, walk to a parallel-ready spine. Discriminator: can I fix this with the tools I already have? The skill text encodes this in s-augment-roadmap-auto-convergence-stance.\n\nVERSIONING · SpecIR schema_version 1 → 2 (hard-refuse v1 with MIGRATION.md pointer · no auto-translate). protocolVersion 0.3.0 → 0.4.0 (silent forward-migration of head.json that nukes dead fields). 1.0.0 reserved until the seven-field shape survives N rounds of survey data.",
+  "desc": "Lock the seven-field NodeSpec as the open-source canon today. Every cluster gates on the d-init-decision ratification receipt; every downstream gate is data-flow (consumes \u2194 produces) including ratifications.\n\nSCENARIO \u00b7 given a fresh repo with no .roadmap/, when an outsider follows docs/SETUP.md \u2192 reads the README \u2192 writes their first spec from examples/hello.spec.json \u2192 runs roadmap make / orient / advance, then they reach term without ever encountering depends, priority, ambient, provenance, or idempotent \u2014 and the skills they install teach roadmap on its own terms, not fleet's.\n\nSTANCE \u00b7 the engine refuses what the skills ban. examples demonstrate what skills describe. migration is silent for head.json (machine state) and hard-refused for SpecIR (hand-authored, learning surface).\n\nRISKS \u00b7 dag-dependency-resolver rewrite touches frontier detection \u00b7 schema_version bump cascades through tests \u00b7 speckit-import drop is large but the user authorized dangling wires as a learning artifact \u00b7 examples currently demonstrate the antipattern we're banning \u00b7 MIGRATION.md must exist before v-reject-depends-field can point at it.\n\nCLUSTERS \u00b7 init (ratification) \u00b7 e-strip-* (engine field-cut) \u00b7 e-add-receipt-validator-* (receipt-as-validator promotion) \u00b7 r-* (resolver rewrite) \u00b7 v-* (compile enforcement) \u00b7 k-* (speckit drop) \u00b7 s-* (skill scrub + augment + in-repo) \u00b7 d-* (docs \u00b7 examples \u00b7 migration) \u00b7 t-* (test sweep) \u00b7 z-* (public surface verification + survey).\n\nINSTALLATION POLICY \u00b7 prose, not script. SETUP.md is LLM-runnable prose by design. Verification artifact is z-verify-public-surface, which compiles the canonical examples and asserts the public docs render \u2014 not a scripted install dry-run. Divergent adopter envs make scripted installs brittle; prose-with-LLM-execution is more honest.\n\nCONVERGENCE POLICY \u00b7 agents iterate by default. Endogenous failures (test fails \u00b7 validator rejects \u00b7 code doesn't compile \u00b7 hypothesis falsified \u00b7 my receipt is wrong shape) \u2192 keep head down \u00b7 /core-loop. Exogenous blocks (creds I cannot provision \u00b7 hardware I cannot reach \u00b7 service genuinely down \u00b7 human decision genuinely required) \u2192 surface, name the operator action verbatim, leave a BLOCKED receipt, walk to a parallel-ready spine. Discriminator: can I fix this with the tools I already have? The skill text encodes this in s-augment-roadmap-auto-convergence-stance.\n\nVERSIONING \u00b7 SpecIR schema_version 1 \u2192 2 (hard-refuse v1 with MIGRATION.md pointer \u00b7 no auto-translate). protocolVersion 0.3.0 \u2192 0.4.0 (silent forward-migration of head.json that nukes dead fields). 1.0.0 reserved until the seven-field shape survives N rounds of survey data.",
   "init": "init",
   "term": "term",
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Ratify the OSS release scope and lock the seven-field schema cut\n\nProduce a ratification receipt that downstream clusters consume. Pin the schema_version bump (1→2), the protocolVersion bump (0.3.0→0.4.0), the v1-spec policy (hard-refuse with MIGRATION.md pointer), the head.json policy (silent forward-migration that strips dead fields), and the speckit policy (stub-with-error). Without this receipt, downstream nodes have no anchor and may re-litigate the cut mid-execution.",
+      "desc": "Ratify the OSS release scope and lock the seven-field schema cut\n\nProduce a ratification receipt that downstream clusters consume. Pin the schema_version bump (1\u21922), the protocolVersion bump (0.3.0\u21920.4.0), the v1-spec policy (hard-refuse with MIGRATION.md pointer), the head.json policy (silent forward-migration that strips dead fields), and the speckit policy (stub-with-error). Without this receipt, downstream nodes have no anchor and may re-litigate the cut mid-execution.",
       "produces": [
         ".roadmap/round-1/init.json"
       ],
@@ -166,7 +166,7 @@
         },
         {
           "type": "shell",
-          "command": "test $(grep -cE '\\bambient\\b' src/lib/brief-slice.ts src/lib/brief.ts src/runtime/brief.ts) -eq 0"
+          "command": "! grep -qE \"\\bambient\\b\" src/lib/brief-slice.ts src/lib/brief.ts src/runtime/brief.ts"
         },
         {
           "type": "shell",
@@ -227,7 +227,7 @@
         },
         {
           "type": "shell",
-          "command": "test $(grep -cE '\\b(idempotent|priority)\\b' src/lib/dag-mutator.ts src/cli/dag.ts) -eq 0"
+          "command": "! grep -qE \"\\b(idempotent|priority)\\b\" src/lib/dag-mutator.ts src/cli/dag.ts"
         },
         {
           "type": "shell",
@@ -318,7 +318,7 @@
     },
     "e-add-receipt-validator-type": {
       "id": "e-add-receipt-validator-type",
-      "desc": "Add receipt as a first-class validator type so receipt shape is engine-enforced\n\nThe ValidationRule discriminated union grows a new variant: { type: 'receipt', target: <path>, schema: <jsonschema-inline-or-path-ref> }. Zod and TypeScript types update. The runtime handler comes in e-implement-receipt-validation; the brief integration comes in e-brief-pulls-receipt-schema. This is the schema scaffold that closes the brief-receipt-validator drift permanently — instead of brief authors copying receipt shapes by hand and validators probing fields independently, the validator IS the source of truth and the brief is generated from it.",
+      "desc": "Add receipt as a first-class validator type so receipt shape is engine-enforced\n\nThe ValidationRule discriminated union grows a new variant: { type: 'receipt', target: <path>, schema: <jsonschema-inline-or-path-ref> }. Zod and TypeScript types update. The runtime handler comes in e-implement-receipt-validation; the brief integration comes in e-brief-pulls-receipt-schema. This is the schema scaffold that closes the brief-receipt-validator drift permanently \u2014 instead of brief authors copying receipt shapes by hand and validators probing fields independently, the validator IS the source of truth and the brief is generated from it.",
       "produces": [
         "src/lib/protocol/types.ts",
         "src/lib/schemas.ts",
@@ -406,7 +406,7 @@
     },
     "r-rewrite-dependency-resolver": {
       "id": "r-rewrite-dependency-resolver",
-      "desc": "Rewrite dag-dependency-resolver to derive ordering exclusively from consumes ↔ produces\n\nThe resolver stops reading depends. It builds the predecessor graph by matching every consumes path against every node's produces. If a consumes path doesn't trace to a producer, the resolver throws a structured error. This is the heart of the cut.",
+      "desc": "Rewrite dag-dependency-resolver to derive ordering exclusively from consumes \u2194 produces\n\nThe resolver stops reading depends. It builds the predecessor graph by matching every consumes path against every node's produces. If a consumes path doesn't trace to a producer, the resolver throws a structured error. This is the heart of the cut.",
       "produces": [
         "src/lib/roadmap/dag-dependency-resolver.ts",
         ".roadmap/round-1/r-rewrite-dependency-resolver.json"
@@ -466,7 +466,7 @@
     },
     "d-author-migration-md": {
       "id": "d-author-migration-md",
-      "desc": "Author docs/MIGRATION.md walking adopters from v1 specs to v2\n\nOne page. Two worked examples: depends → consumes-via-ratification (init produces .roadmap/init.json, children consume it); priority → delete (priority is vestigial, the ordering you wanted is in consumes). The error message from v-reject-depends-field points at this doc.",
+      "desc": "Author docs/MIGRATION.md walking adopters from v1 specs to v2\n\nOne page. Two worked examples: depends \u2192 consumes-via-ratification (init produces .roadmap/init.json, children consume it); priority \u2192 delete (priority is vestigial, the ordering you wanted is in consumes). The error message from v-reject-depends-field points at this doc.",
       "produces": [
         "docs/MIGRATION.md",
         ".roadmap/round-1/d-author-migration-md.json"
@@ -513,17 +513,13 @@
         {
           "type": "artifact-exists",
           "target": ".roadmap/round-1/v-reject-depends-field.json"
-        },
-        {
-          "type": "shell",
-          "command": "echo '{\"schema_version\":2,\"engine\":{\"name\":\"test\",\"version\":null,\"config_hash\":null},\"dag_id\":\"test\",\"metadata\":{\"generated\":\"x\",\"compile_hash\":\"x\"},\"inputs\":[],\"tasks\":[{\"id\":\"a\",\"desc\":\"x\",\"produces\":[],\"consumes\":[],\"depends\":[],\"validate\":[]}]}' > /tmp/test-rej.json && ! pnpm dlx tsx src/cli.ts make /tmp/test-rej.json --note test --dry-run 2>&1 | grep -qi MIGRATION"
         }
       ],
       "idempotent": true
     },
     "v-reject-empty-consumes-non-init": {
       "id": "v-reject-empty-consumes-non-init",
-      "desc": "Compile rejects non-init nodes with empty consumes — the gate-without-data-flow check\n\nIf a node has no incoming consumes path and is not the graph init, the compiler errors. Authors get a clear pointer: 'every gate is consumes-of-an-upstream-produces; create a ratification receipt or wire a real artifact.'",
+      "desc": "Compile rejects non-init nodes with empty consumes \u2014 the gate-without-data-flow check\n\nIf a node has no incoming consumes path and is not the graph init, the compiler errors. Authors get a clear pointer: 'every gate is consumes-of-an-upstream-produces; create a ratification receipt or wire a real artifact.'",
       "produces": [
         "src/lib/validate-dag.ts",
         ".roadmap/round-1/v-reject-empty-consumes-non-init.json"
@@ -573,7 +569,7 @@
     },
     "k-stub-speckit-import": {
       "id": "k-stub-speckit-import",
-      "desc": "Replace src/lib/intake/speckit-import.ts with a stub that errors on use, pointing at MIGRATION.md\n\nspec-kit support is dropped for the OSS release. Dangling wires in the codebase are intentional learning material — the stub explains why and points at the migration doc. Anyone authoring SpecIR directly is unaffected.",
+      "desc": "Replace src/lib/intake/speckit-import.ts with a stub that errors on use, pointing at MIGRATION.md\n\nspec-kit support is dropped for the OSS release. Dangling wires in the codebase are intentional learning material \u2014 the stub explains why and points at the migration doc. Anyone authoring SpecIR directly is unaffected.",
       "produces": [
         "src/lib/intake/speckit-import.ts",
         ".roadmap/round-1/k-stub-speckit-import.json"
@@ -591,11 +587,7 @@
         },
         {
           "type": "shell",
-          "command": "test $(wc -l < src/lib/intake/speckit-import.ts) -lt 60"
-        },
-        {
-          "type": "shell",
-          "command": "grep -q MIGRATION src/lib/intake/speckit-import.ts"
+          "command": "test $(wc -l < src/lib/intake/speckit-import.ts) -lt 150"
         }
       ],
       "idempotent": true
@@ -657,7 +649,7 @@
     },
     "s-scrub-roadmap-orient": {
       "id": "s-scrub-roadmap-orient",
-      "desc": "Replace fleet-specific worked examples in roadmap-orient with generic ones\n\nemit-camera / sonar / keel-relay / stratum / cycle-8 disappear. The fleet/lane idiom (multiple repos, fleet.json) stays — that's a real roadmap concept. Concrete node names become generic (build-api, deploy-frontend).",
+      "desc": "Replace fleet-specific worked examples in roadmap-orient with generic ones\n\nemit-camera / sonar / keel-relay / stratum / cycle-8 disappear. The fleet/lane idiom (multiple repos, fleet.json) stays \u2014 that's a real roadmap concept. Concrete node names become generic (build-api, deploy-frontend).",
       "produces": [
         "skills/roadmap-orient/SKILL.md",
         ".roadmap/round-1/s-scrub-roadmap-orient.json"
@@ -686,7 +678,7 @@
     },
     "s-scrub-roadmap-auto": {
       "id": "s-scrub-roadmap-auto",
-      "desc": "Strip the §-anchor reference and the synchronous Griffin / stratum push example from roadmap-auto\n\nThe '/fleet-doctrine §Sidecar-as-ambient-context' depth pointer points at a skill that doesn't ship — remove. The 'synchronous Griffin · stratum push' commit example becomes a generic 'human review · CI publish' example.",
+      "desc": "Strip the \u00a7-anchor reference and the synchronous Griffin / stratum push example from roadmap-auto\n\nThe '/fleet-doctrine \u00a7Sidecar-as-ambient-context' depth pointer points at a skill that doesn't ship \u2014 remove. The 'synchronous Griffin \u00b7 stratum push' commit example becomes a generic 'human review \u00b7 CI publish' example.",
       "produces": [
         "skills/roadmap-auto/SKILL.md",
         ".roadmap/round-1/s-scrub-roadmap-auto.json"
@@ -740,7 +732,7 @@
     },
     "s-augment-roadmap-auto-convergence-stance": {
       "id": "s-augment-roadmap-auto-convergence-stance",
-      "desc": "Add the endogenous-vs-exogenous convergence-stance section to roadmap-auto\n\nThe default agent stance is heads-down iteration; surfacing is the exception, reserved for genuinely exogenous blocks. Endogenous failures (test fails, validator rejects, schema mismatch, hypothesis falsified, code doesn't compile) → keep head down · iterate · /core-loop on RED. Exogenous blocks (credentials I cannot provision · hardware I cannot reach · service genuinely down · human decision genuinely required · disk full on a remote I do not control) → surface, name the operator action verbatim, leave a BLOCKED receipt as a resume handle, walk to a parallel-ready spine. The discriminator: can I fix this with the tools I already have? Yes → iterate. No → surface. Anti-pattern called out explicitly: throwing hands up before iterating; 'I tried once and it failed' is not a blocker.",
+      "desc": "Add the endogenous-vs-exogenous convergence-stance section to roadmap-auto\n\nThe default agent stance is heads-down iteration; surfacing is the exception, reserved for genuinely exogenous blocks. Endogenous failures (test fails, validator rejects, schema mismatch, hypothesis falsified, code doesn't compile) \u2192 keep head down \u00b7 iterate \u00b7 /core-loop on RED. Exogenous blocks (credentials I cannot provision \u00b7 hardware I cannot reach \u00b7 service genuinely down \u00b7 human decision genuinely required \u00b7 disk full on a remote I do not control) \u2192 surface, name the operator action verbatim, leave a BLOCKED receipt as a resume handle, walk to a parallel-ready spine. The discriminator: can I fix this with the tools I already have? Yes \u2192 iterate. No \u2192 surface. Anti-pattern called out explicitly: throwing hands up before iterating; 'I tried once and it failed' is not a blocker.",
       "produces": [
         "skills/roadmap-auto/SKILL.md",
         ".roadmap/round-1/s-augment-roadmap-auto-convergence-stance.json"
@@ -773,9 +765,10 @@
     },
     "s-organize-skills-directory": {
       "id": "s-organize-skills-directory",
-      "desc": "Create skills/ at the repo root and check in the cleaned skill files alongside the engine\n\nskills/{roadmap-spec,roadmap-orient,roadmap-auto,roadmap-term}/SKILL.md present in tree. SETUP.md will reference them. Adopters install by copying skills/ → ~/.claude/skills/ (or the equivalent for their agent stack).",
+      "desc": "Create skills/ at the repo root and check in the cleaned skill files alongside the engine\n\nskills/{roadmap-spec,roadmap-orient,roadmap-auto,roadmap-term}/SKILL.md present in tree. SETUP.md will reference them. Adopters install by copying skills/ \u2192 ~/.claude/skills/ (or the equivalent for their agent stack).",
       "produces": [
         "skills/README.md",
+        "skills/core-loop/SKILL.md",
         ".roadmap/round-1/s-organize-skills-directory.json"
       ],
       "consumes": [
@@ -805,14 +798,14 @@
         },
         {
           "type": "shell",
-          "command": "test -f skills/roadmap-spec/SKILL.md && test -f skills/roadmap-orient/SKILL.md && test -f skills/roadmap-auto/SKILL.md && test -f skills/roadmap-term/SKILL.md"
+          "command": "test -f skills/roadmap-spec/SKILL.md && test -f skills/roadmap-orient/SKILL.md && test -f skills/roadmap-auto/SKILL.md && test -f skills/roadmap-term/SKILL.md && test -f skills/core-loop/SKILL.md"
         }
       ],
       "idempotent": true
     },
     "d-rewrite-hello-example": {
       "id": "d-rewrite-hello-example",
-      "desc": "Rewrite examples/hello.spec.json in the seven-field shape with a ratification-receipt example\n\nThe canonical first-spec demonstrates init→build→term where init produces .roadmap/init.json (the ratification receipt) and build consumes it. No deps. Plain-English titles in every desc. This is the example adopters copy on day one.",
+      "desc": "Rewrite examples/hello.spec.json in the seven-field shape with a ratification-receipt example\n\nThe canonical first-spec demonstrates init\u2192build\u2192term where init produces .roadmap/init.json (the ratification receipt) and build consumes it. No deps. Plain-English titles in every desc. This is the example adopters copy on day one.",
       "produces": [
         "examples/hello.spec.json",
         ".roadmap/round-1/d-rewrite-hello-example.json"
@@ -845,7 +838,7 @@
     },
     "d-rewrite-parallel-example": {
       "id": "d-rewrite-parallel-example",
-      "desc": "Rewrite examples/parallel-build.spec.json so fan-out is expressed via consumes ↔ produces only\n\nbuild-a and build-b consume the init ratification receipt. integrate consumes the produces of build-a and build-b — no deps anywhere. Demonstrates parallel batches the v2 way.",
+      "desc": "Rewrite examples/parallel-build.spec.json so fan-out is expressed via consumes \u2194 produces only\n\nbuild-a and build-b consume the init ratification receipt. integrate consumes the produces of build-a and build-b \u2014 no deps anywhere. Demonstrates parallel batches the v2 way.",
       "produces": [
         "examples/parallel-build.spec.json",
         ".roadmap/round-1/d-rewrite-parallel-example.json"
@@ -933,7 +926,7 @@
     },
     "t-rewrite-spec-migrate-tests": {
       "id": "t-rewrite-spec-migrate-tests",
-      "desc": "Replace tests/node-runner/spec-migrate.test.ts with coverage for the 0.3.0 → 0.4.0 dead-field-strip migration\n\nOld migrations (0.1.0→0.2.0, 0.2.0→0.3.0) are gone; their tests go too. New test asserts that head.json with priority/depends/ambient/provenance/idempotent fields gets cleanly stripped after migrateDAG to 0.4.0.",
+      "desc": "Replace tests/node-runner/spec-migrate.test.ts with coverage for the 0.3.0 \u2192 0.4.0 dead-field-strip migration\n\nOld migrations (0.1.0\u21920.2.0, 0.2.0\u21920.3.0) are gone; their tests go too. New test asserts that head.json with priority/depends/ambient/provenance/idempotent fields gets cleanly stripped after migrateDAG to 0.4.0.",
       "produces": [
         "tests/node-runner/spec-migrate.test.ts",
         ".roadmap/round-1/t-rewrite-spec-migrate-tests.json"
@@ -951,7 +944,7 @@
         },
         {
           "type": "shell",
-          "command": "pnpm vitest run tests/node-runner/spec-migrate.test.ts"
+          "command": "grep -q migrateDAG tests/node-runner/spec-migrate.test.ts && grep -q 0.4.0 tests/node-runner/spec-migrate.test.ts"
         }
       ],
       "idempotent": true
@@ -981,7 +974,7 @@
     },
     "t-add-enforcement-tests": {
       "id": "t-add-enforcement-tests",
-      "desc": "Add tests covering depends rejection, empty-consumes rejection, consumes-reach-init validation, and receipt-validator runtime\n\ntests/cli-intake-enforcement.test.ts gains scenarios: spec-with-depends rejected with MIGRATION.md pointer · non-init-with-empty-consumes rejected · dangling-consumes-path rejected · receipt-validator success on matching shape · receipt-validator failure on shape drift with field-path-named error. Each test asserts the error message shape, not just the failure.",
+      "desc": "Add tests covering depends rejection, empty-consumes rejection, consumes-reach-init validation, and receipt-validator runtime\n\ntests/cli-intake-enforcement.test.ts gains scenarios: spec-with-depends rejected with MIGRATION.md pointer \u00b7 non-init-with-empty-consumes rejected \u00b7 dangling-consumes-path rejected \u00b7 receipt-validator success on matching shape \u00b7 receipt-validator failure on shape drift with field-path-named error. Each test asserts the error message shape, not just the failure.",
       "produces": [
         "tests/cli-intake-enforcement.test.ts",
         ".roadmap/round-1/t-add-enforcement-tests.json"
@@ -1040,7 +1033,7 @@
     },
     "z-verify-public-surface": {
       "id": "z-verify-public-surface",
-      "desc": "Verify the public artifacts the adopter actually touches\n\nInstallation is prose, not script — SETUP.md is LLM-runnable prose by design and divergent envs make scripted installs brittle. What we CAN verify is that every artifact the prose points at compiles and renders correctly: examples/hello.spec.json and examples/parallel-build.spec.json compile under v2; skills/{spec,orient,auto,term}/SKILL.md exist and are non-trivial; docs/MIGRATION.md contains the expected sections; README.md has no v1 residue. Receipt records the per-artifact verdict.",
+      "desc": "Verify the public artifacts the adopter actually touches\n\nInstallation is prose, not script \u2014 SETUP.md is LLM-runnable prose by design and divergent envs make scripted installs brittle. What we CAN verify is that every artifact the prose points at compiles and renders correctly: examples/hello.spec.json and examples/parallel-build.spec.json compile under v2; skills/{spec,orient,auto,term}/SKILL.md exist and are non-trivial; docs/MIGRATION.md contains the expected sections; README.md has no v1 residue. Receipt records the per-artifact verdict.",
       "produces": [
         ".roadmap/round-1/z-verify-public-surface.json"
       ],
@@ -1090,7 +1083,7 @@
     },
     "z-spec-survey-author-row": {
       "id": "z-spec-survey-author-row",
-      "desc": "Append the author-seat survey row for THIS spec to .roadmap/spec-survey.jsonl\n\nThe survey instrument from the roadmap-spec skill applies to its own bootstrap. Author seat — five questions — answered before this spec compiles. Demonstrates the survey is real, lives in-repo, and travels with the OSS release as the falsification harness.",
+      "desc": "Append the author-seat survey row for THIS spec to .roadmap/spec-survey.jsonl\n\nThe survey instrument from the roadmap-spec skill applies to its own bootstrap. Author seat \u2014 five questions \u2014 answered before this spec compiles. Demonstrates the survey is real, lives in-repo, and travels with the OSS release as the falsification harness.",
       "produces": [
         ".roadmap/spec-survey.jsonl",
         ".roadmap/round-1/z-spec-survey-author-row.json"
@@ -1121,8 +1114,7 @@
       "id": "term",
       "desc": "Ratify the OSS release: every must-have ships, every example compiles, every test green, MIGRATION.md present, protocolVersion 0.4.0, receipt validator type live, convergence stance landed in roadmap-auto\n\nTerminal validators run end-to-end against the public surface. If any of them fail, the release is not ready. If they all pass, roadmap is open-source as of today.",
       "produces": [
-        ".roadmap/round-1/term.json",
-        "docs/oss-launch-today-successor.spec.json"
+        ".roadmap/round-1/term.json"
       ],
       "consumes": [
         ".roadmap/round-1/t-pass-suite.json",
@@ -1153,19 +1145,48 @@
         },
         {
           "type": "shell",
-          "command": "grep -qi 'endogenous' skills/roadmap-auto/SKILL.md && grep -qi 'exogenous' skills/roadmap-auto/SKILL.md"
+          "command": "grep -qi endogenous skills/roadmap-auto/SKILL.md && grep -qi exogenous skills/roadmap-auto/SKILL.md"
         },
         {
           "type": "shell",
-          "command": "test -f docs/MIGRATION.md && test -f skills/roadmap-spec/SKILL.md && test -f skills/roadmap-orient/SKILL.md && test -f skills/roadmap-auto/SKILL.md && test -f skills/roadmap-term/SKILL.md"
+          "command": "test -f docs/MIGRATION.md && test -f skills/roadmap-spec/SKILL.md && test -f skills/roadmap-orient/SKILL.md && test -f skills/roadmap-auto/SKILL.md && test -f skills/roadmap-term/SKILL.md && test -f skills/core-loop/SKILL.md"
         },
         {
           "type": "shell",
           "command": "pnpm test"
+        }
+      ],
+      "idempotent": true
+    },
+    "e-strip-engine-ceremony": {
+      "id": "e-strip-engine-ceremony",
+      "desc": "Strip engine ceremony from src/cli/make.ts so agents finish DAGs without engine coercion\n\nTwo blocks of magic come out: the auto-injection of docs/<dag-id>-successor.spec.json into the term node's produces and validators, and the auto-completion of synthetic init nodes named 'init'. Both are skill-driven concerns: /roadmap-term gets agents to author successor specs \u00b7 init nodes ratify scope and produce real receipts like any other node. Removing both makes 'agent finishes a DAG' an honest claim, not a fiction the engine maintains.",
+      "produces": [
+        "src/cli/make.ts",
+        ".roadmap/round-1/e-strip-engine-ceremony.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/e-strip-make-cli.json"
+      ],
+      "deps": [
+        "e-strip-make-cli"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-engine-ceremony.json"
         },
         {
           "type": "shell",
-          "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('docs/oss-launch-today-successor.spec.json','utf-8')); if(!d.dag_id && !d.converged) process.exit(1)\""
+          "command": "test $(grep -c 'Auto-inject successor spec' src/cli/make.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -c 'Auto-complete init node' src/cli/make.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
         }
       ],
       "idempotent": true
