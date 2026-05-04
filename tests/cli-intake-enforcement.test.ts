@@ -3,6 +3,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
+import { validateNode } from '../src/lib/protocol/validation.ts';
+import { validateConsumesNonEmpty, validateConsumesHaveProducer } from '../src/lib/validate-dag.ts';
 
 // Helper: create a temp git repo with .roadmap dir and gitsafe config
 function makeTestRepo(): string {
@@ -55,8 +57,6 @@ function validSpec(overrides?: Partial<any>): any {
       {
         id: 'setup',
         desc: 'Setup task',
-        priority: 0,
-        depends: [],
         produces: ['setup.txt'],
         consumes: [],
         mode: 'execute',
@@ -65,8 +65,6 @@ function validSpec(overrides?: Partial<any>): any {
       {
         id: 'build',
         desc: 'Build task',
-        priority: 1,
-        depends: ['setup'],
         produces: ['build.txt'],
         consumes: ['setup.txt'],
         mode: 'execute',
@@ -113,7 +111,7 @@ describe('CLI intake enforcement', () => {
   });
 
   it('rejects spec missing metadata', () => {
-    const badSpec = { schema_version: 1, tasks: [{ id: 'a', desc: 'A', priority: 0, depends: [], produces: [], consumes: [], mode: 'execute', validate: [] }] };
+    const badSpec = { schema_version: 1, tasks: [{ id: 'a', desc: 'A', produces: [], consumes: [], mode: 'execute', validate: [] }] };
     writeFileSync(join(repo, 'bad.json'), JSON.stringify(badSpec));
 
     const result = runRoadmap(repo, `make bad.json --note "test"`);
@@ -193,5 +191,108 @@ describe('CLI intake enforcement', () => {
     expect(origin.dagId).toBe('provenance-test');
     expect(origin.compile_hash).toBe('abc123');
     expect(origin.spec_sha).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  // --- v0.4.0 engine cut: dead-field + wiring enforcement ---
+
+  it('rejects spec with depends field on a task (points at MIGRATION.md)', () => {
+    const spec = validSpec();
+    spec.tasks[1] = { ...spec.tasks[1], depends: ['setup'] };
+    writeFileSync(join(repo, 'spec.json'), JSON.stringify(spec));
+
+    const result = runRoadmap(repo, `make spec.json --note "test"`);
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stdout).toContain('depends');
+    expect(result.stdout).toContain('MIGRATION.md');
+  });
+
+  it('rejects non-init node with empty consumes (gate-without-data-flow)', () => {
+    // Direct validator call — make's importer auto-wires roots through a
+    // synth-init receipt, so the empty-consumes rule is exercised at the
+    // graph-validator boundary rather than via the CLI.
+    const dag: any = {
+      id: 'g', init: 'init', term: 'term',
+      nodes: {
+        init: { id: 'init', desc: 'I', produces: ['i.txt'], consumes: [], deps: [], validate: [] },
+        orphan: { id: 'orphan', desc: 'Orphan', produces: ['o.txt'], consumes: [], deps: [], validate: [] },
+        term: { id: 'term', desc: 'T', produces: [], consumes: ['i.txt', 'o.txt'], deps: ['init', 'orphan'], validate: [] },
+      },
+    };
+    const r = validateConsumesNonEmpty(dag);
+    expect(r.valid).toBe(false);
+    const joined = r.errors.join(' ');
+    expect(joined).toContain('orphan');
+    expect(joined).toContain('every gate must be consumes-of-an-upstream-produces');
+  });
+
+  it('rejects consumes path that does not trace to any produce', () => {
+    // Direct validator call: phantom.txt is consumed but produced by nobody.
+    const dag: any = {
+      id: 'g', init: 'init', term: 'term',
+      nodes: {
+        init: { id: 'init', desc: 'I', produces: ['i.txt'], consumes: [], deps: [], validate: [] },
+        bad: { id: 'bad', desc: 'B', produces: ['b.txt'], consumes: ['i.txt', 'phantom.txt'], deps: ['init'], validate: [] },
+        term: { id: 'term', desc: 'T', produces: [], consumes: ['b.txt'], deps: ['bad'], validate: [] },
+      },
+    };
+    const r = validateConsumesHaveProducer(dag);
+    expect(r.valid).toBe(false);
+    const joined = r.errors.join(' ');
+    expect(joined).toContain('bad');
+    expect(joined).toContain('phantom.txt');
+  });
+
+  // --- receipt validator (engine-enforced shape) ---
+
+  it('receipt validator passes on matching shape and fails (with field path) on shape drift', async () => {
+    // Build a tiny one-node graph carrying a receipt validator rule.
+    const dag: any = {
+      id: 'receipt-test',
+      init: 'rcpt',
+      term: 'rcpt',
+      nodes: {
+        rcpt: {
+          id: 'rcpt',
+          desc: 'Emit receipt',
+          produces: ['receipt.json'],
+          consumes: [],
+          deps: [],
+          validate: [
+            {
+              type: 'receipt',
+              target: 'receipt.json',
+              schema: {
+                type: 'object',
+                required: ['node', 'verdict'],
+                properties: {
+                  node: { type: 'string' },
+                  verdict: { type: 'string' },
+                  count: { type: 'number' },
+                },
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    // 1. Matching shape → passes.
+    const goodReceipt = JSON.stringify({ node: 'rcpt', verdict: 'GREEN', count: 3 });
+    const goodResult = await validateNode(dag, 'rcpt', () => true, {
+      repoRoot: repo,
+      readFile: (p: string) => (p.endsWith('receipt.json') ? goodReceipt : null),
+    });
+    expect(goodResult.passed).toBe(true);
+
+    // 2. Shape drift (count is a string, verdict missing) → fails with field path.
+    const badReceipt = JSON.stringify({ node: 'rcpt', count: 'three' });
+    const badResult = await validateNode(dag, 'rcpt', () => true, {
+      repoRoot: repo,
+      readFile: (p: string) => (p.endsWith('receipt.json') ? badReceipt : null),
+    });
+    expect(badResult.passed).toBe(false);
+    const evidence = (badResult.checks ?? []).map(c => c.evidence ?? '').join(' ');
+    expect(evidence).toContain('verdict');
+    expect(evidence).toContain('count');
   });
 });

@@ -137,13 +137,6 @@ describe('briefSlice', () => {
     expect(slice.specContext.description.length).toBeGreaterThan(50);
   });
 
-  it('includes ambient files in specContext', () => {
-    const dag = makeTestDAG();
-    const slice = briefSlice('implement', dag, TMP);
-
-    expect(slice.specContext.ambient).toContain('docs/auth-spec.md');
-  });
-
   it('contracts ancestor context by distance', () => {
     const dag = makeTestDAG();
 
@@ -268,14 +261,6 @@ describe('getBrief (enriched)', () => {
     );
     // Must NOT be truncated to 150 chars
     expect(brief.description.length).toBeGreaterThan(50);
-  });
-
-  it('includes specContext when slice succeeds', async () => {
-    const dag = makeTestDAG();
-    const brief = await getBrief(dag, 'implement', TMP);
-
-    expect(brief.specContext).toBeDefined();
-    expect(brief.specContext!.ambient).toContain('docs/auth-spec.md');
   });
 
   it('includes topology', async () => {

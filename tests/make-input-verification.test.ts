@@ -14,10 +14,11 @@ function sha256(content: string): string {
   return createHash('sha256').update(content).digest('hex');
 }
 
-// Valid 2-task spec (init != term) so DAG passes define/verify/check
+// Valid 2-task spec (init != term) so DAG passes define/verify/check.
+// v0.4.0: wiring is consumes ↔ produces; no priority/depends fields.
 const VALID_TASKS = [
-  { id: 'setup', desc: 'Setup', priority: 0, depends: [], produces: ['setup.txt'], consumes: [], mode: 'execute', validate: [{ type: 'artifact-exists' }] },
-  { id: 'build', desc: 'Build', priority: 1, depends: ['setup'], produces: ['out.txt'], consumes: ['setup.txt'], mode: 'execute', validate: [{ type: 'artifact-exists' }] },
+  { id: 'setup', desc: 'Setup', produces: ['setup.txt'], consumes: [], mode: 'execute', validate: [{ type: 'artifact-exists' }] },
+  { id: 'build', desc: 'Build', produces: ['out.txt'], consumes: ['setup.txt'], mode: 'execute', validate: [{ type: 'artifact-exists' }] },
 ];
 
 function makeSpec(root: string, overrides: Record<string, unknown> = {}): string {
