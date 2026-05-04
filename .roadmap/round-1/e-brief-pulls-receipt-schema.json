@@ -1,6 +1,0 @@
-{
-  "node": "e-brief-pulls-receipt-schema",
-  "verdict": "GREEN",
-  "artifacts": ["src/lib/brief.ts", "src/runtime/brief.ts", "src/lib/brief-slice.ts"],
-  "verify": { "cmd": "pnpm tsc --noEmit", "exit": 0, "summary": "renderPattern appends RECEIPT SHAPE block(s) inlining validator.schema verbatim — worker/validator/brief share one schema" }
-}

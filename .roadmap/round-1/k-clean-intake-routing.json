@@ -1,6 +1,0 @@
-{
-  "node": "k-clean-intake-routing",
-  "verdict": "GREEN",
-  "artifacts": ["src/lib/intake/intake.ts"],
-  "verify": { "cmd": "pnpm tsc --noEmit", "exit": 0, "summary": "tsc clean repo-wide" }
-}

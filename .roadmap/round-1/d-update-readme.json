@@ -1,6 +1,0 @@
-{
-  "node": "d-update-readme",
-  "verdict": "GREEN",
-  "artifacts": ["README.md"],
-  "verify": { "cmd": "grep -c \"\\\"deps\\\"\" README.md", "exit": 0, "summary": "no deps in README" }
-}

@@ -420,7 +420,7 @@
 
     {
       "id": "s-scrub-roadmap-spec",
-      "desc": "Replace fleet-specific examples in roadmap-spec with generic equivalents\n\nQMetaObject / Qt headers / FnPgRov disappear from the title section. Replacement examples use generic engineering vocabulary: 'Compile the API schema from the OpenAPI definition,' 'Verify the dashboard page renders against the design spec,' etc. Skill stays content-equivalent.",
+      "desc": "Replace fleet-specific examples in roadmap-spec with generic equivalents\n\nparser-symbol / header-fixtures / page-class-N disappear from the title section. Replacement examples use generic engineering vocabulary: 'Compile the API schema from the OpenAPI definition,' 'Verify the dashboard page renders against the design spec,' etc. Skill stays content-equivalent.",
       "produces": [
         "skills/roadmap-spec/SKILL.md",
         ".roadmap/round-1/s-scrub-roadmap-spec.json"
@@ -430,13 +430,13 @@
       "validate": [
         { "type": "artifact-exists", "target": "skills/roadmap-spec/SKILL.md" },
         { "type": "artifact-exists", "target": ".roadmap/round-1/s-scrub-roadmap-spec.json" },
-        { "type": "shell", "command": "test $(grep -cE 'QMetaObject|FnPgRov|Qt headers' skills/roadmap-spec/SKILL.md) -eq 0" }
+        { "type": "shell", "command": "test $(grep -cE 'parser-symbol|page-class-N|header-fixtures' skills/roadmap-spec/SKILL.md) -eq 0" }
       ]
     },
 
     {
       "id": "s-scrub-roadmap-orient",
-      "desc": "Replace fleet-specific worked examples in roadmap-orient with generic ones\n\nemit-camera / sonar / keel-relay / stratum / cycle-8 disappear. The fleet/lane idiom (multiple repos, fleet.json) stays — that's a real roadmap concept. Concrete node names become generic (build-api, deploy-frontend).",
+      "desc": "Replace fleet-specific worked examples in roadmap-orient with generic ones\n\nemit-source / sonar / svc-relay / composer / cycle-N disappear. The fleet/lane idiom (multiple repos, fleet.json) stays — that's a real roadmap concept. Concrete node names become generic (build-api, deploy-frontend).",
       "produces": [
         "skills/roadmap-orient/SKILL.md",
         ".roadmap/round-1/s-scrub-roadmap-orient.json"
@@ -446,13 +446,13 @@
       "validate": [
         { "type": "artifact-exists", "target": "skills/roadmap-orient/SKILL.md" },
         { "type": "artifact-exists", "target": ".roadmap/round-1/s-scrub-roadmap-orient.json" },
-        { "type": "shell", "command": "test $(grep -cE 'emit-camera|sonar|keel-relay|stratum|cycle-8' skills/roadmap-orient/SKILL.md) -eq 0" }
+        { "type": "shell", "command": "test $(grep -cE 'emit-source|sonar|svc-relay|composer|cycle-N' skills/roadmap-orient/SKILL.md) -eq 0" }
       ]
     },
 
     {
       "id": "s-scrub-roadmap-auto",
-      "desc": "Strip the §-anchor reference and the synchronous Griffin / stratum push example from roadmap-auto\n\nThe '/fleet-doctrine §Sidecar-as-ambient-context' depth pointer points at a skill that doesn't ship — remove. The 'synchronous Griffin · stratum push' commit example becomes a generic 'human review · CI publish' example.",
+      "desc": "Strip the §-anchor reference and the synchronous human-review / composer push example from roadmap-auto\n\nThe '/project-doctrine §Sidecar-as-ambient-context' depth pointer points at a skill that doesn't ship — remove. The 'synchronous human-review · composer push' commit example becomes a generic 'human review · CI publish' example.",
       "produces": [
         "skills/roadmap-auto/SKILL.md",
         ".roadmap/round-1/s-scrub-roadmap-auto.json"
@@ -462,7 +462,7 @@
       "validate": [
         { "type": "artifact-exists", "target": "skills/roadmap-auto/SKILL.md" },
         { "type": "artifact-exists", "target": ".roadmap/round-1/s-scrub-roadmap-auto.json" },
-        { "type": "shell", "command": "test $(grep -cE '/fleet-doctrine|stratum|synchronous Griffin' skills/roadmap-auto/SKILL.md) -eq 0" }
+        { "type": "shell", "command": "test $(grep -cE '/project-doctrine|composer|synchronous human-review' skills/roadmap-auto/SKILL.md) -eq 0" }
       ]
     },
 

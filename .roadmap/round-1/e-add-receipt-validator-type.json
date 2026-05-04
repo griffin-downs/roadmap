@@ -1,6 +1,0 @@
-{
-  "node": "e-add-receipt-validator-type",
-  "verdict": "GREEN",
-  "artifacts": ["src/lib/protocol/types.ts", "src/lib/schemas.ts"],
-  "verify": { "cmd": "pnpm tsc --noEmit", "exit": 0, "summary": "ValidationRule union grew receipt variant; zod schema accepts it; tsc clean" }
-}

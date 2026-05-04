@@ -1,6 +1,0 @@
-{
-  "node": "k-stub-speckit-import",
-  "verdict": "GREEN",
-  "artifacts": ["src/lib/intake/speckit-import.ts"],
-  "verify": { "cmd": "pnpm tsc --noEmit", "exit": 0, "summary": "tsc clean repo-wide" }
-}
