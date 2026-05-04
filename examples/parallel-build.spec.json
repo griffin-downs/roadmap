@@ -1,27 +1,58 @@
 {
-  "schema_version": 1,
-  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "schema_version": 2,
+  "engine": { "name": "claude-roadmap-spec", "version": "1.0.0", "config_hash": null },
   "dag_id": "parallel-build",
-  "dag_desc": "Two independent build tasks fan out from init, then a single integrate task fans them in. Demonstrates parallel batches: init and integrate are level-0 and level-2; build-a and build-b share level-1 and can run concurrently.",
-  "metadata": { "generated": "2026-05-01T00:00:00Z", "compile_hash": "init" },
+  "dag_desc": "Fan-out / fan-in DAG. An init node writes a ratification receipt; two build nodes consume the receipt in parallel and each produce one artifact; an integrate node consumes both artifacts and produces a combined file; a terminal node consumes the combined file. Ordering is expressed entirely via consumes and produces.",
   "inputs": [
     { "path": "examples/parallel-build.spec.json", "sha256": "0000000000000000000000000000000000000000000000000000000000000000", "role": "spec" }
   ],
+  "metadata": { "generated": "2026-05-04T00:00:00Z", "compile_hash": "init" },
   "tasks": [
-    { "id": "init", "desc": "start", "produces": [], "consumes": [], "deps": [], "validate": [] },
-
-    { "id": "build-a", "desc": "produce out/a.txt", "produces": ["out/a.txt"], "consumes": [], "deps": ["init"],
-      "validate": [{ "type": "artifact-exists", "target": "out/a.txt" }] },
-    { "id": "build-b", "desc": "produce out/b.txt", "produces": ["out/b.txt"], "consumes": [], "deps": ["init"],
-      "validate": [{ "type": "artifact-exists", "target": "out/b.txt" }] },
-
-    { "id": "integrate", "desc": "concatenate a + b into out/combined.txt",
-      "produces": ["out/combined.txt"], "consumes": ["out/a.txt", "out/b.txt"], "deps": ["build-a", "build-b"],
+    {
+      "id": "init",
+      "desc": "Write a ratification receipt that both build branches consume as their start gate.",
+      "produces": [".roadmap/init.json"],
+      "consumes": [],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/init.json" }
+      ]
+    },
+    {
+      "id": "build-a",
+      "desc": "Produce out/a.txt on the A branch once the init ratification receipt is on disk.",
+      "produces": ["out/a.txt"],
+      "consumes": [".roadmap/init.json"],
+      "validate": [
+        { "type": "artifact-exists", "target": "out/a.txt" }
+      ]
+    },
+    {
+      "id": "build-b",
+      "desc": "Produce out/b.txt on the B branch once the init ratification receipt is on disk.",
+      "produces": ["out/b.txt"],
+      "consumes": [".roadmap/init.json"],
+      "validate": [
+        { "type": "artifact-exists", "target": "out/b.txt" }
+      ]
+    },
+    {
+      "id": "integrate",
+      "desc": "Concatenate the A and B branch artifacts into a single combined file.",
+      "produces": ["out/combined.txt"],
+      "consumes": ["out/a.txt", "out/b.txt"],
       "validate": [
         { "type": "artifact-exists", "target": "out/combined.txt" },
         { "type": "shell", "command": "test $(wc -l < out/combined.txt) -ge 2" }
-      ] },
-
-    { "id": "term", "desc": "done", "produces": [], "consumes": ["out/combined.txt"], "deps": ["integrate"], "validate": [] }
+      ]
+    },
+    {
+      "id": "term",
+      "desc": "Terminal node that asserts the combined artifact is present and the DAG has converged.",
+      "produces": [],
+      "consumes": ["out/combined.txt"],
+      "validate": [
+        { "type": "artifact-exists", "target": "out/combined.txt" }
+      ]
+    }
   ]
 }

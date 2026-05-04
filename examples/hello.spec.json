@@ -1,16 +1,39 @@
 {
-  "schema_version": 1,
-  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "schema_version": 2,
+  "engine": { "name": "claude-roadmap-spec", "version": "1.0.0", "config_hash": null },
   "dag_id": "hello",
-  "dag_desc": "Smallest working DAG · single produce + terminal · five-line walkthrough.",
-  "metadata": { "generated": "2026-05-01T00:00:00Z", "compile_hash": "init" },
+  "dag_desc": "Smallest meaningful DAG. An init node writes a ratification receipt; a build node consumes that receipt and produces hello.txt; a terminal node consumes hello.txt. Ordering is expressed entirely via consumes and produces.",
   "inputs": [
     { "path": "examples/hello.spec.json", "sha256": "0000000000000000000000000000000000000000000000000000000000000000", "role": "spec" }
   ],
+  "metadata": { "generated": "2026-05-04T00:00:00Z", "compile_hash": "init" },
   "tasks": [
-    { "id": "init",  "desc": "start", "produces": [], "consumes": [], "deps": [], "validate": [] },
-    { "id": "build", "desc": "produce hello.txt", "produces": ["hello.txt"], "consumes": [], "deps": ["init"],
-      "validate": [{ "type": "artifact-exists", "target": "hello.txt" }] },
-    { "id": "term",  "desc": "done", "produces": [], "consumes": ["hello.txt"], "deps": ["build"], "validate": [] }
+    {
+      "id": "init",
+      "desc": "Write a ratification receipt that downstream nodes consume as their start gate.",
+      "produces": [".roadmap/init.json"],
+      "consumes": [],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/init.json" }
+      ]
+    },
+    {
+      "id": "build",
+      "desc": "Produce hello.txt once the init ratification receipt is on disk.",
+      "produces": ["hello.txt"],
+      "consumes": [".roadmap/init.json"],
+      "validate": [
+        { "type": "artifact-exists", "target": "hello.txt" }
+      ]
+    },
+    {
+      "id": "term",
+      "desc": "Terminal node that asserts the build artifact is present and the DAG has converged.",
+      "produces": [],
+      "consumes": ["hello.txt"],
+      "validate": [
+        { "type": "artifact-exists", "target": "hello.txt" }
+      ]
+    }
   ]
 }

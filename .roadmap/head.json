@@ -1,170 +1,1185 @@
 {
-  "id": "roadmap-r2-public-release-prep",
-  "desc": "Curated example DAG illustrating the protocol shape: scrub cluster (rip cruft) -> curate cluster (clean remaining content) -> verify cluster (pre-flip gates) -> terminal (flip + tag) -> plan-mode child (post-launch contribution surface). This is the public-release prep round for the roadmap engine itself, retained as a worked example. Clusters group by concern; depends:[] is the only sequencing. The terminal is plan-mode because its concrete shape depends on launch feedback that does not yet exist when the spec is authored.",
+  "id": "oss-launch-today",
+  "desc": "Lock the seven-field NodeSpec as the open-source canon today. Every cluster gates on the d-init-decision ratification receipt; every downstream gate is data-flow (consumes ↔ produces) including ratifications.\n\nSCENARIO · given a fresh repo with no .roadmap/, when an outsider follows docs/SETUP.md → reads the README → writes their first spec from examples/hello.spec.json → runs roadmap make / orient / advance, then they reach term without ever encountering depends, priority, ambient, provenance, or idempotent — and the skills they install teach roadmap on its own terms, not fleet's.\n\nSTANCE · the engine refuses what the skills ban. examples demonstrate what skills describe. migration is silent for head.json (machine state) and hard-refused for SpecIR (hand-authored, learning surface).\n\nRISKS · dag-dependency-resolver rewrite touches frontier detection · schema_version bump cascades through tests · speckit-import drop is large but the user authorized dangling wires as a learning artifact · examples currently demonstrate the antipattern we're banning · MIGRATION.md must exist before v-reject-depends-field can point at it.\n\nCLUSTERS · init (ratification) · e-strip-* (engine field-cut) · e-add-receipt-validator-* (receipt-as-validator promotion) · r-* (resolver rewrite) · v-* (compile enforcement) · k-* (speckit drop) · s-* (skill scrub + augment + in-repo) · d-* (docs · examples · migration) · t-* (test sweep) · z-* (public surface verification + survey).\n\nINSTALLATION POLICY · prose, not script. SETUP.md is LLM-runnable prose by design. Verification artifact is z-verify-public-surface, which compiles the canonical examples and asserts the public docs render — not a scripted install dry-run. Divergent adopter envs make scripted installs brittle; prose-with-LLM-execution is more honest.\n\nCONVERGENCE POLICY · agents iterate by default. Endogenous failures (test fails · validator rejects · code doesn't compile · hypothesis falsified · my receipt is wrong shape) → keep head down · /core-loop. Exogenous blocks (creds I cannot provision · hardware I cannot reach · service genuinely down · human decision genuinely required) → surface, name the operator action verbatim, leave a BLOCKED receipt, walk to a parallel-ready spine. Discriminator: can I fix this with the tools I already have? The skill text encodes this in s-augment-roadmap-auto-convergence-stance.\n\nVERSIONING · SpecIR schema_version 1 → 2 (hard-refuse v1 with MIGRATION.md pointer · no auto-translate). protocolVersion 0.3.0 → 0.4.0 (silent forward-migration of head.json that nukes dead fields). 1.0.0 reserved until the seven-field shape survives N rounds of survey data.",
   "init": "init",
-  "term": "p-post-launch-contribution",
-  "version": 1,
-  "protocolVersion": 1,
+  "term": "term",
   "nodes": {
     "init": {
       "id": "init",
-      "desc": "Round entry. Confirm session state: release branch checked out, no in-flight uncommitted work. The receipt names the operator and time and pins the starting head.",
-      "produces": [".roadmap/round-2/init.json"],
+      "desc": "Ratify the OSS release scope and lock the seven-field schema cut\n\nProduce a ratification receipt that downstream clusters consume. Pin the schema_version bump (1→2), the protocolVersion bump (0.3.0→0.4.0), the v1-spec policy (hard-refuse with MIGRATION.md pointer), the head.json policy (silent forward-migration that strips dead fields), and the speckit policy (stub-with-error). Without this receipt, downstream nodes have no anchor and may re-litigate the cut mid-execution.",
+      "produces": [
+        ".roadmap/round-1/init.json"
+      ],
       "consumes": [],
       "deps": [],
       "validate": [
-        { "type": "artifact-exists", "target": ".roadmap/round-2/init.json" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/init.json"
+        }
       ],
       "idempotent": true
     },
-    "s-author-leak-scanner": {
-      "id": "s-author-leak-scanner",
-      "desc": "Author scripts/leak-scan.js — a Node module that reads a gitignored sidecar of leak patterns and scans tracked files for unallowlisted hits. Exit 0 on clean; exit 1 with file:line :: pattern lines on dirty. Single source of leak-policy across all downstream validators.",
-      "produces": ["scripts/leak-scan.js", ".roadmap/round-2/s-author-leak-scanner.json"],
-      "consumes": [],
-      "deps": ["init"],
+    "e-strip-protocol-types": {
+      "id": "e-strip-protocol-types",
+      "desc": "Strip dead fields from src/lib/protocol/types.ts so NodeSpec is the canonical seven-field interface\n\nNodeSpec keeps id, desc, produces, consumes, validate, mode?, sidecar?. Every other field on the type goes. Downstream files import from here, so this is the load-bearing source. Receipt at .roadmap/round-1/e-strip-protocol-types.json records files_touched and hit_count_pre.",
+      "produces": [
+        "src/lib/protocol/types.ts",
+        ".roadmap/round-1/e-strip-protocol-types.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
       "validate": [
-        { "type": "artifact-exists", "target": "scripts/leak-scan.js" },
-        { "type": "shell", "command": "node scripts/leak-scan.js README.md" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-protocol-types.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\b(priority|ambient|provenance|idempotent)\\b' src/lib/protocol/types.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "s-strip-defensive-wrappers": {
-      "id": "s-strip-defensive-wrappers",
-      "desc": "Delete the defensive-wrapper layer that exists only because of single-maintainer multi-repo development (clone-role enforcement, fs read wrappers, hardcoded-path checks). Public contributors should see fs.readFileSync, not a 200-LOC wrapper around it. Sweep call sites; verify no residual references in src/ or tests/.",
-      "produces": [".roadmap/round-2/s-strip-defensive-wrappers.json"],
-      "consumes": [],
-      "deps": ["init"],
+    "e-strip-spec-ir": {
+      "id": "e-strip-spec-ir",
+      "desc": "Drop dead fields from SpecIRTask so the IR matches the canonical schema\n\nSpecIRTask shrinks to {id, desc, produces, consumes, validate, mode?, sidecar?}. The compileIR / irTasksToParsed pipeline updates accordingly. Receipt enumerates every dropped field.",
+      "produces": [
+        "src/lib/intake/spec-ir.ts",
+        ".roadmap/round-1/e-strip-spec-ir.json"
+      ],
+      "consumes": [
+        "src/lib/protocol/types.ts",
+        ".roadmap/round-1/e-strip-protocol-types.json"
+      ],
+      "deps": [
+        "e-strip-protocol-types"
+      ],
       "validate": [
-        { "type": "artifact-exists", "target": ".roadmap/round-2/s-strip-defensive-wrappers.json" },
-        { "type": "shell", "command": "pnpm run check" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-spec-ir.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\b(priority|depends|ambient|provenance|idempotent)\\b' src/lib/intake/spec-ir.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "s-strip-husky": {
-      "id": "s-strip-husky",
-      "desc": "Remove the husky commit-msg hook that walls off contributors with a maintainer-specific message format. Replace with a CI workflow that lints commit messages on PRs only. Drop the husky devDependency.",
-      "produces": [".roadmap/round-2/s-strip-husky.json"],
-      "consumes": [],
-      "deps": ["init"],
+    "e-strip-zod-schemas": {
+      "id": "e-strip-zod-schemas",
+      "desc": "Drop dead-field validators from src/lib/schemas.ts and bump SpecIR schema_version literal to 2\n\nThe zod specIRTask schema becomes strict-seven-field. schema_version literal moves from z.literal(1) to z.literal(2). v1 specs now produce a structured zod error that the make CLI surfaces with a MIGRATION.md pointer.",
+      "produces": [
+        "src/lib/schemas.ts",
+        ".roadmap/round-1/e-strip-zod-schemas.json"
+      ],
+      "consumes": [
+        "src/lib/intake/spec-ir.ts",
+        ".roadmap/round-1/e-strip-spec-ir.json"
+      ],
+      "deps": [
+        "e-strip-spec-ir"
+      ],
       "validate": [
-        { "type": "shell", "command": "test ! -d .husky" },
-        { "type": "shell", "command": "! grep -q '\"husky\"' package.json" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-zod-schemas.json"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'z.literal(2)' src/lib/schemas.ts"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\b(priority|depends|ambient|provenance|idempotent)\\b' src/lib/schemas.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "s-purge-private-files": {
-      "id": "s-purge-private-files",
-      "desc": "Delete maintainer-specific files that should never have been committed: skill templates tied to other-project doctrine, internal design notes, mirror-sync hooks with hardcoded paths. Validator: leak-scan over the working tree exits 0.",
-      "produces": [".roadmap/round-2/s-purge-private-files.json"],
-      "consumes": [],
-      "deps": ["init"],
+    "e-strip-runtime-meta": {
+      "id": "e-strip-runtime-meta",
+      "desc": "Drop ambient and idempotent from NodeMeta in src/runtime/meta.ts\n\nNodeMeta becomes a thin envelope: validate + mode. fullNode() and ManagedGraph stop carrying dead-field defaults.",
+      "produces": [
+        "src/runtime/meta.ts",
+        ".roadmap/round-1/e-strip-runtime-meta.json"
+      ],
+      "consumes": [
+        "src/lib/protocol/types.ts",
+        ".roadmap/round-1/e-strip-protocol-types.json"
+      ],
+      "deps": [
+        "e-strip-protocol-types"
+      ],
       "validate": [
-        { "type": "shell", "command": "node scripts/leak-scan.js $(git ls-files)" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-runtime-meta.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\b(ambient|idempotent)\\b' src/runtime/meta.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "c-license": {
-      "id": "c-license",
-      "desc": "Add LICENSE (MIT). Update package.json license field to match. The repo currently has no license file, which blocks downstream adoption.",
-      "produces": ["LICENSE", ".roadmap/round-2/c-license.json"],
-      "consumes": [],
-      "deps": ["init"],
+    "e-strip-brief-slice": {
+      "id": "e-strip-brief-slice",
+      "desc": "Stop reading ambient in brief generation\n\nbrief-slice.ts and brief.ts and runtime/brief.ts no longer surface an ambient[] field. Sidecar.ambient (when present) becomes the only ambient-style channel and travels via the brief's sidecar pass-through.",
+      "produces": [
+        "src/lib/brief-slice.ts",
+        "src/lib/brief.ts",
+        "src/runtime/brief.ts",
+        ".roadmap/round-1/e-strip-brief-slice.json"
+      ],
+      "consumes": [
+        "src/runtime/meta.ts",
+        ".roadmap/round-1/e-strip-runtime-meta.json"
+      ],
+      "deps": [
+        "e-strip-runtime-meta"
+      ],
       "validate": [
-        { "type": "artifact-exists", "target": "LICENSE" },
-        { "type": "shell", "command": "grep -q 'MIT' LICENSE" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-brief-slice.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\bambient\\b' src/lib/brief-slice.ts src/lib/brief.ts src/runtime/brief.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "c-package-metadata": {
-      "id": "c-package-metadata",
-      "desc": "Curate package.json for public discoverability: name, description, repository URL, keywords, author, license. The current install instruction in README points at someone else's package; this node fixes the source of truth.",
-      "produces": [".roadmap/round-2/c-package-metadata.json"],
-      "consumes": [],
-      "deps": ["init"],
+    "e-strip-expansion-proposals": {
+      "id": "e-strip-expansion-proposals",
+      "desc": "Stop emitting ambient and idempotent on plan-mode children\n\nThe expansion proposal generator stops authoring dead fields onto runtime-decomposed children. Plan-mode nodes produce children that match the canonical schema.",
+      "produces": [
+        "src/lib/intent/expansion/proposals.ts",
+        ".roadmap/round-1/e-strip-expansion-proposals.json"
+      ],
+      "consumes": [
+        "src/lib/protocol/types.ts",
+        ".roadmap/round-1/e-strip-protocol-types.json"
+      ],
+      "deps": [
+        "e-strip-protocol-types"
+      ],
       "validate": [
-        { "type": "shell", "command": "node -e 'const p=require(\"./package.json\"); if(!p.repository||!p.license||!p.description) process.exit(1)'" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-expansion-proposals.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\b(ambient|idempotent)\\b' src/lib/intent/expansion/proposals.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "c-scrub-readme": {
-      "id": "c-scrub-readme",
-      "desc": "Rewrite README.md for a public reader: what the tool is, install (correct package name), one quickstart example (roadmap make + orient + advance), pointer to the example DAG under .roadmap/heads/. Remove maintainer-internal references.",
-      "produces": ["README.md", ".roadmap/round-2/c-scrub-readme.json"],
-      "consumes": [],
-      "deps": ["c-package-metadata"],
+    "e-strip-dag-mutator": {
+      "id": "e-strip-dag-mutator",
+      "desc": "Drop dead fields from dag insert and modify command surfaces\n\nroadmap dag insert and roadmap dag modify stop accepting depends/idempotent on the --node payload. The CLI help reflects the seven-field shape.",
+      "produces": [
+        "src/lib/dag-mutator.ts",
+        "src/cli/dag.ts",
+        ".roadmap/round-1/e-strip-dag-mutator.json"
+      ],
+      "consumes": [
+        "src/lib/protocol/types.ts",
+        ".roadmap/round-1/e-strip-protocol-types.json"
+      ],
+      "deps": [
+        "e-strip-protocol-types"
+      ],
       "validate": [
-        { "type": "artifact-exists", "target": "README.md" },
-        { "type": "shell", "command": "node scripts/leak-scan.js README.md" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-dag-mutator.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\b(idempotent|priority)\\b' src/lib/dag-mutator.ts src/cli/dag.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "c-curate-roadmap-example": {
-      "id": "c-curate-roadmap-example",
-      "desc": "Replace live dogfooding state under .roadmap/ with one curated example DAG plus a README. Live runtime state (handoffs, trail, completed, round receipts) stays gitignored. The example is the artifact a public reader sees first; it must be small and leak-clean.",
-      "produces": [".roadmap/heads/example-public-release.json", ".roadmap/README.md", ".roadmap/round-2/c-curate-roadmap-example.json"],
-      "consumes": [],
-      "deps": ["s-purge-private-files"],
+    "e-strip-make-cli": {
+      "id": "e-strip-make-cli",
+      "desc": "Drop dead fields from spec normalization in roadmap make\n\nThe whitelist in make.ts loses priority and depends and deps. Normalization stops back-filling priority by index. The init-node auto-completion stops reading idempotent.",
+      "produces": [
+        "src/cli/make.ts",
+        ".roadmap/round-1/e-strip-make-cli.json"
+      ],
+      "consumes": [
+        "src/lib/intake/spec-ir.ts",
+        "src/lib/schemas.ts",
+        ".roadmap/round-1/e-strip-spec-ir.json",
+        ".roadmap/round-1/e-strip-zod-schemas.json"
+      ],
+      "deps": [
+        "e-strip-spec-ir",
+        "e-strip-zod-schemas"
+      ],
       "validate": [
-        { "type": "artifact-exists", "target": ".roadmap/heads/example-public-release.json" },
-        { "type": "artifact-exists", "target": ".roadmap/README.md" },
-        { "type": "shell", "command": "node scripts/leak-scan.js .roadmap/heads/example-public-release.json" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-strip-make-cli.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\b(priority|idempotent)\\b' src/cli/make.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "v-leak-sweep": {
-      "id": "v-leak-sweep",
-      "desc": "Run leak-scan over every tracked file in the working tree. Single gate before flipping the repo public.",
-      "produces": [".roadmap/round-2/v-leak-sweep.json"],
-      "consumes": ["scripts/leak-scan.js"],
-      "deps": ["s-purge-private-files", "c-scrub-readme", "c-curate-roadmap-example"],
+    "e-bump-protocol-version": {
+      "id": "e-bump-protocol-version",
+      "desc": "Bump protocolVersion to 0.4.0 and register the dead-field-strip migration for existing head.json\n\nCURRENT_PROTOCOL_VERSION moves to 0.4.0. A migrations['0.3.0->0.4.0'] entry walks every node, deletes priority/depends/ambient/provenance/idempotent in place, and stamps the new version. checkCompatibility surfaces this as needsMigration: true.",
+      "produces": [
+        "src/lib/versioning.schema.ts",
+        ".roadmap/round-1/e-bump-protocol-version.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/e-strip-protocol-types.json",
+        ".roadmap/round-1/e-strip-spec-ir.json",
+        ".roadmap/round-1/e-strip-zod-schemas.json",
+        ".roadmap/round-1/e-strip-runtime-meta.json",
+        ".roadmap/round-1/e-strip-brief-slice.json",
+        ".roadmap/round-1/e-strip-expansion-proposals.json",
+        ".roadmap/round-1/e-strip-dag-mutator.json",
+        ".roadmap/round-1/e-strip-make-cli.json"
+      ],
+      "deps": [
+        "e-strip-protocol-types",
+        "e-strip-spec-ir",
+        "e-strip-zod-schemas",
+        "e-strip-runtime-meta",
+        "e-strip-brief-slice",
+        "e-strip-expansion-proposals",
+        "e-strip-dag-mutator",
+        "e-strip-make-cli"
+      ],
       "validate": [
-        { "type": "shell", "command": "node scripts/leak-scan.js $(git ls-files)" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-bump-protocol-version.json"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"CURRENT_PROTOCOL_VERSION: ProtocolVersion = '0.4.0'\" src/lib/versioning.schema.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"'0.3.0->0.4.0'\" src/lib/versioning.schema.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "v-fresh-install": {
-      "id": "v-fresh-install",
-      "desc": "Simulate a fresh contributor: clone into a tmpdir, pnpm install, pnpm test, run the documented quickstart from README. Catches missing files, wrong package names, and skill-template residue.",
-      "produces": [".roadmap/round-2/v-fresh-install.json"],
-      "consumes": ["README.md", "package.json"],
-      "deps": ["c-scrub-readme", "c-license", "s-strip-husky"],
+    "e-add-receipt-validator-type": {
+      "id": "e-add-receipt-validator-type",
+      "desc": "Add receipt as a first-class validator type so receipt shape is engine-enforced\n\nThe ValidationRule discriminated union grows a new variant: { type: 'receipt', target: <path>, schema: <jsonschema-inline-or-path-ref> }. Zod and TypeScript types update. The runtime handler comes in e-implement-receipt-validation; the brief integration comes in e-brief-pulls-receipt-schema. This is the schema scaffold that closes the brief-receipt-validator drift permanently — instead of brief authors copying receipt shapes by hand and validators probing fields independently, the validator IS the source of truth and the brief is generated from it.",
+      "produces": [
+        "src/lib/protocol/types.ts",
+        "src/lib/schemas.ts",
+        ".roadmap/round-1/e-add-receipt-validator-type.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/e-strip-protocol-types.json",
+        ".roadmap/round-1/e-strip-zod-schemas.json"
+      ],
+      "deps": [
+        "e-strip-protocol-types",
+        "e-strip-zod-schemas"
+      ],
       "validate": [
-        { "type": "shell", "command": "pnpm install --frozen-lockfile && pnpm test" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-add-receipt-validator-type.json"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"'receipt'\" src/lib/schemas.ts"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
       ],
       "idempotent": true
     },
-    "term-flip-public-and-tag": {
-      "id": "term-flip-public-and-tag",
-      "desc": "Terminal: flip repo visibility to public via gh CLI and tag v0.2.0. Both v-leak-sweep and v-fresh-install must be GREEN before this node runs.",
-      "produces": [".roadmap/round-2/term-flip-public-and-tag.json"],
-      "consumes": [],
-      "deps": ["v-leak-sweep", "v-fresh-install"],
-      "validate": [
-        { "type": "artifact-exists", "target": ".roadmap/round-2/term-flip-public-and-tag.json" }
+    "e-implement-receipt-validation": {
+      "id": "e-implement-receipt-validation",
+      "desc": "Implement runtime validation for the receipt validator type\n\nWhen advance encounters a receipt validator, the engine reads the JSON file at target, validates against the inline or referenced JSON schema, and surfaces structured errors on mismatch. Failure messages name the field path and the expected vs actual shape. This is the engine-side half of the brief-receipt-validator triangle fix: the validator becomes load-bearing on receipt shape, not just receipt presence.",
+      "produces": [
+        "src/lib/protocol/validation.ts",
+        ".roadmap/round-1/e-implement-receipt-validation.json"
       ],
-      "idempotent": false
-    },
-    "p-post-launch-contribution": {
-      "id": "p-post-launch-contribution",
-      "desc": "Plan-mode terminal: full contribution surface (CONTRIBUTING.md, issue triage labels, PR review process, Discussions). Concrete shape depends on launch feedback that does not yet exist; this node decomposes into children once that signal arrives.",
-      "produces": [],
-      "consumes": [],
-      "deps": ["term-flip-public-and-tag"],
-      "mode": "plan",
+      "consumes": [
+        "src/lib/protocol/types.ts",
+        "src/lib/schemas.ts",
+        ".roadmap/round-1/e-add-receipt-validator-type.json"
+      ],
+      "deps": [
+        "e-add-receipt-validator-type"
+      ],
       "validate": [
-        { "type": "expanded" }
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-implement-receipt-validation.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "e-brief-pulls-receipt-schema": {
+      "id": "e-brief-pulls-receipt-schema",
+      "desc": "Brief generator pulls receipt schemas verbatim into worker briefs under RECEIPT SHAPE\n\nWhen building a brief for a node, the generator scans validate[] for receipt-type validators and inlines each schema under a clearly-marked RECEIPT SHAPE block. Workers and validators read the same JSON. Authoring drift becomes structurally impossible because there is nothing for the brief author to drift from. This is the worker-side half of the triangle fix.",
+      "produces": [
+        "src/lib/brief.ts",
+        "src/lib/brief-slice.ts",
+        "src/runtime/brief.ts",
+        ".roadmap/round-1/e-brief-pulls-receipt-schema.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/e-implement-receipt-validation.json",
+        ".roadmap/round-1/e-strip-brief-slice.json"
+      ],
+      "deps": [
+        "e-implement-receipt-validation",
+        "e-strip-brief-slice"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/e-brief-pulls-receipt-schema.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "r-rewrite-dependency-resolver": {
+      "id": "r-rewrite-dependency-resolver",
+      "desc": "Rewrite dag-dependency-resolver to derive ordering exclusively from consumes ↔ produces\n\nThe resolver stops reading depends. It builds the predecessor graph by matching every consumes path against every node's produces. If a consumes path doesn't trace to a producer, the resolver throws a structured error. This is the heart of the cut.",
+      "produces": [
+        "src/lib/roadmap/dag-dependency-resolver.ts",
+        ".roadmap/round-1/r-rewrite-dependency-resolver.json"
+      ],
+      "consumes": [
+        "src/lib/protocol/types.ts",
+        ".roadmap/round-1/e-strip-protocol-types.json"
+      ],
+      "deps": [
+        "e-strip-protocol-types"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/r-rewrite-dependency-resolver.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\\bdepends\\b' src/lib/roadmap/dag-dependency-resolver.ts) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "r-frontier-from-data-flow": {
+      "id": "r-frontier-from-data-flow",
+      "desc": "Switch parallelOrder and frontier detection to read consumes/produces topology only\n\nsrc/core/order.ts and any caller of the resolver stops passing depends. Tests for parallelOrder build their fixtures from consumes wiring. Frontier nodes are exactly those whose every consumes-path resolves to a completed produce.",
+      "produces": [
+        "src/core/order.ts",
+        ".roadmap/round-1/r-frontier-from-data-flow.json"
+      ],
+      "consumes": [
+        "src/lib/roadmap/dag-dependency-resolver.ts",
+        ".roadmap/round-1/r-rewrite-dependency-resolver.json"
+      ],
+      "deps": [
+        "r-rewrite-dependency-resolver"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/r-frontier-from-data-flow.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run tests/core"
+        }
+      ],
+      "idempotent": true
+    },
+    "d-author-migration-md": {
+      "id": "d-author-migration-md",
+      "desc": "Author docs/MIGRATION.md walking adopters from v1 specs to v2\n\nOne page. Two worked examples: depends → consumes-via-ratification (init produces .roadmap/init.json, children consume it); priority → delete (priority is vestigial, the ordering you wanted is in consumes). The error message from v-reject-depends-field points at this doc.",
+      "produces": [
+        "docs/MIGRATION.md",
+        ".roadmap/round-1/d-author-migration-md.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "docs/MIGRATION.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/d-author-migration-md.json"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'ratification' docs/MIGRATION.md && grep -q 'depends' docs/MIGRATION.md && grep -q 'priority' docs/MIGRATION.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "v-reject-depends-field": {
+      "id": "v-reject-depends-field",
+      "desc": "roadmap make rejects any spec that contains a depends field with a clear MIGRATION.md pointer\n\nThe error includes the offending node id, names depends as removed-in-v2, and links docs/MIGRATION.md. This is the structural enforcement of the new authoring rule. Adopters cannot silently carry old specs forward.",
+      "produces": [
+        "src/cli/make.ts",
+        "src/lib/validate-dag.ts",
+        ".roadmap/round-1/v-reject-depends-field.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/e-strip-make-cli.json",
+        ".roadmap/round-1/d-author-migration-md.json"
+      ],
+      "deps": [
+        "e-strip-make-cli",
+        "d-author-migration-md"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/v-reject-depends-field.json"
+        },
+        {
+          "type": "shell",
+          "command": "echo '{\"schema_version\":2,\"engine\":{\"name\":\"test\",\"version\":null,\"config_hash\":null},\"dag_id\":\"test\",\"metadata\":{\"generated\":\"x\",\"compile_hash\":\"x\"},\"inputs\":[],\"tasks\":[{\"id\":\"a\",\"desc\":\"x\",\"produces\":[],\"consumes\":[],\"depends\":[],\"validate\":[]}]}' > /tmp/test-rej.json && ! pnpm dlx tsx src/cli.ts make /tmp/test-rej.json --note test --dry-run 2>&1 | grep -qi MIGRATION"
+        }
+      ],
+      "idempotent": true
+    },
+    "v-reject-empty-consumes-non-init": {
+      "id": "v-reject-empty-consumes-non-init",
+      "desc": "Compile rejects non-init nodes with empty consumes — the gate-without-data-flow check\n\nIf a node has no incoming consumes path and is not the graph init, the compiler errors. Authors get a clear pointer: 'every gate is consumes-of-an-upstream-produces; create a ratification receipt or wire a real artifact.'",
+      "produces": [
+        "src/lib/validate-dag.ts",
+        ".roadmap/round-1/v-reject-empty-consumes-non-init.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/r-frontier-from-data-flow.json"
+      ],
+      "deps": [
+        "r-frontier-from-data-flow"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/v-reject-empty-consumes-non-init.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "v-validate-consumes-reach-init": {
+      "id": "v-validate-consumes-reach-init",
+      "desc": "Compile rejects any consumes path not reachable from init via produces chains\n\nReachability check: every consumes path on every node must trace through some produce chain back to init. Catches typos, dangling references, accidentally-orphaned nodes.",
+      "produces": [
+        "src/lib/validate-dag.ts",
+        ".roadmap/round-1/v-validate-consumes-reach-init.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/v-reject-empty-consumes-non-init.json"
+      ],
+      "deps": [
+        "v-reject-empty-consumes-non-init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/v-validate-consumes-reach-init.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "k-stub-speckit-import": {
+      "id": "k-stub-speckit-import",
+      "desc": "Replace src/lib/intake/speckit-import.ts with a stub that errors on use, pointing at MIGRATION.md\n\nspec-kit support is dropped for the OSS release. Dangling wires in the codebase are intentional learning material — the stub explains why and points at the migration doc. Anyone authoring SpecIR directly is unaffected.",
+      "produces": [
+        "src/lib/intake/speckit-import.ts",
+        ".roadmap/round-1/k-stub-speckit-import.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/d-author-migration-md.json"
+      ],
+      "deps": [
+        "d-author-migration-md"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/k-stub-speckit-import.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(wc -l < src/lib/intake/speckit-import.ts) -lt 60"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q MIGRATION src/lib/intake/speckit-import.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "k-clean-intake-routing": {
+      "id": "k-clean-intake-routing",
+      "desc": "Remove the speckit branch from intake routing in src/lib/intake/intake.ts\n\nintake.ts no longer dispatches to speckit-import on engine: spec-kit. Specs declaring engine: spec-kit produce a clear unsupported-engine error.",
+      "produces": [
+        "src/lib/intake/intake.ts",
+        ".roadmap/round-1/k-clean-intake-routing.json"
+      ],
+      "consumes": [
+        "src/lib/intake/speckit-import.ts",
+        ".roadmap/round-1/k-stub-speckit-import.json"
+      ],
+      "deps": [
+        "k-stub-speckit-import"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/k-clean-intake-routing.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm tsc --noEmit"
+        }
+      ],
+      "idempotent": true
+    },
+    "s-scrub-roadmap-spec": {
+      "id": "s-scrub-roadmap-spec",
+      "desc": "Replace fleet-specific examples in roadmap-spec with generic equivalents\n\nQMetaObject / Qt headers / FnPgRov disappear from the title section. Replacement examples use generic engineering vocabulary: 'Compile the API schema from the OpenAPI definition,' 'Verify the dashboard page renders against the design spec,' etc. Skill stays content-equivalent.",
+      "produces": [
+        "skills/roadmap-spec/SKILL.md",
+        ".roadmap/round-1/s-scrub-roadmap-spec.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "skills/roadmap-spec/SKILL.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/s-scrub-roadmap-spec.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE 'QMetaObject|FnPgRov|Qt headers' skills/roadmap-spec/SKILL.md) -eq 0"
+        }
+      ],
+      "idempotent": true
+    },
+    "s-scrub-roadmap-orient": {
+      "id": "s-scrub-roadmap-orient",
+      "desc": "Replace fleet-specific worked examples in roadmap-orient with generic ones\n\nemit-camera / sonar / keel-relay / stratum / cycle-8 disappear. The fleet/lane idiom (multiple repos, fleet.json) stays — that's a real roadmap concept. Concrete node names become generic (build-api, deploy-frontend).",
+      "produces": [
+        "skills/roadmap-orient/SKILL.md",
+        ".roadmap/round-1/s-scrub-roadmap-orient.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "skills/roadmap-orient/SKILL.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/s-scrub-roadmap-orient.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE 'emit-camera|sonar|keel-relay|stratum|cycle-8' skills/roadmap-orient/SKILL.md) -eq 0"
+        }
+      ],
+      "idempotent": true
+    },
+    "s-scrub-roadmap-auto": {
+      "id": "s-scrub-roadmap-auto",
+      "desc": "Strip the §-anchor reference and the synchronous Griffin / stratum push example from roadmap-auto\n\nThe '/fleet-doctrine §Sidecar-as-ambient-context' depth pointer points at a skill that doesn't ship — remove. The 'synchronous Griffin · stratum push' commit example becomes a generic 'human review · CI publish' example.",
+      "produces": [
+        "skills/roadmap-auto/SKILL.md",
+        ".roadmap/round-1/s-scrub-roadmap-auto.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "skills/roadmap-auto/SKILL.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/s-scrub-roadmap-auto.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '/fleet-doctrine|stratum|synchronous Griffin' skills/roadmap-auto/SKILL.md) -eq 0"
+        }
+      ],
+      "idempotent": true
+    },
+    "s-scrub-roadmap-term": {
+      "id": "s-scrub-roadmap-term",
+      "desc": "Audit roadmap-term for any fleet contamination and clean if found\n\nProbe shows zero hits today, but the audit itself is the artifact: a receipt that explicitly records 'no fleet-specific references found' or lists what was changed.",
+      "produces": [
+        "skills/roadmap-term/SKILL.md",
+        ".roadmap/round-1/s-scrub-roadmap-term.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "skills/roadmap-term/SKILL.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/s-scrub-roadmap-term.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "s-augment-roadmap-auto-convergence-stance": {
+      "id": "s-augment-roadmap-auto-convergence-stance",
+      "desc": "Add the endogenous-vs-exogenous convergence-stance section to roadmap-auto\n\nThe default agent stance is heads-down iteration; surfacing is the exception, reserved for genuinely exogenous blocks. Endogenous failures (test fails, validator rejects, schema mismatch, hypothesis falsified, code doesn't compile) → keep head down · iterate · /core-loop on RED. Exogenous blocks (credentials I cannot provision · hardware I cannot reach · service genuinely down · human decision genuinely required · disk full on a remote I do not control) → surface, name the operator action verbatim, leave a BLOCKED receipt as a resume handle, walk to a parallel-ready spine. The discriminator: can I fix this with the tools I already have? Yes → iterate. No → surface. Anti-pattern called out explicitly: throwing hands up before iterating; 'I tried once and it failed' is not a blocker.",
+      "produces": [
+        "skills/roadmap-auto/SKILL.md",
+        ".roadmap/round-1/s-augment-roadmap-auto-convergence-stance.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/s-scrub-roadmap-auto.json"
+      ],
+      "deps": [
+        "s-scrub-roadmap-auto"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/s-augment-roadmap-auto-convergence-stance.json"
+        },
+        {
+          "type": "shell",
+          "command": "grep -qi 'endogenous' skills/roadmap-auto/SKILL.md"
+        },
+        {
+          "type": "shell",
+          "command": "grep -qi 'exogenous' skills/roadmap-auto/SKILL.md"
+        },
+        {
+          "type": "shell",
+          "command": "grep -qi 'convergence' skills/roadmap-auto/SKILL.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "s-organize-skills-directory": {
+      "id": "s-organize-skills-directory",
+      "desc": "Create skills/ at the repo root and check in the cleaned skill files alongside the engine\n\nskills/{roadmap-spec,roadmap-orient,roadmap-auto,roadmap-term}/SKILL.md present in tree. SETUP.md will reference them. Adopters install by copying skills/ → ~/.claude/skills/ (or the equivalent for their agent stack).",
+      "produces": [
+        "skills/README.md",
+        ".roadmap/round-1/s-organize-skills-directory.json"
+      ],
+      "consumes": [
+        "skills/roadmap-spec/SKILL.md",
+        "skills/roadmap-orient/SKILL.md",
+        "skills/roadmap-auto/SKILL.md",
+        "skills/roadmap-term/SKILL.md",
+        ".roadmap/round-1/s-scrub-roadmap-spec.json",
+        ".roadmap/round-1/s-scrub-roadmap-orient.json",
+        ".roadmap/round-1/s-augment-roadmap-auto-convergence-stance.json",
+        ".roadmap/round-1/s-scrub-roadmap-term.json"
+      ],
+      "deps": [
+        "s-scrub-roadmap-spec",
+        "s-scrub-roadmap-orient",
+        "s-augment-roadmap-auto-convergence-stance",
+        "s-scrub-roadmap-term"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "skills/README.md"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/s-organize-skills-directory.json"
+        },
+        {
+          "type": "shell",
+          "command": "test -f skills/roadmap-spec/SKILL.md && test -f skills/roadmap-orient/SKILL.md && test -f skills/roadmap-auto/SKILL.md && test -f skills/roadmap-term/SKILL.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "d-rewrite-hello-example": {
+      "id": "d-rewrite-hello-example",
+      "desc": "Rewrite examples/hello.spec.json in the seven-field shape with a ratification-receipt example\n\nThe canonical first-spec demonstrates init→build→term where init produces .roadmap/init.json (the ratification receipt) and build consumes it. No deps. Plain-English titles in every desc. This is the example adopters copy on day one.",
+      "produces": [
+        "examples/hello.spec.json",
+        ".roadmap/round-1/d-rewrite-hello-example.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "examples/hello.spec.json"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/d-rewrite-hello-example.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\"deps\"|\"depends\"|\"priority\"|\"idempotent\"' examples/hello.spec.json) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q '\"schema_version\": 2' examples/hello.spec.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "d-rewrite-parallel-example": {
+      "id": "d-rewrite-parallel-example",
+      "desc": "Rewrite examples/parallel-build.spec.json so fan-out is expressed via consumes ↔ produces only\n\nbuild-a and build-b consume the init ratification receipt. integrate consumes the produces of build-a and build-b — no deps anywhere. Demonstrates parallel batches the v2 way.",
+      "produces": [
+        "examples/parallel-build.spec.json",
+        ".roadmap/round-1/d-rewrite-parallel-example.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": "examples/parallel-build.spec.json"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/d-rewrite-parallel-example.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\"deps\"|\"depends\"|\"priority\"|\"idempotent\"' examples/parallel-build.spec.json) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q '\"schema_version\": 2' examples/parallel-build.spec.json"
+        }
+      ],
+      "idempotent": true
+    },
+    "d-update-readme": {
+      "id": "d-update-readme",
+      "desc": "Update README.md to match the v2 schema and remove deps and idempotent from code samples\n\nThe headline JSON example uses the new shape. The TypeScript code sample at line 105 stops using idempotent. The schema explanation table reflects seven fields. README is what adopters read first; it must be self-consistent end-to-end.",
+      "produces": [
+        "README.md",
+        ".roadmap/round-1/d-update-readme.json"
+      ],
+      "consumes": [
+        "examples/hello.spec.json",
+        "examples/parallel-build.spec.json",
+        ".roadmap/round-1/d-rewrite-hello-example.json",
+        ".roadmap/round-1/d-rewrite-parallel-example.json"
+      ],
+      "deps": [
+        "d-rewrite-hello-example",
+        "d-rewrite-parallel-example"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/d-update-readme.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\"deps\"|\"idempotent\":' README.md) -eq 0"
+        }
+      ],
+      "idempotent": true
+    },
+    "d-update-setup-md": {
+      "id": "d-update-setup-md",
+      "desc": "Update docs/SETUP.md with a skills-install step pointing at the in-repo skills/ directory\n\nThe Claude Code TL;DR adds a step: 'copy skills/* into ~/.claude/skills/ to enable the roadmap-spec, roadmap-orient, roadmap-auto, and roadmap-term skills.' Other-agent-stack TL;DR gets the equivalent.",
+      "produces": [
+        "docs/SETUP.md",
+        ".roadmap/round-1/d-update-setup-md.json"
+      ],
+      "consumes": [
+        "skills/README.md",
+        ".roadmap/round-1/s-organize-skills-directory.json"
+      ],
+      "deps": [
+        "s-organize-skills-directory"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/d-update-setup-md.json"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q 'skills/' docs/SETUP.md"
+        }
+      ],
+      "idempotent": true
+    },
+    "t-rewrite-spec-migrate-tests": {
+      "id": "t-rewrite-spec-migrate-tests",
+      "desc": "Replace tests/node-runner/spec-migrate.test.ts with coverage for the 0.3.0 → 0.4.0 dead-field-strip migration\n\nOld migrations (0.1.0→0.2.0, 0.2.0→0.3.0) are gone; their tests go too. New test asserts that head.json with priority/depends/ambient/provenance/idempotent fields gets cleanly stripped after migrateDAG to 0.4.0.",
+      "produces": [
+        "tests/node-runner/spec-migrate.test.ts",
+        ".roadmap/round-1/t-rewrite-spec-migrate-tests.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/e-bump-protocol-version.json"
+      ],
+      "deps": [
+        "e-bump-protocol-version"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/t-rewrite-spec-migrate-tests.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run tests/node-runner/spec-migrate.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "t-sweep-test-fixtures": {
+      "id": "t-sweep-test-fixtures",
+      "desc": "Update test SpecIR fixtures throughout tests/ to drop dead fields and use the seven-field shape\n\nPlan-mode: the actual file list emerges at runtime from grep. Each affected fixture gets its priority/depends/ambient/provenance/idempotent fields removed and its consumes wiring reviewed. ~10 test files touched per the probe.",
+      "produces": [
+        ".roadmap/round-1/t-sweep-test-fixtures.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/r-frontier-from-data-flow.json",
+        ".roadmap/round-1/e-bump-protocol-version.json"
+      ],
+      "deps": [
+        "r-frontier-from-data-flow",
+        "e-bump-protocol-version"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/t-sweep-test-fixtures.json"
+        }
+      ],
+      "idempotent": true,
+      "mode": "plan"
+    },
+    "t-add-enforcement-tests": {
+      "id": "t-add-enforcement-tests",
+      "desc": "Add tests covering depends rejection, empty-consumes rejection, consumes-reach-init validation, and receipt-validator runtime\n\ntests/cli-intake-enforcement.test.ts gains scenarios: spec-with-depends rejected with MIGRATION.md pointer · non-init-with-empty-consumes rejected · dangling-consumes-path rejected · receipt-validator success on matching shape · receipt-validator failure on shape drift with field-path-named error. Each test asserts the error message shape, not just the failure.",
+      "produces": [
+        "tests/cli-intake-enforcement.test.ts",
+        ".roadmap/round-1/t-add-enforcement-tests.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/v-reject-depends-field.json",
+        ".roadmap/round-1/v-validate-consumes-reach-init.json",
+        ".roadmap/round-1/e-brief-pulls-receipt-schema.json"
+      ],
+      "deps": [
+        "v-reject-depends-field",
+        "v-validate-consumes-reach-init",
+        "e-brief-pulls-receipt-schema"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/t-add-enforcement-tests.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm vitest run tests/cli-intake-enforcement.test.ts"
+        }
+      ],
+      "idempotent": true
+    },
+    "t-pass-suite": {
+      "id": "t-pass-suite",
+      "desc": "Run pnpm test and confirm green across all 66 test files\n\nThe whole suite passes after the cut, the migrations, and the fixture sweep. Receipt records pass count and runtime.",
+      "produces": [
+        ".roadmap/round-1/t-pass-suite.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/t-rewrite-spec-migrate-tests.json",
+        ".roadmap/round-1/t-sweep-test-fixtures.json",
+        ".roadmap/round-1/t-add-enforcement-tests.json",
+        ".roadmap/round-1/k-clean-intake-routing.json"
+      ],
+      "deps": [
+        "t-rewrite-spec-migrate-tests",
+        "t-sweep-test-fixtures",
+        "t-add-enforcement-tests",
+        "k-clean-intake-routing"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/t-pass-suite.json"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm test"
+        }
+      ],
+      "idempotent": true
+    },
+    "z-verify-public-surface": {
+      "id": "z-verify-public-surface",
+      "desc": "Verify the public artifacts the adopter actually touches\n\nInstallation is prose, not script — SETUP.md is LLM-runnable prose by design and divergent envs make scripted installs brittle. What we CAN verify is that every artifact the prose points at compiles and renders correctly: examples/hello.spec.json and examples/parallel-build.spec.json compile under v2; skills/{spec,orient,auto,term}/SKILL.md exist and are non-trivial; docs/MIGRATION.md contains the expected sections; README.md has no v1 residue. Receipt records the per-artifact verdict.",
+      "produces": [
+        ".roadmap/round-1/z-verify-public-surface.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/d-update-readme.json",
+        ".roadmap/round-1/d-update-setup-md.json",
+        ".roadmap/round-1/s-organize-skills-directory.json",
+        ".roadmap/round-1/d-rewrite-hello-example.json",
+        ".roadmap/round-1/d-rewrite-parallel-example.json",
+        ".roadmap/round-1/d-author-migration-md.json"
+      ],
+      "deps": [
+        "d-update-readme",
+        "d-update-setup-md",
+        "s-organize-skills-directory",
+        "d-rewrite-hello-example",
+        "d-rewrite-parallel-example",
+        "d-author-migration-md"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/z-verify-public-surface.json"
+        },
+        {
+          "type": "shell",
+          "command": "roadmap make examples/hello.spec.json --dry-run --skip-input-verification --note verify"
+        },
+        {
+          "type": "shell",
+          "command": "roadmap make examples/parallel-build.spec.json --dry-run --skip-input-verification --note verify"
+        },
+        {
+          "type": "shell",
+          "command": "test $(wc -l < skills/roadmap-spec/SKILL.md) -gt 100 && test $(wc -l < skills/roadmap-orient/SKILL.md) -gt 50 && test $(wc -l < skills/roadmap-auto/SKILL.md) -gt 50 && test $(wc -l < skills/roadmap-term/SKILL.md) -gt 50"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q ratification docs/MIGRATION.md && grep -q depends docs/MIGRATION.md && grep -q priority docs/MIGRATION.md"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -cE '\"deps\"|\"idempotent\":' README.md) -eq 0"
+        }
+      ],
+      "idempotent": true
+    },
+    "z-spec-survey-author-row": {
+      "id": "z-spec-survey-author-row",
+      "desc": "Append the author-seat survey row for THIS spec to .roadmap/spec-survey.jsonl\n\nThe survey instrument from the roadmap-spec skill applies to its own bootstrap. Author seat — five questions — answered before this spec compiles. Demonstrates the survey is real, lives in-repo, and travels with the OSS release as the falsification harness.",
+      "produces": [
+        ".roadmap/spec-survey.jsonl",
+        ".roadmap/round-1/z-spec-survey-author-row.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/init.json"
+      ],
+      "deps": [
+        "init"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/spec-survey.jsonl"
+        },
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/z-spec-survey-author-row.json"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q '\"seat\":\"author\"' .roadmap/spec-survey.jsonl && grep -q '\"dag_id\":\"oss-launch-today\"' .roadmap/spec-survey.jsonl"
+        }
+      ],
+      "idempotent": true
+    },
+    "term": {
+      "id": "term",
+      "desc": "Ratify the OSS release: every must-have ships, every example compiles, every test green, MIGRATION.md present, protocolVersion 0.4.0, receipt validator type live, convergence stance landed in roadmap-auto\n\nTerminal validators run end-to-end against the public surface. If any of them fail, the release is not ready. If they all pass, roadmap is open-source as of today.",
+      "produces": [
+        ".roadmap/round-1/term.json",
+        "docs/oss-launch-today-successor.spec.json"
+      ],
+      "consumes": [
+        ".roadmap/round-1/t-pass-suite.json",
+        ".roadmap/round-1/z-verify-public-surface.json",
+        ".roadmap/round-1/z-spec-survey-author-row.json"
+      ],
+      "deps": [
+        "t-pass-suite",
+        "z-verify-public-surface",
+        "z-spec-survey-author-row"
+      ],
+      "validate": [
+        {
+          "type": "artifact-exists",
+          "target": ".roadmap/round-1/term.json"
+        },
+        {
+          "type": "shell",
+          "command": "test $(grep -rE '\\b(priority|depends|ambient|provenance|idempotent)\\b' src/ -g '!*.test.ts' | wc -l) -eq 0"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"CURRENT_PROTOCOL_VERSION: ProtocolVersion = '0.4.0'\" src/lib/versioning.schema.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -q \"'receipt'\" src/lib/schemas.ts"
+        },
+        {
+          "type": "shell",
+          "command": "grep -qi 'endogenous' skills/roadmap-auto/SKILL.md && grep -qi 'exogenous' skills/roadmap-auto/SKILL.md"
+        },
+        {
+          "type": "shell",
+          "command": "test -f docs/MIGRATION.md && test -f skills/roadmap-spec/SKILL.md && test -f skills/roadmap-orient/SKILL.md && test -f skills/roadmap-auto/SKILL.md && test -f skills/roadmap-term/SKILL.md"
+        },
+        {
+          "type": "shell",
+          "command": "pnpm test"
+        },
+        {
+          "type": "shell",
+          "command": "node -e \"const d=JSON.parse(require('fs').readFileSync('docs/oss-launch-today-successor.spec.json','utf-8')); if(!d.dag_id && !d.converged) process.exit(1)\""
+        }
       ],
       "idempotent": true
     }
   },
+  "version": "0.3.0",
+  "protocolVersion": "0.3.0",
   "_origin": {
     "schemaVersion": 1,
-    "engine": "spec-kit",
+    "engine": "claude-roadmap-spec",
     "version": "1.0.0",
-    "compile_hash": "example-curated-public-release-prep",
-    "spec_sha": "example-curated-public-release-prep",
-    "importedAt": "2026-04-30T00:00:00.000Z",
-    "dagId": "roadmap-r2-public-release-prep"
+    "compile_hash": "oss-launch-today-r1",
+    "spec_sha": "08d60ff5bb580bb89e4e287ceb0a1820bcc57c9f417fe7531547464075b8bf30",
+    "importedAt": "2026-05-04T13:38:14.714Z",
+    "dagId": "oss-launch-today"
   }
 }
