@@ -1,11 +1,17 @@
 // @module intake
-// @exports IntakeCandidate, IntakeScanResult, IntakeImportResult, IntakeCertifyResult, scanIntake, importIntake, certifyIntake, IntakeCommit, DetectedCluster, ProposedNodeSpec, IntakeRecord, IntakeReceipt, INTAKE_DIR, INTAKE_RECEIPT_PREFIX, isIntakeRecord, isIntakeReceipt
+// @exports IntakeCandidate, IntakeScanResult, IntakeImportResult, IntakeCertifyResult, scanIntake, importIntake, certifyIntake, IntakeCommit, DetectedCluster, ProposedNodeSpec, IntakeRecord, IntakeReceipt, INTAKE_DIR, INTAKE_RECEIPT_PREFIX, isIntakeRecord, isIntakeReceipt, assertNotSpecKitMarkdown
 // @types IntakeCandidate, IntakeScanResult, IntakeImportResult, IntakeCertifyResult, IntakeCommit, DetectedCluster, ProposedNodeSpec, IntakeRecord, IntakeReceipt
 // @entry roadmap
 
 // Intake compiler: scan git diffs against last attested commit,
 // group changed paths into candidate NodeSpecs, import with intakeFrom
 // provenance, certify via CompletionStore.
+//
+// NOTE: spec-kit markdown intake (tasks.md → DAG) is no longer supported.
+// The canonical spec path is SpecIR JSON (schema_version: 2) — see
+// src/lib/intake/spec-ir.ts. Callers loading specs should run
+// assertNotSpecKitMarkdown() to fail fast with a migration pointer when
+// presented with a legacy markdown payload. See docs/MIGRATION.md.
 
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -249,6 +255,30 @@ export function certifyIntake(
 
 function getFirstCommit(repoRoot: string): string {
   return execSync('git rev-list --max-parents=0 HEAD', { cwd: repoRoot, encoding: 'utf-8' }).trim().split('\n')[0];
+}
+
+/**
+ * Guard: refuse legacy spec-kit markdown specs. The canonical spec format is
+ * SpecIR JSON. Specs that declare engine "spec-kit" alongside a markdown
+ * tasks input are rejected with a migration pointer.
+ */
+export function assertNotSpecKitMarkdown(spec: unknown): void {
+  if (!isObject(spec)) return;
+  const engine = (spec as { engine?: unknown }).engine;
+  const engineName = isObject(engine) ? (engine as { name?: unknown }).name : engine;
+  const inputs = (spec as { inputs?: unknown }).inputs;
+  const tasksInput = isObject(inputs) ? (inputs as { tasks?: unknown }).tasks : undefined;
+
+  const isSpecKit = engineName === 'spec-kit';
+  const isMarkdown = typeof tasksInput === 'string' && tasksInput.endsWith('.md');
+  const hasIRTasks = Array.isArray((spec as { tasks?: unknown }).tasks);
+
+  if (isSpecKit && isMarkdown && !hasIRTasks) {
+    throw new Error(
+      'spec-kit markdown format is no longer supported. ' +
+      'Migrate to SpecIR JSON (schema_version: 2). See docs/MIGRATION.md.',
+    );
+  }
 }
 
 // --- rkg7 intake schema types ---
