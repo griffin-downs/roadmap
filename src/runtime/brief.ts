@@ -268,7 +268,14 @@ function countRemaining(dag: Graph<string>, position: string): number {
   return visited.size - 1; // Don't count current node
 }
 
-function renderPattern(spec: { id: string; desc: string; produces: readonly string[]; consumes: readonly (string | { artifact: string })[]; mode?: 'execute' | 'plan' }, dagDesc: string, position: string, termContext?: Context): string {
+function renderReceiptShapes(spec: { validate?: readonly any[] }): string {
+  const rules = (spec.validate ?? []).filter((r: any) => r && r.type === 'receipt');
+  if (rules.length === 0) return '';
+  const blocks = rules.map((r: any) => `RECEIPT SHAPE\n  target: ${r.target}\n${JSON.stringify(r.schema, null, 2).split('\n').map(l => '  ' + l).join('\n')}`);
+  return '\n' + blocks.join('\n');
+}
+
+function renderPattern(spec: { id: string; desc: string; produces: readonly string[]; consumes: readonly (string | { artifact: string })[]; mode?: 'execute' | 'plan'; validate?: readonly any[] }, dagDesc: string, position: string, termContext?: Context): string {
   if (spec.mode === 'plan') {
     return [
       `TASK: ${spec.desc}`,
@@ -308,7 +315,7 @@ function renderPattern(spec: { id: string; desc: string; produces: readonly stri
     `VERIFY: All produces exist and validators pass`,
     `BLOCKED: If consumes missing, stop and surface`,
     `MODE: ${spec.mode ?? 'execute'}`,
-  ].join('\n');
+  ].join('\n') + renderReceiptShapes(spec);
 }
 
 /**

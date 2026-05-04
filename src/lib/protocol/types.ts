@@ -19,6 +19,7 @@ export type ValidationRule =
   | { type: 'build-produces'; command: string; outputs: string[] }
   | { type: 'launch-check'; command: string; timeout?: number; successSignal?: string }
   | { type: 'spec-conformance'; spec: string; stories: number[]; criteria?: number[] }
+  | { type: 'receipt'; target: string; schema: { type?: string; required?: string[]; properties?: Record<string, unknown> } }
   | { type: 'intent'; statement: string; confidence: number; evaluator: 'self' | 'council'; context?: string[]; expandOnFail?: boolean; maxExpansionDepth?: number; prompt?: string[] };
 
 // LLM-provided judgment for one intent statement.

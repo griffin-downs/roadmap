@@ -312,6 +312,69 @@ export async function validateNode<T extends string>(
         passed = false;
         evidence = `spec-conformance error: ${String(e.message).slice(0, 200)}`;
       }
+    } else if (rule.type === 'receipt') {
+      // Receipt validator: read JSON at target, structurally check against inline schema.
+      // Schema shape: { type?: 'object', required?: string[], properties?: Record<string, unknown> }
+      try {
+        const root = opts?.repoRoot ?? process.cwd();
+        const targetRel = rule.target.startsWith('/') ? rule.target : `${root}/${rule.target}`;
+        const rf = opts?.readFile;
+        const content = rf ? rf(targetRel) : null;
+        if (content === null) {
+          passed = false;
+          evidence = `receipt file not found: ${rule.target}`;
+        } else {
+          const data = JSON.parse(content);
+          const schema = rule.schema as { type?: string; required?: string[]; properties?: Record<string, any> };
+          const errors: string[] = [];
+
+          if (schema.type === 'object' && (typeof data !== 'object' || data === null || Array.isArray(data))) {
+            errors.push(`expected type 'object' at root, got ${Array.isArray(data) ? 'array' : typeof data}`);
+          }
+
+          const isObj = typeof data === 'object' && data !== null && !Array.isArray(data);
+          const obj = isObj ? (data as Record<string, unknown>) : {};
+
+          for (const key of schema.required ?? []) {
+            if (!isObj || !(key in obj)) {
+              errors.push(`expected required property '${key}' at root, got <missing>`);
+            }
+          }
+
+          if (schema.properties && isObj) {
+            for (const [key, propSchema] of Object.entries(schema.properties)) {
+              if (!(key in obj)) continue;
+              const ps = propSchema as { type?: string };
+              if (!ps || !ps.type) continue;
+              const v = obj[key];
+              const expected = ps.type;
+              const actual = Array.isArray(v) ? 'array' : (v === null ? 'null' : typeof v);
+              const ok =
+                (expected === 'object' && actual === 'object') ||
+                (expected === 'array' && actual === 'array') ||
+                (expected === 'string' && actual === 'string') ||
+                (expected === 'number' && actual === 'number') ||
+                (expected === 'integer' && actual === 'number') ||
+                (expected === 'boolean' && actual === 'boolean') ||
+                (expected === 'null' && actual === 'null');
+              if (!ok) {
+                errors.push(`expected type '${expected}' at '${key}', got ${actual}`);
+              }
+            }
+          }
+
+          if (errors.length === 0) {
+            passed = true;
+            evidence = `receipt valid: ${rule.target}`;
+          } else {
+            passed = false;
+            evidence = `receipt invalid: ${errors.join('; ')}`;
+          }
+        }
+      } catch (e: any) {
+        passed = false;
+        evidence = `receipt error: ${String(e.message).slice(0, 200)}`;
+      }
     } else if (rule.type === 'runtime-explore') {
       // Runtime-explore: dynamically import explore script, invoke with Playwright.
       // Graceful degradation: if Playwright or the script is unavailable, skip with evidence.

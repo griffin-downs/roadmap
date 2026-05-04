@@ -1,0 +1,6 @@
+{
+  "node": "e-implement-receipt-validation",
+  "verdict": "GREEN",
+  "artifacts": ["src/lib/protocol/validation.ts"],
+  "verify": { "cmd": "pnpm tsc --noEmit", "exit": 0, "summary": "receipt handler reads target JSON, checks required+properties, names missing/wrong fields by path" }
+}
