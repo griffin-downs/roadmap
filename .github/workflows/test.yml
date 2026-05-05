@@ -14,6 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Tests that exec `git init && git commit` need an identity configured.
+      # CI runners ship without one; set a deterministic CI identity here so
+      # individual tests don't each have to remember to do it.
+      - name: Configure git identity for tests
+        run: |
+          git config --global user.email "ci@roadmap.test"
+          git config --global user.name  "roadmap CI"
+
       - uses: pnpm/action-setup@v4
         with:
           version: 9
