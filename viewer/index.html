@@ -5,34 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>roadmap viewer</title>
     <style>
-      /* ML Prague poster-derived palette · canonical source · WCAG AA verified.
-       * dag-theme.css mirrors these for the SVG/foil layer. Names are preserved
-       * (--chrome-*, --foil, --text-*, --accent-*) so existing components resolve
-       * without rename churn. */
+      /* ML Prague poster-derived palette · canonical source · extracted via
+       * ~/themes/apotheosis/set-theme on /tmp/poster-extract/poster-1.jpg
+       * (mlprague-poster-H.pdf page 1) using node-vibrant. WCAG AA verified
+       * on --chrome-bg. dag-theme.css mirrors these for the SVG/foil layer.
+       * Names preserved (--chrome-*, --foil, --text-*, --accent-*) so
+       * existing components resolve without rename churn. */
       :root {
-        --chrome-bg:      #1A1530;
-        --chrome-panel:   #241A3D;
-        --chrome-code:    #0E0A1F;
-        --chrome-00:      #1A1530;
-        --chrome-05:      #241A3D;
-        --chrome-10:      #2C2247;
-        --chrome-15:      #322852;
-        --chrome-25:      #4A3D6E;
-        --chrome-30:      #6B5C8C;
-        --rule:           #4A3D6E;
-        --rule-strong:    #6B5C8C;
-        --text-primary:   #EFE2C2;
-        --text-secondary: #B8AB8E;
-        --text-meta:      #9C8E6B;
-        --accent-gold:    #E0A050;
-        --accent-orange:  #E58850;
-        --accent-red:     #C04040;
-        --accent:         #E0A050;
-        --status-active:  #E58850;
-        --status-done:    #B8AB8E;
-        --status-fresh:   #9C8E6B;
-        --status-blocked: #C04040;
-        --status-nominal: #B8AB8E;
+        --chrome-bg:      #1D1D30;  /* extracted bg · midnight blue-violet */
+        --chrome-panel:   #212137;  /* extracted uiBgAlt · raised panels */
+        --chrome-code:    #181829;  /* extracted uiBg · code blocks */
+        --chrome-00:      #1D1D30;
+        --chrome-05:      #212137;
+        --chrome-10:      #25253E;  /* extracted bright-bg */
+        --chrome-15:      #282843;  /* extracted uiBorder */
+        --chrome-25:      #28284B;
+        --chrome-30:      #8E8EBB;  /* extracted brightBlack · lavender mid */
+        --rule:           #282843;
+        --rule-strong:    #8E8EBB;
+        --text-primary:   #F5F3BF;  /* extracted fg · creamy yellow-green */
+        --text-secondary: #EFEB9A;  /* extracted white · brighter cream */
+        --text-meta:      #8E8EBB;  /* extracted brightBlack · lavender */
+        --accent-gold:    #FCF791;  /* extracted yellow · vivid highlight */
+        --accent-orange:  #E4DD4E;  /* extracted uiFgMuted · mustard */
+        --accent-red:     #BD5258;  /* extracted red · crimson */
+        --accent:         #FCF791;
+        --foil:           #FCF791;
+        --status-active:  #FCF791;  /* current/frontier emphasis */
+        --status-done:    #60BF40;  /* extracted green · vivid */
+        --status-fresh:   #8E8EBB;  /* lavender · pending */
+        --status-blocked: #BD5258;  /* red */
+        --status-nominal: #EFEB9A;
       }
       html, body { height: 100%; margin: 0; overflow: hidden; background: var(--chrome-bg); color: var(--text-primary); }
       #app { height: 100%; display: flex; flex-direction: column; }

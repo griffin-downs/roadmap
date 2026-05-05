@@ -20,51 +20,51 @@
   --ink-dim:    #B8B0A0;
   --ink-faint:  #706858;
 
-  /* ── ML Prague poster-derived dark palette ──────────────────────────
-   * Warm midnight blue-violet bg + cream text + warm gold/copper accents.
-   * All text/accent on bg combos verified ≥ AA (4.5:1) — see r4 receipt. */
+  /* ── ML Prague poster-derived palette ──────────────────────────────
+   * Extracted via ~/themes/apotheosis/set-theme on the poster PDF
+   * (mlprague-poster-H.pdf, page 1) using node-vibrant.
+   * WCAG AA verified on --chrome-bg #1D1D30. */
 
   /* Chrome — surfaces (dark → light) */
-  --chrome-bg:    #1A1530;  /* page background · deep midnight blue-violet */
-  --chrome-panel: #241A3D;  /* raised panels · rail · tooltip · code */
-  --chrome-code:  #0E0A1F;  /* deepest · code blocks, terminal containers */
+  --chrome-bg:    #1D1D30;  /* extracted bg · midnight blue-violet */
+  --chrome-panel: #212137;  /* extracted uiBgAlt · raised panels */
+  --chrome-code:  #181829;  /* extracted uiBg · deepest */
 
-  /* Legacy chrome aliases — REMAPPED to poster palette
-   * (names retained so existing components continue to resolve) */
-  --chrome-00: #1A1530;     /* was #000   — page bg */
-  --chrome-05: #241A3D;     /* was #0a0a0a — raised panel */
-  --chrome-10: #2C2247;     /* mid surface */
-  --chrome-15: #322852;     /* hover surface */
-  --chrome-25: #4A3D6E;     /* hairline rule (mid-purple, low contrast) */
-  --chrome-30: #6B5C8C;     /* visible separator */
+  /* Legacy chrome aliases — REMAPPED to extracted palette */
+  --chrome-00: #1D1D30;
+  --chrome-05: #212137;
+  --chrome-10: #25253E;     /* extracted bright-bg */
+  --chrome-15: #282843;     /* extracted uiBorder */
+  --chrome-25: #28284B;
+  --chrome-30: #8E8EBB;     /* extracted brightBlack · lavender mid */
 
-  /* Rules — hairline + visible separator (alias of chrome-25/30) */
-  --rule:        #4A3D6E;
-  --rule-strong: #6B5C8C;
+  /* Rules */
+  --rule:        #282843;
+  --rule-strong: #8E8EBB;
 
-  /* Text — warm cream on midnight (verified WCAG AA on --chrome-bg) */
-  --text-primary:   #EFE2C2;  /* 13.68:1 AAA · body */
-  --text-secondary: #B8AB8E;  /*  7.75:1 AAA · muted */
-  --text-meta:      #9C8E6B;  /*  5.44:1 AA  · dim · bumped from #8B7E62 to clear AA */
+  /* Text — extracted cream-yellow on midnight */
+  --text-primary:   #F5F3BF;  /* extracted fg · creamy yellow-green */
+  --text-secondary: #EFEB9A;  /* extracted white · brighter cream */
+  --text-meta:      #8E8EBB;  /* extracted brightBlack · lavender */
 
-  /* Accents — warm gold for headings, copper-orange for active frontier */
-  --accent-gold:   #E0A050;   /*  7.80:1 AAA */
-  --accent-orange: #E58850;   /*  6.68:1 AA  */
-  --accent-red:    #C04040;   /*  3.39:1 — UI/large only (AA-LG / 3:1 components) */
-  --accent:        #E0A050;   /* legacy alias */
+  /* Accents — extracted vivid yellow + mustard + crimson */
+  --accent-gold:   #FCF791;   /* extracted yellow · vivid highlight */
+  --accent-orange: #E4DD4E;   /* extracted uiFgMuted · mustard */
+  --accent-red:    #BD5258;   /* extracted red · crimson */
+  --accent:        #FCF791;   /* legacy alias */
 
-  /* Status — semantic node states */
-  --status-active:  #E58850;  /* active batch (matches accent-orange) */
-  --status-done:    #B8AB8E;  /* completed (muted cream) */
-  --status-fresh:   #9C8E6B;  /* fresh (dim cream) */
-  --status-blocked: #C04040;  /* blocked (sparing red) */
-  --status-nominal: #B8AB8E;  /* legacy alias of status-done */
+  /* Status — semantic node states (extracted palette) */
+  --status-active:  #FCF791;  /* current/frontier emphasis · vivid yellow */
+  --status-done:    #60BF40;  /* extracted green · vivid */
+  --status-fresh:   #8E8EBB;  /* lavender · pending */
+  --status-blocked: #BD5258;  /* red */
+  --status-nominal: #EFEB9A;
 
-  /* Foil — gold at full coverage and reduced (REMAPPED to poster gold) */
-  --foil:       #E0A050;
-  --foil-90:    rgba(224, 160, 80, 0.9);
-  --foil-50:    rgba(224, 160, 80, 0.5);
-  --foil-30:    rgba(224, 160, 80, 0.3);
+  /* Foil — REMAPPED to extracted yellow (was warm-gold guess) */
+  --foil:       #FCF791;
+  --foil-90:    rgba(252, 247, 145, 0.9);
+  --foil-50:    rgba(252, 247, 145, 0.5);
+  --foil-30:    rgba(252, 247, 145, 0.3);
 
   /* Card fill — ink-dark lifted and held semi-translucent */
   --card-fill:  rgba(28, 31, 42, 0.85);
