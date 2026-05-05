@@ -14,6 +14,7 @@ import { computed, nextTick, ref, watch } from "vue";
 import type { ComputedRef, Ref } from "vue";
 import DagViewer from "./components/DagViewer.vue";
 import NodeTooltipPane from "./components/NodeTooltipPane.vue";
+import LineagePane from "./components/LineagePane.vue";
 import type { RepoRoadmap } from "./services/roadmapReader";
 
 // Local type — was previously exported from the now-removed NodeSidePanel.
@@ -32,7 +33,15 @@ import { DEFAULT_LAYOUT_OPTIONS, useDagLayout } from "./composables/useDagLayout
 // Default empty → server falls back to host repo. Initialized from the
 // first roadmap-list entry once that loads (see watcher below).
 const selectedRepo: Ref<string> = ref<string>("");
-const payload = useDagPayload(undefined, selectedRepo);
+// g-lineage-pane · clicking a thumbnail sets selectedDag, which feeds the
+// dag query param via useDagPayload's selection ref. Cleared whenever the
+// repo changes so we don't carry a stale dagId across repos.
+const selectedDag: Ref<string> = ref<string>("");
+const dagSelection: Ref<{ dag?: string }> = ref<{ dag?: string }>({});
+watch(selectedDag, (id) => { dagSelection.value = id ? { dag: id } : {}; });
+const payload = useDagPayload(dagSelection, selectedRepo);
+watch(selectedRepo, () => { selectedDag.value = ""; });
+function onLineageSelect(dagId: string): void { selectedDag.value = dagId; }
 
 // Print mode — opt-in via ?print=1, optional ?pin=<node-id> pre-selects
 const url = new URL(window.location.href);
@@ -540,6 +549,13 @@ function buildStars(): Star[] {
     </aside>
 
     <section class="dag-pane">
+      <LineagePane v-if="!printMode"
+        class="dag-pane__lineage"
+        :lineage="selectedRepoLineage"
+        :current-dag-id="payload?.dagId"
+        :current-head="payload?.head ?? null"
+        @select="onLineageSelect"
+      />
       <DagViewer
         :layout="layout"
         :selected-node-id="tooltipNodeId"
@@ -749,10 +765,24 @@ function buildStars(): Star[] {
 .dag-pane {
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
   border: 1px solid var(--chrome-25, #333);
   background: var(--chrome-00, #000);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.dag-pane__lineage {
+  flex: 0 0 180px;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+.dag-pane > :deep(.dag-viewer),
+.dag-pane > :deep(.dag-viewer-root) {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 .viewer-shell--print .tooltip-connector-overlay {
   position: fixed;
