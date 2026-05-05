@@ -443,6 +443,26 @@
         </g>
       </g>
     </svg>
+    <div v-if="!printMode" class="dag-viewer__zoom" role="group" aria-label="zoom controls">
+      <button
+        type="button"
+        class="dag-viewer__zoom-btn"
+        aria-label="zoom in"
+        @click="zoomIn"
+      >+</button>
+      <button
+        type="button"
+        class="dag-viewer__zoom-btn"
+        aria-label="zoom out"
+        @click="zoomOut"
+      >&minus;</button>
+      <button
+        type="button"
+        class="dag-viewer__zoom-btn"
+        aria-label="fit to canvas"
+        @click="fitToCanvas()"
+      >&#9645;</button>
+    </div>
   </div>
 </template>
 
@@ -611,6 +631,17 @@ if (typeof window !== "undefined") {
   (window as unknown as { __recenterDag?: () => void }).__recenterDag = centerSelected;
 }
 const hasGraph: ComputedRef<boolean> = computed<boolean>(() => props.layout.nodes.length > 0);
+
+function zoomIn(): void {
+  if (!svgRef.value || !zoomBehavior) return;
+  const sel = d3.select(svgRef.value as SVGSVGElement);
+  zoomBehavior.scaleBy(sel.transition().duration(200), 1.4);
+}
+function zoomOut(): void {
+  if (!svgRef.value || !zoomBehavior) return;
+  const sel = d3.select(svgRef.value as SVGSVGElement);
+  zoomBehavior.scaleBy(sel.transition().duration(200), 1 / 1.4);
+}
 
 async function onExportSvg(): Promise<void> {
   await exportSvg(svgRef.value, `${props.exportName}-hierarchical`);
@@ -830,6 +861,30 @@ function emitClick(nodeId: string, ev: MouseEvent): void {
 }
 .dag-viewer__btn:hover { border-color: var(--accent-red, #d33); }
 .dag-viewer__btn:disabled { opacity: 0.5; cursor: wait; }
+.dag-viewer__zoom {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 2;
+}
+.dag-viewer__zoom-btn {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  background: var(--chrome-10, #151515);
+  color: var(--text-primary, #eee);
+  border: 1px solid var(--chrome-25, #333);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.dag-viewer__zoom-btn:hover { border-color: var(--accent-red, #d33); }
+.dag-viewer__zoom-btn:focus-visible { outline: 2px solid var(--accent-red, #d33); outline-offset: 1px; }
 .dag-svg { display: block; font-family: var(--font-mono, ui-monospace, monospace); }
 .edge {
   stroke: var(--chrome-30, #444);
