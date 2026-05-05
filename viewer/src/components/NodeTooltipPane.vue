@@ -103,9 +103,6 @@
         <button type="button" class="dag-tooltip__btn" @click="emit('expand')">
           {{ expanded ? 'collapse' : 'expand' }}
         </button>
-        <button type="button" class="dag-tooltip__btn" @click="emit('pin-to-side')">
-          pin to side
-        </button>
       </footer>
     </div>
   </Transition>
@@ -114,7 +111,7 @@
 <script setup lang="ts">
 // NodeTooltipPane — DUMB click-adjacent inspector. §Dumb-components.
 //   props: nodeData, anchorRect, expanded
-//   emits: close, expand, pin-to-side
+//   emits: close, expand
 // No fetch / no timer / no derivation beyond pure computed. Position is
 // computed once per nodeData/anchorRect change in the orchestrator and
 // passed in via positionStyle for compositor-friendly transform/opacity.
@@ -249,7 +246,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: "close"): void;
   (e: "expand"): void;
-  (e: "pin-to-side"): void;
 }>();
 
 const paneRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null);
