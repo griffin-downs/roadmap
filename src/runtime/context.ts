@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 import { CompletionStore } from './completion.ts';
 import type { ChainLink, ExecutionReport } from '../lib/chain.ts';
-import type { FinalHandoff, InterimHandoff } from '../lib/brief.ts';
+import type { FinalHandoff, InterimHandoff } from '../lib/handoff-types.ts';
 
 // Re-export chain types so callers can import from context rather than chain.ts directly.
 export type { ChainLink, ExecutionReport };
