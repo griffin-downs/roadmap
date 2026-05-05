@@ -3,6 +3,14 @@
 [![test](https://github.com/Ocean-Synaptics/roadmap/actions/workflows/test.yml/badge.svg)](https://github.com/Ocean-Synaptics/roadmap/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+> Hi, I've worked on this tool, roadmap, entirely solo. I don't think it's the holy grail for anything and I hope at some point it will be obviated. But in the meantime, it's a useful tool for myself for orchestrating agent swarms while keeping my main context clean and its auditable trail gives me a sort of replacement for MEMORY.md.
+>
+> I hope that readers and trial users can take from this project the general set of techniques and philosophy which is this: a context window is a working cache over durable state, agents can write more complete specifications than humans, and if we subject these specifications to formal validation / static analysis afforded by compiler theory, we can make work durable and retrievable via LLM-friendly API calls.
+>
+> *Let structure carry knowledge, let intelligence live in the spec.*
+>
+> Enjoy 😎 --Griffin
+
 > **Status:** Released for ML Prague 2026 (May 2026). The repository is public; **issues are open**; **external PRs are deferred until ~2026-05-15** while the maintainer is at the conference. See [docs/ROLLOUT.md](docs/ROLLOUT.md) for the contribution timeline.
 
 Long agent runs leave a wake of half-finished commits, stale branches, and transcripts no one re-reads. `roadmap` declares the work itself as a typed DAG: each node names what it `produces`, what it `consumes`, and how to `validate`. Ordering falls out of the data flow; position is computed from filesystem state; completion is falsifiable via shell-command validators against real artifacts.
