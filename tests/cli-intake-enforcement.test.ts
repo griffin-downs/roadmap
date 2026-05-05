@@ -30,8 +30,9 @@ function makeTestRepo(): string {
 // Helper: run roadmap CLI in a test repo (captures both stdout and stderr)
 function runRoadmap(repoRoot: string, argsStr: string): { stdout: string; exitCode: number } {
   const binPath = join(__dirname, '..', 'bin', 'roadmap.ts');
+  const tsxBin = join(__dirname, '..', 'node_modules', '.bin', 'tsx');
   try {
-    const stdout = execSync(`npx tsx ${binPath} ${argsStr} 2>&1`, {
+    const stdout = execSync(`${tsxBin} ${binPath} ${argsStr} 2>&1`, {
       cwd: repoRoot,
       stdio: 'pipe',
       env: { ...process.env, NO_COLOR: '1' },

@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 import { execSync } from 'node:child_process';
 
 const BIN = join(__dirname, '..', 'bin', 'roadmap.ts');
-const RUNNER = 'npx tsx';
+const RUNNER = join(__dirname, '..', 'node_modules', '.bin', 'tsx');
 
 function sha256(content: string): string {
   return createHash('sha256').update(content).digest('hex');

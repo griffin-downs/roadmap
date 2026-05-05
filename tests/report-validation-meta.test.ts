@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os';
 // Validates that structured report validation works end-to-end through bin/roadmap.ts.
 
 const CLI = join(process.cwd(), 'bin/roadmap.ts');
+const TSX = join(process.cwd(), 'node_modules', '.bin', 'tsx');
 
 function run(cmd: string, cwd: string): { ok: boolean; stdout: string; stderr: string } {
   try {
@@ -24,7 +25,7 @@ function run(cmd: string, cwd: string): { ok: boolean; stdout: string; stderr: s
 }
 
 function cli(args: string, cwd: string) {
-  return run(`npx tsx "${CLI}" ${args}`, cwd);
+  return run(`"${TSX}" "${CLI}" ${args}`, cwd);
 }
 
 const REPORT_PROMPT =
