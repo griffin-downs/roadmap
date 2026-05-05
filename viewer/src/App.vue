@@ -34,7 +34,11 @@ import {
   type ForceLayoutOptions,
 } from "./composables/useForceLayout";
 
-const payload = useDagPayload();
+// Selected repo path · drives /api/roadmap-dag?repo=<path> re-fetch.
+// Default empty → server falls back to host repo. Initialized from the
+// first roadmap-list entry once that loads (see watcher below).
+const selectedRepo: Ref<string> = ref<string>("");
+const payload = useDagPayload(undefined, selectedRepo);
 
 // Print mode — opt-in via ?print=1, optional ?pin=<node-id> pre-selects
 const url = new URL(window.location.href);
@@ -96,6 +100,14 @@ watch(viewMode, (next) => {
 // All roadmaps available on the system (host repo · or fleet members
 // when host has fleet.json). Live-updated via /api/events 'roadmap' stream.
 const allRoadmaps = useRoadmapState();
+
+// Default selectedRepo to host repo (first entry) once roadmaps load.
+// Only sets once, when still empty — user clicks override afterwards.
+watch(allRoadmaps, (rows) => {
+  if (selectedRepo.value === "" && rows.length > 0) {
+    selectedRepo.value = rows[0].path;
+  }
+}, { immediate: true });
 
 // Tooltip-pane state
 const tooltipNodeId: Ref<string> = ref<string>("");
@@ -426,7 +438,14 @@ function buildStars(): Star[] {
           v-for="r in allRoadmaps"
           :key="r.path"
           class="roadmap-row"
-          :class="[`roadmap-row--${r.status}`, { 'roadmap-row--current': r.dagId === dagId }]"
+          :class="[
+            `roadmap-row--${r.status}`,
+            {
+              'roadmap-row--current': r.path === selectedRepo,
+              'roadmap-row--inactive': r.status !== 'active',
+            },
+          ]"
+          @click="selectedRepo = r.path"
         >
           <span class="roadmap-row__repo">{{ r.repo }}</span>
           <span class="roadmap-row__sep">·</span>
@@ -588,10 +607,19 @@ function buildStars(): Star[] {
   display: flex;
   gap: 6px;
   align-items: baseline;
-  padding: 2px 0;
+  padding: 2px 6px;
   color: var(--text-secondary, #ccc);
+  cursor: pointer;
+  border-left: 2px solid transparent;
 }
-.roadmap-row--current { color: var(--text-primary, #eee); }
+.roadmap-row:hover { background: var(--chrome-15, #1a1a1a); }
+.roadmap-row--current {
+  color: var(--text-primary, #eee);
+  border-left-color: var(--foil, #D7A432);
+  background: var(--chrome-15, #1a1a1a);
+}
+.roadmap-row--inactive { opacity: 0.55; }
+.roadmap-row--inactive.roadmap-row--current { opacity: 1; }
 .roadmap-row--current .roadmap-row__dag {
   color: var(--foil, #D7A432);
   font-weight: 600;

@@ -73,7 +73,10 @@ export interface DagSelection {
   dag?: string;
 }
 
-export function useDagPayload(selection?: Ref<DagSelection>): Ref<DagPayload | null> {
+export function useDagPayload(
+  selection?: Ref<DagSelection>,
+  repoPath?: Ref<string>,
+): Ref<DagPayload | null> {
   const state = ref<DagPayload | null>(null);
   const error = ref<string | null>(null);
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -81,10 +84,16 @@ export function useDagPayload(selection?: Ref<DagSelection>): Ref<DagPayload | n
 
   function buildUrl(): string {
     const sel = selection?.value;
-    const params = new URLSearchParams();
-    if (sel?.repo) params.set("repo", sel.repo);
-    if (sel?.dag) params.set("dag", sel.dag);
-    const qs = params.toString();
+    const path = repoPath?.value;
+    // Absolute repo path (from roadmap-list rows) wins over selection.repo —
+    // picker provides full filesystem paths the server resolves directly.
+    // Build query manually so encodeURIComponent on the path stays single-encoded
+    // (URLSearchParams would re-encode the % escapes).
+    const parts: string[] = [];
+    if (path) parts.push(`repo=${encodeURIComponent(path)}`);
+    else if (sel?.repo) parts.push(`repo=${encodeURIComponent(sel.repo)}`);
+    if (sel?.dag) parts.push(`dag=${encodeURIComponent(sel.dag)}`);
+    const qs = parts.join("&");
     return qs ? `/api/roadmap-dag?${qs}` : "/api/roadmap-dag";
   }
 
