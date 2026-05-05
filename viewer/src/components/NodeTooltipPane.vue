@@ -25,6 +25,13 @@
           {{ nodeData.status }}
         </span>
         <span class="dag-tooltip__id">{{ nodeData.id }}</span>
+        <span
+          v-if="nodeData.mode && nodeData.mode !== 'execute'"
+          class="dag-tooltip__mode"
+          :data-mode="nodeData.mode"
+        >
+          {{ nodeData.mode }}
+        </span>
         <button
           v-if="!printMode"
           type="button"
@@ -44,10 +51,31 @@
         <div v-for="p in nodeData.produces" :key="p" class="dag-tooltip__row">{{ p }}</div>
       </section>
 
+      <section v-if="!printMode && hasConsumes && !expanded" class="dag-tooltip__section">
+        <div class="dag-tooltip__label">consumes</div>
+        <div v-for="c in nodeData.consumes" :key="c" class="dag-tooltip__row">{{ c }}</div>
+      </section>
+
       <section v-if="!printMode && hasValidate && !expanded" class="dag-tooltip__section">
         <div class="dag-tooltip__label">validate</div>
         <div v-for="(v, i) in nodeData.validate" :key="i" class="dag-tooltip__row">
           {{ v.type }}<span v-if="v.target"> · {{ v.target }}</span><span v-else-if="v.command"> · {{ v.command }}</span>
+        </div>
+      </section>
+
+      <section v-if="!printMode && hasSidecar && !expanded" class="dag-tooltip__section">
+        <div
+          class="dag-tooltip__label dag-tooltip__label--clickable"
+          @click="sidecarOpen = !sidecarOpen"
+        >
+          {{ sidecarOpen ? '▼' : '▶' }} sidecar
+        </div>
+        <div v-if="sidecarOpen">
+          <div
+            v-for="k in sidecarKeys"
+            :key="k"
+            class="dag-tooltip__row"
+          >{{ k }}</div>
         </div>
       </section>
 
@@ -200,6 +228,7 @@ type NodeData = Record<string, unknown> & {
   deps?: string[];
   consumes?: string[];
   produces?: string[];
+  mode?: string;
   validate?: Array<{ type: string; command?: string; statement?: string; target?: string }>;
   sidecar?: Record<string, unknown>;
 };
@@ -238,6 +267,19 @@ const hasProduces: ComputedRef<boolean> = computed(() =>
 const hasValidate: ComputedRef<boolean> = computed(() =>
   Array.isArray(props.nodeData?.validate) && (props.nodeData?.validate?.length ?? 0) > 0,
 );
+const hasConsumes: ComputedRef<boolean> = computed(() =>
+  Array.isArray(props.nodeData?.consumes) && (props.nodeData?.consumes?.length ?? 0) > 0,
+);
+const hasSidecar: ComputedRef<boolean> = computed(() => {
+  const s = props.nodeData?.sidecar;
+  return s !== undefined && s !== null && typeof s === "object" && Object.keys(s as object).length > 0;
+});
+const sidecarKeys: ComputedRef<string[]> = computed(() => {
+  const s = props.nodeData?.sidecar;
+  if (!s || typeof s !== "object") return [];
+  return Object.keys(s as object);
+});
+const sidecarOpen: Ref<boolean> = ref(false);
 type Rect = { top: number; left: number; width: number; height: number };
 const STORAGE_KEY = "dag-tooltip-print-rect";
 const tooltipRect: Ref<Rect | null> = ref<Rect | null>(null);
@@ -450,6 +492,21 @@ watch(
   letter-spacing: 0.5px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.dag-tooltip__mode {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border: 1px solid var(--foil-30, rgba(215, 164, 50, 0.3));
+  color: var(--ink-dim, #B8B0A0);
+}
+.dag-tooltip__label--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+.dag-tooltip__label--clickable:hover {
+  color: var(--foil, #D7A432);
 }
 .dag-tooltip__close {
   background: none;
