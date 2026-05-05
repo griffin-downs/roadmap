@@ -4,9 +4,9 @@
 // (default = process.cwd()); single-repo mode is fine when no fleet.json.
 
 import { execFile } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { promisify } from "node:util";
-import { join } from "node:path";
+import { join, dirname, basename } from "node:path";
 import type { RepoRoadmap } from "./roadmapReader.js";
 
 const execFileAsync = promisify(execFile);
@@ -62,6 +62,109 @@ interface OrientResult {
   error?: { message: string };
 }
 
+// Filesystem-walk discovery — when no fleet.json exists, find all
+// `.roadmap/head.json` files under ROADMAP_FS_SCAN_ROOT (default: parent
+// of host repo, usually ~/src). Capped at depth 4 with a skip-list of
+// noisy directories so the walk stays sub-second on real machines.
+const SCAN_DEPTH_CAP = 4;
+const SKIP_DIRS = new Set([
+  "node_modules", ".git", "dist", ".next", ".cache", "target", "build",
+  ".pnpm-store", ".venv", "venv", "__pycache__", ".turbo", ".nuxt",
+]);
+
+interface DiscoveredRoadmap {
+  path: string;
+  name: string;
+  mtime: number;
+  head: HeadJson | null;
+  doneCount: number;
+}
+
+function readCompletedCount(repoPath: string): number {
+  try {
+    const raw = readFileSync(join(repoPath, ".roadmap/completed.json"), "utf-8");
+    const parsed = JSON.parse(raw) as { receipts?: unknown[] } | unknown[];
+    if (Array.isArray(parsed)) return parsed.length;
+    if (Array.isArray(parsed.receipts)) return parsed.receipts.length;
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
+function walkRoadmaps(root: string, depth: number, found: DiscoveredRoadmap[]): void {
+  if (depth > SCAN_DEPTH_CAP) return;
+  let entries: string[];
+  try {
+    entries = readdirSync(root);
+  } catch {
+    return;
+  }
+
+  // Check if THIS dir contains .roadmap/head.json — record and stop descending
+  // into it (a repo's interior won't contain another repo we care about).
+  const headPath = join(root, ".roadmap/head.json");
+  if (existsSync(headPath)) {
+    try {
+      const mtime = statSync(headPath).mtimeMs;
+      const head = readHeadJson(root);
+      found.push({
+        path: root,
+        name: basename(root),
+        mtime,
+        head,
+        doneCount: readCompletedCount(root),
+      });
+      return;
+    } catch {
+      // fall through to walking children
+    }
+  }
+
+  for (const entry of entries) {
+    if (entry.startsWith(".") && entry !== ".roadmap") {
+      // skip dotdirs except .roadmap itself (handled above)
+      if (SKIP_DIRS.has(entry) || entry === ".git") continue;
+    }
+    if (SKIP_DIRS.has(entry)) continue;
+    const child = join(root, entry);
+    let isDir = false;
+    try {
+      isDir = statSync(child).isDirectory();
+    } catch {
+      continue;
+    }
+    if (!isDir) continue;
+    walkRoadmaps(child, depth + 1, found);
+  }
+}
+
+export function discoverRoadmaps(scanRoot: string): DiscoveredRoadmap[] {
+  const found: DiscoveredRoadmap[] = [];
+  walkRoadmaps(scanRoot, 0, found);
+  return found;
+}
+
+function projectDiscovered(d: DiscoveredRoadmap): RepoRoadmap {
+  const dagId = d.head?.id;
+  const totalNodes = d.head?.nodes !== undefined ? Object.keys(d.head.nodes).length : 0;
+  if (totalNodes === 0) {
+    return { repo: d.name, path: d.path, status: "no-dag", dagId, currentBatch: [] };
+  }
+  const done = Math.min(d.doneCount, totalNodes);
+  const remaining = Math.max(0, totalNodes - done);
+  const isActive = remaining > 0;
+  return {
+    repo: d.name,
+    path: d.path,
+    status: isActive ? "active" : "no-dag",
+    dagId,
+    completionPct: computeCompletionPct(done, remaining),
+    currentBatch: [],
+    remaining: isActive ? remaining : undefined,
+  };
+}
+
 function readFleetRepos(host: string): FleetEntry[] {
   try {
     const raw = readFileSync(join(host, ".roadmap/fleet.json"), "utf-8");
@@ -115,12 +218,52 @@ function errorEntry(entry: FleetEntry, message: string): RepoRoadmap {
   return { repo: entry.name, path: entry.path, status: "error", error: message };
 }
 
+function sortRoadmapsByActivityAndMtime(
+  rows: RepoRoadmap[],
+  mtimeByPath: Map<string, number>,
+): RepoRoadmap[] {
+  return [...rows].sort((a, b) => {
+    const aActive = a.status === "active" ? 0 : 1;
+    const bActive = b.status === "active" ? 0 : 1;
+    if (aActive !== bActive) return aActive - bActive;
+    const aMtime = mtimeByPath.get(a.path) ?? 0;
+    const bMtime = mtimeByPath.get(b.path) ?? 0;
+    return bMtime - aMtime;
+  });
+}
+
 export async function scanRoadmaps(): Promise<RepoRoadmap[]> {
   const host = hostRepoRoot();
   const registry = readFleetRepos(host);
-  const allRegistry: FleetEntry[] = registry.length > 0
-    ? registry
-    : [{ name: "host", path: host }];
+
+  // No fleet.json → filesystem-walk discovery rooted at ROADMAP_FS_SCAN_ROOT
+  // (default: dirname(host)). Host repo always included regardless.
+  if (registry.length === 0) {
+    const scanRoot = process.env.ROADMAP_FS_SCAN_ROOT ?? dirname(host);
+    const discovered = discoverRoadmaps(scanRoot);
+    const hostAlreadyFound = discovered.some((d) => d.path === host);
+    if (!hostAlreadyFound) {
+      const headPath = join(host, ".roadmap/head.json");
+      let mtime = 0;
+      try { mtime = statSync(headPath).mtimeMs; } catch { /* host may have no head */ }
+      discovered.push({
+        path: host,
+        name: "host",
+        mtime,
+        head: readHeadJson(host),
+        doneCount: readCompletedCount(host),
+      });
+    } else {
+      // Rename host's discovered entry for clarity
+      const hostEntry = discovered.find((d) => d.path === host);
+      if (hostEntry !== undefined) hostEntry.name = "host";
+    }
+    const mtimeByPath = new Map(discovered.map((d) => [d.path, d.mtime] as const));
+    const rows = discovered.map(projectDiscovered);
+    return sortRoadmapsByActivityAndMtime(rows, mtimeByPath);
+  }
+
+  const allRegistry: FleetEntry[] = registry;
 
   let result: OrientResult;
   try {
