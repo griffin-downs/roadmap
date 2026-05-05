@@ -527,6 +527,29 @@ function centerSelected(): void {
   sel.call(zoomBehavior.transform, zoomIdentity.translate(tx, ty).scale(k));
 }
 
+// Auto-fit the full DAG bbox to the visible canvas at mount, so users on
+// small windows don't have to zoom out manually. Mutually exclusive with
+// the URL-pin path (centerSelected) — caller decides which to invoke.
+function fitToCanvas(margin: number = 24): void {
+  if (!svgRef.value || !zoomBehavior) return;
+  const svg = svgRef.value as SVGSVGElement;
+  const rect = svg.getBoundingClientRect();
+  const layoutW = props.layout.width;
+  const layoutH = props.layout.height;
+  if (rect.width <= 0 || rect.height <= 0 || layoutW <= 0 || layoutH <= 0) return;
+  // viewBox maps user-coords 1:1 onto the SVG element (preserveAspectRatio
+  // meet). Compute fit scale in user-space with a screen-px margin converted
+  // back to user units.
+  const userPerPx = Math.max(layoutW / rect.width, layoutH / rect.height);
+  const marginUser = margin * userPerPx;
+  const availW = Math.max(layoutW - marginUser * 2, 1);
+  const availH = Math.max(layoutH - marginUser * 2, 1);
+  const k = Math.min(availW / layoutW, availH / layoutH);
+  const tx = (layoutW - layoutW * k) / 2;
+  const ty = (layoutH - layoutH * k) / 2;
+  d3.select(svg).call(zoomBehavior.transform, zoomIdentity.translate(tx, ty).scale(k));
+}
+
 onMounted(() => {
   if (!svgRef.value || !zoomGroupRef.value) return;
   const sel = d3.select(svgRef.value as SVGSVGElement);
@@ -557,6 +580,10 @@ onMounted(() => {
       initialPinDone = true;
       setTimeout(() => centerSelected(), 50);
       setTimeout(() => centerSelected(), 200);
+    } else {
+      // No URL pin · auto-fit the DAG bbox to the canvas (mutually exclusive
+      // with the pin path above).
+      fitToCanvas();
     }
   });
 });
