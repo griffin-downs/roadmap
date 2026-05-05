@@ -1,195 +1,124 @@
 {
-  "id": "roadmap-r3-viewer-polish",
-  "desc": "Roadmap viewer · r3 · five user-reported usability issues, all in viewer/src/. The viewer shipped in r1.5 and got a side-panel deletion + system-wide list in r2; this round closes the remaining ergonomics gaps surfaced when the maintainer actually used it. Compile-time observation has already grounded the premises; no observation nodes appear in the DAG.\n\n  GROUNDED FINDINGS (from spec-time investigation · embedded so agents don't re-discover):\n\n  1. App.vue still has the bottom 'roadmap details' section: detailsOpen ref + tab state + FieldExpander block at L503-end. The tooltip-pane is now the only per-node detail surface; the bottom tabs are redundant. FieldExpander.vue itself stays — NodeTooltipPane.vue uses it in print-expanded mode at L62 — but App.vue stops using it.\n\n  2. NodeTooltipPane.vue currently renders id, desc, produces, validate. It does NOT render consumes (load-bearing in v2 — consumes IS the edge), mode (when not 'execute'), or sidecar (when present). Need all four.\n\n  3. DagViewer.vue has the centerSelected() function at L500 with an initialPinDone guard. Bug: initialPinDone is only set true INSIDE the if(selectedNodeId) branches at L557 and L573, both gated on a node being selected. Result: on a no-URL-pin landing, initialPinDone stays false, and the very first node click runs centerSelected() before flipping the flag. That first click teleports the camera. Fix: initialize initialPinDone to true unless a URL pin (printPin) was supplied — center-on-mount only when the user actually asked for a pin.\n\n  4. The hierarchical layout exposes layout.width and layout.height (used in centerSelected at L510-511). The SVG already has viewBox '0 0 layoutW layoutH' with preserveAspectRatio xMidYMid meet — it letterboxes. The DAG fits IF the user's window is wide enough; on smaller windows the user has to zoom out manually. Fit-to-canvas means: at mount, set zoom transform so the layout bbox occupies the full visible area minus a small margin.\n\n  5. /api/roadmap-dag in viewer/vite.config.ts ALREADY accepts ?repo=<path>&dag=<id> query params (see dagReader.server.ts:158-160 — params.get('repo'), params.get('dag')). The server is ready; the client just doesn't pass them. The picker round is therefore a CLIENT change: maintain a 'selectedRepo' state in App.vue, pass it through useDagPayload as a query string. No server change for the routing.\n\n  6. scanRoadmaps in viewer/src/services/roadmapReader.server.ts only walks the host repo or fleet.json members. To discover all roadmaps system-wide it needs a filesystem walk. ~/src has 101 head.json files. Sort by mtime descending, group active (DAG with non-empty position) before inactive, render scrollable.\n\n  CLUSTERS · STRIP (kill the redundant details tabs) · VIEWER (canvas fit + click teleport fix, both in DagViewer.vue) · TOOLTIP (faithful NodeSpec dump) · PICKER (filesystem discovery + clickable rows). NO BATCH PARTITIONING · ordering derives from consumes ↔ produces · gates with no artifact get a ratification receipt upstream (init).\n\n  STANCE · changes are ergonomic, not protocol. Validators are structural-proxy where behavior is hard to shell-check (the actual UX verification is the human terminal). Receipts at .roadmap/round-3/<id>.json. Files touched are scoped: each node either edits a single .vue/.ts file or adds one new helper.\n\n  RISK · vw-canvas-fit and vw-fix-click-teleport both touch viewer/src/components/DagViewer.vue. Sequenced via consumes-produces (vw-fix-click-teleport reads DagViewer.vue from vw-canvas-fit) so engine sees explicit ordering. Same pattern is used elsewhere when two concerns share a file.\n\n  TERMINAL · v-viewer-smoke-terminal is plan-mode. The validation is 'open the viewer in the browser, walk through the five items, confirm each works as scenarios specify.' That is irreducibly visual; structural validators on each node prove the code shape, the terminal proves the UX.",
-  "init": "init",
-  "term": "v-viewer-smoke-terminal",
-  "nodes": {
-    "init": {
+  "schema_version": 2,
+  "engine": { "name": "spec-kit", "version": "1.0.0", "config_hash": null },
+  "dag_id": "roadmap-r3-viewer-polish",
+  "dag_desc": "Roadmap viewer · r3 · five user-reported usability issues, all in viewer/src/. The viewer shipped in r1.5 and got a side-panel deletion + system-wide list in r2; this round closes the remaining ergonomics gaps surfaced when the maintainer actually used it. Compile-time observation has already grounded the premises; no observation nodes appear in the DAG.\n\n  GROUNDED FINDINGS (from spec-time investigation · embedded so agents don't re-discover):\n\n  1. App.vue still has the bottom 'roadmap details' section: detailsOpen ref + tab state + FieldExpander block at L503-end. The tooltip-pane is now the only per-node detail surface; the bottom tabs are redundant. FieldExpander.vue itself stays — NodeTooltipPane.vue uses it in print-expanded mode at L62 — but App.vue stops using it.\n\n  2. NodeTooltipPane.vue currently renders id, desc, produces, validate. It does NOT render consumes (load-bearing in v2 — consumes IS the edge), mode (when not 'execute'), or sidecar (when present). Need all four.\n\n  3. DagViewer.vue has the centerSelected() function at L500 with an initialPinDone guard. Bug: initialPinDone is only set true INSIDE the if(selectedNodeId) branches at L557 and L573, both gated on a node being selected. Result: on a no-URL-pin landing, initialPinDone stays false, and the very first node click runs centerSelected() before flipping the flag. That first click teleports the camera. Fix: initialize initialPinDone to true unless a URL pin (printPin) was supplied — center-on-mount only when the user actually asked for a pin.\n\n  4. The hierarchical layout exposes layout.width and layout.height (used in centerSelected at L510-511). The SVG already has viewBox '0 0 layoutW layoutH' with preserveAspectRatio xMidYMid meet — it letterboxes. The DAG fits IF the user's window is wide enough; on smaller windows the user has to zoom out manually. Fit-to-canvas means: at mount, set zoom transform so the layout bbox occupies the full visible area minus a small margin.\n\n  5. /api/roadmap-dag in viewer/vite.config.ts ALREADY accepts ?repo=<path>&dag=<id> query params (see dagReader.server.ts:158-160 — params.get('repo'), params.get('dag')). The server is ready; the client just doesn't pass them. The picker round is therefore a CLIENT change: maintain a 'selectedRepo' state in App.vue, pass it through useDagPayload as a query string. No server change for the routing.\n\n  6. scanRoadmaps in viewer/src/services/roadmapReader.server.ts only walks the host repo or fleet.json members. To discover all roadmaps system-wide it needs a filesystem walk. ~/src has 101 head.json files. Sort by mtime descending, group active (DAG with non-empty position) before inactive, render scrollable.\n\n  CLUSTERS · STRIP (kill the redundant details tabs) · VIEWER (canvas fit + click teleport fix, both in DagViewer.vue) · TOOLTIP (faithful NodeSpec dump) · PICKER (filesystem discovery + clickable rows). NO BATCH PARTITIONING · ordering derives from consumes ↔ produces · gates with no artifact get a ratification receipt upstream (init).\n\n  STANCE · changes are ergonomic, not protocol. Validators are structural-proxy where behavior is hard to shell-check (the actual UX verification is the human terminal). Receipts at .roadmap/round-3/<id>.json. Files touched are scoped: each node either edits a single .vue/.ts file or adds one new helper.\n\n  RISK · vw-canvas-fit and vw-fix-click-teleport both touch viewer/src/components/DagViewer.vue. Sequenced via consumes-produces (vw-fix-click-teleport reads DagViewer.vue from vw-canvas-fit) so engine sees explicit ordering. Same pattern is used elsewhere when two concerns share a file.\n\n  TERMINAL · v-viewer-smoke-terminal is plan-mode. The validation is 'open the viewer in the browser, walk through the five items, confirm each works as scenarios specify.' That is irreducibly visual; structural validators on each node prove the code shape, the terminal proves the UX.",
+  "metadata": {
+    "round": "r3",
+    "concern": "viewer ergonomics",
+    "files_touched": [
+      "viewer/src/App.vue",
+      "viewer/src/components/DagViewer.vue",
+      "viewer/src/components/NodeTooltipPane.vue",
+      "viewer/src/services/roadmapReader.server.ts",
+      "viewer/src/services/dagReader.ts"
+    ],
+    "human_window_nodes": ["v-viewer-smoke-terminal"],
+    "test_command": "pnpm run check && pnpm test",
+    "build_command": "cd viewer && pnpm run build"
+  },
+  "inputs": [
+    { "path": "viewer/src/App.vue",                         "sha256": "b13b65d87a2bd24e202fa59f97fec5360257e046420bdc9e652576f63f22e6da", "role": "data-model" },
+    { "path": "viewer/src/components/NodeTooltipPane.vue",  "sha256": "83be8be24322984a175f16107f1df3b31492ccb2afc343a0d301bb4651b25c83", "role": "data-model" },
+    { "path": "viewer/src/components/DagViewer.vue",        "sha256": "f8df2ef8ed2e076a15fbe6edec03166e15c172cb6d361113297ec903fc077dd8", "role": "data-model" },
+    { "path": "viewer/src/services/roadmapReader.server.ts", "sha256": "94c0e80c4bc31094af0535f8c05367c46d78943417a9973b6b1277bc0be99560", "role": "data-model" },
+    { "path": "viewer/src/services/dagReader.server.ts",     "sha256": "72de99283d4e296aaec589ed396620f09b5923d8aaa807434d77e3c75b5c8566", "role": "spec" }
+  ],
+  "tasks": [
+    {
       "id": "init",
       "desc": "Open round 3 viewer-polish with a ratification receipt downstream nodes consume\n\nGiven the round 3 cluster is about to start. When init runs. Then a receipt at .roadmap/round-3/init.json exists, and every other node in the DAG consumes it as the start gate. This is the v2 way of expressing 'all work depends on the round being open' without inventing a synthetic-prereq edge.",
-      "produces": [
-        ".roadmap/round-3/init.json"
-      ],
+      "produces": [".roadmap/round-3/init.json"],
       "consumes": [],
-      "deps": [],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/round-3/init.json"
-        }
+        { "type": "artifact-exists", "target": ".roadmap/round-3/init.json" }
       ]
     },
-    "s-strip-roadmap-details": {
+
+    {
       "id": "s-strip-roadmap-details",
       "desc": "Remove the redundant 'roadmap details' tabs from the App.vue shell\n\nGiven the App.vue currently shows a collapsible details-head + details section at the bottom (L503-end) with FieldExpander tabs for head.json / completed / intentEvals — and the tooltip-pane is now the only per-node detail surface (the side panel was killed in r2). When this node runs. Then the details-head, the details section, the detailsOpen ref, the tab/tabData computeds, and the .details-head / .details / .tab CSS rules are all removed from App.vue. FieldExpander.vue itself stays — NodeTooltipPane.vue still uses it in print-expanded mode — but App.vue no longer references it. Also drops the now-unused 'tab' / 'search' / 'searchDebounced' refs and any related imports.\n\n  Receipt to .roadmap/round-3/s-strip-roadmap-details.json.",
       "produces": [
         "viewer/src/App.vue",
         ".roadmap/round-3/s-strip-roadmap-details.json"
       ],
-      "consumes": [
-        ".roadmap/round-3/init.json"
-      ],
-      "deps": [
-        "init"
-      ],
+      "consumes": [".roadmap/round-3/init.json"],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/round-3/s-strip-roadmap-details.json"
-        },
-        {
-          "type": "shell",
-          "command": "! grep -nE 'detailsOpen|tabData|<FieldExpander|details-head|class=\"tab' viewer/src/App.vue"
-        },
-        {
-          "type": "shell",
-          "command": "grep -q '<FieldExpander' viewer/src/components/NodeTooltipPane.vue"
-        },
-        {
-          "type": "shell",
-          "command": "cd viewer && pnpm run build > /dev/null"
-        }
+        { "type": "artifact-exists", "target": ".roadmap/round-3/s-strip-roadmap-details.json" },
+        { "type": "shell", "command": "! grep -nE 'detailsOpen|tabData|<FieldExpander|details-head|class=\"tab' viewer/src/App.vue" },
+        { "type": "shell", "command": "grep -q '<FieldExpander' viewer/src/components/NodeTooltipPane.vue" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
       ]
     },
-    "vw-canvas-fit": {
+
+    {
       "id": "vw-canvas-fit",
       "desc": "Auto-fit the DAG to the canvas at mount so users don't need to zoom out manually\n\nGiven a DAG of any size loads into the viewer (the example has 13 nodes; real ones go to 30+). When the page first renders. Then the entire layout bbox fits within the visible canvas with a small margin (say 24px on each side), regardless of window dimensions. Zoom-pan still works for refinement; the user can zoom in/out from there. Implementation: in onMounted (DagViewer.vue), after the d3-zoom is initialized, compute the scale needed to fit min(layout.width / canvasWidth, layout.height / canvasHeight) minus margin, and apply via zoomBehavior.transform = zoomIdentity.translate(...).scale(...). The existing centerSelected() does the inverse math (zoom-then-translate) for a single node — fitToCanvas does the same for the full bbox.\n\n  Risk: this conflicts with the URL-pin path (centerSelected from printPin). Resolution: if a URL pin is supplied, skip the fit-to-canvas (the pin's centering takes precedence). The two are mutually exclusive paths.\n\n  Receipt to .roadmap/round-3/vw-canvas-fit.json.",
       "produces": [
         "viewer/src/components/DagViewer.vue",
         ".roadmap/round-3/vw-canvas-fit.json"
       ],
-      "consumes": [
-        ".roadmap/round-3/init.json"
-      ],
-      "deps": [
-        "init"
-      ],
+      "consumes": [".roadmap/round-3/init.json"],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/round-3/vw-canvas-fit.json"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'fitToCanvas|fitToBounds|fitView|fitBbox' viewer/src/components/DagViewer.vue"
-        },
-        {
-          "type": "shell",
-          "command": "cd viewer && pnpm run build > /dev/null"
-        }
+        { "type": "artifact-exists", "target": ".roadmap/round-3/vw-canvas-fit.json" },
+        { "type": "shell", "command": "grep -qE 'fitToCanvas|fitToBounds|fitView|fitBbox' viewer/src/components/DagViewer.vue" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
       ]
     },
-    "vw-fix-click-teleport": {
+
+    {
       "id": "vw-fix-click-teleport",
       "desc": "Stop the camera from teleporting on the first click after a no-URL-pin landing\n\nGiven a user opens the viewer without a ?pin= URL param (the common case). When they click any visible node. Then the camera stays where it is — only the tooltip moves to the clicked node. Currently the camera teleports because initialPinDone is only set true inside if(selectedNodeId) branches in DagViewer.vue (L557 in onMounted, L573 in the watch). On a no-URL-pin landing, the flag stays false, the watch fires on first click, centerSelected runs, then the flag flips. Fix: set initialPinDone = true at the START of mount when there's no printPin (no URL pin). The semantic is 'first pin centers; if there's no pin to center on, we never center, and clicks never teleport.'\n\n  Falsifier: load /viewer with no ?pin, click any node, observe whether the camera moves. Hard to validate via shell (visual behavior); structural proxy is that the unconditional initialPinDone-true path now exists.\n\n  Depends on vw-canvas-fit because both touch DagViewer.vue and the canvas-fit path needs to land first (the fit-to-canvas is what gives the user a stable view to NOT teleport away from).\n\n  Receipt to .roadmap/round-3/vw-fix-click-teleport.json.",
-      "produces": [
-        ".roadmap/round-3/vw-fix-click-teleport.json"
-      ],
+      "produces": [".roadmap/round-3/vw-fix-click-teleport.json"],
       "consumes": [
         ".roadmap/round-3/init.json",
         ".roadmap/round-3/vw-canvas-fit.json",
         "viewer/src/components/DagViewer.vue"
       ],
-      "deps": [
-        "init",
-        "vw-canvas-fit"
-      ],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/round-3/vw-fix-click-teleport.json"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'initialPinDone\\s*=\\s*true' viewer/src/components/DagViewer.vue"
-        },
-        {
-          "type": "shell",
-          "command": "test $(grep -cE 'initialPinDone\\s*=\\s*true' viewer/src/components/DagViewer.vue) -ge 3"
-        },
-        {
-          "type": "shell",
-          "command": "cd viewer && pnpm run build > /dev/null"
-        }
+        { "type": "artifact-exists", "target": ".roadmap/round-3/vw-fix-click-teleport.json" },
+        { "type": "shell", "command": "grep -qE 'initialPinDone\\s*=\\s*true' viewer/src/components/DagViewer.vue" },
+        { "type": "shell", "command": "test $(grep -cE 'initialPinDone\\s*=\\s*true' viewer/src/components/DagViewer.vue) -ge 3" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
       ]
     },
-    "t-faithful-nodespec-dump": {
+
+    {
       "id": "t-faithful-nodespec-dump",
       "desc": "Render the full v2 NodeSpec shape in the tooltip-pane\n\nGiven a node selected in the viewer. When the tooltip-pane renders. Then it shows id (already done), desc (already done), produces (already done), validate (already done), AND consumes, mode (when not 'execute'), and sidecar (when present, summarized) — in the canonical v2 field order: id, desc, produces, consumes, validate, mode, sidecar. consumes is load-bearing because in v2 it IS the edge — a reader can trace the DAG just from looking at consumes/produces in tooltips. mode and sidecar are conditional renders.\n\n  Implementation: NodeTooltipPane.vue currently has sections for produces (L42-46) and validate (L47-53). Add a consumes section between them (alphabetically wrong but graph-flow correct: consumes are inputs, produces are outputs, validate is acceptance). Add a mode badge (small inline) in the header when mode !== 'execute'. Add a sidecar section that lists sidecar keys (collapsed, expandable on click) when nodeData.sidecar is a non-empty object.\n\n  The InputNodeData interface at L195-205 already declares consumes, produces, validate, sidecar — the type is fine; only rendering is missing.\n\n  Receipt to .roadmap/round-3/t-faithful-nodespec-dump.json.",
       "produces": [
         "viewer/src/components/NodeTooltipPane.vue",
         ".roadmap/round-3/t-faithful-nodespec-dump.json"
       ],
-      "consumes": [
-        ".roadmap/round-3/init.json"
-      ],
-      "deps": [
-        "init"
-      ],
+      "consumes": [".roadmap/round-3/init.json"],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/round-3/t-faithful-nodespec-dump.json"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'nodeData\\.consumes' viewer/src/components/NodeTooltipPane.vue"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE '>consumes<' viewer/src/components/NodeTooltipPane.vue"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'nodeData\\.mode|nodeData\\?\\.mode' viewer/src/components/NodeTooltipPane.vue"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'nodeData\\.sidecar|nodeData\\?\\.sidecar' viewer/src/components/NodeTooltipPane.vue"
-        },
-        {
-          "type": "shell",
-          "command": "cd viewer && pnpm run build > /dev/null"
-        }
+        { "type": "artifact-exists", "target": ".roadmap/round-3/t-faithful-nodespec-dump.json" },
+        { "type": "shell", "command": "grep -qE 'nodeData\\.consumes' viewer/src/components/NodeTooltipPane.vue" },
+        { "type": "shell", "command": "grep -qE '>consumes<' viewer/src/components/NodeTooltipPane.vue" },
+        { "type": "shell", "command": "grep -qE 'nodeData\\.mode|nodeData\\?\\.mode' viewer/src/components/NodeTooltipPane.vue" },
+        { "type": "shell", "command": "grep -qE 'nodeData\\.sidecar|nodeData\\?\\.sidecar' viewer/src/components/NodeTooltipPane.vue" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
       ]
     },
-    "p-discover-and-list": {
+
+    {
       "id": "p-discover-and-list",
       "desc": "Walk the filesystem for all .roadmap/head.json under a configurable root and return them sorted by recency with active/inactive grouping\n\nGiven 101 head.json files exist under ~/src/* on the maintainer's machine. When the viewer's /api/roadmap is called. Then it returns all roadmaps found via filesystem walk, sorted by head.json mtime descending, with each entry tagged status: 'active' (DAG exists and has remaining position) or 'inactive' (no head.json, or head.json present but DAG complete with no remaining work). Active entries appear before inactive within the same mtime band.\n\n  Implementation: extend viewer/src/services/roadmapReader.server.ts. Read the scan root from process.env.ROADMAP_FS_SCAN_ROOT (default: dirname(hostRepoRoot()) — usually ~/src). Walk N levels deep (cap at 4) looking for .roadmap/head.json. For each found, read mtime + parse head.json for id + count nodes + cross-reference completed.json for done count. Return RepoRoadmap[] same shape as today, sorted by mtime descending, with active entries first.\n\n  Existing fleet.json + host-repo logic stays for backward compat: if fleet.json exists, prefer that as the registry; otherwise filesystem-walk. The host repo is always included regardless.\n\n  Receipt to .roadmap/round-3/p-discover-and-list.json.",
       "produces": [
         "viewer/src/services/roadmapReader.server.ts",
         ".roadmap/round-3/p-discover-and-list.json"
       ],
-      "consumes": [
-        ".roadmap/round-3/init.json"
-      ],
-      "deps": [
-        "init"
-      ],
+      "consumes": [".roadmap/round-3/init.json"],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/round-3/p-discover-and-list.json"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'discoverRoadmaps|walkRoadmaps|readdirSync|statSync.*mtime' viewer/src/services/roadmapReader.server.ts"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'ROADMAP_FS_SCAN_ROOT|scanRoot' viewer/src/services/roadmapReader.server.ts"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'mtime' viewer/src/services/roadmapReader.server.ts"
-        },
-        {
-          "type": "shell",
-          "command": "cd viewer && pnpm run build > /dev/null"
-        }
+        { "type": "artifact-exists", "target": ".roadmap/round-3/p-discover-and-list.json" },
+        { "type": "shell", "command": "grep -qE 'discoverRoadmaps|walkRoadmaps|readdirSync|statSync.*mtime' viewer/src/services/roadmapReader.server.ts" },
+        { "type": "shell", "command": "grep -qE 'ROADMAP_FS_SCAN_ROOT|scanRoot' viewer/src/services/roadmapReader.server.ts" },
+        { "type": "shell", "command": "grep -qE 'mtime' viewer/src/services/roadmapReader.server.ts" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
       ]
     },
-    "p-clickable-picker": {
+
+    {
       "id": "p-clickable-picker",
       "desc": "Make roadmap-list rows clickable and switch the viewed DAG to the picked repo\n\nGiven the picker now lists potentially many roadmaps (up to 101 on the maintainer's machine, per the discover-and-list output). When the user clicks a row. Then the canvas re-fetches /api/roadmap-dag?repo=<encoded-path> and re-renders with that repo's DAG. The currently-viewed roadmap row gets a visual 'current' marker.\n\n  Implementation: App.vue maintains a selectedRepo ref (defaulting to the host repo's path from the first roadmap-list entry). The roadmap-list <li> elements get @click=\"selectedRepo = r.path\". The useDagPayload composable in dagReader.ts is changed to accept a repo path argument and pass it as ?repo=<encodeURIComponent(path)> in the buildUrl. /api/roadmap-dag's server (dagReader.server.ts) already accepts ?repo= — confirmed at line 158, no server change needed. Also visual: 'current' class on the matching row, 'inactive' class on rows with status: 'inactive' (lower opacity). The list is already scrollable per existing CSS.\n\n  Depends on p-discover-and-list because the picker UX is meaningful only with a real list to pick from. Consumes its receipt as the start gate.\n\n  Receipt to .roadmap/round-3/p-clickable-picker.json.",
       "produces": [
@@ -202,36 +131,18 @@
         ".roadmap/round-3/p-discover-and-list.json",
         "viewer/src/App.vue"
       ],
-      "deps": [
-        "init",
-        "p-discover-and-list",
-        "s-strip-roadmap-details"
-      ],
       "validate": [
-        {
-          "type": "artifact-exists",
-          "target": ".roadmap/round-3/p-clickable-picker.json"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE '@click.*selectedRepo|selectedRepo\\.value\\s*=' viewer/src/App.vue"
-        },
-        {
-          "type": "shell",
-          "command": "grep -qE 'encodeURIComponent.*repo|\\?repo=' viewer/src/services/dagReader.ts"
-        },
-        {
-          "type": "shell",
-          "command": "cd viewer && pnpm run build > /dev/null"
-        }
+        { "type": "artifact-exists", "target": ".roadmap/round-3/p-clickable-picker.json" },
+        { "type": "shell", "command": "grep -qE '@click.*selectedRepo|selectedRepo\\.value\\s*=' viewer/src/App.vue" },
+        { "type": "shell", "command": "grep -qE 'encodeURIComponent.*repo|\\?repo=' viewer/src/services/dagReader.ts" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
       ]
     },
-    "v-viewer-smoke-terminal": {
+
+    {
       "id": "v-viewer-smoke-terminal",
       "desc": "Manually verify all five r3 viewer-polish items in the browser\n\nGiven all five execution nodes have landed and the viewer dev server is running on :5173. When a human walks through the verification checklist. Then each behavior is observably correct in a browser.\n\n  Checklist (the human runs through these and writes the receipt):\n    1. STRIP — open viewer; bottom 'roadmap details' section is gone, no expandable tabs.\n    2. CANVAS FIT — open viewer at default URL; the DAG fits the canvas without manual zoom-out.\n    3. CLICK TELEPORT — without ?pin in URL, click any node; the camera does NOT snap or zoom.\n    4. NODESPEC DUMP — click a node; the tooltip-pane shows id, desc, produces, consumes, validate (in that order); a node with mode='plan' shows the mode badge; a node with sidecar shows a sidecar section.\n    5. PICKER — the roadmap-list shows multiple repos; clicking a different row switches the canvas to that repo's DAG; active vs inactive are visually distinguished; sort order is recency-desc.\n\n  Plan-mode terminal: when reached, the human expands this node into per-item child nodes (via roadmap dag insert) only if any item fails. If all five pass, the human writes a single GREEN receipt summarizing the walkthrough and advances. The DAG converges either way — failures expand into followup nodes, successes close the round.\n\n  Receipt at .roadmap/round-3/v-viewer-smoke-terminal.json.",
-      "produces": [
-        ".roadmap/round-3/v-viewer-smoke-terminal.json"
-      ],
+      "produces": [".roadmap/round-3/v-viewer-smoke-terminal.json"],
       "consumes": [
         ".roadmap/round-3/s-strip-roadmap-details.json",
         ".roadmap/round-3/vw-canvas-fit.json",
@@ -240,31 +151,10 @@
         ".roadmap/round-3/p-discover-and-list.json",
         ".roadmap/round-3/p-clickable-picker.json"
       ],
-      "deps": [
-        "p-clickable-picker",
-        "p-discover-and-list",
-        "s-strip-roadmap-details",
-        "t-faithful-nodespec-dump",
-        "vw-canvas-fit",
-        "vw-fix-click-teleport"
-      ],
+      "mode": "plan",
       "validate": [
-        {
-          "type": "expanded"
-        }
-      ],
-      "mode": "plan"
+        { "type": "expanded" }
+      ]
     }
-  },
-  "version": "0.3.0",
-  "protocolVersion": "0.3.0",
-  "_origin": {
-    "schemaVersion": 1,
-    "engine": "spec-kit",
-    "version": "1.0.0",
-    "compile_hash": "26433d87bb42909c491018db51cad2f61e042a507f4b0d4f38fc107c7e469ad9",
-    "spec_sha": "445e37ad62677bf4097b796e6b413981ced6387b2f2f18007000fdfd108df90e",
-    "importedAt": "2026-05-05T09:10:24.336Z",
-    "dagId": "roadmap-r3-viewer-polish"
-  }
+  ]
 }
