@@ -5,6 +5,15 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import type { Ref } from "vue";
 
+export interface LineageEntry {
+  id: string | null;
+  path: string;
+  mtime: number;
+  nodeCount: number;
+  doneCount: number;
+  status: "active" | "complete" | "empty";
+}
+
 export interface RepoRoadmap {
   repo: string;
   path: string;
@@ -15,6 +24,7 @@ export interface RepoRoadmap {
   remaining?: number;
   completionPct?: number;
   error?: string;
+  lineage?: LineageEntry[];
 }
 
 const POLL_FALLBACK_MS = 30_000;

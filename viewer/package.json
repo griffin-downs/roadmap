@@ -12,7 +12,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "d3-force": "^3.0.0",
     "d3-selection": "^3.0.0",
     "d3-zoom": "^3.0.0",
     "pinia": "^2.1.0",
@@ -21,7 +20,6 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
-    "@types/d3-force": "^3.0.10",
     "@vitejs/plugin-vue": "^6.0.5",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.4.0",

@@ -7,7 +7,9 @@ import { execFile } from "node:child_process";
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { promisify } from "node:util";
 import { join, dirname, basename } from "node:path";
-import type { RepoRoadmap } from "./roadmapReader.js";
+import type { RepoRoadmap, LineageEntry } from "./roadmapReader.js";
+
+export const LINEAGE_CAP = 50;
 
 const execFileAsync = promisify(execFile);
 
@@ -145,11 +147,53 @@ export function discoverRoadmaps(scanRoot: string): DiscoveredRoadmap[] {
   return found;
 }
 
+// Cruft filter — empty/test-scaffold head.json files (zero nodes or null id)
+// and tmp-* directories (e.g. .tmp-e2e-regen-*) flood the picker by 73% on
+// real machines. Filter at projection time, not traversal time, so r3's
+// existing skip-list (node_modules, .git, etc.) stays separate.
+const TMP_DIR_PATTERN = /^\.?tmp-/;
+
+function isEmptyHead(head: HeadJson | null): boolean {
+  if (head === null) return true;
+  const nodeCount = head.nodes !== undefined ? Object.keys(head.nodes).length : 0;
+  if (nodeCount === 0) return true;
+  if (head.id === null || head.id === undefined) return true;
+  return false;
+}
+
+function isTmpDir(repoPath: string): boolean {
+  return TMP_DIR_PATTERN.test(basename(repoPath));
+}
+
+function shouldIncludeEmpty(url: string | undefined): boolean {
+  if (process.env.SHOW_EMPTY === "1") return true;
+  if (url === undefined) return false;
+  const qIdx = url.indexOf("?");
+  if (qIdx === -1) return false;
+  const params = new URLSearchParams(url.slice(qIdx + 1));
+  return params.get("includeEmpty") === "1";
+}
+
+function filterCruft(
+  discovered: DiscoveredRoadmap[],
+  hostPath: string,
+  includeEmpty: boolean,
+): DiscoveredRoadmap[] {
+  if (includeEmpty) return discovered;
+  return discovered.filter((d) => {
+    if (d.path === hostPath) return true; // host always shown
+    if (isTmpDir(d.path)) return false;
+    if (isEmptyHead(d.head)) return false;
+    return true;
+  });
+}
+
 function projectDiscovered(d: DiscoveredRoadmap): RepoRoadmap {
   const dagId = d.head?.id;
+  const lineage = walkLineage(d.path);
   const totalNodes = d.head?.nodes !== undefined ? Object.keys(d.head.nodes).length : 0;
   if (totalNodes === 0) {
-    return { repo: d.name, path: d.path, status: "no-dag", dagId, currentBatch: [] };
+    return { repo: d.name, path: d.path, status: "no-dag", dagId, currentBatch: [], lineage };
   }
   const done = Math.min(d.doneCount, totalNodes);
   const remaining = Math.max(0, totalNodes - done);
@@ -162,7 +206,88 @@ function projectDiscovered(d: DiscoveredRoadmap): RepoRoadmap {
     completionPct: computeCompletionPct(done, remaining),
     currentBatch: [],
     remaining: isActive ? remaining : undefined,
+    lineage,
   };
+}
+
+// Lineage walk — surface archived rounds in .roadmap/heads/ (excluding the
+// _archived/ subdir and any non-.json file). Each entry: id + node/done
+// counts + mtime + status; sorted mtime DESC and capped at LINEAGE_CAP.
+// Done count cross-references completed.json receipts when they reference
+// nodes present in the head; otherwise computed from the head's node set.
+export function walkLineage(repoPath: string): LineageEntry[] {
+  const headsDir = join(repoPath, ".roadmap/heads");
+  let entries: string[];
+  try {
+    entries = readdirSync(headsDir);
+  } catch {
+    return [];
+  }
+
+  const completedIds = readCompletedIds(repoPath);
+  const out: LineageEntry[] = [];
+
+  for (const entry of entries) {
+    if (entry === "_archived") continue;
+    if (!entry.endsWith(".json")) continue;
+    const fullPath = join(headsDir, entry);
+    let mtime = 0;
+    try {
+      const st = statSync(fullPath);
+      if (!st.isFile()) continue;
+      mtime = st.mtimeMs;
+    } catch {
+      continue;
+    }
+    let head: HeadJson | null = null;
+    try {
+      head = JSON.parse(readFileSync(fullPath, "utf-8")) as HeadJson;
+    } catch {
+      head = null;
+    }
+    const nodes = head?.nodes ?? {};
+    const nodeIds = Object.keys(nodes);
+    const nodeCount = nodeIds.length;
+    const doneCount = computeLineageDone(nodeIds, completedIds);
+    const status: LineageEntry["status"] =
+      nodeCount === 0 ? "empty"
+        : doneCount >= nodeCount ? "complete"
+          : "active";
+    out.push({
+      id: head?.id ?? null,
+      path: fullPath,
+      mtime,
+      nodeCount,
+      doneCount,
+      status,
+    });
+  }
+
+  out.sort((a, b) => b.mtime - a.mtime);
+  return out.slice(0, LINEAGE_CAP);
+}
+
+function readCompletedIds(repoPath: string): Set<string> {
+  try {
+    const raw = readFileSync(join(repoPath, ".roadmap/completed.json"), "utf-8");
+    const parsed = JSON.parse(raw) as { receipts?: Array<{ nodeId?: string; id?: string }> } | Array<{ nodeId?: string; id?: string }>;
+    const receipts = Array.isArray(parsed) ? parsed : (parsed.receipts ?? []);
+    const ids = new Set<string>();
+    for (const r of receipts) {
+      const id = r.nodeId ?? r.id;
+      if (typeof id === "string") ids.add(id);
+    }
+    return ids;
+  } catch {
+    return new Set();
+  }
+}
+
+function computeLineageDone(nodeIds: string[], completedIds: Set<string>): number {
+  if (completedIds.size === 0) return 0;
+  let n = 0;
+  for (const id of nodeIds) if (completedIds.has(id)) n += 1;
+  return n;
 }
 
 function readFleetRepos(host: string): FleetEntry[] {
@@ -192,6 +317,8 @@ function projectRepo(repoEntry: OrientRepoEntry): RepoRoadmap {
     ?? undefined;
   const isActive = repoEntry.status === "active" && remaining > 0;
 
+  const lineage = walkLineage(repoEntry.path);
+
   if (!isActive) {
     return {
       repo: repoEntry.name,
@@ -200,6 +327,7 @@ function projectRepo(repoEntry: OrientRepoEntry): RepoRoadmap {
       dagId,
       completionPct: 100,
       currentBatch: [],
+      lineage,
     };
   }
 
@@ -211,6 +339,7 @@ function projectRepo(repoEntry: OrientRepoEntry): RepoRoadmap {
     completionPct: computeCompletionPct(done, remaining),
     currentBatch: batch,
     remaining,
+    lineage,
   };
 }
 
@@ -232,15 +361,17 @@ function sortRoadmapsByActivityAndMtime(
   });
 }
 
-export async function scanRoadmaps(): Promise<RepoRoadmap[]> {
+export async function scanRoadmaps(opts?: { url?: string }): Promise<RepoRoadmap[]> {
   const host = hostRepoRoot();
   const registry = readFleetRepos(host);
+  const includeEmpty = shouldIncludeEmpty(opts?.url);
 
   // No fleet.json → filesystem-walk discovery rooted at ROADMAP_FS_SCAN_ROOT
   // (default: dirname(host)). Host repo always included regardless.
   if (registry.length === 0) {
     const scanRoot = process.env.ROADMAP_FS_SCAN_ROOT ?? dirname(host);
-    const discovered = discoverRoadmaps(scanRoot);
+    const rawDiscovered = discoverRoadmaps(scanRoot);
+    const discovered = filterCruft(rawDiscovered, host, includeEmpty);
     const hostAlreadyFound = discovered.some((d) => d.path === host);
     if (!hostAlreadyFound) {
       const headPath = join(host, ".roadmap/head.json");
@@ -308,8 +439,9 @@ export async function scanRoadmaps(): Promise<RepoRoadmap[]> {
     const head = readHeadJson(entry.path);
     const dagId = head?.id;
     const totalNodes = head?.nodes !== undefined ? Object.keys(head.nodes).length : 0;
+    const lineage = walkLineage(entry.path);
     if (dagId === undefined && totalNodes === 0) {
-      return { repo: entry.name, path: entry.path, status: "no-dag", currentBatch: [] };
+      return { repo: entry.name, path: entry.path, status: "no-dag", currentBatch: [], lineage };
     }
     return {
       repo: entry.name,
@@ -320,6 +452,7 @@ export async function scanRoadmaps(): Promise<RepoRoadmap[]> {
       currentBatch: position,
       level: result.data.level,
       remaining,
+      lineage,
     };
   });
 }

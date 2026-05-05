@@ -65,7 +65,7 @@ function dagPlugin(): Plugin {
 function roadmapPlugin(): Plugin {
   return apiPlugin("roadmap-api", "/api/roadmap", async () => {
     const mod = await import("./src/services/roadmapReader.server.ts");
-    return async () => mod.scanRoadmaps();
+    return async (req: IncomingMessage) => mod.scanRoadmaps({ url: req.url });
   });
 }
 
@@ -81,7 +81,7 @@ function trailPlugin(): Plugin {
 function laneRollupPlugin(): Plugin {
   return apiPlugin("lane-rollup-api", "/api/lane-rollup", async () => {
     const mod = await import("./src/services/roadmapReader.server.ts");
-    return async () => mod.scanRoadmaps();
+    return async (req: IncomingMessage) => mod.scanRoadmaps({ url: req.url });
   });
 }
 

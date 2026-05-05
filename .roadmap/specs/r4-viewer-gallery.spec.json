@@ -1,0 +1,228 @@
+{
+  "schema_version": 2,
+  "dag_id": "roadmap-r4-viewer-gallery",
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "metadata": {
+    "round": "r4",
+    "concern": "viewer · no-scroll layout · in-canvas zoom · stale pin removal · gallery for many roadmaps",
+    "files_touched": [
+      "viewer/src/App.vue",
+      "viewer/src/components/DagViewer.vue",
+      "viewer/src/components/NodeTooltipPane.vue",
+      "viewer/src/components/MiniDagThumbnail.vue",
+      "viewer/src/components/LineagePane.vue",
+      "viewer/src/services/roadmapReader.server.ts",
+      "viewer/src/services/dagReader.ts",
+      "viewer/index.html",
+      "viewer/package.json"
+    ],
+    "files_deleted": [
+      "viewer/src/components/DagTopology.vue",
+      "viewer/src/composables/useForceLayout.ts"
+    ],
+    "human_window_nodes": [
+      "v-r4-smoke-terminal"
+    ],
+    "test_command": "pnpm run check && pnpm test",
+    "build_command": "cd viewer && pnpm run build"
+  },
+  "inputs": [
+    { "path": "viewer/src/App.vue",                                "sha256": "fda064ee40dfea40fc5860e5e0b274b0ce8b85c42784c3c1f97b06eff7e96f0c", "role": "data-model" },
+    { "path": "viewer/src/components/DagViewer.vue",               "sha256": "4098870e0916237ede0cb659675d43e286f3bd25e07232cfe4846c37b8aa7ced", "role": "data-model" },
+    { "path": "viewer/src/components/NodeTooltipPane.vue",         "sha256": "1ea9ed86c556d74c1220a4f81007774d0479835616411c1522ae294afa322754", "role": "data-model" },
+    { "path": "viewer/src/services/roadmapReader.server.ts",       "sha256": "cbe1af777b3d03cb929271edcd8096d89212fec706cc54d11a66630b9353a902", "role": "data-model" },
+    { "path": "viewer/src/services/dagReader.server.ts",           "sha256": "72de99283d4e296aaec589ed396620f09b5923d8aaa807434d77e3c75b5c8566", "role": "spec" }
+  ],
+  "dag_desc": "Roadmap viewer · r4 · post-r3-smoke ergonomic findings + gallery rebuild for the actual cardinality of roadmaps on disk.\n\n  WHY R4 (vs r3-terminal-expand): r3's five spec items work · the smoke walk surfaced FIVE additional concerns (four gaps + a print-mode reconciliation requirement) that were not in the r3 contract. Per spec discipline, additional findings from usage open a new round; r3 closes GREEN.\n\n  CORPUS REALITY (grounded at spec time, embedded so agents don't re-discover):\n\n  1. ~/src has 101 head.json files. Distribution: 74 empty (mostly donjon/.tmp-e2e-regen-* test scaffolds — pure cruft), 22 complete, 3 active, 2 fresh. Of 101 files, 72 sit under ~/src/donjon/.tmp-* and have null id/init/term/nodes (e2e test artifacts). Without a cruft filter, any picker is 73% noise.\n\n  2. Within a real repo, the unit of interest is the LINEAGE not the head. ~/src/fleet has 110 entries in .roadmap/heads/ (round-by-round archive). ~/src/render has 23. This repo has 4. The chain (r62→r63→r64→r65→r66) IS the project's narrative — the 'compiling agent state' thesis literalized. Showing 110 separate cards for fleet is hostile noise; showing fleet as ONE entity with a current head and a tail of rounds is the right primitive.\n\n  3. r3's p-discover-and-list found heads via fs walk under ROADMAP_FS_SCAN_ROOT but did NOT walk .roadmap/heads/ for archived DAGs. The picker shows current heads only. Lineage data is on disk; the reader doesn't expose it.\n\n  4. The page has a vertical scrollbar: html/body lack height:100% + overflow:hidden, so content bleeds past viewport. App.vue has its own height:100vh on the root but the document above it isn't viewport-locked.\n\n  5. DagViewer.vue has no in-canvas zoom controls. Zoom is wheel/trackpad only. Trackpad-less users can't zoom; new users don't know the canvas is zoomable.\n\n  6. NodeTooltipPane.vue still emits a 'pin-to-side' event on a button labeled 'pin to side' (L106-107, L252) — the side panel was killed in r2. The button does nothing. Stale UI.\n\n  7. PRINT MODE EXISTS AND IS LOAD-BEARING (?print=1, optional &pin=<node-id>) — drives the 'money shot' poster aesthetic for screenshots/conference deck. App.vue:43-46 reads printMode + printPin; App.vue:431 already gates the roadmap-list with v-if=\"!printMode\"; DagViewer.vue:3 already gates its toolbar with v-if=\"hasGraph && !printMode\"; classes dag-svg--print, dag-tooltip--print, viewer-shell--print encode print styling. EVERY new nav/control surface added in r4 must extend this convention — print mode shows ONLY the canvas + (optional) pinned tooltip, nothing else.\n\n  8. TIME-TO-INTERACTION BOTTLENECK · /api/roadmap (the discovery walk) gates first paint because the viewer fires it in the same wave as /api/roadmap-dag and the layout waits for both. The DAG payload is one head.json read (sub-100ms) but the roadmap walk parses 101 head.json files across thousands of dirs. Decoupling the fetches lets canvas paint on the DAG alone; picker fades in after first paint via requestIdleCallback or setTimeout(0). r4's d-cruft-filter additionally cuts the 74 empty donjon dirs from the walk, roughly quartering the work even when it does run.\n\n  9. TOPOLOGY VIEW IS DEAD WEIGHT · App.vue carries a hierarchical | topology toggle (App.vue:58, 416-424); topology is a force-directed view powered by useForceLayout.ts (composable, ~200 lines, d3-force dep) and DagTopology.vue (component). Hierarchy view is what users actually look at — topology is an unmaintained alt that doesn't show ordering, doesn't reflect the consumes-produces edges meaningfully, and adds bundle weight + UI surface. Retiring it removes the toggle, the composable, the component, and the d3-force dependency. Hierarchy becomes THE view (no toggle).\n\n  CLUSTERS · LAYOUT (no-scroll · strip stale pin · retire topology) · ZOOM (in-canvas controls, hidden in print) · DISCOVERY (cruft filter · lineage walk · server-side, print-agnostic) · PERF (defer roadmap-list fetch for TTI) · GALLERY (repo rail · mini-thumbnail · lineage pane — ALL hidden in print, same convention as the existing roadmap-list).\n\n  PRINT-MODE GATING CONTRACT (load-bearing for r4):\n    z-canvas-zoom-buttons    v-if=\"!printMode\"   (matches existing toolbar gate)\n    g-repo-rail              v-if=\"!printMode\"   (matches existing roadmap-list gate)\n    g-lineage-pane           v-if=\"!printMode\"   (nav UI, not money shot)\n    g-mini-thumbnail         (cascades — only mounted by g-lineage-pane)\n    l-no-scroll-shell        applies in BOTH modes (print is doubly no-scroll)\n    l-strip-tooltip-pin-to-side  print-agnostic (button just deleted)\n    d-cruft-filter           server-side, print-agnostic\n    d-lineage-walk           server-side, print-agnostic\n\n  GALLERY SHAPE · Two-pane: left rail = compact repo list with current-DAG status + done/total; RIGHT pane = chosen repo's lineage as a horizontal chain of mini-thumbnails (oldest left, current right and emphasized), click any round to load its DAG into the canvas. Honors both axes — repo cardinality (~25 real repos) and lineage depth (fleet's 110 rounds) — without flattening either to noise. Lineage cap at 50 most-recent for payload sanity.\n\n  STANCE · all changes are ergonomic. Validators are structural-proxy where behavior is hard to shell-check (the actual UX verification is the human terminal). Receipts at .roadmap/round-4/<id>.json.\n\n  RISK · App.vue is touched by FIVE nodes (l-no-scroll-shell · r-retire-topology · p-defer-discovery · g-repo-rail · g-lineage-pane). DagViewer.vue is touched by ONE (z-canvas-zoom-buttons). roadmapReader.server.ts is touched by TWO (d-cruft-filter · d-lineage-walk). The App.vue chain sequences l-no-scroll-shell (first, produces App.vue) → r-retire-topology (consumes, simplifies before more layout work piles in) → p-defer-discovery (consumes, mount-time fetch sequencing) → g-repo-rail → g-lineage-pane. Second-touch consume pattern throughout. Each App.vue / DagViewer.vue editor must respect printMode; every new conditional surface gets v-if=\"!printMode\".\n\n  TERMINAL · v-r4-smoke-terminal is plan-mode. Validation is 'open the viewer, walk the 6-item checklist, confirm each works' — including a print-mode pass (?print=1) that verifies all r4 nav/controls are hidden. Irreducibly visual; structural validators on each node prove the code shape, the terminal proves the UX.",
+  "tasks": [
+    {
+      "id": "init",
+      "desc": "Open round 4 viewer-gallery with a ratification receipt downstream nodes consume\n\nGiven the round 4 cluster is about to start. When init runs. Then a receipt at .roadmap/round-4/init.json exists, and every other node in the DAG consumes it as the start gate. v2 ratification pattern · no synthetic-prereq edge.",
+      "produces": [".roadmap/round-4/init.json"],
+      "consumes": [],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/init.json" }
+      ]
+    },
+    {
+      "id": "l-no-scroll-shell",
+      "desc": "Lock the page to the viewport so there is no document-level scrollbar\n\nGiven the viewer page currently shows a vertical scrollbar because html and body have default heights and overflow, allowing content to bleed past the viewport. When the user opens the viewer at any window size. Then there is NO document-level scrollbar; html, body, and #app fill the viewport exactly; internal panes (canvas, repo rail, lineage pane, tooltip) handle their own overflow. Implementation: add global CSS to viewer/index.html (or a new <style> in App.vue's root) setting html, body { height: 100%; margin: 0; overflow: hidden } and ensuring #app { height: 100%; display: flex } so all children participate in flex sizing.\n\n  Receipt to .roadmap/round-4/l-no-scroll-shell.json.",
+      "produces": ["viewer/src/App.vue", ".roadmap/round-4/l-no-scroll-shell.json"],
+      "consumes": [".roadmap/round-4/init.json"],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/l-no-scroll-shell.json" },
+        { "type": "shell", "command": "grep -qE 'overflow:\\s*hidden|overflow-y:\\s*hidden' viewer/src/App.vue viewer/index.html" },
+        { "type": "shell", "command": "grep -qE 'html,?\\s*body|html\\s*\\{|body\\s*\\{' viewer/src/App.vue viewer/index.html" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "r-retire-topology",
+      "desc": "Retire the topology (force-directed) view; hierarchy is the only view\n\nGiven App.vue carries a hierarchical | topology toggle (App.vue:58 viewMode ref, 416-424 toggle buttons) and topology is a force-directed alt powered by useForceLayout.ts and DagTopology.vue — and topology is unmaintained, doesn't show consumes-produces ordering meaningfully, and adds bundle weight (d3-force). When this node runs. Then: (a) DagTopology.vue is deleted, (b) useForceLayout.ts is deleted, (c) the viewMode ref + watcher + toggle div in App.vue are removed, (d) all v-if=\"viewMode === 'hierarchical'\" / v-if=\"viewMode === 'topology'\" conditionals collapse to unconditional rendering of the hierarchical path, (e) the d3-force dependency is removed from viewer/package.json, (f) any imports of useForceLayout / DagTopology from App.vue are dropped.\n\n  This consumes App.vue from l-no-scroll-shell (sequencing) and produces App.vue plus its own receipt. The deleted files are not in produces (engine doesn't track deletions); the validators below grep-prove their absence.\n\n  Receipt to .roadmap/round-4/r-retire-topology.json.",
+      "produces": [".roadmap/round-4/r-retire-topology.json"],
+      "consumes": [
+        ".roadmap/round-4/init.json",
+        ".roadmap/round-4/l-no-scroll-shell.json",
+        "viewer/src/App.vue"
+      ],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/r-retire-topology.json" },
+        { "type": "shell", "command": "! test -f viewer/src/components/DagTopology.vue" },
+        { "type": "shell", "command": "! test -f viewer/src/composables/useForceLayout.ts" },
+        { "type": "shell", "command": "! grep -qE 'viewMode|useForceLayout|DagTopology' viewer/src/App.vue" },
+        { "type": "shell", "command": "! grep -qE '\"d3-force\"' viewer/package.json" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "p-defer-discovery",
+      "desc": "Defer the roadmap-list fetch so the canvas paints on the DAG payload alone (TTI)\n\nGiven the viewer currently fires /api/roadmap (discovery walk over ~/src — 101 head.json files, thousands of dirs) and /api/roadmap-dag (single head.json, sub-100ms) in the same wave, and the layout waits for both before paint. When this node runs. Then the DAG fetch is unblocked from the discovery fetch: the canvas renders as soon as /api/roadmap-dag returns; /api/roadmap is fired LAZILY after first paint (requestIdleCallback when available, setTimeout(0) fallback), and the picker / repo-rail shows a brief 'loading repos…' state until it resolves. Time-to-interaction drops from O(filesystem-walk) to O(single-head-read).\n\n  Implementation: App.vue mount-time logic. The existing useDagPayload (dagReader.ts) call stays synchronous on mount; the allRoadmaps fetch (or whatever fires /api/roadmap) is wrapped in onMounted(() => requestIdleCallback(...)) or onMounted with setTimeout(() => fetchRoadmaps(), 0). Render-path code that depends on allRoadmaps must tolerate an empty initial state (treat undefined / empty as 'loading' rather than 'no roadmaps').\n\n  This consumes App.vue from r-retire-topology (sequencing — cleaner mount logic on the simplified post-topology App.vue) and produces App.vue + dagReader.ts + its receipt.\n\n  Receipt to .roadmap/round-4/p-defer-discovery.json.",
+      "produces": [
+        "viewer/src/services/dagReader.ts",
+        ".roadmap/round-4/p-defer-discovery.json"
+      ],
+      "consumes": [
+        ".roadmap/round-4/init.json",
+        ".roadmap/round-4/r-retire-topology.json",
+        "viewer/src/App.vue"
+      ],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/p-defer-discovery.json" },
+        { "type": "shell", "command": "grep -qE 'requestIdleCallback|setTimeout\\(\\s*\\(\\s*\\)\\s*=>|setTimeout\\([^,]+,\\s*0\\)' viewer/src/App.vue" },
+        { "type": "shell", "command": "grep -qE 'loading|isLoading|roadmapsLoading' viewer/src/App.vue" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "l-strip-tooltip-pin-to-side",
+      "desc": "Remove the stale 'pin to side' button from NodeTooltipPane.vue\n\nGiven NodeTooltipPane.vue emits a 'pin-to-side' event from a button labeled 'pin to side' at L106-107 with a corresponding emit declaration at L252 — and the side panel that consumed this event was killed in r2 (no listener exists anywhere in viewer/src/). When this node runs. Then the button, the @click handler, the emit declaration, and any associated header comment line referencing 'pin-to-side' are all removed from NodeTooltipPane.vue. The other tooltip controls (close, expand) remain.\n\n  Receipt to .roadmap/round-4/l-strip-tooltip-pin-to-side.json.",
+      "produces": ["viewer/src/components/NodeTooltipPane.vue", ".roadmap/round-4/l-strip-tooltip-pin-to-side.json"],
+      "consumes": [".roadmap/round-4/init.json"],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/l-strip-tooltip-pin-to-side.json" },
+        { "type": "shell", "command": "! grep -qE 'pin-to-side|pinToSide' viewer/src/components/NodeTooltipPane.vue" },
+        { "type": "shell", "command": "! grep -rqE 'pin-to-side|pinToSide' viewer/src/" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "z-canvas-zoom-buttons",
+      "desc": "Add an in-canvas zoom control overlay (zoom-in, zoom-out, fit) to DagViewer.vue · hidden in print mode\n\nGiven the canvas in DagViewer.vue is zoomable via wheel/trackpad gestures only, which excludes trackpad-less users and is undiscoverable. When the user opens the viewer WITHOUT ?print=1. Then a small floating control group is anchored in a corner of the canvas (bottom-right is conventional for graph viewers) with three buttons: zoom-in (+), zoom-out (−), fit-to-canvas (re-runs r3's fitToCanvas). Each button calls the existing d3-zoom transform programmatically (zoomBehavior.scaleBy on the svg selection for +/−; the existing fitToCanvas function for fit). Buttons are styled consistent with existing tooltip-pane buttons (subtle, monospace-friendly), positioned absolute within the canvas container, with keyboard focus rings and tooltips/aria-labels. They do NOT scroll out of view (overflow handled by the no-scroll shell from l-no-scroll-shell).\n\n  PRINT MODE: when ?print=1 is set, the entire control group is hidden (v-if=\"!printMode\"), matching the existing dag-viewer__toolbar gate at DagViewer.vue:3. The poster aesthetic must remain control-free.\n\n  Receipt to .roadmap/round-4/z-canvas-zoom-buttons.json.",
+      "produces": ["viewer/src/components/DagViewer.vue", ".roadmap/round-4/z-canvas-zoom-buttons.json"],
+      "consumes": [".roadmap/round-4/init.json"],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/z-canvas-zoom-buttons.json" },
+        { "type": "shell", "command": "grep -qE 'zoom-in|zoomIn|aria-label=\"zoom in\"' viewer/src/components/DagViewer.vue" },
+        { "type": "shell", "command": "grep -qE 'zoom-out|zoomOut|aria-label=\"zoom out\"' viewer/src/components/DagViewer.vue" },
+        { "type": "shell", "command": "grep -qE 'fitToCanvas|aria-label=\"fit\"' viewer/src/components/DagViewer.vue" },
+        { "type": "shell", "command": "grep -qE 'scaleBy|scaleTo' viewer/src/components/DagViewer.vue" },
+        { "type": "shell", "command": "grep -qE 'v-if=\"!printMode\".*zoom|zoom.*v-if=\"!printMode\"|!printMode' viewer/src/components/DagViewer.vue" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "d-cruft-filter",
+      "desc": "Skip empty and tmp-named directories in the discovery walk by default\n\nGiven r3's discoverRoadmaps walks ~/src and finds 101 head.json files, of which 74 are empty (null id, zero nodes) — mostly under ~/src/donjon/.tmp-e2e-regen-* test scaffolds. When the discovery returns. Then by default, entries are excluded if (a) their head.json has zero nodes OR null id, OR (b) their containing directory matches the pattern .tmp-* / tmp-*. An optional flag (e.g. ?includeEmpty=1 query param, or a SHOW_EMPTY env var) can override to show them. The skip-list from r3 (node_modules, .git, etc.) stays.\n\n  Implementation: extend roadmapReader.server.ts. After walking, filter the result list. Active/inactive grouping (r3 contract) still applies — empty entries are simply hidden by default rather than appearing as 'inactive'.\n\n  Receipt to .roadmap/round-4/d-cruft-filter.json.",
+      "produces": ["viewer/src/services/roadmapReader.server.ts", ".roadmap/round-4/d-cruft-filter.json"],
+      "consumes": [".roadmap/round-4/init.json"],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/d-cruft-filter.json" },
+        { "type": "shell", "command": "grep -qE 'tmp-|\\.tmp-' viewer/src/services/roadmapReader.server.ts" },
+        { "type": "shell", "command": "grep -qE 'includeEmpty|isEmpty|nodes.*===\\s*0|nodeCount\\s*===\\s*0' viewer/src/services/roadmapReader.server.ts" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "d-lineage-walk",
+      "desc": "Walk .roadmap/heads/ for each repo and expose the lineage chain (archived DAGs)\n\nGiven a repo like ~/src/fleet has 110 head archives in .roadmap/heads/*.json (each a past round's frozen DAG), and the current discoverRoadmaps only reports the top-level head.json. When the reader returns a repo entry. Then it ALSO includes a lineage[] array of past rounds: each entry has { id, path, mtime, nodeCount, doneCount, status }, sorted by mtime DESC. The current head is included separately as before; the lineage is the .roadmap/heads/ archive (not duplicating the current). Cap depth at the most recent N entries (default 50) to avoid bloating the JSON for fleet's 110-deep tail; client paginates if needed.\n\n  Implementation: roadmapReader.server.ts second-touch pattern · consumes the file from d-cruft-filter (which goes first), produces only its receipt. Add walkLineage(repoPath) that readdirSyncs .roadmap/heads/ skipping _archived/ subdir, parses each, returns the array. Wire into the existing repo-entry shape.\n\n  Receipt to .roadmap/round-4/d-lineage-walk.json.",
+      "produces": [".roadmap/round-4/d-lineage-walk.json"],
+      "consumes": [
+        ".roadmap/round-4/init.json",
+        ".roadmap/round-4/d-cruft-filter.json",
+        "viewer/src/services/roadmapReader.server.ts"
+      ],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/d-lineage-walk.json" },
+        { "type": "shell", "command": "grep -qE 'walkLineage|lineage' viewer/src/services/roadmapReader.server.ts" },
+        { "type": "shell", "command": "grep -qE '\\.roadmap/heads' viewer/src/services/roadmapReader.server.ts" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "g-mini-thumbnail",
+      "desc": "Render a small read-only DAG thumbnail component for use in the gallery lineage pane\n\nGiven the gallery lineage pane needs to show a recognizable preview of each round's DAG (not just an id and a node count) so the human can see at a glance whether r62 looked like r66. When this component is mounted with a head.json payload. Then it renders an SVG approximately 240×140px with the DAG's hierarchical layout (reusing the same layout function DagViewer uses), showing nodes as small dots colored by status (done/in-flight/blocked), edges as thin lines, no labels, no tooltip, no zoom interaction. Click bubbles up an event the parent can use to load that round into the main canvas.\n\n  Implementation: NEW file viewer/src/components/MiniDagThumbnail.vue. Single prop: { head: HeadJson }. Uses the existing layout module from DagViewer's imports. Renders inline SVG. ~150 lines. Not interactive beyond click.\n\n  Receipt to .roadmap/round-4/g-mini-thumbnail.json.",
+      "produces": ["viewer/src/components/MiniDagThumbnail.vue", ".roadmap/round-4/g-mini-thumbnail.json"],
+      "consumes": [".roadmap/round-4/init.json"],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/g-mini-thumbnail.json" },
+        { "type": "artifact-exists", "target": "viewer/src/components/MiniDagThumbnail.vue" },
+        { "type": "shell", "command": "grep -qE 'defineProps' viewer/src/components/MiniDagThumbnail.vue" },
+        { "type": "shell", "command": "grep -qE '<svg' viewer/src/components/MiniDagThumbnail.vue" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "g-repo-rail",
+      "desc": "Replace the flat picker with a compact left-rail repo list grouped by current-DAG status · hidden in print mode\n\nGiven r3's p-clickable-picker shows ALL heads as flat rows, and the corpus is many repos × many rounds (so a flat list of every head doesn't match the mental model). When this node runs and the viewer is loaded WITHOUT ?print=1. Then App.vue's left side renders a vertical rail showing one row PER REPO (not per head), each row showing the repo name, the current head's status (active / fresh / complete / no-dag), and a done/total summary. Active repos sort first by mtime DESC; complete and no-dag repos appear collapsed below in muted styling. Selecting a row updates a selectedRepo ref (existing from r3) and ALSO publishes selectedRepoLineage for the right pane.\n\n  PRINT MODE: the entire repo-rail aside is gated v-if=\"!printMode\", same convention as the existing roadmap-list aside at App.vue:431. Print stays canvas-only.\n\n  Co-edit: this restructures the picker section in App.vue. l-no-scroll-shell lands first; g-repo-rail consumes App.vue from it. The right pane is filled by g-lineage-pane (next).\n\n  Receipt to .roadmap/round-4/g-repo-rail.json.",
+      "produces": [".roadmap/round-4/g-repo-rail.json"],
+      "consumes": [
+        ".roadmap/round-4/init.json",
+        ".roadmap/round-4/p-defer-discovery.json",
+        ".roadmap/round-4/d-cruft-filter.json",
+        "viewer/src/App.vue"
+      ],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/g-repo-rail.json" },
+        { "type": "shell", "command": "grep -qE 'repo-rail|repoRail' viewer/src/App.vue" },
+        { "type": "shell", "command": "grep -qE 'selectedRepo' viewer/src/App.vue" },
+        { "type": "shell", "command": "grep -qE 'v-if=\"!printMode\".*repo-rail|v-if=\"!printMode\".*repoRail' viewer/src/App.vue" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "g-lineage-pane",
+      "desc": "Render the chosen repo's lineage as a horizontal chain of mini-thumbnails on the RIGHT pane · hidden in print mode\n\nGiven g-repo-rail publishes a selected repo and d-lineage-walk exposes that repo's lineage[] from .roadmap/heads/, and g-mini-thumbnail can render any single head as a small SVG. When the user selects a repo and the viewer is loaded WITHOUT ?print=1. Then the RIGHT pane (taking up the bulk of the area opposite the left repo-rail) shows a horizontal scrollable chain of MiniDagThumbnails, oldest on the left, current on the right (LARGER, emphasized). Each thumbnail labeled with its DAG id (truncated) and mtime. Clicking a thumbnail loads that round into the main DAG canvas (sets the dag query parameter via the existing useDagPayload signature from r3). Lineage cap at 50 most-recent for payload sanity (per d-lineage-walk).\n\n  PRINT MODE: the LineagePane is gated v-if=\"!printMode\" at its mount site in App.vue. Print mode preserves the prior canvas-only behavior — no rail, no lineage strip, no controls.\n\n  Implementation: NEW file viewer/src/components/LineagePane.vue. Mount inside App.vue on the right side, beside or above the main canvas (right pane per author decision). Imports MiniDagThumbnail. ~200 lines. App.vue gets a small wiring change to mount it. Edge cases: empty lineage (single round) renders nothing or a 'no prior rounds' note; very long lineage (110+) horizontal-scrolls; lineage cap respected.\n\n  Receipt to .roadmap/round-4/g-lineage-pane.json.",
+      "produces": ["viewer/src/components/LineagePane.vue", ".roadmap/round-4/g-lineage-pane.json"],
+      "consumes": [
+        ".roadmap/round-4/init.json",
+        ".roadmap/round-4/g-repo-rail.json",
+        ".roadmap/round-4/d-lineage-walk.json",
+        ".roadmap/round-4/g-mini-thumbnail.json",
+        "viewer/src/App.vue"
+      ],
+      "validate": [
+        { "type": "artifact-exists", "target": ".roadmap/round-4/g-lineage-pane.json" },
+        { "type": "artifact-exists", "target": "viewer/src/components/LineagePane.vue" },
+        { "type": "shell", "command": "grep -qE 'MiniDagThumbnail' viewer/src/components/LineagePane.vue" },
+        { "type": "shell", "command": "grep -qE 'LineagePane' viewer/src/App.vue" },
+        { "type": "shell", "command": "grep -qE 'v-if=\"!printMode\".*LineagePane|LineagePane.*v-if=\"!printMode\"' viewer/src/App.vue" },
+        { "type": "shell", "command": "cd viewer && pnpm run build > /dev/null" }
+      ]
+    },
+    {
+      "id": "v-r4-smoke-terminal",
+      "desc": "Manually verify all r4 viewer items in the browser\n\nGiven all execute nodes have landed and the viewer dev server is running on :5173 with ROADMAP_FS_SCAN_ROOT pointed at ~/src. When a human walks through the verification checklist. Then each behavior is observably correct.\n\n  Checklist:\n    1. NO-SCROLL — open viewer; no document-level scrollbar at any window size; internal panes scroll within themselves where needed.\n    2. STRIP PIN — click any node; tooltip-pane has no 'pin to side' button (close + expand only).\n    3. ZOOM BUTTONS — corner of canvas has visible +, −, fit buttons; each works; keyboard-focusable.\n    4. CRUFT FILTER — picker no longer shows the ~74 empty donjon test scaffolds; only real roadmaps appear.\n    5. GALLERY — left rail shows ~25 real repos sorted by recency with status badges; clicking a repo shows that repo's lineage chain on the right pane; fleet shows ~50 rounds in chain (capped); clicking a past round loads it into the canvas.\n    6. PRINT MODE — append ?print=1 (optionally &pin=<id>) to URL; the page renders canvas-only — NO repo-rail, NO lineage pane, NO zoom buttons, NO 'pin to side' (already gone). Money-shot poster aesthetic preserved.\n    7. NO TOPOLOGY — there is no view-mode toggle; hierarchical is the only view. App.vue does not import useForceLayout or DagTopology; viewer/package.json no longer has d3-force.\n    8. FAST FIRST PAINT — open viewer with devtools network throttled (slow 3G or similar); the canvas renders the DAG before /api/roadmap (the discovery walk) has completed; repo rail shows a brief 'loading' state then populates. TTI is bounded by the DAG fetch, not the walk.\n\n  Plan-mode terminal: when reached, the human expands this node into per-item child nodes (via roadmap dag insert) only if any item fails. If all pass, the human writes a single GREEN receipt and advances.\n\n  Receipt to .roadmap/round-4/v-r4-smoke-terminal.json.",
+      "produces": [".roadmap/round-4/v-r4-smoke-terminal.json"],
+      "consumes": [
+        ".roadmap/round-4/l-no-scroll-shell.json",
+        ".roadmap/round-4/r-retire-topology.json",
+        ".roadmap/round-4/p-defer-discovery.json",
+        ".roadmap/round-4/l-strip-tooltip-pin-to-side.json",
+        ".roadmap/round-4/z-canvas-zoom-buttons.json",
+        ".roadmap/round-4/d-cruft-filter.json",
+        ".roadmap/round-4/d-lineage-walk.json",
+        ".roadmap/round-4/g-mini-thumbnail.json",
+        ".roadmap/round-4/g-repo-rail.json",
+        ".roadmap/round-4/g-lineage-pane.json"
+      ],
+      "validate": [
+        { "type": "expanded" }
+      ],
+      "mode": "plan"
+    }
+  ]
+}
