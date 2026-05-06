@@ -244,22 +244,6 @@ function bumpFontScale(dir: 1 | -1): void {
   fontScale.value = FONT_SCALE_STEPS[next];
 }
 
-// Tooltip view-mode (raw vs pretty). Driven by toolbar toggle, persisted.
-type TooltipViewMode = "raw" | "pretty";
-function loadTooltipViewMode(): TooltipViewMode {
-  try {
-    const v = localStorage.getItem("viewer-tooltip-view-mode");
-    return v === "raw" ? "raw" : "pretty";
-  } catch { return "pretty"; }
-}
-const tooltipViewMode: Ref<TooltipViewMode> = ref<TooltipViewMode>(loadTooltipViewMode());
-watch(tooltipViewMode, (v) => {
-  try { localStorage.setItem("viewer-tooltip-view-mode", v); } catch { /* ignore */ }
-});
-function setTooltipViewMode(m: TooltipViewMode): void {
-  if (!tooltipNodeId.value) return; // disabled when no tooltip showing
-  tooltipViewMode.value = m;
-}
 const tooltipNode: ComputedRef<InspectedNode | null> = computed(() => {
   const p = payload.value;
   if (p === null || !tooltipNodeId.value) return null;
@@ -581,24 +565,6 @@ function buildStars(): Star[] {
           :title="focusMode ? 'show side panes' : 'maximize canvas (hide rail and lineage)'"
           @click="focusMode = !focusMode"
         >⊟ focus</button>
-        <div class="viewer-head__seg" :class="{ 'is-disabled': !tooltipNodeId }" role="group" aria-label="tooltip view mode">
-          <button
-            type="button"
-            class="viewer-head__btn viewer-head__btn--seg"
-            :class="{ 'is-active': tooltipViewMode === 'raw' }"
-            :disabled="!tooltipNodeId"
-            aria-label="raw tooltip view"
-            @click="setTooltipViewMode('raw')"
-          >raw</button>
-          <button
-            type="button"
-            class="viewer-head__btn viewer-head__btn--seg"
-            :class="{ 'is-active': tooltipViewMode === 'pretty' }"
-            :disabled="!tooltipNodeId"
-            aria-label="pretty tooltip view"
-            @click="setTooltipViewMode('pretty')"
-          >pretty</button>
-        </div>
       </div>
     </header>
 
@@ -660,7 +626,6 @@ function buildStars(): Star[] {
         :anchor-rect="tooltipAnchor"
         :expanded="printMode ? false : tooltipExpanded"
         :print-mode="printMode"
-        :view-mode="tooltipViewMode"
         :root-intent="rootIntent"
         :class="{ 'dag-tooltip--print': printMode, 'glass-surface glass-surface--tooltip': !printMode }"
         @close="dismissTooltip"
@@ -721,12 +686,14 @@ function buildStars(): Star[] {
   position: relative;
   z-index: 1;
 }
-/* g-repo-rail · horizontal split below header: rail (~280px) + canvas. */
+/* g-repo-rail · horizontal split below header: rail (~280px) + canvas.
+   i3-gaps aesthetic · each surface floats with gap + drop shadow. */
 .viewer-shell__body {
   flex: 1 1 auto;
   display: flex;
   flex-direction: row;
   gap: 12px;
+  padding: 12px;
   min-height: 0;
 }
 .viewer-shell--print .viewer-shell__body {
@@ -905,18 +872,18 @@ function buildStars(): Star[] {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
-  border: 1px solid var(--chrome-25, #333);
-  background: var(--chrome-00, #000);
+  /* layout container only · inner panels carry their own glass treatment.
+     border + background removed so children float with i3-gap aesthetic. */
+  border: none;
+  background: transparent;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 .dag-pane__lineage {
   flex: 0 0 180px;
-  border-left: none;
-  border-right: none;
-  border-top: none;
 }
 /* .dag-pane__focus-btn removed — relocated into .viewer-head toolbar */
 .dag-pane > :deep(.dag-viewer),

@@ -125,6 +125,29 @@
         {{ nodeData.desc || nodeData.id }}
       </p>
 
+      <!-- Footer · raw|pretty toggle (non-print) · LOCAL state, persisted -->
+      <div
+        v-if="!printMode"
+        class="dag-tooltip__view-mode"
+        role="tablist"
+        aria-label="tooltip view mode"
+      >
+        <button
+          type="button"
+          role="tab"
+          :aria-pressed="viewMode === 'pretty'"
+          :class="{ 'is-active': viewMode === 'pretty' }"
+          @click="viewMode = 'pretty'"
+        >pretty</button>
+        <button
+          type="button"
+          role="tab"
+          :aria-pressed="viewMode === 'raw'"
+          :class="{ 'is-active': viewMode === 'raw' }"
+          @click="viewMode = 'raw'"
+        >raw</button>
+      </div>
+
       <div
         v-if="printMode"
         class="dag-tooltip__resize-handle"
@@ -260,15 +283,27 @@ interface Props {
   anchorRect: AnchorRect | null;
   expanded?: boolean;
   printMode?: boolean;
-  viewMode?: "raw" | "pretty";
   rootIntent?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   expanded: false,
   printMode: false,
-  viewMode: "pretty",
   rootIntent: "",
+});
+
+// View-mode (raw vs pretty) · LOCAL state · persisted per-tooltip pref.
+type ViewMode = "raw" | "pretty";
+const VIEW_MODE_KEY = "viewer-tooltip-view-mode";
+function loadViewMode(): ViewMode {
+  try {
+    const v = localStorage.getItem(VIEW_MODE_KEY);
+    return v === "raw" ? "raw" : "pretty";
+  } catch { return "pretty"; }
+}
+const viewMode: Ref<ViewMode> = ref<ViewMode>(loadViewMode());
+watch(viewMode, (v) => {
+  try { localStorage.setItem(VIEW_MODE_KEY, v); } catch { /* ignore */ }
 });
 const emit = defineEmits<{
   (e: "close"): void;
@@ -1017,6 +1052,42 @@ watch(
   color: var(--accent-orange, #E4DD4E);
   border-color: var(--accent-orange, #E4DD4E);
 }
+/* Footer view-mode toggle · pretty|raw segmented · interactive local state */
+.dag-tooltip__view-mode {
+  display: flex;
+  gap: 0;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--foil-30, rgba(215, 164, 50, 0.3));
+  justify-content: flex-end;
+}
+.dag-tooltip__view-mode button {
+  background: transparent;
+  border: 1px solid var(--glass-border-rest, rgba(215, 164, 50, 0.3));
+  color: var(--text-secondary, #ccc);
+  font-family: inherit;
+  font-size: calc(10px * var(--font-scale, 1));
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+.dag-tooltip__view-mode button + button { border-left: none; }
+.dag-tooltip__view-mode button:hover {
+  color: var(--accent-gold, #FCF791);
+  border-color: var(--accent-gold, #FCF791);
+}
+.dag-tooltip__view-mode button.is-active {
+  color: var(--accent-gold, #FCF791);
+  border-color: var(--accent-gold, #FCF791);
+  background: var(--glass-bg-faded, rgba(255, 255, 255, 0.06));
+}
+.dag-tooltip__view-mode button:focus-visible {
+  outline: 2px solid var(--accent-gold, #FCF791);
+  outline-offset: 1px;
+}
+
 .dag-tooltip__detail-json {
   margin: 0;
   padding: 8px 10px;

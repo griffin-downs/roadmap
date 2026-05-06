@@ -100,6 +100,7 @@
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--glass-border-rest);
+  border-radius: 6px;
   box-shadow: var(--glass-shadow);
   transition: background 200ms ease, border-color 200ms ease;
   position: relative;
@@ -109,6 +110,7 @@
 .glass-surface--tooltip { background: var(--glass-tint-tooltip); }
 .glass-surface--header  { background: var(--glass-tint-header); }
 .glass-surface--zoom    { background: var(--glass-tint-zoom); }
+.glass-surface--canvas  { background: var(--glass-tint-canvas); }
 
 .glass-surface:hover {
   background: var(--glass-bg-hover) !important;
@@ -117,6 +119,16 @@
 .viewer-shell:has(.glass-surface:hover) .glass-surface:not(:hover) {
   background: var(--glass-bg-faded) !important;
   border-color: var(--glass-border-rest);
+}
+/* Lineage cards are NOT glass-surfaces · they must keep stable opaque
+   fill regardless of which sibling glass-surface is hovered. The :has()
+   fade above only matches .glass-surface, but backdrop-filter on the
+   strip can dim cards visually — pin their bg explicitly here. */
+.viewer-shell:has(.glass-surface:hover) .lineage-card-lite {
+  background: oklch(0.22 0.05 280) !important;
+}
+.viewer-shell:has(.glass-surface:hover) .lineage-card-lite:hover {
+  background: oklch(0.26 0.06 280) !important;
 }
 
 /* Iridescent rainbow halo on hovered surface — subtle 1px outer glow.

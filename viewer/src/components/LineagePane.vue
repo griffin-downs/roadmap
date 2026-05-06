@@ -144,16 +144,25 @@ function formatMtime(ms: number): string {
   flex-direction: column;
   justify-content: space-between;
   padding: 8px 10px;
-  background: oklch(0.18 0.02 270);
+  /* Stable opaque fill — explicitly NOT a .glass-surface so the
+     viewer-shell:has(.glass-surface:hover) fade rule cannot cascade
+     into these cards. Poster palette midnight-violet, fully opaque. */
+  background: oklch(0.22 0.05 280);
   border: 1px solid var(--chrome-25, #333);
   border-radius: 6px;
+  box-shadow: 0 2px 6px oklch(0 0 0 / 0.35);
   color: var(--text-secondary, #ccc);
   font-family: inherit;
   font-size: 10px;
   cursor: pointer;
   text-align: left;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
 }
-.lineage-card-lite:hover { border-color: var(--foil, #d7a432); }
+.lineage-card-lite:hover {
+  border-color: var(--foil, #d7a432);
+  background: oklch(0.26 0.06 280);
+  transform: translateY(-1px);
+}
 
 .lineage-card-lite__id {
   color: var(--text-primary, #eee);
