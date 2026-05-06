@@ -93,8 +93,7 @@ function formatMtime(ms: number): string {
   display: flex;
   align-items: stretch;
   overflow: hidden;
-  background: var(--chrome-05, #0a0a0a);
-  border: 1px solid var(--chrome-25, #333);
+  /* glass-surface from dag-theme.css supplies background + border */
   box-sizing: border-box;
 }
 
@@ -171,7 +170,7 @@ function formatMtime(ms: number): string {
 .lineage-card-lite__status {
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 9px;
+  font-size: calc(10px * var(--font-scale, 1));
   color: var(--text-meta, #888);
 }
 .lineage-card-lite--complete .lineage-card-lite__status { color: #7ec47e; }

@@ -444,7 +444,7 @@
         </g>
       </g>
     </svg>
-    <div v-if="!printMode" class="dag-viewer__zoom" role="group" aria-label="zoom controls">
+    <div v-if="!printMode" class="dag-viewer__zoom glass-surface glass-surface--zoom" role="group" aria-label="zoom controls">
       <div class="dag-viewer__zoom-cluster">
         <button
           type="button"
@@ -943,6 +943,7 @@ function emitClick(nodeId: string, ev: MouseEvent): void {
   flex-direction: column;
   gap: 14px;
   z-index: 2;
+  padding: 6px;
 }
 .dag-viewer__zoom-cluster {
   display: flex;

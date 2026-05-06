@@ -14,80 +14,134 @@
  */
 
 :root {
-  /* Poster-H ink palette */
-  --ink-dark:   #1A1D28;
-  --ink-white:  #F5F2E8;
-  --ink-dim:    #B8B0A0;
-  --ink-faint:  #706858;
+  /* Poster-H ink palette (oklch translation) */
+  --ink-dark:   oklch(0.21 0.03 270);
+  --ink-white:  oklch(0.96 0.02 90);
+  --ink-dim:    oklch(0.74 0.03 80);
+  --ink-faint:  oklch(0.50 0.03 80);
 
-  /* ── ML Prague poster-derived palette ──────────────────────────────
-   * Extracted via ~/themes/apotheosis/set-theme on the poster PDF
-   * (mlprague-poster-H.pdf, page 1) using node-vibrant.
-   * WCAG AA verified on --chrome-bg #1D1D30. */
+  /* ── ML Prague poster-derived palette · OKLCH ──────────────────────
+   * Extracted via node-vibrant on mlprague-poster-H.pdf p1, then
+   * translated to oklch() so chroma/luma are addressable. */
 
   /* Chrome — surfaces (dark → light) */
-  --chrome-bg:    #1D1D30;  /* extracted bg · midnight blue-violet */
-  --chrome-panel: #212137;  /* extracted uiBgAlt · raised panels */
-  --chrome-code:  #181829;  /* extracted uiBg · deepest */
+  --chrome-bg:    oklch(0.20 0.04 280);
+  --chrome-panel: oklch(0.22 0.04 280);
+  --chrome-code:  oklch(0.16 0.04 280);
 
-  /* Legacy chrome aliases — REMAPPED to extracted palette */
-  --chrome-00: #1D1D30;
-  --chrome-05: #212137;
-  --chrome-10: #25253E;     /* extracted bright-bg */
-  --chrome-15: #282843;     /* extracted uiBorder */
-  --chrome-25: #28284B;
-  --chrome-30: #8E8EBB;     /* extracted brightBlack · lavender mid */
+  /* Legacy chrome aliases */
+  --chrome-00: oklch(0.20 0.04 280);
+  --chrome-05: oklch(0.22 0.04 280);
+  --chrome-10: oklch(0.24 0.05 280);
+  --chrome-15: oklch(0.26 0.06 280);
+  --chrome-25: oklch(0.27 0.07 280);
+  --chrome-30: oklch(0.62 0.06 280);
 
   /* Rules */
-  --rule:        #282843;
-  --rule-strong: #8E8EBB;
+  --rule:        oklch(0.26 0.06 280);
+  --rule-strong: oklch(0.62 0.06 280);
 
-  /* Text — extracted cream-yellow on midnight */
-  --text-primary:   #F5F3BF;  /* extracted fg · creamy yellow-green */
-  --text-secondary: #EFEB9A;  /* extracted white · brighter cream */
-  --text-meta:      #8E8EBB;  /* extracted brightBlack · lavender */
+  /* Text — cream-yellow on midnight */
+  --text-primary:   oklch(0.95 0.07 100);
+  --text-secondary: oklch(0.92 0.10 100);
+  --text-meta:      oklch(0.62 0.06 280);
 
-  /* Accents — extracted vivid yellow + mustard + crimson */
-  --accent-gold:   #FCF791;   /* extracted yellow · vivid highlight */
-  --accent-orange: #E4DD4E;   /* extracted uiFgMuted · mustard */
-  --accent-red:    #BD5258;   /* extracted red · crimson */
-  --accent:        #FCF791;   /* legacy alias */
+  /* Accents */
+  --accent-gold:   oklch(0.95 0.13 100);
+  --accent-orange: oklch(0.86 0.16 100);
+  --accent-red:    oklch(0.55 0.16 22);
+  --accent:        oklch(0.95 0.13 100);
 
-  /* Status — semantic node states (extracted palette) */
-  --status-active:  #FCF791;  /* current/frontier emphasis · vivid yellow */
-  --status-done:    #60BF40;  /* extracted green · vivid */
-  --status-fresh:   #8E8EBB;  /* lavender · pending */
-  --status-blocked: #BD5258;  /* red */
-  --status-nominal: #EFEB9A;
+  /* Status */
+  --status-active:  oklch(0.95 0.13 100);
+  --status-done:    oklch(0.71 0.20 130);
+  --status-fresh:   oklch(0.62 0.06 280);
+  --status-blocked: oklch(0.55 0.16 22);
+  --status-nominal: oklch(0.92 0.10 100);
 
-  /* Foil — REMAPPED to extracted yellow (was warm-gold guess) */
-  --foil:       #FCF791;
-  --foil-90:    rgba(252, 247, 145, 0.9);
-  --foil-50:    rgba(252, 247, 145, 0.5);
-  --foil-30:    rgba(252, 247, 145, 0.3);
+  /* Foil — vivid yellow */
+  --foil:       oklch(0.95 0.13 100);
+  --foil-90:    oklch(0.95 0.13 100 / 0.9);
+  --foil-50:    oklch(0.95 0.13 100 / 0.5);
+  --foil-30:    oklch(0.95 0.13 100 / 0.3);
 
   /* Card fill — ink-dark lifted and held semi-translucent */
-  --card-fill:  rgba(28, 31, 42, 0.85);
+  --card-fill:  oklch(0.21 0.03 270 / 0.85);
 
-  /* Rainbow holo stops — muted toward warm gray (matches poster-H mute()) */
-  --rainbow-1: #C68080;  /* red */
-  --rainbow-2: #C69870;  /* orange */
-  --rainbow-3: #C6BC70;  /* gold */
-  --rainbow-4: #80C690;  /* green */
-  --rainbow-5: #70AAC6;  /* blue */
-  --rainbow-6: #9080C6;  /* purple */
+  /* Rainbow holo stops — muted toward warm gray, oklch */
+  --rainbow-1: oklch(0.66 0.10 22);   /* red */
+  --rainbow-2: oklch(0.70 0.10 55);   /* orange */
+  --rainbow-3: oklch(0.78 0.10 90);   /* gold */
+  --rainbow-4: oklch(0.78 0.10 145);  /* green */
+  --rainbow-5: oklch(0.70 0.08 230);  /* blue */
+  --rainbow-6: oklch(0.62 0.10 295);  /* purple */
 
   /* Shadows */
-  --shadow-soft:   rgba(0, 0, 0, 0.6);
-  --shadow-deep:   rgba(0, 0, 0, 0.8);
+  --shadow-soft:   oklch(0 0 0 / 0.6);
+  --shadow-deep:   oklch(0 0 0 / 0.8);
 
   /* RED-honest signal */
-  --red-honest:    #C81E2C;
+  --red-honest:    oklch(0.55 0.20 25);
 
   /* Animation timings */
   --dag-glow-period:    2.4s;
   --dag-rotate-period:  6s;
   --dag-march-period:   1.6s;
+}
+
+/* ── Glass surfaces · stained-glass chrome ───────────────────────────
+ * Translucent oklch panels with backdrop-filter blur+saturate.
+ * Per-surface tints layered via the .glass-surface--<role> modifier.
+ * Sibling surfaces fade when one is hovered (:has() driven). The
+ * hovered surface gets a rainbow conic-gradient halo to read as the
+ * focused panel. Gated outside print mode by component-level v-if. */
+.glass-surface {
+  background: var(--glass-bg-rest);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border-rest);
+  box-shadow: var(--glass-shadow);
+  transition: background 200ms ease, border-color 200ms ease;
+  position: relative;
+}
+.glass-surface--rail    { background: var(--glass-tint-rail); }
+.glass-surface--lineage { background: var(--glass-tint-lineage); }
+.glass-surface--tooltip { background: var(--glass-tint-tooltip); }
+.glass-surface--header  { background: var(--glass-tint-header); }
+.glass-surface--zoom    { background: var(--glass-tint-zoom); }
+
+.glass-surface:hover {
+  background: var(--glass-bg-hover) !important;
+  border-color: var(--glass-border-hover);
+}
+.viewer-shell:has(.glass-surface:hover) .glass-surface:not(:hover) {
+  background: var(--glass-bg-faded) !important;
+  border-color: var(--glass-border-rest);
+}
+
+/* Iridescent rainbow halo on hovered surface — subtle 1px outer glow.
+   Reuses the same conic-gradient stops as .dag-foil-halo. */
+.glass-surface:hover::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    var(--rainbow-1), var(--rainbow-2), var(--rainbow-3),
+    var(--rainbow-4), var(--rainbow-5), var(--rainbow-6), var(--rainbow-1)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+  opacity: 0.55;
+  z-index: 1;
 }
 
 /* @property enables animating the conic-gradient angle (Chrome 85+, Firefox 128+) */

@@ -5,37 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>roadmap viewer</title>
     <style>
-      /* ML Prague poster-derived palette · canonical source · extracted via
-       * ~/themes/apotheosis/set-theme on /tmp/poster-extract/poster-1.jpg
-       * (mlprague-poster-H.pdf page 1) using node-vibrant. WCAG AA verified
-       * on --chrome-bg. dag-theme.css mirrors these for the SVG/foil layer.
-       * Names preserved (--chrome-*, --foil, --text-*, --accent-*) so
+      /* ML Prague poster-derived palette · canonical source · OKLCH translation
+       * of the original hex values extracted via node-vibrant on
+       * mlprague-poster-H.pdf page 1. dag-theme.css mirrors these for the SVG
+       * layer. Names preserved (--chrome-*, --foil, --text-*, --accent-*) so
        * existing components resolve without rename churn. */
       :root {
-        --chrome-bg:      #1D1D30;  /* extracted bg · midnight blue-violet */
-        --chrome-panel:   #212137;  /* extracted uiBgAlt · raised panels */
-        --chrome-code:    #181829;  /* extracted uiBg · code blocks */
-        --chrome-00:      #1D1D30;
-        --chrome-05:      #212137;
-        --chrome-10:      #25253E;  /* extracted bright-bg */
-        --chrome-15:      #282843;  /* extracted uiBorder */
-        --chrome-25:      #28284B;
-        --chrome-30:      #8E8EBB;  /* extracted brightBlack · lavender mid */
-        --rule:           #282843;
-        --rule-strong:    #8E8EBB;
-        --text-primary:   #F5F3BF;  /* extracted fg · creamy yellow-green */
-        --text-secondary: #EFEB9A;  /* extracted white · brighter cream */
-        --text-meta:      #8E8EBB;  /* extracted brightBlack · lavender */
-        --accent-gold:    #FCF791;  /* extracted yellow · vivid highlight */
-        --accent-orange:  #E4DD4E;  /* extracted uiFgMuted · mustard */
-        --accent-red:     #BD5258;  /* extracted red · crimson */
-        --accent:         #FCF791;
-        --foil:           #FCF791;
-        --status-active:  #FCF791;  /* current/frontier emphasis */
-        --status-done:    #60BF40;  /* extracted green · vivid */
-        --status-fresh:   #8E8EBB;  /* lavender · pending */
-        --status-blocked: #BD5258;  /* red */
-        --status-nominal: #EFEB9A;
+        --chrome-bg:      oklch(0.20 0.04 280);  /* midnight blue-violet */
+        --chrome-panel:   oklch(0.22 0.04 280);  /* raised panels */
+        --chrome-code:    oklch(0.16 0.04 280);  /* code blocks */
+        --chrome-00:      oklch(0.20 0.04 280);
+        --chrome-05:      oklch(0.22 0.04 280);
+        --chrome-10:      oklch(0.24 0.05 280);
+        --chrome-15:      oklch(0.26 0.06 280);
+        --chrome-25:      oklch(0.27 0.07 280);
+        --chrome-30:      oklch(0.62 0.06 280);  /* lavender mid */
+        --rule:           oklch(0.26 0.06 280);
+        --rule-strong:    oklch(0.62 0.06 280);
+        --text-primary:   oklch(0.95 0.07 100);  /* creamy yellow-green */
+        --text-secondary: oklch(0.92 0.10 100);
+        --text-meta:      oklch(0.62 0.06 280);
+        --accent-gold:    oklch(0.95 0.13 100);  /* vivid yellow */
+        --accent-orange:  oklch(0.86 0.16 100);  /* mustard */
+        --accent-red:     oklch(0.55 0.16 22);   /* crimson */
+        --accent:         oklch(0.95 0.13 100);
+        --foil:           oklch(0.95 0.13 100);
+        --status-active:  oklch(0.95 0.13 100);
+        --status-done:    oklch(0.71 0.20 130);  /* vivid green */
+        --status-fresh:   oklch(0.62 0.06 280);
+        --status-blocked: oklch(0.55 0.16 22);
+        --status-nominal: oklch(0.92 0.10 100);
+
+        /* ── Glass token system ──────────────────────────────────────
+         * Translucent oklch chrome surfaces · per-surface hue tints
+         * blend through poster palette (see App.vue .glass-surface). */
+        --glass-blur:        16px;
+        --glass-saturate:    1.4;
+        --glass-bg-rest:     oklch(0.20 0.04 280 / 0.55);
+        --glass-bg-hover:    oklch(0.22 0.05 280 / 0.85);
+        --glass-bg-faded:    oklch(0.20 0.04 280 / 0.18);
+        --glass-border-rest: oklch(0.50 0.05 280 / 0.30);
+        --glass-border-hover:oklch(0.62 0.10 280 / 0.55);
+        --glass-shadow:      0 8px 24px oklch(0 0 0 / 0.45), 0 1px 0 oklch(1 0 0 / 0.06) inset;
+
+        /* per-surface hue tints — stained-glass intent */
+        --glass-tint-rail:    oklch(0.20 0.06 280 / 0.50);  /* lavender-violet */
+        --glass-tint-lineage: oklch(0.22 0.05 100 / 0.45);  /* warm cream-yellow */
+        --glass-tint-tooltip: oklch(0.20 0.06 220 / 0.65);  /* cool teal-blue */
+        --glass-tint-header:  oklch(0.18 0.04 280 / 0.65);  /* deep midnight */
+        --glass-tint-zoom:    oklch(0.20 0.04 280 / 0.65);  /* neutral mid */
+
+        /* Global font scale · cycled by toolbar A−/A+ buttons */
+        --font-scale: 1;
       }
       html, body { height: 100%; margin: 0; overflow: hidden; background: var(--chrome-bg); color: var(--text-primary); }
       #app { height: 100%; display: flex; flex-direction: column; }

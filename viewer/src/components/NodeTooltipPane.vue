@@ -41,10 +41,13 @@
         >×</button>
       </header>
 
-      <!-- Default (non-print, non-expanded) · two-panel layout
+      <!-- Raw view · full JSON, copyable, single column -->
+      <pre v-if="!printMode && viewMode === 'raw'" class="dag-tooltip__raw"><code>{{ rawJson }}</code></pre>
+
+      <!-- Pretty (default, non-print) · two-panel inspector
            LEFT  schema tree (one row per present field) · click to select
            RIGHT selected field rendered with breathing room              -->
-      <div v-if="!printMode && !expanded" class="dag-tooltip__panes">
+      <div v-if="!printMode && viewMode === 'pretty' && !expanded" class="dag-tooltip__panes">
         <ul
           class="dag-tooltip__tree"
           role="listbox"
@@ -122,26 +125,12 @@
         {{ nodeData.desc || nodeData.id }}
       </p>
 
-      <section v-if="expanded && !printMode" class="dag-tooltip__expand">
-        <FieldExpander
-          :data="nodeData"
-          :path="`$.nodes[${JSON.stringify(nodeData.id)}]`"
-          :search="''"
-        />
-      </section>
-
       <div
         v-if="printMode"
         class="dag-tooltip__resize-handle"
         aria-label="resize tooltip"
         @mousedown="onResizeHandleMouseDown"
       />
-
-      <footer v-if="!printMode" class="dag-tooltip__actions">
-        <button type="button" class="dag-tooltip__btn" @click="emit('expand')">
-          {{ expanded ? 'collapse' : 'expand' }}
-        </button>
-      </footer>
     </div>
   </Transition>
 </template>
@@ -156,8 +145,6 @@
 
 import { computed, ref, watch, nextTick, onMounted, onBeforeUnmount, defineComponent, h } from "vue";
 import type { ComputedRef, Ref, VNode } from "vue";
-import FieldExpander from "./FieldExpander.vue";
-
 // TsField · inline · renders one typed key from SpecIRTask as `name: Type ▶/▼`
 // with foldable value body — IDE-hover style.
 interface FieldDef {
@@ -273,18 +260,26 @@ interface Props {
   anchorRect: AnchorRect | null;
   expanded?: boolean;
   printMode?: boolean;
+  viewMode?: "raw" | "pretty";
   rootIntent?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   expanded: false,
   printMode: false,
+  viewMode: "pretty",
   rootIntent: "",
 });
 const emit = defineEmits<{
   (e: "close"): void;
-  (e: "expand"): void;
 }>();
+
+// Raw-mode JSON · full node serialization, copyable.
+const rawJson: ComputedRef<string> = computed(() => {
+  const n = props.nodeData;
+  if (!n) return "";
+  try { return JSON.stringify(n, null, 2); } catch { return "[unserializable]"; }
+});
 
 const paneRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null);
 const measuredSize: Ref<{ width: number; height: number }> = ref({ width: 320, height: 200 });
@@ -550,15 +545,29 @@ watch(
   max-height: 70vh;
   overflow: auto;
   padding: 12px;
-  background: var(--card-fill, rgba(28, 31, 42, 0.95));
-  border: 1.5px solid var(--foil, #D7A432);
-  box-shadow: 0 0 16px var(--foil-50, rgba(215, 164, 50, 0.5)),
-              6px 6px 0 var(--shadow-soft, rgba(0, 0, 0, 0.6));
+  /* glass-surface from dag-theme.css supplies background/border/blur in
+     non-print mode · print mode overrides background below. */
   font-family: var(--font-mono, 'Fira Code', ui-monospace, monospace);
   color: var(--ink-white, #F5F2E8);
   border-radius: 0;
   will-change: transform, opacity;
 }
+/* Raw-view JSON dump · single column, copyable */
+.dag-tooltip__raw {
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--chrome-code);
+  border: 1px solid var(--rule);
+  font-family: var(--font-mono, 'Fira Code', ui-monospace, monospace);
+  font-size: calc(12px * var(--font-scale, 1));
+  line-height: 1.45;
+  color: var(--text-secondary);
+  overflow: auto;
+  max-height: 60vh;
+  white-space: pre;
+  user-select: text;
+}
+.dag-tooltip__raw code { font: inherit; color: inherit; }
 .dag-tooltip--expanded { min-width: 380px; max-width: 560px; }
 
 .dag-tooltip__head {
@@ -587,17 +596,17 @@ watch(
 }
 .dag-tooltip__id {
   flex: 1;
-  font-weight: 500;
-  font-size: 12px;
+  font-weight: 600;
+  font-size: calc(18px * var(--font-scale, 1));
   color: var(--foil, #D7A432);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .dag-tooltip__mode {
-  font-size: 9px;
+  font-size: calc(18px * var(--font-scale, 1));
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   padding: 2px 6px;
   border: 1px solid var(--foil-30, rgba(215, 164, 50, 0.3));
   color: var(--ink-dim, #B8B0A0);
@@ -942,13 +951,13 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 13px;
+  font-size: calc(14px * var(--font-scale, 1));
   line-height: 1.5;
   color: var(--text-primary, #F5F3BF);
   overflow-wrap: anywhere;
 }
 .dag-tooltip__detail-id {
-  font-size: 16px;
+  font-size: calc(18px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--accent-gold, #FCF791);
   letter-spacing: 0.02em;
@@ -956,7 +965,7 @@ watch(
 .dag-tooltip__detail-para {
   margin: 0;
   font-family: var(--font-sans, system-ui, sans-serif);
-  font-size: 13px;
+  font-size: calc(14px * var(--font-scale, 1));
   line-height: 1.55;
 }
 .dag-tooltip__detail-para + .dag-tooltip__detail-para {
@@ -972,7 +981,7 @@ watch(
 }
 .dag-tooltip__detail-list li {
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 12px;
+  font-size: calc(14px * var(--font-scale, 1));
   color: var(--text-primary, #F5F3BF);
   word-break: break-all;
 }
@@ -984,20 +993,20 @@ watch(
   gap: 2px;
 }
 .dag-tooltip__detail-rule-type {
-  font-size: 10px;
+  font-size: calc(10px * var(--font-scale, 1));
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--accent-gold, #FCF791);
 }
 .dag-tooltip__detail-rule-body {
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 12px;
+  font-size: calc(14px * var(--font-scale, 1));
   color: var(--text-primary, #F5F3BF);
   word-break: break-all;
 }
 .dag-tooltip__detail-mode {
   display: inline-block;
-  font-size: 18px;
+  font-size: calc(18px * var(--font-scale, 1));
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1014,7 +1023,7 @@ watch(
   background: var(--chrome-code, #181829);
   border: 1px solid var(--rule, #4A3D6E);
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 11px;
+  font-size: calc(14px * var(--font-scale, 1));
   line-height: 1.4;
   color: var(--text-secondary, #EFEB9A);
   overflow: auto;
