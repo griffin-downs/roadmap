@@ -324,6 +324,9 @@ const tooltipNodeData = computed<(Record<string, unknown> & { id: string }) | nu
 });
 
 function onNodeSelected(nodeId: string, anchorRect?: DOMRect): void {
+  // §click-trace · helps users verify the pipeline in DevTools when the
+  // tooltip doesn't appear · safe to leave (single console line per click).
+  console.debug("[viewer] node-selected", { nodeId, hasAnchor: !!anchorRect });
   tooltipNodeId.value = nodeId;
   tooltipExpanded.value = false;
   if (anchorRect) {
@@ -1081,27 +1084,33 @@ function buildStars(): Star[] {
   opacity: 0.4;
   cursor: default;
 }
-/* Primary · DAG info · gold-filled, MORE prominent (larger, weightier).
-   Background is solid accent-gold; text is high-contrast chrome-bg.
-   WCAG AA: oklch(0.95 0.13 100) on oklch(0.20 0.04 280) ≈ 16:1 (AAA). */
+/* Primary · DAG info · gold OUTLINED at rest (panel closed); FILLED gold
+   when active (panel open). Conventional toggle semantics:
+     inactive  outlined  · panel closed · invitation to open
+     active    filled    · panel open   · acknowledgement of state
+*/
 .viewer-head__btn--primary {
-  background: var(--accent-gold);
-  color: var(--chrome-bg);
-  border-color: var(--accent-gold);
+  background: transparent;
+  color: var(--accent-gold);
+  border: 2px solid var(--accent-gold);
   font-weight: var(--font-weight-strong, 700);
   font-size: calc(13px * var(--font-scale, 1));
-  padding: calc(8px * var(--ui-scale, 1)) calc(18px * var(--ui-scale, 1));
+  padding: calc(7px * var(--ui-scale, 1)) calc(17px * var(--ui-scale, 1));
   letter-spacing: 0.06em;
 }
 .viewer-head__btn--primary:hover:not(:disabled) {
-  background: var(--accent-orange);
-  border-color: var(--accent-orange);
+  background: var(--accent-gold);
+  border-color: var(--accent-gold);
   color: var(--chrome-bg);
 }
 .viewer-head__btn--primary.is-active {
-  background: var(--chrome-bg);
-  color: var(--accent-gold);
+  background: var(--accent-gold);
+  color: var(--chrome-bg);
   border-color: var(--accent-gold);
+}
+.viewer-head__btn--primary.is-active:hover:not(:disabled) {
+  background: var(--accent-orange);
+  border-color: var(--accent-orange);
 }
 /* Paired buttons (font scale, ui scale) · grouped with shared border */
 .viewer-head__pair {

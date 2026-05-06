@@ -50,14 +50,23 @@ import rgTron from "./theme-rg-tron.json";
 import rgGithub from "./theme-rg-github.json";
 import rgMonzo from "./theme-rg-monzo.json";
 import rgDarkside from "./theme-rg-darkside.json";
+import rgCodecourse from "./theme-rg-codecourse.json";
+import rgYitzchok from "./theme-rg-yitzchok.json";
+import apotheosis from "./theme-apotheosis.json";
 
 export const themes: Theme[] = [
+  // poster-derived (the project's own canonical palettes)
   posterH as Theme,
   posterA as Theme,
   posterB as Theme,
   posterD as Theme,
   posterF as Theme,
   whitepaper as Theme,
+  // user-named picks (curated specific themes)
+  apotheosis as Theme,
+  rgCodecourse as Theme,
+  rgYitzchok as Theme,
+  // rainglow curated set
   rgTron as Theme,
   rgAzure as Theme,
   rgIceberg as Theme,

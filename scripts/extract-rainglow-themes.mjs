@@ -42,6 +42,10 @@ const CURATED = [
   { src: "monzo",            label: "Rainglow · Monzo (hot coral)" },
   { src: "darkside",         label: "Rainglow · Darkside (crimson dark)" },
   { src: "iceberg-light",    label: "Rainglow · Iceberg Light" },
+  // user-requested specific themes
+  { src: "codecourse",       label: "Rainglow · Codecourse (sky)" },
+  { src: "yitzchok",         label: "Rainglow · Yitzchok (paper)" },
+  { src: "apotheosis-theme", label: "Apotheosis · Charles VI (custom)", out: "apotheosis" },
 ];
 
 // ────── color math ──────────────────────────────────────────────────────────
@@ -185,7 +189,8 @@ const buildVars = (rg) => {
 // ────── main ────────────────────────────────────────────────────────────────
 
 const outNames = [];
-for (const { src, label } of CURATED) {
+for (const item of CURATED) {
+  const { src, label } = item;
   const file = path.join(RAINGLOW, `${src}.json`);
   if (!fs.existsSync(file)) {
     console.error(`miss: ${src}`);
@@ -193,7 +198,8 @@ for (const { src, label } of CURATED) {
   }
   const rg = JSON.parse(fs.readFileSync(file, "utf8"));
   const vars = buildVars(rg);
-  const name = `rg-${src}`;
+  // Allow override via { out: "..." } · used for non-rg names like apotheosis.
+  const name = item.out ? item.out : `rg-${src}`;
   const theme = { name, label, vars };
   const outFile = path.join(OUT_DIR, `theme-${name}.json`);
   fs.writeFileSync(outFile, JSON.stringify(theme, null, 2) + "\n");
