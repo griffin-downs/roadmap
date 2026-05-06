@@ -568,10 +568,19 @@ function buildStars(): Star[] {
       </div>
     </header>
 
-    <!-- g-repo-rail · LEFT-rail repo picker. One row PER REPO (not per
-         head); selecting a row sets selectedRepo, which drives the canvas
-         + (next) g-lineage-pane via selectedRepoLineage. -->
-    <div class="viewer-shell__body">
+    <!-- g-canvas-as-ground · DagViewer fills the viewport · all chrome
+         floats over it as absolute-positioned glass overlays. -->
+    <DagViewer
+      class="viewer-shell__canvas"
+      :layout="layout"
+      :selected-node-id="tooltipNodeId"
+      :print-mode="printMode"
+      :milestones="milestoneIds"
+      export-name="roadmap-dag"
+      @node-selected="onNodeSelected"
+    />
+
+    <!-- g-repo-rail · floating LEFT overlay. -->
     <aside v-if="!printMode && !focusMode" class="repo-rail glass-surface glass-surface--rail">
       <div class="repo-rail__head">
         <span class="repo-rail__label">repos</span>
@@ -605,33 +614,24 @@ function buildStars(): Star[] {
       </ul>
     </aside>
 
-    <section class="dag-pane">
-      <LineagePane v-if="!printMode && !focusMode"
-        class="dag-pane__lineage glass-surface glass-surface--lineage"
-        :lineage="selectedRepoLineage"
-        :current-dag-id="payload?.dagId"
-        @select="onLineageSelect"
-      />
-      <DagViewer
-        :layout="layout"
-        :selected-node-id="tooltipNodeId"
-        :print-mode="printMode"
-        :milestones="milestoneIds"
-        export-name="roadmap-dag"
-        @node-selected="onNodeSelected"
-      />
-      <NodeTooltipPane
-        v-if="!printMode || showTooltipInPrint"
-        :node-data="tooltipNodeData"
-        :anchor-rect="tooltipAnchor"
-        :expanded="printMode ? false : tooltipExpanded"
-        :print-mode="printMode"
-        :root-intent="rootIntent"
-        :class="{ 'dag-tooltip--print': printMode, 'glass-surface glass-surface--tooltip': !printMode }"
-        @close="dismissTooltip"
-      />
-    </section>
-    </div>
+    <!-- g-lineage-pane · floating TOP-RIGHT overlay (right of rail, below toolbar). -->
+    <LineagePane v-if="!printMode && !focusMode"
+      class="viewer-shell__lineage glass-surface glass-surface--lineage"
+      :lineage="selectedRepoLineage"
+      :current-dag-id="payload?.dagId"
+      @select="onLineageSelect"
+    />
+
+    <NodeTooltipPane
+      v-if="!printMode || showTooltipInPrint"
+      :node-data="tooltipNodeData"
+      :anchor-rect="tooltipAnchor"
+      :expanded="printMode ? false : tooltipExpanded"
+      :print-mode="printMode"
+      :root-intent="rootIntent"
+      :class="{ 'dag-tooltip--print': printMode, 'glass-surface glass-surface--tooltip': !printMode }"
+      @close="dismissTooltip"
+    />
 
     <svg
       v-if="printMode && showTooltipInPrint && connectorPath"
@@ -667,45 +667,81 @@ function buildStars(): Star[] {
 </template>
 
 <style scoped>
+/* g-canvas-as-ground · viewer-shell is a positioning ancestor.
+   Canvas fills the viewport (full-bleed). All chrome surfaces float
+   on top as absolute-positioned glass overlays · their backdrop-filter
+   blur acts on actual canvas pixels beneath. */
 .viewer-shell {
   font-family: var(--font-mono, ui-monospace, monospace);
   color: var(--text-primary, #eee);
   background: var(--chrome-00, #000);
   height: 100%;
   overflow: hidden;
-  padding: 16px;
+  position: relative;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  position: relative;
 }
-.viewer-shell > .viewer-head,
-.viewer-shell > .viewer-shell__body,
-.viewer-shell > .dag-pane {
-  position: relative;
+
+/* Canvas — the ground. Fills viewer-shell edge-to-edge. */
+.viewer-shell__canvas {
+  position: absolute;
+  inset: 0;
   z-index: 1;
 }
-/* g-repo-rail · horizontal split below header: rail (~280px) + canvas.
-   i3-gaps aesthetic · each surface floats with gap + drop shadow. */
-.viewer-shell__body {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  padding: 12px;
-  min-height: 0;
-}
-.viewer-shell--print .viewer-shell__body {
-  /* print mode skips the rail; let canvas flood the body. */
-  gap: 0;
-}
+
+/* Floating overlays · z-stack
+     tooltip      1000  (managed in component)
+     toolbar      30
+     rail         20
+     lineage      20
+     zoom         15    (in DagViewer)
+     canvas        1
+*/
+
+/* Toolbar · top, full width with edge gap */
 .viewer-head {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 30;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
   gap: 12px;
+}
+
+/* Rail · LEFT overlay, below toolbar */
+.repo-rail {
+  position: absolute;
+  left: 12px;
+  top: 64px;
+  bottom: 12px;
+  width: 280px;
+  z-index: 20;
+}
+
+/* Lineage strip · TOP-RIGHT overlay, right of rail, below toolbar */
+.viewer-shell__lineage {
+  position: absolute;
+  left: 304px;       /* 12 (edge) + 280 (rail) + 12 (gap) */
+  right: 12px;
+  top: 64px;
+  height: 180px;
+  z-index: 20;
+}
+
+/* When focus mode hides rail, lineage spans full width minus edges */
+.viewer-shell:has(.viewer-shell__lineage):not(:has(.repo-rail)) .viewer-shell__lineage {
+  left: 12px;
+}
+
+/* Print mode · canvas only, no overlays. The v-if gates already do
+   most of the work; this just ensures no leftover layout artifacts. */
+.viewer-shell--print .viewer-head,
+.viewer-shell--print .repo-rail,
+.viewer-shell--print .viewer-shell__lineage {
+  display: none;
 }
 .viewer-head h1 {
   margin: 0;
@@ -766,15 +802,16 @@ function buildStars(): Star[] {
   border-left: 1px solid var(--glass-border-rest);
 }
 
-/* g-repo-rail · LEFT-rail repo picker. One row per repo with status
-   badge + done/total + mtime hint. Replaces the r3 top-bar roadmap-list. */
+/* g-repo-rail · LEFT overlay (positioning in canvas-as-ground block above) */
 .repo-rail {
-  flex: 0 0 280px;
   display: flex;
   flex-direction: column;
   font-size: calc(11px * var(--font-scale, 1));
   line-height: 1.4;
   overflow: hidden;
+}
+.repo-rail__rows {
+  overflow-y: auto;
 }
 .repo-rail__head {
   display: flex;
@@ -868,29 +905,7 @@ function buildStars(): Star[] {
 }
 .repo-row__dag { color: var(--text-meta, #888); font-style: italic; }
 
-.dag-pane {
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
-  /* layout container only · inner panels carry their own glass treatment.
-     border + background removed so children float with i3-gap aesthetic. */
-  border: none;
-  background: transparent;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.dag-pane__lineage {
-  flex: 0 0 180px;
-}
-/* .dag-pane__focus-btn removed — relocated into .viewer-head toolbar */
-.dag-pane > :deep(.dag-viewer),
-.dag-pane > :deep(.dag-viewer-root) {
-  flex: 1 1 auto;
-  min-height: 0;
-}
+/* .dag-pane retired · canvas-as-ground replaces flex-stack with absolute overlays. */
 .viewer-shell--print .tooltip-connector-overlay {
   position: fixed;
   inset: 0;

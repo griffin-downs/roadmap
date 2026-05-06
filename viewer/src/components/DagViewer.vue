@@ -1,5 +1,5 @@
 <template>
-  <div class="dag-viewer" :class="{ 'dag-viewer--tablet': tablet, 'glass-surface glass-surface--canvas': !printMode }">
+  <div class="dag-viewer" :class="{ 'dag-viewer--tablet': tablet }">
     <div v-if="hasGraph && !printMode" class="dag-viewer__toolbar">
       <button
         type="button"
@@ -908,19 +908,15 @@ function emitClick(nodeId: string, ev: MouseEvent): void {
 </script>
 
 <style scoped>
+/* Canvas is the GROUND in canvas-as-ground architecture · no border,
+   no glass, edge-to-edge. Floating chrome overlays handle their own
+   glass treatment. */
 .dag-viewer {
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   width: 100%;
   height: 100%;
-  background: var(--chrome-05, #0a0a0a);
-  border: 1px solid var(--chrome-25, #333);
-}
-/* Print mode keeps the simple bordered look; non-print uses glass-surface.
-   The glass-surface--canvas tint is a deep neutral so the SVG canvas reads
-   as the "ground" beneath the floating side panels. */
-.dag-viewer.glass-surface {
-  border: 1px solid var(--glass-border-rest);
+  background: var(--chrome-bg, #0a0a0a);
 }
 .dag-viewer__toolbar {
   position: absolute;
