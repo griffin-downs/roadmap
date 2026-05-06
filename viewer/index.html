@@ -78,17 +78,20 @@
         --font-weight-base: 500;
         --font-weight-strong: 700;
 
-        /* Pearlescence · animated conic-gradient stops · stronger alphas
-         * + saturation so the global off-canvas pearl reads as light, not
-         * a faint tint. With one global layer (.viewer-shell::before)
-         * blurring through chrome backdrop-filter, weak alphas got
-         * smeared away. Bumped 2-3× across the wheel. */
-        --pearl-stops: oklch(0.95 0.16 100 / 0.45) 0deg,
-                       oklch(0.74 0.22 130 / 0.40) 60deg,
-                       oklch(0.62 0.14 280 / 0.40) 140deg,
-                       oklch(0.55 0.20 22  / 0.42) 220deg,
-                       oklch(0.86 0.20 100 / 0.42) 300deg,
-                       oklch(0.95 0.16 100 / 0.45) 360deg;
+        /* Pearlescence · conic-gradient stops derived from THEME accents
+         * via color-mix. Each theme's own palette flavors the off-canvas
+         * shimmer, so warm themes pearl-shimmer warm, cool themes shimmer
+         * cool. Six stops swept around the wheel using accent-gold ·
+         * status-done · rule-strong · accent-red · accent-orange · accent-gold.
+         * color-mix transparency syntax: `transparent N%` means N% weight
+         * given to transparent, so resulting alpha = (100−N)%. */
+        --pearl-stops:
+          color-mix(in oklch, var(--accent-gold),    transparent 55%) 0deg,
+          color-mix(in oklch, var(--status-done),    transparent 60%) 60deg,
+          color-mix(in oklch, var(--rule-strong),    transparent 60%) 140deg,
+          color-mix(in oklch, var(--accent-red),     transparent 58%) 220deg,
+          color-mix(in oklch, var(--accent-orange),  transparent 58%) 300deg,
+          color-mix(in oklch, var(--accent-gold),    transparent 55%) 360deg;
       }
       html, body {
         height: 100%; margin: 0; overflow: hidden;
