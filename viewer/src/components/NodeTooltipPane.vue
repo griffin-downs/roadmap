@@ -13,8 +13,7 @@
       @click.stop
     >
       <header
-        class="dag-tooltip__head"
-        :class="{ 'dag-tooltip__head--draggable': printMode }"
+        class="dag-tooltip__head dag-tooltip__head--draggable"
         @mousedown="onHeaderMouseDown"
       >
         <span
@@ -149,7 +148,6 @@
       </div>
 
       <div
-        v-if="printMode"
         class="dag-tooltip__resize-handle"
         aria-label="resize tooltip"
         @mousedown="onResizeHandleMouseDown"
@@ -437,9 +435,23 @@ function defaultRect(): Rect {
   return { top: 80, left: Math.max(0, vpW - w - 60), width: w, height: h };
 }
 
+function ensureRect(): void {
+  // First user-driven move/resize seeds tooltipRect from the current
+  // anchor-driven layout. After this, the tooltip is "user-positioned"
+  // and ignores anchorRect updates.
+  if (tooltipRect.value !== null) return;
+  const el = paneRef.value;
+  if (el) {
+    const r = el.getBoundingClientRect();
+    tooltipRect.value = { top: r.top, left: r.left, width: r.width, height: r.height };
+  } else {
+    tooltipRect.value = defaultRect();
+  }
+}
 function onHeaderMouseDown(ev: MouseEvent): void {
   if ((ev.target as HTMLElement).closest("button")) return;
-  if (!props.printMode || !tooltipRect.value) return;
+  ensureRect();
+  if (!tooltipRect.value) return;
   ev.preventDefault();
   dragState.value = {
     mode: "move",
@@ -449,7 +461,8 @@ function onHeaderMouseDown(ev: MouseEvent): void {
   };
 }
 function onResizeHandleMouseDown(ev: MouseEvent): void {
-  if (!props.printMode || !tooltipRect.value) return;
+  ensureRect();
+  if (!tooltipRect.value) return;
   ev.preventDefault();
   ev.stopPropagation();
   dragState.value = {
@@ -493,8 +506,10 @@ onBeforeUnmount(() => {
 });
 
 const paneStyle: ComputedRef<Record<string, string>> = computed<Record<string, string>>(() => {
-  // Print mode · draggable + resizable · persisted to localStorage
-  if (props.printMode) {
+  // Print mode OR user-dragged · use the persisted/active rect.
+  // Once the user has dragged or resized in any mode, tooltipRect is set
+  // and we honor it over the anchor positioning.
+  if (props.printMode || tooltipRect.value !== null) {
     const r = tooltipRect.value ?? defaultRect();
     return {
       position: "fixed",
@@ -504,7 +519,7 @@ const paneStyle: ComputedRef<Record<string, string>> = computed<Record<string, s
       width: `${r.width}px`,
       height: `${r.height}px`,
       cursor: dragState.value?.mode === "move" ? "grabbing" : "auto",
-      "--tooltip-placement": "fixed-top-right",
+      "--tooltip-placement": "fixed-user-positioned",
     } as Record<string, string>;
   }
   const a = props.anchorRect;
