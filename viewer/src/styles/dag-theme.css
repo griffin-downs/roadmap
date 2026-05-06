@@ -107,6 +107,34 @@
   box-shadow: var(--glass-shadow);
   transition: background 200ms ease, border-color 200ms ease;
   position: relative;
+  isolation: isolate;
+}
+
+/* Pearlescent shimmer · always-on subtle iridescence · rotates slowly.
+   Layers under text via z-index: -1 (relative to .glass-surface stacking ctx).
+   Cheap: a single conic-gradient with low-alpha rainbow stops + 40s rotation. */
+.glass-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from var(--pearl-angle, 0deg), var(--pearl-stops));
+  mix-blend-mode: screen;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: -1;
+  animation: pearl-rotate 40s linear infinite;
+}
+@property --pearl-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes pearl-rotate {
+  to { --pearl-angle: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-surface::before { animation: none; }
 }
 .glass-surface:hover {
   background: var(--glass-bg-hover);

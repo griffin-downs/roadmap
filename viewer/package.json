@@ -12,6 +12,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fontsource/fira-code": "^5.2.7",
     "d3-selection": "^3.0.0",
     "d3-zoom": "^3.0.0",
     "pinia": "^2.1.0",
