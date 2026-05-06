@@ -41,43 +41,81 @@
         >×</button>
       </header>
 
-      <!-- Default (non-print) mode · existing per-section listing -->
-      <p v-if="!printMode && firstLine" class="dag-tooltip__desc">
-        {{ firstLine }}
-      </p>
-
-      <section v-if="!printMode && hasProduces && !expanded" class="dag-tooltip__section">
-        <div class="dag-tooltip__label">produces</div>
-        <div v-for="p in nodeData.produces" :key="p" class="dag-tooltip__row">{{ p }}</div>
-      </section>
-
-      <section v-if="!printMode && hasConsumes && !expanded" class="dag-tooltip__section">
-        <div class="dag-tooltip__label">consumes</div>
-        <div v-for="c in nodeData.consumes" :key="c" class="dag-tooltip__row">{{ c }}</div>
-      </section>
-
-      <section v-if="!printMode && hasValidate && !expanded" class="dag-tooltip__section">
-        <div class="dag-tooltip__label">validate</div>
-        <div v-for="(v, i) in nodeData.validate" :key="i" class="dag-tooltip__row">
-          {{ v.type }}<span v-if="v.target"> · {{ v.target }}</span><span v-else-if="v.command"> · {{ v.command }}</span>
-        </div>
-      </section>
-
-      <section v-if="!printMode && hasSidecar && !expanded" class="dag-tooltip__section">
-        <div
-          class="dag-tooltip__label dag-tooltip__label--clickable"
-          @click="sidecarOpen = !sidecarOpen"
+      <!-- Default (non-print, non-expanded) · two-panel layout
+           LEFT  schema tree (one row per present field) · click to select
+           RIGHT selected field rendered with breathing room              -->
+      <div v-if="!printMode && !expanded" class="dag-tooltip__panes">
+        <ul
+          class="dag-tooltip__tree"
+          role="listbox"
+          :aria-activedescendant="`tt-row-${selectedField}`"
         >
-          {{ sidecarOpen ? '▼' : '▶' }} sidecar
+          <li
+            v-for="row in fieldRows"
+            :key="row.key"
+            :id="`tt-row-${row.key}`"
+            class="dag-tooltip__tree-row"
+            :class="{ 'is-selected': row.key === selectedField }"
+            role="option"
+            :aria-selected="row.key === selectedField"
+            tabindex="0"
+            @click="selectedField = row.key"
+            @keydown.enter.prevent="selectedField = row.key"
+            @keydown.space.prevent="selectedField = row.key"
+          >
+            <span class="dag-tooltip__tree-key">{{ row.label }}</span>
+            <span class="dag-tooltip__tree-preview">{{ row.preview }}</span>
+          </li>
+        </ul>
+
+        <div class="dag-tooltip__detail" :data-field="selectedField">
+          <template v-if="selectedField === 'id'">
+            <div class="dag-tooltip__detail-id">{{ nodeData.id }}</div>
+          </template>
+
+          <template v-else-if="selectedField === 'desc'">
+            <p
+              v-for="(para, i) in descParagraphs"
+              :key="i"
+              class="dag-tooltip__detail-para"
+            >{{ para }}</p>
+          </template>
+
+          <template v-else-if="selectedField === 'produces'">
+            <ul class="dag-tooltip__detail-list">
+              <li v-for="p in nodeData.produces" :key="p">{{ p }}</li>
+            </ul>
+          </template>
+
+          <template v-else-if="selectedField === 'consumes'">
+            <ul class="dag-tooltip__detail-list">
+              <li v-for="c in nodeData.consumes" :key="c">{{ c }}</li>
+            </ul>
+          </template>
+
+          <template v-else-if="selectedField === 'validate'">
+            <div
+              v-for="(v, i) in nodeData.validate"
+              :key="i"
+              class="dag-tooltip__detail-rule"
+            >
+              <div class="dag-tooltip__detail-rule-type">{{ v.type }}</div>
+              <div v-if="v.target" class="dag-tooltip__detail-rule-body">{{ v.target }}</div>
+              <div v-else-if="v.command" class="dag-tooltip__detail-rule-body">{{ v.command }}</div>
+            </div>
+          </template>
+
+          <template v-else-if="selectedField === 'mode'">
+            <div class="dag-tooltip__detail-mode" :data-mode="nodeData.mode || 'execute'">
+              {{ nodeData.mode || 'execute' }}
+            </div>
+          </template>
+
+          <template v-else-if="selectedField === 'sidecar'">
+            <pre class="dag-tooltip__detail-json"><code>{{ sidecarPretty }}</code></pre>
+          </template>
         </div>
-        <div v-if="sidecarOpen">
-          <div
-            v-for="k in sidecarKeys"
-            :key="k"
-            class="dag-tooltip__row"
-          >{{ k }}</div>
-        </div>
-      </section>
+      </div>
 
       <!-- Print mode · just the node description, generously sized -->
       <p v-if="printMode" class="dag-tooltip__print-desc">
@@ -276,6 +314,73 @@ const sidecarKeys: ComputedRef<string[]> = computed(() => {
   return Object.keys(s as object);
 });
 const sidecarOpen: Ref<boolean> = ref(false);
+
+// Two-panel inspector · selected field drives the right-pane render.
+type FieldKey = "id" | "desc" | "produces" | "consumes" | "validate" | "mode" | "sidecar";
+const selectedField: Ref<FieldKey> = ref<FieldKey>("desc");
+
+// Reset selection to "desc" whenever the tooltip targets a different node.
+// (We watch id rather than nodeData itself so re-renders on irrelevant
+// prop churn don't reset the user's chosen field.)
+watch(
+  () => props.nodeData?.id ?? null,
+  (id) => {
+    if (id === null) return;
+    // Default to desc when present, else id (always present).
+    selectedField.value = (props.nodeData?.desc ?? "").length > 0 ? "desc" : "id";
+  },
+  { immediate: true },
+);
+
+const descParagraphs: ComputedRef<string[]> = computed(() => {
+  const d = props.nodeData?.desc ?? "";
+  // Split on blank lines · preserves the scenario/Given-When-Then structure
+  // already conventional in node descs.
+  return d.split(/\n\s*\n/).map((p) => p.trim()).filter((p) => p.length > 0);
+});
+
+const sidecarPretty: ComputedRef<string> = computed(() => {
+  const s = props.nodeData?.sidecar;
+  if (!s || typeof s !== "object") return "";
+  try { return JSON.stringify(s, null, 2); } catch { return "[unserializable]"; }
+});
+
+// Tree rows · only fields actually present (or always-present id/desc).
+// preview = truncated value for scalars · count for arrays · "{ k1, k2 }" for objects.
+const fieldRows: ComputedRef<Array<{ key: FieldKey; label: string; preview: string }>> = computed(() => {
+  const n = props.nodeData;
+  if (!n) return [];
+  const rows: Array<{ key: FieldKey; label: string; preview: string }> = [];
+  const trim = (s: string, max = 40): string => s.length <= max ? s : s.slice(0, max - 1) + "…";
+
+  rows.push({ key: "id", label: "id", preview: trim(n.id ?? "") });
+
+  const desc = (n.desc ?? "").trim();
+  if (desc.length > 0) {
+    const firstSentence = desc.split(/\n/)[0];
+    rows.push({ key: "desc", label: "desc", preview: trim(firstSentence, 48) });
+  }
+
+  if (Array.isArray(n.produces) && n.produces.length > 0) {
+    rows.push({ key: "produces", label: "produces", preview: `[${n.produces.length}] ${trim(n.produces[0])}` });
+  }
+  if (Array.isArray(n.consumes) && n.consumes.length > 0) {
+    rows.push({ key: "consumes", label: "consumes", preview: `[${n.consumes.length}] ${trim(n.consumes[0])}` });
+  }
+  if (Array.isArray(n.validate) && n.validate.length > 0) {
+    const types = n.validate.map((v) => v.type).slice(0, 3).join(", ");
+    rows.push({ key: "validate", label: "validate", preview: `[${n.validate.length}] ${trim(types, 28)}` });
+  }
+  if (n.mode && n.mode !== "execute") {
+    rows.push({ key: "mode", label: "mode", preview: n.mode });
+  }
+  if (n.sidecar && typeof n.sidecar === "object" && Object.keys(n.sidecar).length > 0) {
+    const keys = Object.keys(n.sidecar).slice(0, 3).join(", ");
+    rows.push({ key: "sidecar", label: "sidecar", preview: `{ ${trim(keys, 30)} }` });
+  }
+
+  return rows;
+});
 type Rect = { top: number; left: number; width: number; height: number };
 const STORAGE_KEY = "dag-tooltip-print-rect";
 const tooltipRect: Ref<Rect | null> = ref<Rect | null>(null);
@@ -440,8 +545,8 @@ watch(
 .dag-tooltip {
   position: fixed;
   z-index: 1000;
-  min-width: 280px;
-  max-width: 420px;
+  min-width: 480px;     /* widened for two-panel · tree + detail */
+  max-width: 640px;
   max-height: 70vh;
   overflow: auto;
   padding: 12px;
@@ -774,5 +879,145 @@ watch(
 @media (prefers-reduced-motion: reduce) {
   .dag-tooltip-enter-active, .dag-tooltip-leave-active { transition: opacity 80ms; }
   .dag-tooltip-enter-from, .dag-tooltip-leave-to { transform: none; }
+}
+
+/* ── two-panel inspector ───────────────────────────────────────────
+ * LEFT  schema tree (one row per present field) · click to select
+ * RIGHT selected field rendered with breathing room
+ * ----------------------------------------------------------------- */
+.dag-tooltip__panes {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 12px;
+  align-items: stretch;
+  min-height: 200px;
+}
+.dag-tooltip__tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-right: 1px solid var(--rule, #4A3D6E);
+  padding-right: 8px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.dag-tooltip__tree-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 6px;
+  cursor: pointer;
+  border-radius: 2px;
+  user-select: none;
+}
+.dag-tooltip__tree-row:hover {
+  background: var(--chrome-15, rgba(255, 255, 255, 0.04));
+}
+.dag-tooltip__tree-row.is-selected {
+  background: var(--chrome-25, rgba(255, 255, 255, 0.08));
+  outline: 1px solid var(--accent-gold, #FCF791);
+}
+.dag-tooltip__tree-row:focus-visible {
+  outline: 2px solid var(--accent-gold, #FCF791);
+  outline-offset: 1px;
+}
+.dag-tooltip__tree-key {
+  color: var(--accent-gold, #FCF791);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.dag-tooltip__tree-preview {
+  color: var(--text-meta, #8E8EBB);
+  font-size: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Right pane · selected field detail · breathing room */
+.dag-tooltip__detail {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary, #F5F3BF);
+  overflow-wrap: anywhere;
+}
+.dag-tooltip__detail-id {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-gold, #FCF791);
+  letter-spacing: 0.02em;
+}
+.dag-tooltip__detail-para {
+  margin: 0;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.dag-tooltip__detail-para + .dag-tooltip__detail-para {
+  margin-top: 4px;
+}
+.dag-tooltip__detail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dag-tooltip__detail-list li {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--text-primary, #F5F3BF);
+  word-break: break-all;
+}
+.dag-tooltip__detail-rule {
+  border-left: 2px solid var(--rule-strong, #8E8EBB);
+  padding: 2px 0 2px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dag-tooltip__detail-rule-type {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold, #FCF791);
+}
+.dag-tooltip__detail-rule-body {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--text-primary, #F5F3BF);
+  word-break: break-all;
+}
+.dag-tooltip__detail-mode {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 1px solid var(--rule-strong, #8E8EBB);
+}
+.dag-tooltip__detail-mode[data-mode="plan"] {
+  color: var(--accent-orange, #E4DD4E);
+  border-color: var(--accent-orange, #E4DD4E);
+}
+.dag-tooltip__detail-json {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--chrome-code, #181829);
+  border: 1px solid var(--rule, #4A3D6E);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-secondary, #EFEB9A);
+  overflow: auto;
+  max-height: 50vh;
 }
 </style>
