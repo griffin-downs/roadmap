@@ -218,6 +218,48 @@ function formatRailMtime(ms: number): string {
 const tooltipNodeId: Ref<string> = ref<string>("");
 const tooltipAnchor: Ref<AnchorRect | null> = ref<AnchorRect | null>(null);
 const tooltipExpanded: Ref<boolean> = ref<boolean>(false);
+
+// ── Toolbar state ──────────────────────────────────────────────────
+// Global font scale for chrome text. Cycled by A−/A+; persists. The CSS
+// var --font-scale is multiplied into chrome font-size declarations.
+// SVG canvas text is NOT scaled (zoom controls handle that).
+const FONT_SCALE_STEPS = [0.875, 1.0, 1.125, 1.25] as const;
+function loadFontScale(): number {
+  try {
+    const v = localStorage.getItem("viewer-font-scale");
+    const n = v ? Number(v) : 1;
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  } catch { return 1; }
+}
+const fontScale: Ref<number> = ref<number>(loadFontScale());
+watch(fontScale, (v) => {
+  document.documentElement.style.setProperty("--font-scale", String(v));
+  try { localStorage.setItem("viewer-font-scale", String(v)); } catch { /* ignore */ }
+}, { immediate: true });
+
+function bumpFontScale(dir: 1 | -1): void {
+  const idx = FONT_SCALE_STEPS.findIndex((s) => Math.abs(s - fontScale.value) < 1e-3);
+  const cur = idx === -1 ? FONT_SCALE_STEPS.indexOf(1.0) : idx;
+  const next = Math.max(0, Math.min(FONT_SCALE_STEPS.length - 1, cur + dir));
+  fontScale.value = FONT_SCALE_STEPS[next];
+}
+
+// Tooltip view-mode (raw vs pretty). Driven by toolbar toggle, persisted.
+type TooltipViewMode = "raw" | "pretty";
+function loadTooltipViewMode(): TooltipViewMode {
+  try {
+    const v = localStorage.getItem("viewer-tooltip-view-mode");
+    return v === "raw" ? "raw" : "pretty";
+  } catch { return "pretty"; }
+}
+const tooltipViewMode: Ref<TooltipViewMode> = ref<TooltipViewMode>(loadTooltipViewMode());
+watch(tooltipViewMode, (v) => {
+  try { localStorage.setItem("viewer-tooltip-view-mode", v); } catch { /* ignore */ }
+});
+function setTooltipViewMode(m: TooltipViewMode): void {
+  if (!tooltipNodeId.value) return; // disabled when no tooltip showing
+  tooltipViewMode.value = m;
+}
 const tooltipNode: ComputedRef<InspectedNode | null> = computed(() => {
   const p = payload.value;
   if (p === null || !tooltipNodeId.value) return null;
@@ -512,15 +554,59 @@ function buildStars(): Star[] {
         </g>
       </svg>
     </div>
-    <header v-if="showTitle" class="viewer-head dag-foil-halo">
+    <header v-if="showTitle" class="viewer-head dag-foil-halo" :class="{ 'glass-surface glass-surface--header': !printMode }">
       <h1>roadmap viewer · <span class="dag-id">{{ dagId }}</span></h1>
+      <div v-if="!printMode" class="viewer-head__tools" role="group" aria-label="viewer tools">
+        <button
+          type="button"
+          class="viewer-head__btn"
+          aria-label="decrease text size"
+          title="decrease text size"
+          :disabled="fontScale <= 0.875"
+          @click="bumpFontScale(-1)"
+        >A−</button>
+        <button
+          type="button"
+          class="viewer-head__btn"
+          aria-label="increase text size"
+          title="increase text size"
+          :disabled="fontScale >= 1.25"
+          @click="bumpFontScale(1)"
+        >A+</button>
+        <button
+          type="button"
+          class="viewer-head__btn"
+          :class="{ 'is-active': focusMode }"
+          :aria-label="focusMode ? 'show side panes' : 'maximize canvas'"
+          :title="focusMode ? 'show side panes' : 'maximize canvas (hide rail and lineage)'"
+          @click="focusMode = !focusMode"
+        >⊟ focus</button>
+        <div class="viewer-head__seg" :class="{ 'is-disabled': !tooltipNodeId }" role="group" aria-label="tooltip view mode">
+          <button
+            type="button"
+            class="viewer-head__btn viewer-head__btn--seg"
+            :class="{ 'is-active': tooltipViewMode === 'raw' }"
+            :disabled="!tooltipNodeId"
+            aria-label="raw tooltip view"
+            @click="setTooltipViewMode('raw')"
+          >raw</button>
+          <button
+            type="button"
+            class="viewer-head__btn viewer-head__btn--seg"
+            :class="{ 'is-active': tooltipViewMode === 'pretty' }"
+            :disabled="!tooltipNodeId"
+            aria-label="pretty tooltip view"
+            @click="setTooltipViewMode('pretty')"
+          >pretty</button>
+        </div>
+      </div>
     </header>
 
     <!-- g-repo-rail · LEFT-rail repo picker. One row PER REPO (not per
          head); selecting a row sets selectedRepo, which drives the canvas
          + (next) g-lineage-pane via selectedRepoLineage. -->
     <div class="viewer-shell__body">
-    <aside v-if="!printMode && !focusMode" class="repo-rail">
+    <aside v-if="!printMode && !focusMode" class="repo-rail glass-surface glass-surface--rail">
       <div class="repo-rail__head">
         <span class="repo-rail__label">repos</span>
         <span v-if="roadmapsLoading && repoRailRows.length === 0" class="repo-rail__loading">loading repos…</span>
@@ -554,25 +640,8 @@ function buildStars(): Star[] {
     </aside>
 
     <section class="dag-pane">
-      <button
-        v-if="!printMode"
-        type="button"
-        class="dag-pane__focus-btn"
-        :aria-label="focusMode ? 'show repo rail and lineage' : 'maximize canvas (hide rail and lineage)'"
-        :title="focusMode ? 'show side panes' : 'maximize canvas'"
-        @click="focusMode = !focusMode"
-      >
-        <svg v-if="!focusMode" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <!-- expand · arrows pointing outward to corners -->
-          <path d="M3 9 V3 H9 M21 9 V3 H15 M3 15 V21 H9 M21 15 V21 H15"/>
-        </svg>
-        <svg v-else viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <!-- restore · arrows pointing inward from corners -->
-          <path d="M9 3 V9 H3 M15 3 V9 H21 M9 21 V15 H3 M15 21 V15 H21"/>
-        </svg>
-      </button>
       <LineagePane v-if="!printMode && !focusMode"
-        class="dag-pane__lineage"
+        class="dag-pane__lineage glass-surface glass-surface--lineage"
         :lineage="selectedRepoLineage"
         :current-dag-id="payload?.dagId"
         @select="onLineageSelect"
@@ -591,10 +660,10 @@ function buildStars(): Star[] {
         :anchor-rect="tooltipAnchor"
         :expanded="printMode ? false : tooltipExpanded"
         :print-mode="printMode"
+        :view-mode="tooltipViewMode"
         :root-intent="rootIntent"
-        :class="{ 'dag-tooltip--print': printMode }"
+        :class="{ 'dag-tooltip--print': printMode, 'glass-surface glass-surface--tooltip': !printMode }"
         @close="dismissTooltip"
-        @expand="tooltipExpanded = !tooltipExpanded"
       />
     </section>
     </div>
@@ -667,17 +736,68 @@ function buildStars(): Star[] {
 .viewer-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   padding: 8px 12px;
+  gap: 12px;
 }
 .viewer-head h1 {
   margin: 0;
-  font-size: 16px;
+  font-size: calc(16px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--foil, #D7A432);
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
 }
 .viewer-head .dag-id { color: var(--text-meta, #888); font-weight: 400; }
+.viewer-head__tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.viewer-head__seg {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--glass-border-rest);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.viewer-head__seg.is-disabled { opacity: 0.45; }
+.viewer-head__btn {
+  background: transparent;
+  border: 1px solid var(--glass-border-rest);
+  color: var(--text-secondary, #ccc);
+  font-family: inherit;
+  font-size: calc(11px * var(--font-scale, 1));
+  letter-spacing: 0.04em;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+.viewer-head__btn:hover:not(:disabled) {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+.viewer-head__btn:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 1px;
+}
+.viewer-head__btn.is-active {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  background: var(--glass-bg-faded);
+}
+.viewer-head__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.viewer-head__btn--seg {
+  border: none;
+  border-radius: 0;
+}
+.viewer-head__btn--seg + .viewer-head__btn--seg {
+  border-left: 1px solid var(--glass-border-rest);
+}
 
 /* g-repo-rail · LEFT-rail repo picker. One row per repo with status
    badge + done/total + mtime hint. Replaces the r3 top-bar roadmap-list. */
@@ -685,9 +805,7 @@ function buildStars(): Star[] {
   flex: 0 0 280px;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--chrome-25, #333);
-  background: var(--chrome-05, #0a0a0a);
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1));
   line-height: 1.4;
   overflow: hidden;
 }
@@ -800,30 +918,7 @@ function buildStars(): Star[] {
   border-right: none;
   border-top: none;
 }
-.dag-pane__focus-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--chrome-05);
-  border: 1px solid var(--chrome-25);
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: 2px;
-  z-index: 10;
-}
-.dag-pane__focus-btn:hover {
-  border-color: var(--accent-gold);
-  color: var(--accent-gold);
-}
-.dag-pane__focus-btn:focus-visible {
-  outline: 2px solid var(--accent-gold);
-  outline-offset: 1px;
-}
+/* .dag-pane__focus-btn removed — relocated into .viewer-head toolbar */
 .dag-pane > :deep(.dag-viewer),
 .dag-pane > :deep(.dag-viewer-root) {
   flex: 1 1 auto;
