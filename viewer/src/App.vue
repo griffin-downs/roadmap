@@ -53,6 +53,9 @@ const milestoneIds: Ref<string[]> = ref<string[]>(
 );
 // r2-hero · ?tooltip=0 disables tooltip + connector for print/hero capture.
 // Default true · interactive print mode still gets the floating panel + arrow.
+// Focus mode · collapse repo-rail + lineage strip so canvas owns the screen.
+// Distinct from printMode (no poster styling, just hides the side UI).
+const focusMode: Ref<boolean> = ref<boolean>(false);
 const showTooltipInPrint: Ref<boolean> = ref<boolean>(
   url.searchParams.get("tooltip") !== "0",
 );
@@ -181,11 +184,13 @@ const repoRailRows: ComputedRef<RepoRailRow[]> = computed<RepoRailRow[]>(() => {
       lineage,
     };
   });
-  // active (mtime DESC) → fresh (mtime DESC) → complete + no-dag (muted)
-  const rank: Record<RepoRailStatus, number> = { active: 0, fresh: 1, complete: 2, "no-dag": 3 };
+  // Two buckets: active first (mtime DESC), then everything else (mtime DESC).
+  // User wants the active batch visually prominent at top — fresh/complete/no-dag
+  // collapse into a single recency-sorted tail beneath.
   rows.sort((a, b) => {
-    const dr = rank[a.status] - rank[b.status];
-    if (dr !== 0) return dr;
+    const aActive = a.status === "active" ? 0 : 1;
+    const bActive = b.status === "active" ? 0 : 1;
+    if (aActive !== bActive) return aActive - bActive;
     return b.mtime - a.mtime;
   });
   return rows;
@@ -515,7 +520,7 @@ function buildStars(): Star[] {
          head); selecting a row sets selectedRepo, which drives the canvas
          + (next) g-lineage-pane via selectedRepoLineage. -->
     <div class="viewer-shell__body">
-    <aside v-if="!printMode" class="repo-rail">
+    <aside v-if="!printMode && !focusMode" class="repo-rail">
       <div class="repo-rail__head">
         <span class="repo-rail__label">repos</span>
         <span v-if="roadmapsLoading && repoRailRows.length === 0" class="repo-rail__loading">loading repos…</span>
@@ -549,7 +554,24 @@ function buildStars(): Star[] {
     </aside>
 
     <section class="dag-pane">
-      <LineagePane v-if="!printMode"
+      <button
+        v-if="!printMode"
+        type="button"
+        class="dag-pane__focus-btn"
+        :aria-label="focusMode ? 'show repo rail and lineage' : 'maximize canvas (hide rail and lineage)'"
+        :title="focusMode ? 'show side panes' : 'maximize canvas'"
+        @click="focusMode = !focusMode"
+      >
+        <svg v-if="!focusMode" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- expand · arrows pointing outward to corners -->
+          <path d="M3 9 V3 H9 M21 9 V3 H15 M3 15 V21 H9 M21 15 V21 H15"/>
+        </svg>
+        <svg v-else viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- restore · arrows pointing inward from corners -->
+          <path d="M9 3 V9 H3 M15 3 V9 H21 M9 21 V15 H3 M15 21 V15 H21"/>
+        </svg>
+      </button>
+      <LineagePane v-if="!printMode && !focusMode"
         class="dag-pane__lineage"
         :lineage="selectedRepoLineage"
         :current-dag-id="payload?.dagId"
@@ -777,6 +799,30 @@ function buildStars(): Star[] {
   border-left: none;
   border-right: none;
   border-top: none;
+}
+.dag-pane__focus-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chrome-05);
+  border: 1px solid var(--chrome-25);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 2px;
+  z-index: 10;
+}
+.dag-pane__focus-btn:hover {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+.dag-pane__focus-btn:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 1px;
 }
 .dag-pane > :deep(.dag-viewer),
 .dag-pane > :deep(.dag-viewer-root) {

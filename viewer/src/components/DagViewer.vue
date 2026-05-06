@@ -17,8 +17,9 @@
     <svg
       ref="svgRef"
       :viewBox="`0 0 ${layout.width} ${layout.height}`"
-      :width="layout.width"
-      :height="layout.height"
+      width="100%"
+      height="100%"
+      preserveAspectRatio="xMidYMid meet"
       class="dag-svg"
       :class="{ 'dag-svg--print': printMode }"
       role="img"
@@ -444,24 +445,46 @@
       </g>
     </svg>
     <div v-if="!printMode" class="dag-viewer__zoom" role="group" aria-label="zoom controls">
-      <button
-        type="button"
-        class="dag-viewer__zoom-btn"
-        aria-label="zoom in"
-        @click="zoomIn"
-      >+</button>
-      <button
-        type="button"
-        class="dag-viewer__zoom-btn"
-        aria-label="zoom out"
-        @click="zoomOut"
-      >&minus;</button>
-      <button
-        type="button"
-        class="dag-viewer__zoom-btn"
-        aria-label="fit to canvas"
-        @click="fitToCanvas()"
-      >&#9645;</button>
+      <div class="dag-viewer__zoom-cluster">
+        <button
+          type="button"
+          class="dag-viewer__zoom-btn"
+          aria-label="zoom in"
+          @click="zoomIn"
+        >+</button>
+        <button
+          type="button"
+          class="dag-viewer__zoom-btn"
+          aria-label="zoom out"
+          @click="zoomOut"
+        >&minus;</button>
+      </div>
+      <div class="dag-viewer__zoom-cluster">
+        <button
+          type="button"
+          class="dag-viewer__zoom-btn"
+          aria-label="fit to canvas"
+          @click="fitToCanvas()"
+        >
+          <!-- four arrows pointing inward — "fit to bounds" -->
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3 L9 9 M3 3 H7 M3 3 V7"/>
+            <path d="M21 3 L15 9 M21 3 H17 M21 3 V7"/>
+            <path d="M3 21 L9 15 M3 21 H7 M3 21 V17"/>
+            <path d="M21 21 L15 15 M21 21 H17 M21 21 V17"/>
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="dag-viewer__zoom-btn"
+          aria-label="center on active batch"
+          @click="centerOnBatch()"
+        >
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="currentColor">
+            <path d="M12 3 L20 21 L12 17 L4 21 Z"/>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -550,7 +573,13 @@ function centerSelected(): void {
 // Auto-fit the full DAG bbox to the visible canvas at mount, so users on
 // small windows don't have to zoom out manually. Mutually exclusive with
 // the URL-pin path (centerSelected) — caller decides which to invoke.
-function fitToCanvas(margin: number = 24): void {
+// maxScale clamps zoom-in for fit/center operations. fit-to-canvas uses
+// FIT_MAX_SCALE (1.0 — never zoom *past* native, only in to fit). center-on-batch
+// passes a smaller maxScale so single-node frontiers don't zoom past readability.
+const FIT_MAX_SCALE = 1.0;
+const CENTER_MAX_SCALE = 1.8;
+
+function fitToCanvas(margin: number = 24, subset?: LaidOutNode[], maxScale: number = FIT_MAX_SCALE): void {
   if (!svgRef.value || !zoomBehavior) return;
   const svg = svgRef.value as SVGSVGElement;
   // Use the parent container's box as the true visible canvas — the svg's
@@ -563,8 +592,9 @@ function fitToCanvas(margin: number = 24): void {
   if (rect.width <= 0 || rect.height <= 0 || nominalW <= 0 || nominalH <= 0) return;
   // Compute the layout's TRUE bbox from rendered node positions — the
   // nominal layout.width/height can under- or over-state actual extent.
+  const source = subset && subset.length > 0 ? subset : props.layout.nodes;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const n of props.layout.nodes) {
+  for (const n of source) {
     const h = rectHeight(n);
     if (n.x < minX) minX = n.x;
     if (n.y < minY) minY = n.y;
@@ -580,10 +610,14 @@ function fitToCanvas(margin: number = 24): void {
   // user-units-per-screen-px is the meet ratio against nominal dims.
   const userPerPx = Math.max(nominalW / rect.width, nominalH / rect.height);
   const marginUser = margin * userPerPx;
-  // Scale that fits the TRUE bbox (with margin) into the visible canvas.
+  // Scale that fits the TRUE bbox (with margin) into the viewBox.
+  // SVG is now width/height=100% with preserveAspectRatio meet, so the
+  // viewBox IS the visible region (with letterboxing on the off-axis).
+  // Clamp to maxScale to prevent over-zoom on tiny subsets (centerOnBatch).
   const k = Math.min(
     (nominalW - marginUser * 2) / bboxW,
     (nominalH - marginUser * 2) / bboxH,
+    maxScale,
   );
   // Translate so the bbox center lands on the nominal viewBox center.
   const cxBbox = (minX + maxX) / 2;
@@ -591,6 +625,21 @@ function fitToCanvas(margin: number = 24): void {
   const tx = nominalW / 2 - cxBbox * k;
   const ty = nominalH / 2 - cyBbox * k;
   d3.select(svg).call(zoomBehavior.transform, zoomIdentity.translate(tx, ty).scale(k));
+}
+
+// Center camera on the current frontier (orient `position[]` equivalent).
+// Frontier is encoded on the layout nodes via isFrontier; fall back to
+// status-based ready/in-progress if no isFrontier flags are present.
+function centerOnBatch(margin: number = 64): void {
+  const flagged = props.layout.nodes.filter((n) => n.isFrontier);
+  const source = flagged.length > 0
+    ? flagged
+    : props.layout.nodes.filter((n) => n.status === "ready" || n.status === "in-progress");
+  if (source.length === 0) {
+    fitToCanvas();
+    return;
+  }
+  fitToCanvas(margin, source, CENTER_MAX_SCALE);
 }
 
 onMounted(() => {
@@ -892,8 +941,13 @@ function emitClick(nodeId: string, ev: MouseEvent): void {
   right: 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 14px;
   z-index: 2;
+}
+.dag-viewer__zoom-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .dag-viewer__zoom-btn {
   width: 28px;

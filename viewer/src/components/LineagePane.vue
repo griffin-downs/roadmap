@@ -52,17 +52,16 @@ const props = defineProps<{
 
 const emit = defineEmits<{ (e: "select", dagId: string): void }>();
 
-// Server returns most-recent first; gallery wants oldest left → current
-// right (current is emphasized at the right edge). Reverse a shallow copy.
-// Filter out the current round — it's rendered separately as the emphasized
-// MiniDagThumbnail by the parent (App.vue) using payload.head. Including it
-// here would render a duplicate lite-card for the same dagId.
+// Server returns most-recent first (mtime DESC); the strip wants newest on
+// the left to match natural scanning direction. The current dagId is
+// filtered out — it's rendered separately as the emphasized MiniDagThumbnail
+// by the parent (App.vue) — so this strip is purely archived rounds. Use
+// slice() to preserve server order without mutating the prop array.
 const ordered = computed(() =>
   props.lineage
     .filter((e): e is LineageEntry & { id: string } => e.id !== null)
     .filter((e) => e.id !== props.currentDagId)
-    .slice()
-    .reverse(),
+    .slice(),
 );
 
 function onClick(dagId: string): void {
