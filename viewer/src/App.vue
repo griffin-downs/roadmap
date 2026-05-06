@@ -28,6 +28,7 @@ import { onMounted, onUnmounted } from "vue";
 import type { AnchorRect } from "./composables/useTooltipPosition";
 import { useDagPayload } from "./services/dagReader";
 import { DEFAULT_LAYOUT_OPTIONS, useDagLayout } from "./composables/useDagLayout";
+import { applyTheme, defaultTheme, findTheme, themes, type Theme } from "./themes";
 
 // Selected repo path · drives /api/roadmap-dag?repo=<path> re-fetch.
 // Default empty → server falls back to host repo. Initialized from the
@@ -277,6 +278,38 @@ function bumpUiScale(dir: 1 | -1): void {
   const next = Math.max(0, Math.min(UI_SCALE_STEPS.length - 1, cur + dir));
   uiScale.value = UI_SCALE_STEPS[next];
 }
+
+// ── Theme picker ──────────────────────────────────────────────────
+// Pre-baked oklch palettes (viewer/src/themes/) derived from poster +
+// whitepaper images via node-vibrant. The toolbar 🎨 button opens a
+// glass-surface popover · clicking a theme applies it via CSS variables
+// on documentElement and persists the name in localStorage.
+const THEME_KEY = "viewer-theme";
+function loadTheme(): Theme {
+  try {
+    const name = localStorage.getItem(THEME_KEY);
+    if (name) {
+      const t = findTheme(name);
+      if (t) return t;
+    }
+  } catch { /* ignore */ }
+  return defaultTheme;
+}
+const currentTheme: Ref<Theme> = ref<Theme>(loadTheme());
+const themePickerOpen: Ref<boolean> = ref<boolean>(false);
+watch(
+  currentTheme,
+  (t) => {
+    applyTheme(t);
+    try { localStorage.setItem(THEME_KEY, t.name); } catch { /* ignore */ }
+  },
+  { immediate: true },
+);
+function pickTheme(t: Theme): void {
+  currentTheme.value = t;
+  themePickerOpen.value = false;
+}
+function toggleThemePicker(): void { themePickerOpen.value = !themePickerOpen.value; }
 
 const tooltipNode: ComputedRef<InspectedNode | null> = computed(() => {
   const p = payload.value;
@@ -610,6 +643,16 @@ function buildStars(): Star[] {
           @click="toggleDagInfo"
         >ⓘ DAG info</button>
 
+        <!-- theme picker · 🎨 → popover of pre-baked oklch palettes -->
+        <button
+          type="button"
+          class="viewer-head__btn"
+          :class="{ 'is-active': themePickerOpen }"
+          aria-label="theme picker"
+          :title="`theme · ${currentTheme.label}`"
+          @click="toggleThemePicker"
+        >🎨</button>
+
         <!-- font scale · A−/A+ -->
         <div class="viewer-head__pair" role="group" aria-label="text size">
           <button
@@ -660,6 +703,45 @@ function buildStars(): Star[] {
         >focus</button>
       </div>
     </header>
+
+    <!-- Theme picker popover · floating below toolbar, right side. -->
+    <aside
+      v-if="!printMode && themePickerOpen"
+      class="theme-picker glass-surface"
+      aria-label="theme picker"
+    >
+      <header class="theme-picker__head">
+        <span class="theme-picker__label">theme</span>
+        <button
+          type="button"
+          class="theme-picker__close"
+          aria-label="close theme picker"
+          @click="themePickerOpen = false"
+        >×</button>
+      </header>
+      <ul class="theme-picker__rows">
+        <li
+          v-for="t in themes"
+          :key="t.name"
+          class="theme-row"
+          :class="{ 'theme-row--current': t.name === currentTheme.name }"
+          @click="pickTheme(t)"
+        >
+          <span
+            class="theme-row__swatch"
+            :style="{
+              background: t.vars['--chrome-bg'],
+              borderColor: t.vars['--rule-strong'] ?? t.vars['--accent-gold'],
+            }"
+          >
+            <span class="theme-row__swatch-dot" :style="{ background: t.vars['--accent-gold'] }"></span>
+            <span class="theme-row__swatch-dot" :style="{ background: t.vars['--accent-red'] }"></span>
+            <span class="theme-row__swatch-dot" :style="{ background: t.vars['--status-done'] }"></span>
+          </span>
+          <span class="theme-row__label">{{ t.label }}</span>
+        </li>
+      </ul>
+    </aside>
 
     <!-- DAG-info panel · floating right-side overlay · shows head-level
          metadata (id, init, term, desc, progress). Toggled from toolbar. -->
@@ -835,10 +917,20 @@ function buildStars(): Star[] {
   z-index: 25;
   overflow: auto;
 }
+.viewer-shell > .theme-picker {
+  position: absolute !important;
+  right: 12px !important;
+  top: 56px !important;
+  width: calc(260px * var(--ui-scale, 1)) !important;
+  z-index: 35;
+  max-height: 60vh;
+  overflow: auto;
+}
 .viewer-shell--print > .viewer-head,
 .viewer-shell--print > .repo-rail,
 .viewer-shell--print > .viewer-shell__lineage,
-.viewer-shell--print > .dag-info {
+.viewer-shell--print > .dag-info,
+.viewer-shell--print > .theme-picker {
   display: none !important;
 }
 </style>
@@ -1141,6 +1233,84 @@ function buildStars(): Star[] {
   font-variant-numeric: tabular-nums;
 }
 .repo-row__dag { color: var(--text-meta, #888); font-style: italic; }
+
+/* Theme picker · glass-surface popover under toolbar */
+.theme-picker {
+  display: flex;
+  flex-direction: column;
+  font-size: calc(11px * var(--font-scale, 1));
+  padding: 8px 0;
+  gap: 0;
+}
+.theme-picker__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px 8px;
+  border-bottom: 1px solid var(--rule, #4A3D6E);
+}
+.theme-picker__label {
+  font-size: calc(10px * var(--font-scale, 1));
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+.theme-picker__close {
+  width: 22px; height: 22px;
+  background: transparent;
+  border: 1px solid var(--glass-border-rest, #444);
+  color: var(--text-secondary, #ccc);
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 1;
+}
+.theme-picker__close:hover { color: var(--accent-gold); border-color: var(--accent-gold); }
+.theme-picker__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  color: var(--text-secondary, #ccc);
+}
+.theme-row:hover { background: var(--chrome-15, #1a1a1a); color: var(--text-primary); }
+.theme-row--current {
+  color: var(--text-primary, #eee);
+  border-left-color: var(--foil, #D7A432);
+  background: var(--chrome-15, #1a1a1a);
+}
+.theme-row__swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  width: 60px;
+  height: 22px;
+  border: 1px solid;
+  border-radius: 3px;
+  padding: 0 6px;
+  flex: 0 0 auto;
+}
+.theme-row__swatch-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.theme-row__label {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: calc(11px * var(--font-scale, 1));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* .dag-pane retired · canvas-as-ground replaces flex-stack with absolute overlays. */
 .viewer-shell--print .tooltip-connector-overlay {
