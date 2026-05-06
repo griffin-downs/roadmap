@@ -103,7 +103,7 @@ function formatMtime(ms: number): string {
   align-items: center;
   justify-content: center;
   color: var(--text-meta, #888);
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1))px;
   font-style: italic;
 }
 
@@ -153,7 +153,7 @@ function formatMtime(ms: number): string {
   box-shadow: 0 2px 6px oklch(0 0 0 / 0.35);
   color: var(--text-secondary, #ccc);
   font-family: inherit;
-  font-size: 10px;
+  font-size: calc(10px * var(--font-scale, 1))px;
   cursor: pointer;
   text-align: left;
   transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
@@ -173,7 +173,7 @@ function formatMtime(ms: number): string {
 }
 .lineage-card-lite__progress {
   font-variant-numeric: tabular-nums;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1))px;
   color: var(--text-primary, #eee);
 }
 .lineage-card-lite__status {
@@ -189,7 +189,7 @@ function formatMtime(ms: number): string {
 .lineage-meta {
   display: flex;
   flex-direction: column;
-  font-size: 9px;
+  font-size: calc(9px * var(--font-scale, 1))px;
   color: var(--text-meta, #888);
   max-width: 140px;
 }

@@ -927,15 +927,17 @@ function emitClick(nodeId: string, ev: MouseEvent): void {
   z-index: 2;
 }
 .dag-viewer__btn {
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: calc(6px * var(--ui-scale, 1)) calc(10px * var(--ui-scale, 1));
+  font-size: calc(11px * var(--font-scale, 1));
   font-family: var(--font-mono, ui-monospace, monospace);
-  background: var(--chrome-10, #151515);
-  color: var(--text-primary, #eee);
-  border: 1px solid var(--chrome-25, #333);
+  font-weight: var(--font-weight-base, 500);
+  background: var(--glass-bg-rest);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border-rest);
+  border-radius: 4px;
   cursor: pointer;
 }
-.dag-viewer__btn:hover { border-color: var(--accent-red, #d33); }
+.dag-viewer__btn:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
 .dag-viewer__btn:disabled { opacity: 0.5; cursor: wait; }
 .dag-viewer__zoom {
   position: absolute;
@@ -943,30 +945,32 @@ function emitClick(nodeId: string, ev: MouseEvent): void {
   right: 12px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: calc(14px * var(--ui-scale, 1));
   z-index: 2;
-  padding: 6px;
+  padding: calc(6px * var(--ui-scale, 1));
 }
 .dag-viewer__zoom-cluster {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: calc(4px * var(--ui-scale, 1));
 }
 .dag-viewer__zoom-btn {
-  width: 28px;
-  height: 28px;
-  font-size: 14px;
+  width: calc(32px * var(--ui-scale, 1));
+  height: calc(32px * var(--ui-scale, 1));
+  font-size: calc(14px * var(--font-scale, 1));
   font-family: var(--font-mono, ui-monospace, monospace);
-  background: var(--chrome-10, #151515);
-  color: var(--text-primary, #eee);
-  border: 1px solid var(--chrome-25, #333);
+  font-weight: var(--font-weight-strong, 700);
+  background: var(--glass-bg-rest);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border-rest);
+  border-radius: 4px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
-.dag-viewer__zoom-btn:hover { border-color: var(--accent-red, #d33); }
-.dag-viewer__zoom-btn:focus-visible { outline: 2px solid var(--accent-red, #d33); outline-offset: 1px; }
+.dag-viewer__zoom-btn:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+.dag-viewer__zoom-btn:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
 .dag-svg { display: block; font-family: var(--font-mono, ui-monospace, monospace); }
 .edge {
   stroke: var(--chrome-30, #444);

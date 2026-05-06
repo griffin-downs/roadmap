@@ -921,9 +921,9 @@ function buildStars(): Star[] {
   position: absolute !important;
   right: 12px !important;
   top: 56px !important;
-  width: calc(260px * var(--ui-scale, 1)) !important;
+  width: calc(340px * var(--ui-scale, 1)) !important;
   z-index: 35;
-  max-height: 60vh;
+  max-height: 70vh;
   overflow: auto;
 }
 .viewer-shell--print > .viewer-head,
@@ -993,7 +993,7 @@ function buildStars(): Star[] {
   color: var(--text-secondary, #ccc);
   cursor: pointer;
   border-radius: 2px;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1))px;
   line-height: 1;
 }
 .dag-info__close:hover { color: var(--accent-gold); border-color: var(--accent-gold); }
@@ -1263,7 +1263,7 @@ function buildStars(): Star[] {
   color: var(--text-secondary, #ccc);
   cursor: pointer;
   border-radius: 2px;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1))px;
   line-height: 1;
 }
 .theme-picker__close:hover { color: var(--accent-gold); border-color: var(--accent-gold); }
@@ -1307,9 +1307,15 @@ function buildStars(): Star[] {
 .theme-row__label {
   font-family: var(--font-mono, ui-monospace, monospace);
   font-size: calc(11px * var(--font-scale, 1));
-  white-space: nowrap;
+  font-weight: var(--font-weight-base, 500);
+  line-height: 1.35;
+  flex: 1 1 auto;
+  min-width: 0;
+  /* allow wrapping rather than clipping · two lines max */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* .dag-pane retired · canvas-as-ground replaces flex-stack with absolute overlays. */

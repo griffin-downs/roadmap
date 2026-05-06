@@ -506,7 +506,7 @@ watch(
   margin-bottom: 8px;
 }
 .dag-tooltip__status {
-  font-size: 9px;
+  font-size: calc(9px * var(--font-scale, 1))px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 2px 6px;
@@ -552,7 +552,7 @@ watch(
   border: 1px solid var(--foil-30, rgba(215, 164, 50, 0.3));
   color: var(--ink-dim, #B8B0A0);
   font: inherit;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1))px;
   line-height: 1;
   padding: 0 6px;
   cursor: pointer;
@@ -561,20 +561,20 @@ watch(
 
 .dag-tooltip__desc {
   margin: 0 0 10px 0;
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1))px;
   line-height: 1.5;
   color: var(--ink-white, #F5F2E8);
 }
 .dag-tooltip__section { margin-bottom: 8px; }
 .dag-tooltip__label {
-  font-size: 9px;
+  font-size: calc(9px * var(--font-scale, 1))px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--ink-dim, #B8B0A0);
   margin-bottom: 2px;
 }
 .dag-tooltip__row {
-  font-size: 10px;
+  font-size: calc(10px * var(--font-scale, 1))px;
   color: var(--ink-white, #F5F2E8);
   word-break: break-all;
   padding: 1px 0;
@@ -586,7 +586,7 @@ watch(
 }
 .dag-tooltip__intent-text {
   margin: 0;
-  font-size: 10px;
+  font-size: calc(10px * var(--font-scale, 1))px;
   line-height: 1.5;
   color: var(--ink-dim, #B8B0A0);
   font-style: italic;
@@ -611,7 +611,7 @@ watch(
   border: 1px solid var(--foil, #D7A432);
   color: var(--foil, #D7A432);
   font-family: inherit;
-  font-size: 10px;
+  font-size: calc(10px * var(--font-scale, 1))px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   cursor: pointer;
@@ -691,7 +691,7 @@ watch(
   padding: 0;
   border-right: 1px solid var(--rule, #4A3D6E);
   padding-right: 8px;
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1))px;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -723,7 +723,7 @@ watch(
 }
 .dag-tooltip__tree-preview {
   color: var(--text-meta, #8E8EBB);
-  font-size: 10px;
+  font-size: calc(10px * var(--font-scale, 1))px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
