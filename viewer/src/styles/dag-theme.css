@@ -196,11 +196,12 @@
 .glass-surface:hover::after {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: -3px;                          /* thicker · was -1px */
   pointer-events: none;
   border-radius: inherit;
+  padding: 3px;                         /* widens visible ring */
   background: conic-gradient(
-    from 0deg,
+    from var(--halo-angle, 0deg),
     var(--rainbow-1), var(--rainbow-2), var(--rainbow-3),
     var(--rainbow-4), var(--rainbow-5), var(--rainbow-6), var(--rainbow-1)
   );
@@ -212,8 +213,22 @@
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
           mask-composite: exclude;
-  opacity: 0.55;
-  z-index: 1;
+  opacity: 0.95;                        /* was 0.55 */
+  z-index: 2;
+  filter: drop-shadow(0 0 10px var(--accent-gold))
+          drop-shadow(0 0 24px oklch(0.66 0.18 280 / 0.5));
+  animation: halo-rotate 4s linear infinite;
+}
+@property --halo-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes halo-rotate {
+  to { --halo-angle: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-surface:hover::after { animation: none; }
 }
 
 /* @property enables animating the conic-gradient angle (Chrome 85+, Firefox 128+) */

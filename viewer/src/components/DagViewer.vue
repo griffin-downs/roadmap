@@ -973,16 +973,21 @@ function emitClick(nodeId: string, ev: MouseEvent): void {
 .dag-viewer__zoom-btn:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
 .dag-svg { display: block; font-family: var(--font-mono, ui-monospace, monospace); }
 .edge {
-  stroke: var(--chrome-30, #444);
-  stroke-width: 1.5;
+  stroke: var(--rule-strong, #888);
+  stroke-width: 2.25;
   transition: stroke 120ms, opacity 120ms;
 }
-.edge--active { stroke: var(--accent-red, #d33); stroke-width: 2.25; }
+.edge--active { stroke: var(--accent-gold, gold); stroke-width: 3.25; }
 .edge--dim { opacity: 0.25; }
-.node { cursor: pointer; transition: opacity 120ms; }
+.node {
+  cursor: pointer;
+  transition: opacity 120ms;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55))
+          drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
 .node-rect {
-  stroke: var(--chrome-30, #444);
-  stroke-width: 1;
+  stroke: var(--rule-strong, #888);
+  stroke-width: 1.75;
   fill: var(--chrome-10, #151515);
   transition: fill 120ms, stroke 120ms;
 }
@@ -992,33 +997,43 @@ function emitClick(nodeId: string, ev: MouseEvent): void {
 }
 .node--in-progress .node-rect {
   fill: var(--status-active, oklch(0.32 0.12 60));
-  stroke: var(--accent-red, #d33);
-  stroke-width: 2;
+  stroke: var(--accent-gold, gold);
+  stroke-width: 2.5;
 }
-.node--blocked .node-rect { fill: var(--chrome-10, #151515); stroke: var(--chrome-25, #333); }
+.node--blocked .node-rect { fill: var(--chrome-10, #151515); stroke: var(--accent-red, #d33); }
 .node--plan-mode .node-rect {
   fill: transparent;
-  stroke: var(--accent-red, #d33);
-  stroke-dasharray: 4 3;
+  stroke: var(--accent-gold, gold);
+  stroke-dasharray: 6 4;
+  stroke-width: 2;
 }
-.node--frontier .node-rect { stroke-width: 2.5; }
-.node--hovered .node-rect { stroke: var(--accent-red, #d33); stroke-width: 2.5; }
-.node--related .node-rect { stroke: var(--accent-red, #d33); }
+.node--frontier .node-rect { stroke-width: 3; stroke: var(--accent-gold, gold); }
+.node--hovered .node-rect { stroke: var(--accent-gold, gold); stroke-width: 3; }
+.node--related .node-rect { stroke: var(--accent-gold, gold); }
 .node--dim { opacity: 0.3; }
 .node-id {
   fill: var(--text-primary, #eee);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: calc(15px * var(--font-scale, 1));
+  font-weight: 700;
   pointer-events: none;
+  paint-order: stroke fill;
+  stroke: var(--chrome-bg);
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 .node-status {
-  fill: var(--text-meta, #888);
-  font-size: 9px;
+  fill: var(--accent-gold, #888);
+  font-size: calc(11px * var(--font-scale, 1));
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.10em;
   pointer-events: none;
+  paint-order: stroke fill;
+  stroke: var(--chrome-bg);
+  stroke-width: 2px;
+  stroke-linejoin: round;
 }
-.dag-viewer--tablet .node-id { font-size: 10px; }
+.dag-viewer--tablet .node-id { font-size: calc(13px * var(--font-scale, 1)); }
 @media (prefers-reduced-motion: reduce) {
   .edge, .node, .node-rect { transition: none; }
 }
