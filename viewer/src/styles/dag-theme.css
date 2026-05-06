@@ -113,19 +113,51 @@
 /* Pearlescent shimmer · always-on subtle iridescence · rotates slowly.
    Layers under text via z-index: -1 (relative to .glass-surface stacking ctx).
    Cheap: a single conic-gradient with low-alpha rainbow stops + 40s rotation. */
-.glass-surface::before {
+/* Pearlescent shimmer · ONE global layer behind everything · light source
+   from off-screen, modulated per-surface by each glass panel's own
+   backdrop-filter. The conic-gradient origin sits past the top-left
+   viewport edge so what's visible is a SLICE of the gradient — angle
+   and color shift continuously across the canvas without any obvious
+   center-point. Single fixed-position element · slow rotation ·
+   mix-blend-mode: screen so it adds light to whatever sits below.
+
+   Cost: one animated layer · GPU-rasterized conic-gradient · no per-element
+   ::before machinery. Glass panels' existing backdrop-filter blurs
+   canvas + this pearl layer together, giving each panel its own subtle
+   iridescent cast based on what's beneath it.
+
+   Stacking: .viewer-shell::before sits at z-index 5 (above canvas at 1,
+   below all chrome surfaces at 20+). Chrome's backdrop-filter blurs
+   what's behind, so they pick up the shimmer through their own surface. */
+.viewer-shell::before,
+.viewer-shell::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: conic-gradient(from var(--pearl-angle, 0deg), var(--pearl-stops));
-  mix-blend-mode: screen;
-  opacity: 0.35;
+  inset: -50%;                       /* origin off-screen · gradient slice visible */
+  z-index: 5;
   pointer-events: none;
-  z-index: -1;
-  animation: pearl-rotate 40s linear infinite;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+/* Primary pearl · clockwise rotation · gradient origin off top-left */
+.viewer-shell::before {
+  background: conic-gradient(from var(--pearl-angle, 0deg) at 0% 0%, var(--pearl-stops));
+  opacity: 0.85;
+  animation: pearl-rotate 60s linear infinite;
+}
+/* Secondary pearl · counter-rotates from opposite corner · doubles
+   the color motion at minimal cost (one extra layer) */
+.viewer-shell::after {
+  background: conic-gradient(from var(--pearl-angle-2, 0deg) at 100% 100%, var(--pearl-stops));
+  opacity: 0.55;
+  animation: pearl-rotate-rev 90s linear infinite;
 }
 @property --pearl-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@property --pearl-angle-2 {
   syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
@@ -133,8 +165,12 @@
 @keyframes pearl-rotate {
   to { --pearl-angle: 360deg; }
 }
+@keyframes pearl-rotate-rev {
+  to { --pearl-angle-2: -360deg; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .glass-surface::before { animation: none; }
+  .viewer-shell::before,
+  .viewer-shell::after { animation: none; }
 }
 .glass-surface:hover {
   background: var(--glass-bg-hover);

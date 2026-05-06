@@ -64,14 +64,17 @@
         --font-weight-base: 500;
         --font-weight-strong: 700;
 
-        /* Pearlescence · animated conic-gradient stops · reused on hover for
-         * a cheap iridescent shimmer (see .glass-surface:hover::after) */
-        --pearl-stops: oklch(0.95 0.13 100 / 0.18) 0deg,
-                       oklch(0.71 0.20 130 / 0.16) 60deg,
-                       oklch(0.62 0.06 280 / 0.14) 140deg,
-                       oklch(0.55 0.16 22  / 0.16) 220deg,
-                       oklch(0.86 0.16 100 / 0.16) 300deg,
-                       oklch(0.95 0.13 100 / 0.18) 360deg;
+        /* Pearlescence · animated conic-gradient stops · stronger alphas
+         * + saturation so the global off-canvas pearl reads as light, not
+         * a faint tint. With one global layer (.viewer-shell::before)
+         * blurring through chrome backdrop-filter, weak alphas got
+         * smeared away. Bumped 2-3× across the wheel. */
+        --pearl-stops: oklch(0.95 0.16 100 / 0.45) 0deg,
+                       oklch(0.74 0.22 130 / 0.40) 60deg,
+                       oklch(0.62 0.14 280 / 0.40) 140deg,
+                       oklch(0.55 0.20 22  / 0.42) 220deg,
+                       oklch(0.86 0.20 100 / 0.42) 300deg,
+                       oklch(0.95 0.16 100 / 0.45) 360deg;
       }
       html, body {
         height: 100%; margin: 0; overflow: hidden;
