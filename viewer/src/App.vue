@@ -538,7 +538,7 @@ function buildStars(): Star[] {
         </g>
       </svg>
     </div>
-    <header v-if="showTitle" class="viewer-head dag-foil-halo" :class="{ 'glass-surface glass-surface--header': !printMode }">
+    <header v-if="showTitle" class="viewer-head dag-foil-halo" :class="{ 'glass-surface': !printMode }">
       <h1>roadmap viewer · <span class="dag-id">{{ dagId }}</span></h1>
       <div v-if="!printMode" class="viewer-head__tools" role="group" aria-label="viewer tools">
         <button
@@ -581,7 +581,7 @@ function buildStars(): Star[] {
     />
 
     <!-- g-repo-rail · floating LEFT overlay. -->
-    <aside v-if="!printMode && !focusMode" class="repo-rail glass-surface glass-surface--rail">
+    <aside v-if="!printMode && !focusMode" class="repo-rail glass-surface">
       <div class="repo-rail__head">
         <span class="repo-rail__label">repos</span>
         <span v-if="roadmapsLoading && repoRailRows.length === 0" class="repo-rail__loading">loading repos…</span>
@@ -616,7 +616,7 @@ function buildStars(): Star[] {
 
     <!-- g-lineage-pane · floating TOP-RIGHT overlay (right of rail, below toolbar). -->
     <LineagePane v-if="!printMode && !focusMode"
-      class="viewer-shell__lineage glass-surface glass-surface--lineage"
+      class="viewer-shell__lineage glass-surface"
       :lineage="selectedRepoLineage"
       :current-dag-id="payload?.dagId"
       @select="onLineageSelect"
@@ -629,7 +629,7 @@ function buildStars(): Star[] {
       :expanded="printMode ? false : tooltipExpanded"
       :print-mode="printMode"
       :root-intent="rootIntent"
-      :class="{ 'dag-tooltip--print': printMode, 'glass-surface glass-surface--tooltip': !printMode }"
+      :class="{ 'dag-tooltip--print': printMode, 'glass-surface': !printMode }"
       @close="dismissTooltip"
     />
 

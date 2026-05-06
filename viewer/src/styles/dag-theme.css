@@ -89,12 +89,15 @@
   --dag-march-period:   1.6s;
 }
 
-/* ── Glass surfaces · stained-glass chrome ───────────────────────────
- * Translucent oklch panels with backdrop-filter blur+saturate.
- * Per-surface tints layered via the .glass-surface--<role> modifier.
+/* ── Glass surfaces · neutral chrome over canvas ─────────────────────
+ * All surfaces share one neutral oklch. Color comes from the canvas
+ * bleeding through the backdrop-filter blur. Opacity encodes focus:
+ *   faded   sibling of hovered  → maximal bleed-through
+ *   rest    default              → canvas content visible, surface readable
+ *   hover   focused panel        → solid enough to read comfortably
  * Sibling surfaces fade when one is hovered (:has() driven). The
- * hovered surface gets a rainbow conic-gradient halo to read as the
- * focused panel. Gated outside print mode by component-level v-if. */
+ * hovered surface gets a rainbow conic-gradient halo. Gated outside
+ * print mode by component-level v-if. */
 .glass-surface {
   background: var(--glass-bg-rest);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -105,19 +108,12 @@
   transition: background 200ms ease, border-color 200ms ease;
   position: relative;
 }
-.glass-surface--rail    { background: var(--glass-tint-rail); }
-.glass-surface--lineage { background: var(--glass-tint-lineage); }
-.glass-surface--tooltip { background: var(--glass-tint-tooltip); }
-.glass-surface--header  { background: var(--glass-tint-header); }
-.glass-surface--zoom    { background: var(--glass-tint-zoom); }
-.glass-surface--canvas  { background: var(--glass-tint-canvas); }
-
 .glass-surface:hover {
-  background: var(--glass-bg-hover) !important;
+  background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
 }
 .viewer-shell:has(.glass-surface:hover) .glass-surface:not(:hover) {
-  background: var(--glass-bg-faded) !important;
+  background: var(--glass-bg-faded);
   border-color: var(--glass-border-rest);
 }
 /* Lineage cards are NOT glass-surfaces · they must keep stable opaque
