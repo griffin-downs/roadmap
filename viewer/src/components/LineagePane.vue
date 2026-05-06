@@ -181,6 +181,8 @@ function formatMtime(ms: number): string {
   letter-spacing: 0.06em;
   font-size: calc(10px * var(--font-scale, 1));
   color: var(--text-meta, #888);
+  text-shadow: var(--text-shadow-readable);
+  font-weight: var(--font-weight-strong, 700);
 }
 .lineage-card-lite--complete .lineage-card-lite__status { color: #7ec47e; }
 .lineage-card-lite--active   .lineage-card-lite__status { color: var(--foil, #d7a432); }
@@ -191,6 +193,7 @@ function formatMtime(ms: number): string {
   flex-direction: column;
   font-size: calc(9px * var(--font-scale, 1))px;
   color: var(--text-meta, #888);
+  text-shadow: var(--text-shadow-readable);
   max-width: 140px;
 }
 .lineage-meta__id {

@@ -31,6 +31,14 @@
          * different mid-gray, but the default is contrast-safe.
          * 70% alpha lands ~AA-large on most theme bg+text combinations. */
         --text-meta:      color-mix(in oklch, var(--text-primary) 70%, transparent);
+
+        /* Readable-shadow tokens · belt-and-suspenders for meta text on
+         * translucent panels. Stroke uses chrome-bg so it adapts per theme
+         * (light themes get light outline, dark themes get dark). Drop-shadow
+         * adds 1-2px offset for subtle lift even when stroke matches bg. */
+        --text-shadow-readable: 0 1px 0 var(--chrome-bg),
+                                0 0 4px var(--chrome-bg),
+                                0 1px 3px oklch(0 0 0 / 0.45);
         --accent-gold:    oklch(0.95 0.13 100);  /* vivid yellow */
         --accent-orange:  oklch(0.86 0.16 100);  /* mustard */
         --accent-red:     oklch(0.55 0.16 22);   /* crimson */

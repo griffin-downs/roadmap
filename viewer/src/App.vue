@@ -1035,7 +1035,11 @@ function buildStars(): Star[] {
   color: var(--foil, #D7A432);
   text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
 }
-.viewer-head .dag-id { color: var(--text-meta, #888); font-weight: 400; }
+.viewer-head .dag-id {
+  color: var(--text-meta, #888);
+  text-shadow: var(--text-shadow-readable);
+  font-weight: 400;
+}
 .viewer-head__tools {
   display: flex;
   align-items: center;
@@ -1215,7 +1219,9 @@ function buildStars(): Star[] {
 }
 .repo-row__mtime {
   color: var(--text-meta);
+  text-shadow: var(--text-shadow-readable);
   font-size: calc(10px * var(--font-scale, 1));
+  font-weight: var(--font-weight-base, 500);
   flex: 0 0 auto;
 }
 .repo-row__bot {

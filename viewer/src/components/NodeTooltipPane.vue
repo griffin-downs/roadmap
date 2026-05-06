@@ -723,6 +723,7 @@ watch(
 }
 .dag-tooltip__tree-preview {
   color: var(--text-meta, #8E8EBB);
+  text-shadow: var(--text-shadow-readable);
   font-size: calc(10px * var(--font-scale, 1))px;
   white-space: nowrap;
   overflow: hidden;
