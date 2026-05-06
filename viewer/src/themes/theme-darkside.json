@@ -1,6 +1,6 @@
 {
-  "name": "rg-darkside",
-  "label": "Rainglow · Darkside (crimson dark)",
+  "name": "darkside",
+  "label": "Darkside (crimson dark)",
   "vars": {
     "--chrome-bg": "oklch(0.255 0.002 247.9)",
     "--chrome-panel": "oklch(0.267 0.002 247.9)",

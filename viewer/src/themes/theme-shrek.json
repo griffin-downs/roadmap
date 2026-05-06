@@ -1,6 +1,6 @@
 {
-  "name": "rg-shrek",
-  "label": "Rainglow · Shrek (swamp green)",
+  "name": "shrek",
+  "label": "Shrek (swamp green)",
   "vars": {
     "--chrome-bg": "oklch(0.252 0 89.9)",
     "--chrome-panel": "oklch(0.264 0 89.9)",

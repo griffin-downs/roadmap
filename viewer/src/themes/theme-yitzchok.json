@@ -1,6 +1,6 @@
 {
-  "name": "rg-yitzchok",
-  "label": "Rainglow · Yitzchok (paper)",
+  "name": "yitzchok",
+  "label": "Yitzchok (paper)",
   "vars": {
     "--chrome-bg": "oklch(0.289 0.016 248.4)",
     "--chrome-panel": "oklch(0.301 0.016 248.4)",

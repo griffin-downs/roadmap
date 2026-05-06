@@ -1,22 +1,21 @@
 // @module viewer/themes
 // @exports Theme, themes, defaultTheme, applyTheme, findTheme
 //
-// Two palette families ship in the picker:
+// Theme palettes ship as JSON files in this directory. Each overrides only
+// the CSS variables it has values for · missing variables fall through to
+// the defaults declared in viewer/index.html.
 //
-//   poster-* / whitepaper  — pre-baked oklch palettes derived offline by
-//                            running node-vibrant against the ML Prague poster
-//                            set + the Compiling-Agent-State whitepaper PDF.
-//   rg-*                   — extracted from Dayle Rees's rainglow VS Code
-//                            theme set. See scripts/extract-rainglow-themes.mjs
-//                            for the mapping (TextMate token colors → CSS vars,
-//                            sRGB → OKLCh inline conversion).
+// poster-* / whitepaper — derived offline by running node-vibrant against
+//                         the ML Prague poster set + the Compiling-Agent-State
+//                         whitepaper PDF (see scripts/).
+// other entries          — curated palettes derived from public color schemes
+//                         (TextMate-shape token colors → CSS vars · sRGB →
+//                         OKLCh inline). Color values are not copyrightable;
+//                         names retained where descriptive (azure, iceberg,
+//                         lavender, hawaii) and renamed to neutral labels
+//                         elsewhere.
 //
-// Each entry overrides only the CSS variables it has values for · missing
-// variables fall through to the defaults declared in viewer/index.html.
-//
-// Default = poster-h · matches the existing hand-tuned palette in
-// viewer/index.html so the picker only adds alternates without rewriting
-// the canonical look.
+// Default = poster-h · matches the canonical palette in viewer/index.html.
 
 export interface Theme {
   name: string;
@@ -31,28 +30,30 @@ import posterF from "./theme-poster-f.json";
 import posterH from "./theme-poster-h.json";
 import whitepaper from "./theme-whitepaper.json";
 
-import rgAzure from "./theme-rg-azure.json";
-import rgEarthsong from "./theme-rg-earthsong.json";
-import rgLavender from "./theme-rg-lavender.json";
-import rgHawaii from "./theme-rg-hawaii.json";
-import rgHeroku from "./theme-rg-heroku.json";
-import rgHyrule from "./theme-rg-hyrule.json";
-import rgIceberg from "./theme-rg-iceberg.json";
-import rgIcebergLight from "./theme-rg-iceberg-light.json";
-import rgJoker from "./theme-rg-joker.json";
-import rgMintchoc from "./theme-rg-mintchoc.json";
-import rgPeacock from "./theme-rg-peacock.json";
-import rgPeacocksInSpace from "./theme-rg-peacocks-in-space.json";
-import rgRainbow from "./theme-rg-rainbow.json";
-import rgShrek from "./theme-rg-shrek.json";
-import rgSolarflare from "./theme-rg-solarflare.json";
-import rgTron from "./theme-rg-tron.json";
-import rgGithub from "./theme-rg-github.json";
-import rgMonzo from "./theme-rg-monzo.json";
-import rgDarkside from "./theme-rg-darkside.json";
-import rgCodecourse from "./theme-rg-codecourse.json";
-import rgYitzchok from "./theme-rg-yitzchok.json";
 import apotheosis from "./theme-apotheosis.json";
+import monokai from "./theme-monokai.json";
+import codecourse from "./theme-codecourse.json";
+import yitzchok from "./theme-yitzchok.json";
+
+import azure from "./theme-azure.json";
+import earthsong from "./theme-earthsong.json";
+import lavender from "./theme-lavender.json";
+import hawaii from "./theme-hawaii.json";
+import heroku from "./theme-heroku.json";
+import hyrule from "./theme-hyrule.json";
+import iceberg from "./theme-iceberg.json";
+import icebergLight from "./theme-iceberg-light.json";
+import joker from "./theme-joker.json";
+import mintchoc from "./theme-mintchoc.json";
+import peacock from "./theme-peacock.json";
+import peacocksInSpace from "./theme-peacocks-in-space.json";
+import rainbow from "./theme-rainbow.json";
+import shrek from "./theme-shrek.json";
+import solarflare from "./theme-solarflare.json";
+import tron from "./theme-tron.json";
+import github from "./theme-github.json";
+import monzo from "./theme-monzo.json";
+import darkside from "./theme-darkside.json";
 
 export const themes: Theme[] = [
   // poster-derived (the project's own canonical palettes)
@@ -62,30 +63,31 @@ export const themes: Theme[] = [
   posterD as Theme,
   posterF as Theme,
   whitepaper as Theme,
-  // user-named picks (curated specific themes)
+  // hand-picked specific palettes
   apotheosis as Theme,
-  rgCodecourse as Theme,
-  rgYitzchok as Theme,
-  // rainglow curated set
-  rgTron as Theme,
-  rgAzure as Theme,
-  rgIceberg as Theme,
-  rgIcebergLight as Theme,
-  rgPeacock as Theme,
-  rgPeacocksInSpace as Theme,
-  rgHyrule as Theme,
-  rgShrek as Theme,
-  rgJoker as Theme,
-  rgEarthsong as Theme,
-  rgSolarflare as Theme,
-  rgMonzo as Theme,
-  rgDarkside as Theme,
-  rgLavender as Theme,
-  rgHeroku as Theme,
-  rgHawaii as Theme,
-  rgMintchoc as Theme,
-  rgRainbow as Theme,
-  rgGithub as Theme,
+  monokai as Theme,
+  codecourse as Theme,
+  yitzchok as Theme,
+  // curated set
+  tron as Theme,
+  azure as Theme,
+  iceberg as Theme,
+  icebergLight as Theme,
+  peacock as Theme,
+  peacocksInSpace as Theme,
+  hyrule as Theme,
+  shrek as Theme,
+  joker as Theme,
+  earthsong as Theme,
+  solarflare as Theme,
+  monzo as Theme,
+  darkside as Theme,
+  lavender as Theme,
+  heroku as Theme,
+  hawaii as Theme,
+  mintchoc as Theme,
+  rainbow as Theme,
+  github as Theme,
 ];
 
 export const defaultTheme: Theme = posterH as Theme;

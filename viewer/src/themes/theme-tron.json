@@ -1,6 +1,6 @@
 {
-  "name": "rg-tron",
-  "label": "Rainglow · Tron (cyan grid)",
+  "name": "tron",
+  "label": "Tron (cyan grid)",
   "vars": {
     "--chrome-bg": "oklch(0.211 0.014 253.1)",
     "--chrome-panel": "oklch(0.223 0.014 253.1)",

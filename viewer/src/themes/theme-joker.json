@@ -1,6 +1,6 @@
 {
-  "name": "rg-joker",
-  "label": "Rainglow · Joker (green / purple)",
+  "name": "joker",
+  "label": "Joker (green / purple)",
   "vars": {
     "--chrome-bg": "oklch(0.334 0.013 253)",
     "--chrome-panel": "oklch(0.346 0.013 253)",

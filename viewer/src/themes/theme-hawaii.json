@@ -1,6 +1,6 @@
 {
-  "name": "rg-hawaii",
-  "label": "Rainglow · Hawaii (tropical)",
+  "name": "hawaii",
+  "label": "Hawaii (tropical)",
   "vars": {
     "--chrome-bg": "oklch(0.315 0.003 48.6)",
     "--chrome-panel": "oklch(0.327 0.003 48.6)",

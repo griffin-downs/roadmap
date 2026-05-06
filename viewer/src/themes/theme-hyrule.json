@@ -1,6 +1,6 @@
 {
-  "name": "rg-hyrule",
-  "label": "Rainglow · Hyrule (forest)",
+  "name": "hyrule",
+  "label": "Hyrule (forest)",
   "vars": {
     "--chrome-bg": "oklch(0.294 0.002 67.7)",
     "--chrome-panel": "oklch(0.306 0.002 67.7)",
