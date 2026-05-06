@@ -56,6 +56,16 @@ const milestoneIds: Ref<string[]> = ref<string[]>(
 // Focus mode · collapse repo-rail + lineage strip so canvas owns the screen.
 // Distinct from printMode (no poster styling, just hides the side UI).
 const focusMode: Ref<boolean> = ref<boolean>(false);
+// DAG-info panel · shows head-level metadata (id, desc, init, term, progress).
+// Toggled from the toolbar; closed by default so it doesn't compete with the
+// canvas. Persists per-session via localStorage.
+const dagInfoOpen: Ref<boolean> = ref<boolean>(
+  (() => { try { return localStorage.getItem("viewer-dag-info-open") === "1"; } catch { return false; } })(),
+);
+function toggleDagInfo(): void {
+  dagInfoOpen.value = !dagInfoOpen.value;
+  try { localStorage.setItem("viewer-dag-info-open", dagInfoOpen.value ? "1" : "0"); } catch { /* ignore */ }
+}
 const showTooltipInPrint: Ref<boolean> = ref<boolean>(
   url.searchParams.get("tooltip") !== "0",
 );
@@ -443,6 +453,31 @@ const rootIntent: ComputedRef<string> = computed<string>(() => {
   return head.desc ?? "";
 });
 
+// DAG-info panel summary · counts done/total nodes from completedEntries.
+const dagInfo: ComputedRef<{
+  id: string;
+  init: string;
+  term: string;
+  desc: string;
+  done: number;
+  total: number;
+} | null> = computed(() => {
+  const p = payload.value;
+  if (p === null) return null;
+  const head = p.head as unknown as { id?: string; init?: string; term?: string; desc?: string; nodes?: Record<string, unknown> };
+  const total = head.nodes ? Object.keys(head.nodes).length : 0;
+  const completed = (p as unknown as { completedEntries?: unknown[] }).completedEntries;
+  const done = Array.isArray(completed) ? completed.length : 0;
+  return {
+    id: head.id ?? p.dagId ?? "",
+    init: head.init ?? "",
+    term: head.term ?? "",
+    desc: head.desc ?? "",
+    done: Math.min(done, total),
+    total,
+  };
+});
+
 // r2-hero · animated SVG sparkle starfield (print mode only)
 interface Star {
   x: number; y: number; size: number;
@@ -560,6 +595,14 @@ function buildStars(): Star[] {
         <button
           type="button"
           class="viewer-head__btn"
+          :class="{ 'is-active': dagInfoOpen }"
+          aria-label="show dag info"
+          title="show dag-level metadata (description, init, term, progress)"
+          @click="toggleDagInfo"
+        >ⓘ info</button>
+        <button
+          type="button"
+          class="viewer-head__btn"
           :class="{ 'is-active': focusMode }"
           :aria-label="focusMode ? 'show side panes' : 'maximize canvas'"
           :title="focusMode ? 'show side panes' : 'maximize canvas (hide rail and lineage)'"
@@ -567,6 +610,31 @@ function buildStars(): Star[] {
         >⊟ focus</button>
       </div>
     </header>
+
+    <!-- DAG-info panel · floating right-side overlay · shows head-level
+         metadata (id, init, term, desc, progress). Toggled from toolbar. -->
+    <aside v-if="!printMode && dagInfoOpen && dagInfo" class="dag-info glass-surface" aria-label="DAG metadata">
+      <header class="dag-info__head">
+        <span class="dag-info__label">dag</span>
+        <span class="dag-info__id">{{ dagInfo.id }}</span>
+        <button
+          type="button"
+          class="dag-info__close"
+          aria-label="close dag info"
+          @click="toggleDagInfo"
+        >×</button>
+      </header>
+      <dl class="dag-info__meta">
+        <dt>init</dt><dd>{{ dagInfo.init }}</dd>
+        <dt>term</dt><dd>{{ dagInfo.term }}</dd>
+        <dt>progress</dt><dd>{{ dagInfo.done }} / {{ dagInfo.total }}</dd>
+      </dl>
+      <p
+        v-for="(para, i) in dagInfo.desc.split(/\n\s*\n/).filter((p: string) => p.trim().length > 0)"
+        :key="i"
+        class="dag-info__para"
+      >{{ para.trim() }}</p>
+    </aside>
 
     <!-- g-canvas-as-ground · DagViewer fills the viewport · all chrome
          floats over it as absolute-positioned glass overlays. -->
@@ -666,44 +734,77 @@ function buildStars(): Star[] {
   </main>
 </template>
 
+<!-- UNSCOPED layout rules · canvas-as-ground positioning. These must apply
+     to child component roots (DagViewer, LineagePane, NodeTooltipPane) which
+     Vue 3 scoped CSS does not reliably reach. Layout-only · no theme. -->
+<style>
+.viewer-shell {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.viewer-shell > .viewer-shell__canvas,
+.viewer-shell > .dag-viewer {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1;
+}
+.viewer-shell > .viewer-head {
+  position: absolute !important;
+  top: 12px !important;
+  left: 12px !important;
+  right: 12px !important;
+  z-index: 30;
+}
+.viewer-shell > .repo-rail {
+  position: absolute !important;
+  left: 12px !important;
+  top: 64px !important;
+  bottom: 12px !important;
+  width: 280px !important;
+  z-index: 20;
+}
+.viewer-shell > .viewer-shell__lineage {
+  position: absolute !important;
+  left: 304px !important;
+  right: 12px !important;
+  top: 64px !important;
+  height: 180px !important;
+  z-index: 20;
+}
+.viewer-shell:has(.viewer-shell__lineage):not(:has(.repo-rail)) > .viewer-shell__lineage {
+  left: 12px !important;
+}
+.viewer-shell > .dag-info {
+  position: absolute !important;
+  right: 12px !important;
+  top: 256px !important;       /* below lineage strip */
+  bottom: 12px !important;
+  width: 360px !important;
+  z-index: 25;
+  overflow: auto;
+}
+.viewer-shell--print > .viewer-head,
+.viewer-shell--print > .repo-rail,
+.viewer-shell--print > .viewer-shell__lineage,
+.viewer-shell--print > .dag-info {
+  display: none !important;
+}
+</style>
+
 <style scoped>
 /* g-canvas-as-ground · viewer-shell is a positioning ancestor.
-   Canvas fills the viewport (full-bleed). All chrome surfaces float
-   on top as absolute-positioned glass overlays · their backdrop-filter
-   blur acts on actual canvas pixels beneath. */
+   Layout positioning is in the unscoped <style> block above (must apply
+   to child component roots). This block carries theme-only rules. */
 .viewer-shell {
   font-family: var(--font-mono, ui-monospace, monospace);
   color: var(--text-primary, #eee);
   background: var(--chrome-00, #000);
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  box-sizing: border-box;
 }
 
-/* Canvas — the ground. Fills viewer-shell edge-to-edge. */
-.viewer-shell__canvas {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-/* Floating overlays · z-stack
-     tooltip      1000  (managed in component)
-     toolbar      30
-     rail         20
-     lineage      20
-     zoom         15    (in DagViewer)
-     canvas        1
-*/
-
-/* Toolbar · top, full width with edge gap */
+/* Toolbar · flex content layout (positioning is unscoped) */
 .viewer-head {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
-  z-index: 30;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -711,38 +812,77 @@ function buildStars(): Star[] {
   gap: 12px;
 }
 
-/* Rail · LEFT overlay, below toolbar */
-.repo-rail {
-  position: absolute;
-  left: 12px;
-  top: 64px;
-  bottom: 12px;
-  width: 280px;
-  z-index: 20;
+/* DAG-info panel · floating right overlay below the lineage strip.
+   Positioning in unscoped block above; this is theming + content layout. */
+.dag-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  font-size: calc(11px * var(--font-scale, 1));
+  line-height: 1.5;
 }
+.dag-info__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule, #4A3D6E);
+}
+.dag-info__label {
+  font-size: calc(10px * var(--font-scale, 1));
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold, #FCF791);
+  font-weight: 600;
+}
+.dag-info__id {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: calc(13px * var(--font-scale, 1));
+  color: var(--text-primary, #F5F3BF);
+  flex: 1 1 auto;
+  word-break: break-all;
+}
+.dag-info__close {
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: 1px solid var(--glass-border-rest, #444);
+  color: var(--text-secondary, #ccc);
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 1;
+}
+.dag-info__close:hover { color: var(--accent-gold); border-color: var(--accent-gold); }
 
-/* Lineage strip · TOP-RIGHT overlay, right of rail, below toolbar */
-.viewer-shell__lineage {
-  position: absolute;
-  left: 304px;       /* 12 (edge) + 280 (rail) + 12 (gap) */
-  right: 12px;
-  top: 64px;
-  height: 180px;
-  z-index: 20;
+.dag-info__meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  margin: 0;
 }
-
-/* When focus mode hides rail, lineage spans full width minus edges */
-.viewer-shell:has(.viewer-shell__lineage):not(:has(.repo-rail)) .viewer-shell__lineage {
-  left: 12px;
+.dag-info__meta dt {
+  font-size: calc(10px * var(--font-scale, 1));
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-meta);
 }
-
-/* Print mode · canvas only, no overlays. The v-if gates already do
-   most of the work; this just ensures no leftover layout artifacts. */
-.viewer-shell--print .viewer-head,
-.viewer-shell--print .repo-rail,
-.viewer-shell--print .viewer-shell__lineage {
-  display: none;
+.dag-info__meta dd {
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: calc(11px * var(--font-scale, 1));
+  color: var(--text-primary);
+  word-break: break-all;
 }
+.dag-info__para {
+  margin: 0;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: calc(13px * var(--font-scale, 1));
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+.dag-info__para + .dag-info__para { margin-top: 4px; }
 .viewer-head h1 {
   margin: 0;
   font-size: calc(16px * var(--font-scale, 1));
