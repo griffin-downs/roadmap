@@ -254,6 +254,30 @@ function bumpFontScale(dir: 1 | -1): void {
   fontScale.value = FONT_SCALE_STEPS[next];
 }
 
+// Element scale · independent of font scale. Multiplies UI dimensions
+// (panel widths, button sizes, padding, gaps) so the chrome can grow or
+// shrink without affecting text. Bound to --ui-scale on documentElement.
+const UI_SCALE_STEPS = [0.875, 1.0, 1.125, 1.25] as const;
+function loadUiScale(): number {
+  try {
+    const v = localStorage.getItem("viewer-ui-scale");
+    const n = v ? Number(v) : 1;
+    return Number.isFinite(n) && n > 0 ? n : 1;
+  } catch { return 1; }
+}
+const uiScale: Ref<number> = ref<number>(loadUiScale());
+watch(uiScale, (v) => {
+  document.documentElement.style.setProperty("--ui-scale", String(v));
+  try { localStorage.setItem("viewer-ui-scale", String(v)); } catch { /* ignore */ }
+}, { immediate: true });
+
+function bumpUiScale(dir: 1 | -1): void {
+  const idx = UI_SCALE_STEPS.findIndex((s) => Math.abs(s - uiScale.value) < 1e-3);
+  const cur = idx === -1 ? UI_SCALE_STEPS.indexOf(1.0) : idx;
+  const next = Math.max(0, Math.min(UI_SCALE_STEPS.length - 1, cur + dir));
+  uiScale.value = UI_SCALE_STEPS[next];
+}
+
 const tooltipNode: ComputedRef<InspectedNode | null> = computed(() => {
   const p = payload.value;
   if (p === null || !tooltipNodeId.value) return null;
@@ -576,30 +600,56 @@ function buildStars(): Star[] {
     <header v-if="showTitle" class="viewer-head dag-foil-halo" :class="{ 'glass-surface': !printMode }">
       <h1>roadmap viewer · <span class="dag-id">{{ dagId }}</span></h1>
       <div v-if="!printMode" class="viewer-head__tools" role="group" aria-label="viewer tools">
+        <!-- prominent · the most likely thing the user wants to open -->
         <button
           type="button"
-          class="viewer-head__btn"
-          aria-label="decrease text size"
-          title="decrease text size"
-          :disabled="fontScale <= 0.875"
-          @click="bumpFontScale(-1)"
-        >A−</button>
-        <button
-          type="button"
-          class="viewer-head__btn"
-          aria-label="increase text size"
-          title="increase text size"
-          :disabled="fontScale >= 1.25"
-          @click="bumpFontScale(1)"
-        >A+</button>
-        <button
-          type="button"
-          class="viewer-head__btn"
+          class="viewer-head__btn viewer-head__btn--primary"
           :class="{ 'is-active': dagInfoOpen }"
           aria-label="show dag info"
           title="show dag-level metadata (description, init, term, progress)"
           @click="toggleDagInfo"
-        >ⓘ info</button>
+        >ⓘ DAG info</button>
+
+        <!-- font scale · A−/A+ -->
+        <div class="viewer-head__pair" role="group" aria-label="text size">
+          <button
+            type="button"
+            class="viewer-head__btn viewer-head__btn--pair"
+            aria-label="decrease text size"
+            title="decrease text size"
+            :disabled="fontScale <= 0.875"
+            @click="bumpFontScale(-1)"
+          >A−</button>
+          <button
+            type="button"
+            class="viewer-head__btn viewer-head__btn--pair"
+            aria-label="increase text size"
+            title="increase text size"
+            :disabled="fontScale >= 1.25"
+            @click="bumpFontScale(1)"
+          >A+</button>
+        </div>
+
+        <!-- element scale · ⊟−/⊟+ · independent of font scale -->
+        <div class="viewer-head__pair" role="group" aria-label="element size">
+          <button
+            type="button"
+            class="viewer-head__btn viewer-head__btn--pair"
+            aria-label="decrease ui density"
+            title="shrink ui (panel widths, padding, button sizes)"
+            :disabled="uiScale <= 0.875"
+            @click="bumpUiScale(-1)"
+          >⊟−</button>
+          <button
+            type="button"
+            class="viewer-head__btn viewer-head__btn--pair"
+            aria-label="increase ui density"
+            title="grow ui (panel widths, padding, button sizes)"
+            :disabled="uiScale >= 1.25"
+            @click="bumpUiScale(1)"
+          >⊟+</button>
+        </div>
+
         <button
           type="button"
           class="viewer-head__btn"
@@ -607,7 +657,7 @@ function buildStars(): Star[] {
           :aria-label="focusMode ? 'show side panes' : 'maximize canvas'"
           :title="focusMode ? 'show side panes' : 'maximize canvas (hide rail and lineage)'"
           @click="focusMode = !focusMode"
-        >⊟ focus</button>
+        >focus</button>
       </div>
     </header>
 
@@ -762,15 +812,15 @@ function buildStars(): Star[] {
   left: 12px !important;
   top: 64px !important;
   bottom: 12px !important;
-  width: 280px !important;
+  width: calc(280px * var(--ui-scale, 1)) !important;
   z-index: 20;
 }
 .viewer-shell > .viewer-shell__lineage {
   position: absolute !important;
-  left: 304px !important;
+  left: calc(24px + 280px * var(--ui-scale, 1)) !important;
   right: 12px !important;
   top: 64px !important;
-  height: 180px !important;
+  height: calc(180px * var(--ui-scale, 1)) !important;
   z-index: 20;
 }
 .viewer-shell:has(.viewer-shell__lineage):not(:has(.repo-rail)) > .viewer-shell__lineage {
@@ -779,9 +829,9 @@ function buildStars(): Star[] {
 .viewer-shell > .dag-info {
   position: absolute !important;
   right: 12px !important;
-  top: 256px !important;       /* below lineage strip */
+  top: calc(76px + 180px * var(--ui-scale, 1)) !important;
   bottom: 12px !important;
-  width: 360px !important;
+  width: calc(360px * var(--ui-scale, 1)) !important;
   z-index: 25;
   overflow: auto;
 }
@@ -912,7 +962,7 @@ function buildStars(): Star[] {
   font-family: inherit;
   font-size: calc(11px * var(--font-scale, 1));
   letter-spacing: 0.04em;
-  padding: 4px 8px;
+  padding: calc(4px * var(--ui-scale, 1)) calc(8px * var(--ui-scale, 1));
   cursor: pointer;
   border-radius: 2px;
   transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
@@ -934,6 +984,39 @@ function buildStars(): Star[] {
   opacity: 0.4;
   cursor: default;
 }
+/* Primary action · DAG info button · gold-filled, prominent */
+.viewer-head__btn--primary {
+  background: var(--accent-gold);
+  color: var(--chrome-bg, #1D1D30);
+  border-color: var(--accent-gold);
+  font-weight: 700;
+  padding: calc(5px * var(--ui-scale, 1)) calc(12px * var(--ui-scale, 1));
+}
+.viewer-head__btn--primary:hover:not(:disabled) {
+  background: var(--accent-orange, #E4DD4E);
+  border-color: var(--accent-orange, #E4DD4E);
+  color: var(--chrome-bg, #1D1D30);
+}
+.viewer-head__btn--primary.is-active {
+  background: var(--chrome-bg, #1D1D30);
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+}
+/* Paired buttons (font scale, ui scale) · grouped with shared border */
+.viewer-head__pair {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.viewer-head__btn--pair {
+  border-radius: 0;
+}
+.viewer-head__btn--pair + .viewer-head__btn--pair {
+  border-left: none;
+}
+.viewer-head__btn--pair:first-child { border-radius: 2px 0 0 2px; }
+.viewer-head__btn--pair:last-child { border-radius: 0 2px 2px 0; }
 .viewer-head__btn--seg {
   border: none;
   border-radius: 0;
