@@ -125,7 +125,6 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
       desc: 'Synthetic init — ratification receipt for all root tasks',
       produces: [receipt],
       consumes: [],
-      deps: [],
       validate: [],
     } as NodeSpec<string, string>;
     // Wire each root to consume the receipt — this is how ordering is expressed.
@@ -151,22 +150,19 @@ export function tasksToDAG(tasks: ParsedTask[], opts: ImportOptions): Graph<stri
       desc: 'Synthetic term — gates on all leaf tasks',
       produces: [],
       consumes: leafTasks.flatMap(t => t.produces).filter(Boolean),
-      deps: leafTasks.map(t => t.id),
       validate: [],
     } as NodeSpec<string, string>;
   }
 
-  // 6. Materialize task nodes. `deps` is computed from the predecessor map,
-  //    not read from t.depends. The deps field exists for the engine's
-  //    internal ordering pass (src/core/order.ts) but is no longer authored.
+  // 6. Materialize task nodes. Edges derive from consumes ↔ produces — no deps
+  //    field on persisted output. flat() synthesizes deps for the engine's
+  //    internal ordering pass.
   for (const t of tasks) {
-    const deps = [...(predsOf.get(t.id) ?? [])].sort();
     nodes[t.id] = {
       id: t.id,
       desc: t.desc,
       produces: t.produces,
       consumes: t.consumes,
-      deps,
       validate: t.validate,
       ...(t.mode === 'plan' ? { mode: 'plan' } : {}),
     } as NodeSpec<string, string>;

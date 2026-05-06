@@ -6,6 +6,7 @@
 import type { Graph } from '../protocol.ts';
 import { consumeArtifact } from '../protocol.ts';
 import { node } from '../core/access.ts';
+import { flat } from '../core/graph.ts';
 import { briefSlice, type BriefSlice, type AncestorContext, type SpecContext, type FileSummary } from './brief-slice.ts';
 import { buildTerminalBrief, type TerminalBrief } from './terminal-brief.ts';
 import { loadContext } from '../runtime/context.ts';
@@ -90,9 +91,13 @@ export async function getBrief(
     }
   }
 
-  // For plan nodes, include dep status so agents know what's pending
+  // For plan nodes, include dep status so agents know what's pending.
+  // Synthesize via flat() — NodeSpec has no authored deps in v0.5+.
+  const flatNodes = flat(dag);
+  const flatById = new Map(flatNodes.map(n => [n.id, n]));
+  const synthDeps = flatById.get(position)?.deps ?? [];
   const pendingDeps = spec.mode === 'plan'
-    ? spec.deps.filter((d: string) => {
+    ? synthDeps.filter((d: string) => {
         const depNode = node(dag, d);
         return depNode != null;
       })
@@ -137,15 +142,16 @@ export async function getBrief(
 }
 
 function countRemaining(dag: Graph<string>, position: string): number {
-  // Simple count: nodes reachable from position to term
+  // Simple count: nodes reachable backward (via synthesized deps) from position.
   const visited = new Set<string>();
   const queue = [position];
+  const flatById = new Map(flat(dag).map(n => [n.id, n]));
   while (queue.length > 0) {
     const current = queue.shift()!;
     if (visited.has(current)) continue;
     visited.add(current);
 
-    const n = node(dag, current);
+    const n = flatById.get(current);
     if (!n) continue;
 
     for (const dep of n.deps) {

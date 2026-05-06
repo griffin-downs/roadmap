@@ -92,7 +92,7 @@ function buildReceipt(
 
 export function insertNode(
   dag: Graph<string>,
-  node: { id: string; desc: string; produces: string[]; consumes: string[]; deps: string[]; validate?: any[]; mode?: 'execute' | 'plan'; sidecar?: Record<string, unknown> },
+  node: { id: string; desc: string; produces: string[]; consumes: string[]; validate?: any[]; mode?: 'execute' | 'plan'; sidecar?: Record<string, unknown> },
   note: string,
 ): { dag: Graph<string>; receipt: MutationRecord } {
   const result = cloneGraph(dag);
@@ -102,21 +102,15 @@ export function insertNode(
     throw new Error(`Node "${node.id}" already exists in DAG`);
   }
 
-  // Validate deps exist in the graph
-  const existingIds = new Set(Object.keys(nodes));
-  for (const dep of (node.deps ?? [])) {
-    if (!existingIds.has(dep)) {
-      throw new Error(`Dep "${dep}" not found in DAG`);
-    }
-  }
+  // Edges derive from consumes ↔ produces — no deps validation here. verify()
+  // (run via validateMutation below) raises when a consumes path is unresolved.
 
-  // Build a full NodeSpec
+  // Build a full NodeSpec — no deps field; flat() synthesizes from consumes/produces.
   const spec: any = {
     id: node.id,
     desc: node.desc,
     produces: node.produces ?? [],
     consumes: node.consumes ?? [],
-    deps: node.deps ?? [],
     validate: node.validate ?? [{ type: 'artifact-exists' as const }],
   };
   if (node.mode) spec.mode = node.mode;
@@ -157,9 +151,20 @@ export function removeNode(
 
   const beforeSnapshot = { ...nodes[nodeId] };
 
-  // Find dependents (nodes that have nodeId in their deps)
+  // Edges live in consumes ↔ produces. Dependents = nodes that consume one of
+  // this node's produces.
+  const targetProduces = new Set<string>((nodes[nodeId].produces as string[]) ?? []);
+  const consumeArtifactPath = (c: unknown): string | undefined =>
+    typeof c === 'string' ? c : (c as { artifact?: string })?.artifact;
+  const consumesAnyOf = (nid: string, set: Set<string>): boolean => {
+    const cs = (nodes[nid].consumes as unknown[]) ?? [];
+    return cs.some(c => {
+      const p = consumeArtifactPath(c);
+      return p !== undefined && set.has(p);
+    });
+  };
   const dependents = Object.keys(nodes).filter(
-    nid => nid !== nodeId && (nodes[nid].deps as string[]).includes(nodeId),
+    nid => nid !== nodeId && consumesAnyOf(nid, targetProduces),
   );
 
   if (dependents.length > 0 && !opts?.cascade) {
@@ -168,19 +173,23 @@ export function removeNode(
     );
   }
 
-  // Cascade: collect all nodes that ONLY depend on the removed chain
+  // Cascade: collect all nodes whose consumes are entirely satisfied by
+  // produces of the to-be-removed set.
   const toRemove = new Set<string>([nodeId]);
   if (opts?.cascade) {
+    const removedProduces = new Set<string>(targetProduces);
     let changed = true;
     while (changed) {
       changed = false;
       for (const nid of Object.keys(nodes)) {
         if (toRemove.has(nid)) continue;
         if (nid === result.init || nid === result.term) continue;
-        const deps = nodes[nid].deps as string[];
-        // Remove if ALL deps are in the removal set
-        if (deps.length > 0 && deps.every((d: string) => toRemove.has(d))) {
+        const cs = (nodes[nid].consumes as unknown[]) ?? [];
+        const paths = cs.map(consumeArtifactPath).filter((p): p is string => p !== undefined);
+        if (paths.length === 0) continue;
+        if (paths.every(p => removedProduces.has(p))) {
           toRemove.add(nid);
+          for (const p of (nodes[nid].produces as string[]) ?? []) removedProduces.add(p);
           changed = true;
         }
       }
@@ -192,10 +201,24 @@ export function removeNode(
     delete nodes[rid];
   }
 
-  // Clean up dangling dep references in remaining nodes
+  // Clean up dangling consume references in remaining nodes.
+  const removedProducesAll = new Set<string>();
+  for (const rid of toRemove) {
+    for (const p of (beforeSnapshot.produces as string[]) ?? []) {
+      if (rid === nodeId) removedProducesAll.add(p);
+    }
+  }
   for (const nid of Object.keys(nodes)) {
     const n = nodes[nid];
-    n.deps = (n.deps as string[]).filter((d: string) => !toRemove.has(d));
+    if (!Array.isArray(n.consumes)) continue;
+    n.consumes = (n.consumes as unknown[]).filter(c => {
+      const p = consumeArtifactPath(c);
+      return p === undefined || !removedProducesAll.has(p);
+    });
+    // Strip any vestigial deps field that referenced removed nodes.
+    if (Array.isArray(n.deps)) {
+      n.deps = (n.deps as string[]).filter((d: string) => !toRemove.has(d));
+    }
   }
 
   const validation = validateMutation(dag, result);
@@ -211,7 +234,7 @@ export function removeNode(
 export function modifyNode(
   dag: Graph<string>,
   nodeId: string,
-  changes: Partial<{ desc: string; produces: string[]; consumes: string[]; deps: string[]; validate: any[]; mode: 'execute' | 'plan'; sidecar: Record<string, unknown> }>,
+  changes: Partial<{ desc: string; produces: string[]; consumes: string[]; validate: any[]; mode: 'execute' | 'plan'; sidecar: Record<string, unknown> }>,
   note: string,
 ): { dag: Graph<string>; receipt: MutationRecord } {
   const result = cloneGraph(dag);

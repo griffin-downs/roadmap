@@ -7,6 +7,11 @@ import type { Graph } from '../src/lib/protocol/types.ts';
 
 // --- Test graph factory ---
 
+// mkGraph: fixture factory. Tests author with `deps: [...]` syntax for
+// readability; the on-disk surface (head.json) drops deps in v0.5+, but the
+// engine's internal Flat type still carries deps. flat() honors a raw deps
+// array when present, so tests retain the deps-syntax shorthand without
+// having to synthesize artifact wiring for every fixture.
 function mkGraph(nodes: Record<string, { deps: string[]; produces?: string[]; consumes?: string[] }>, init = 'init', term = 'term'): Graph<string> {
   const built: Record<string, any> = {};
   for (const [id, n] of Object.entries(nodes)) {

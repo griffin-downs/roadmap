@@ -16,7 +16,7 @@ function buildGraph<T extends string>(
   id: string, desc: string, init: string, term: string,
   nodes: Record<string, Flat>,
 ): Graph<T> {
-  return { id, desc, init, term, nodes } as Graph<T>;
+  return { id, desc, init, term, nodes } as unknown as Graph<T>;
 }
 
 // --- reconcile ---

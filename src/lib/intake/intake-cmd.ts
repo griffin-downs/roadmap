@@ -146,7 +146,6 @@ export function runIntakeAbsorb(options: IntakeAbsorbOptions): IntakeRecord {
     desc: `Cluster of ${cl.commitShas.length} commit(s) touching ${cl.paths.length} path(s)`,
     produces: cl.paths,
     consumes: [] as string[],
-    deps: [] as string[],
   }));
 
   const record: IntakeRecord = {

@@ -11,6 +11,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import type { Graph, NodeSpec } from '../protocol.ts';
 import { consumeArtifact } from '../protocol.ts';
+import { flat } from '../core/graph.ts';
+import type { Flat } from '../core/graph.ts';
 import { node } from '../core/access.ts';
 
 // --- File summary types and helpers ---
@@ -167,6 +169,9 @@ function walkBackwardCone(
   let frontier = [nodeId];
   let depth = 0;
 
+  // Synthesize deps via flat() — NodeSpec no longer carries an authored deps field.
+  const flatMap = new Map<string, Flat>(flat(dag).map(n => [n.id, n]));
+
   while (frontier.length > 0 && depth <= maxDepth) {
     const nextFrontier: string[] = [];
     const layer: string[] = [];
@@ -176,7 +181,7 @@ function walkBackwardCone(
         // Still collect deps for the starting node
         if (id === nodeId) {
           visited.add(id);
-          const n = node(dag, id);
+          const n = flatMap.get(id);
           if (n) {
             for (const dep of n.deps) {
               if (!visited.has(dep)) nextFrontier.push(dep);
@@ -188,7 +193,7 @@ function walkBackwardCone(
       visited.add(id);
       layer.push(id);
 
-      const n = node(dag, id);
+      const n = flatMap.get(id);
       if (n) {
         for (const dep of n.deps) {
           if (!visited.has(dep)) nextFrontier.push(dep);
@@ -212,7 +217,7 @@ function walkBackwardCone(
  */
 function countDescendants(nodeId: string, dag: Graph<string>): number {
   const visited = new Set<string>();
-  const allNodes = Object.values(dag.nodes) as NodeSpec<string, string>[];
+  const allNodes = flat(dag);
 
   // Build reverse adjacency: nodeId → nodes that depend on it
   const dependents = new Map<string, string[]>();
@@ -254,7 +259,7 @@ function findBatchSiblings(nodeId: string, dag: Graph<string>): string[] {
     const existing = depths.get(id);
     depths.set(id, existing !== undefined ? Math.max(existing, d) : d);
 
-    const allNodes = Object.values(dag.nodes) as NodeSpec<string, string>[];
+    const allNodes = flat(dag);
     for (const node of allNodes) {
       if (node.deps.includes(id) && !visited.has(node.id)) {
         queue.push([node.id, d + 1]);

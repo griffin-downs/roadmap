@@ -9,13 +9,19 @@
 
 import type { ConsumeSpec } from '../lib/protocol/types.ts';
 
-/** Pure graph-algebra contract — sufficient for all core/ operations. */
-export interface CoreNodeSpec<TAll extends string = string, TSelf extends TAll = TAll> {
+/** Pure graph-algebra contract — sufficient for all core/ operations.
+ *
+ *  Note: edges are derived EXCLUSIVELY from consumes ↔ produces. There is no
+ *  authored `deps` field — the engine's internal Flat type synthesizes deps
+ *  inside flat() when iterating. Test fixtures and back-compat callers that
+ *  attach a `deps` array on raw node objects continue to work because flat()
+ *  falls back to that array when present, but new specs and persisted DAGs
+ *  must not include it. */
+export interface CoreNodeSpec<_TAll extends string = string, TSelf extends string = _TAll> {
   readonly id: TSelf;
   readonly desc: string;
   readonly produces: readonly string[];
   readonly consumes: readonly (ConsumeSpec)[];
-  readonly deps: readonly TAll[];
 }
 
 /** Graph whose nodes carry only the core contract. */
