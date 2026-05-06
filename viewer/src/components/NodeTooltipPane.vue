@@ -263,12 +263,15 @@ const TsField = defineComponent({
 });
 import { computeTooltipPosition, type AnchorRect } from "../composables/useTooltipPosition";
 
-// Loose shape — accepts any node-like record with at least id.
+// Loose shape · canonical v2 NodeSpec fields only. Engine-derived runtime
+// fields (e.g. deps) live on the compiled head.json but aren't part of the
+// spec contract — keep them out of the type so the tooltip can't surface
+// them. Record<string, unknown> base lets the raw-mode filter still see
+// extras at runtime if needed for forward compat.
 type NodeData = Record<string, unknown> & {
   id: string;
   status?: string;
   desc?: string;
-  deps?: string[];
   consumes?: string[];
   produces?: string[];
   mode?: string;
@@ -307,11 +310,19 @@ const emit = defineEmits<{
   (e: "close"): void;
 }>();
 
-// Raw-mode JSON · full node serialization, copyable.
+// Raw-mode JSON · canonical v2 NodeSpec only (id, desc, produces, consumes,
+// validate, mode?, sidecar?). The compiled head.json carries engine-derived
+// fields like `deps` — those are runtime state, not part of the spec the
+// author wrote. Raw view shows the spec, not the runtime materialization.
+const CANONICAL_NODE_FIELDS = ["id", "desc", "produces", "consumes", "validate", "mode", "sidecar"] as const;
 const rawJson: ComputedRef<string> = computed(() => {
-  const n = props.nodeData;
+  const n = props.nodeData as Record<string, unknown> | null;
   if (!n) return "";
-  try { return JSON.stringify(n, null, 2); } catch { return "[unserializable]"; }
+  const canonical: Record<string, unknown> = {};
+  for (const k of CANONICAL_NODE_FIELDS) {
+    if (n[k] !== undefined) canonical[k] = n[k];
+  }
+  try { return JSON.stringify(canonical, null, 2); } catch { return "[unserializable]"; }
 });
 
 const paneRef: Ref<HTMLElement | null> = ref<HTMLElement | null>(null);
