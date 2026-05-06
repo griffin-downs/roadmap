@@ -1,6 +1,6 @@
 {
-  "name": "rg-earthsong",
-  "label": "Rainglow · Earthsong (warm earth)",
+  "name": "earthsong",
+  "label": "Earthsong (warm earth)",
   "vars": {
     "--chrome-bg": "oklch(0.317 0.011 67.4)",
     "--chrome-panel": "oklch(0.329 0.011 67.4)",

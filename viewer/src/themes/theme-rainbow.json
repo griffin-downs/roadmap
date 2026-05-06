@@ -1,6 +1,6 @@
 {
-  "name": "rg-rainbow",
-  "label": "Rainglow · Rainbow",
+  "name": "rainbow",
+  "label": "Rainbow",
   "vars": {
     "--chrome-bg": "oklch(0.354 0.012 253)",
     "--chrome-panel": "oklch(0.366 0.012 253)",

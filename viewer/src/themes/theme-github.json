@@ -1,6 +1,6 @@
 {
-  "name": "rg-github",
-  "label": "Rainglow · GitHub (slate)",
+  "name": "github",
+  "label": "GitHub (slate)",
   "vars": {
     "--chrome-bg": "oklch(0.321 0 89.9)",
     "--chrome-panel": "oklch(0.333 0 89.9)",

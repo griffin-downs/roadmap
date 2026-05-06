@@ -1,6 +1,6 @@
 {
-  "name": "rg-azure",
-  "label": "Rainglow · Azure (deep blue)",
+  "name": "azure",
+  "label": "Azure (deep blue)",
   "vars": {
     "--chrome-bg": "oklch(0.23 0.019 262.1)",
     "--chrome-panel": "oklch(0.242 0.019 262.1)",

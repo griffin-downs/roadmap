@@ -1,6 +1,6 @@
 {
-  "name": "rg-peacock",
-  "label": "Rainglow · Peacock (teal)",
+  "name": "peacock",
+  "label": "Peacock (teal)",
   "vars": {
     "--chrome-bg": "oklch(0.285 0.006 91.6)",
     "--chrome-panel": "oklch(0.297 0.006 91.6)",

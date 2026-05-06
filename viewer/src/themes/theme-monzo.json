@@ -1,6 +1,6 @@
 {
-  "name": "rg-monzo",
-  "label": "Rainglow · Monzo (hot coral)",
+  "name": "monzo",
+  "label": "Monzo (hot coral)",
   "vars": {
     "--chrome-bg": "oklch(0.259 0.048 258.7)",
     "--chrome-panel": "oklch(0.271 0.048 258.7)",

@@ -1,6 +1,6 @@
 {
-  "name": "rg-heroku",
-  "label": "Rainglow · Heroku (royal purple)",
+  "name": "heroku",
+  "label": "Heroku (royal purple)",
   "vars": {
     "--chrome-bg": "oklch(0.226 0.017 284.9)",
     "--chrome-panel": "oklch(0.238 0.017 284.9)",

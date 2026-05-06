@@ -1,6 +1,6 @@
 {
-  "name": "rg-mintchoc",
-  "label": "Rainglow · Mintchoc (mint + cocoa)",
+  "name": "mintchoc",
+  "label": "Mintchoc (mint + cocoa)",
   "vars": {
     "--chrome-bg": "oklch(0.26 0.018 55.5)",
     "--chrome-panel": "oklch(0.272 0.018 55.5)",
