@@ -9,6 +9,7 @@
 import type { Graph } from '../lib/protocol/types.ts';
 import { consumeArtifact } from '../lib/protocol/types.ts';
 import { node } from '../core/access.ts';
+import { flat } from '../core/graph.ts';
 import type { Orientation } from '../core/orient.ts';
 import type { Context, HandoffEntry } from './context.ts';
 import type { FinalHandoff, InterimHandoff } from '../lib/brief.ts';
@@ -252,12 +253,14 @@ export function computeReport(dag: Graph<string>, context: Context): ComputedRep
 function countRemaining(dag: Graph<string>, position: string): number {
   const visited = new Set<string>();
   const queue = [position];
+  // Synthesize via flat() — NodeSpec carries no authored deps.
+  const flatById = new Map(flat(dag).map(n => [n.id, n]));
   while (queue.length > 0) {
     const current = queue.shift()!;
     if (visited.has(current)) continue;
     visited.add(current);
 
-    const n = node(dag, current);
+    const n = flatById.get(current);
     if (!n) continue;
 
     for (const dep of n.deps) {

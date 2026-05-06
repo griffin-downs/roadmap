@@ -114,7 +114,9 @@ export interface NodeSpec<TAll extends string, TSelf extends TAll = TAll> {
   readonly desc: string;
   readonly produces: readonly string[];
   readonly consumes: readonly (ConsumeSpec)[];
-  readonly deps: readonly TAll[];
+  // deps cut from the authored surface (v0.5+). Edges derive from consumes ↔ produces.
+  // The engine's internal Flat type re-synthesizes a deps array inside flat() —
+  // do NOT add deps back to NodeSpec. _TAll preserved purely for old generic call sites.
   readonly validate: readonly ValidationRule[]; // ← REQUIRED
   readonly mode?: 'execute' | 'plan'; // default: 'execute'. 'plan' = decompose, output is DAG expansion
   readonly nodeType?: 'execute' | 'emit-gallery'; // dispatch dimension: pipeline type (orthogonal to mode)

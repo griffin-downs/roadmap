@@ -5,6 +5,7 @@
 
 import type { Graph } from '../protocol.ts';
 import { node } from '../core/access.ts';
+import { flat } from '../core/graph.ts';
 import type { FinalHandoff, InterimHandoff } from './brief.ts';
 
 /**
@@ -73,10 +74,10 @@ export async function advance(
   const spec = node(dag, nodeId);
   if (!spec) throw new Error(`Invalid node: ${nodeId}`);
 
-  // Next position: first node that depends on this one
-  const nextNodes = Object.entries(dag.nodes).filter(([, n]) =>
-    n.deps.includes(nodeId),
-  );
+  // Next position: first node that depends on this one (synthesized via flat()).
+  const nextNodes = flat(dag)
+    .filter(n => n.deps.includes(nodeId))
+    .map(n => [n.id, n] as const);
 
   if (nextNodes.length === 0) {
     // No dependencies on this node, move to term

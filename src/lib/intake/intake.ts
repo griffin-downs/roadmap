@@ -164,14 +164,16 @@ export function importIntake(
       init: 'init',
       term: 'term',
       nodes: {
-        init: { id: 'init', desc: 'Init', produces: [], consumes: [], deps: [], validate: [], idempotent: true },
-        term: { id: 'term', desc: 'Term', produces: [], consumes: [], deps: ['init'], validate: [], idempotent: true },
+        init: { id: 'init', desc: 'Init', produces: ['.roadmap/init.receipt.json'], consumes: [], validate: [], idempotent: true },
+        term: { id: 'term', desc: 'Term', produces: [], consumes: ['.roadmap/init.receipt.json'], validate: [], idempotent: true },
       },
     };
   }
 
-  const nodes = (dag.nodes ?? {}) as Record<string, unknown>;
-  const termNode = nodes[dag.term as string] as { deps: string[] } | undefined;
+  const nodes = (dag.nodes ?? {}) as Record<string, any>;
+  const initNode = nodes[dag.init as string] as { produces?: string[] } | undefined;
+  const initReceipt = initNode?.produces?.[0] ?? '.roadmap/init.receipt.json';
+  const termNode = nodes[dag.term as string] as { consumes: any[] } | undefined;
   const imported: IntakeCandidate[] = [];
 
   for (const c of candidates) {
@@ -181,16 +183,19 @@ export function importIntake(
       id: c.id,
       desc: c.desc,
       produces: c.produces,
-      consumes: c.consumes,
-      deps: [dag.init as string],
+      // Wire to init via receipt-consume; ordering derives from consumes ↔ produces.
+      consumes: [...c.consumes, initReceipt],
       validate: [{ type: 'artifact-exists' }],
       idempotent: true,
       intakeFrom: c.intakeFrom,
     };
 
-    // Wire into term
-    if (termNode && !termNode.deps.includes(c.id)) {
-      termNode.deps.push(c.id);
+    // Wire into term: term consumes one of this node's produces (or a sentinel).
+    if (termNode) {
+      const sentinel = c.produces[0];
+      if (sentinel && !(termNode.consumes ?? []).some((x: any) => (typeof x === 'string' ? x : x?.artifact) === sentinel)) {
+        termNode.consumes = [...(termNode.consumes ?? []), sentinel];
+      }
     }
 
     imported.push(c);
@@ -308,7 +313,6 @@ export interface ProposedNodeSpec {
   desc: string;
   produces: string[];
   consumes: string[];
-  deps: string[];
 }
 
 /** Full intake scan record: commits, clusters, and proposed nodes. */

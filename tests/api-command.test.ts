@@ -56,7 +56,9 @@ describe('schemaToJsonSchema', () => {
     const props = (jsonSchema as any).properties;
     expect(props).toHaveProperty('id');
     expect(props).toHaveProperty('desc');
-    expect(props).toHaveProperty('deps');
+    // deps cut from authored surface in v0.5+ — edges derive from consumes ↔ produces.
+    expect(props).not.toHaveProperty('deps');
+    expect(props).toHaveProperty('consumes');
     expect(props).toHaveProperty('produces');
     expect(props).toHaveProperty('validate');
   });

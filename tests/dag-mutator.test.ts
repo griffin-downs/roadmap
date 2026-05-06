@@ -25,7 +25,9 @@ function writeTrailReceipt(repoRoot: string, receipt: MutationRecord, cmd = 'dag
   appendFileSync(trailPath, JSON.stringify(entry) + '\n', 'utf-8');
 }
 
-// Minimal valid DAG for testing
+// Minimal valid DAG for testing. Edges expressed via consumes ↔ produces
+// (the v0.5+ contract); init produces a ratification receipt that downstream
+// nodes consume to express the init edge.
 function makeDag(extra: Record<string, any> = {}): Graph<string> {
   return {
     id: 'test-dag',
@@ -33,9 +35,9 @@ function makeDag(extra: Record<string, any> = {}): Graph<string> {
     init: 'init',
     term: 'term',
     nodes: {
-      init: { id: 'init', desc: 'start', produces: [], consumes: [], deps: [], validate: [], idempotent: true },
-      middle: { id: 'middle', desc: 'work', produces: ['out.ts'], consumes: [], deps: ['init'], validate: [{ type: 'artifact-exists' }], idempotent: true },
-      term: { id: 'term', desc: 'end', produces: [], consumes: [], deps: ['middle'], validate: [], idempotent: true },
+      init: { id: 'init', desc: 'start', produces: ['init.tag'], consumes: [], validate: [], idempotent: true },
+      middle: { id: 'middle', desc: 'work', produces: ['out.ts'], consumes: ['init.tag'], validate: [{ type: 'artifact-exists' }], idempotent: true },
+      term: { id: 'term', desc: 'end', produces: [], consumes: ['out.ts'], validate: [], idempotent: true },
       ...extra,
     },
   } as any;
@@ -104,23 +106,24 @@ describe('dag-mutator', () => {
     expect(validation.errors.some((e: string) => e.startsWith('define:'))).toBe(true);
   });
 
-  // Test 3: Insert node with missing dep -> rejected
-  it('rejects insert with nonexistent dep', () => {
+  // Test 3: Insert node consuming a nonexistent artifact -> rejected by verify().
+  // Edges live in consumes ↔ produces; an unresolved consumes path is the
+  // structural equivalent of the old "nonexistent dep" failure mode.
+  it('rejects insert with unresolved consumes', () => {
     const dag = makeDag();
     expect(() => insertNode(dag, {
       id: 'orphan',
       desc: 'orphan node',
       produces: [],
-      consumes: [],
-      deps: ['nonexistent'],
-    }, 'bad dep')).toThrow();
+      consumes: ['nonexistent.tag'],
+    } as any, 'bad consumes')).toThrow();
   });
 
   // Test 4: Remove leaf node -> DAG valid, receipt recorded
   it('removes a leaf node with receipt', () => {
     // Add a leaf node that nothing depends on (true leaf)
     const dag = makeDag({
-      leaf: { id: 'leaf', desc: 'leaf', produces: [], consumes: [], deps: ['middle'], validate: [], idempotent: true },
+      leaf: { id: 'leaf', desc: 'leaf', produces: ['leaf.tag'], consumes: ['out.ts'], validate: [], idempotent: true },
     });
     // leaf depends on middle but nothing depends on leaf — it's a true leaf
 
@@ -148,10 +151,10 @@ describe('dag-mutator', () => {
     // Actually: init/term are protected from removal. term's dep on middle gets cleaned.
     // extra only depends on middle, so it gets cascaded.
 
-    // Let's test with a simpler case: a chain after middle
+    // Let's test with a simpler case: a chain after middle. Edges via consumes/produces.
     const dag2 = makeDag({
-      step1: { id: 'step1', desc: 's1', produces: [], consumes: [], deps: ['init'], validate: [], idempotent: true },
-      step2: { id: 'step2', desc: 's2', produces: [], consumes: [], deps: ['step1'], validate: [], idempotent: true },
+      step1: { id: 'step1', desc: 's1', produces: ['step1.tag'], consumes: ['init.tag'], validate: [], idempotent: true },
+      step2: { id: 'step2', desc: 's2', produces: ['step2.tag'], consumes: ['step1.tag'], validate: [], idempotent: true },
     });
     // term depends on middle, step2 depends on step1
     // Remove step1 with cascade -> step2 (only dep is step1) gets removed too
@@ -191,12 +194,16 @@ describe('dag-mutator', () => {
     expect(() => modifyNode(dag, 'init', { deps: ['term'] } as any, 'cycle modify')).toThrow(MutationError);
   });
 
-  // Test 10: Modify node produces -> receipt captures before/after
+  // Test 10: Modify node produces -> receipt captures before/after.
+  // Use a leaf node (no downstream consumer) so verify() does not require
+  // matching consumes-side updates — the v0.5+ contract derives edges from
+  // consumes ↔ produces.
   it('captures before/after for produces change', () => {
+    // Add an extra produce to middle (term still consumes out.ts → still valid).
     const dag = makeDag();
-    const { receipt } = modifyNode(dag, 'middle', { produces: ['new-out.ts'] }, 'change produces');
+    const { receipt } = modifyNode(dag, 'middle', { produces: ['out.ts', 'extra.ts'] }, 'change produces');
     expect((receipt.before as any).produces).toEqual(['out.ts']);
-    expect((receipt.after as any).produces).toEqual(['new-out.ts']);
+    expect((receipt.after as any).produces).toEqual(['out.ts', 'extra.ts']);
   });
 
   // Test 11: Mutation log persists across operations

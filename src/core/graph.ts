@@ -31,8 +31,60 @@ export type Flat = {
   affects?: readonly string[];
 };
 
+// Synthesize `deps` from consumes ↔ produces. Used inside flat() to populate
+// the engine's internal ordering field. Authored NodeSpec no longer carries
+// deps; raw objects that still carry one (tests, legacy heads) win — the
+// fallback path is taken only when deps is absent.
+function synthesizeDeps<T extends string>(g: Graph<T>, raw: ReadonlyArray<{ id: string; consumes?: readonly unknown[] }>): Map<string, readonly string[]> {
+  // Build artifact → producer map.
+  const producerOf = new Map<string, string>();
+  for (const n of raw as ReadonlyArray<{ id: string; produces?: readonly string[] }>) {
+    for (const p of n.produces ?? []) producerOf.set(p, n.id);
+  }
+  const ids = new Set(raw.map(n => n.id));
+  const result = new Map<string, readonly string[]>();
+  for (const n of raw) {
+    const seen = new Set<string>();
+    for (const c of n.consumes ?? []) {
+      const path = typeof c === 'string' ? c : (c as { artifact?: string }).artifact;
+      if (!path) continue;
+      const from = producerOf.get(path);
+      if (from && from !== n.id) seen.add(from);
+    }
+    // init/term implicit wiring: term consumes nothing → still depends on init
+    // implicitly so the orderer doesn't see it as a root. We do NOT add this
+    // automatically — the spec compiler handles it via consume-of-receipt.
+    if (n.id === g.term && seen.size === 0) {
+      // Fall back: every leaf (non-init, has no successors-by-consume) is a dep.
+      // Cheap heuristic — the compiler should have wired term explicitly via
+      // consumes; this branch is hit only for old legacy heads.
+      const consumesByOthers = new Set<string>();
+      for (const m of raw as ReadonlyArray<{ id: string; consumes?: readonly unknown[] }>) {
+        for (const c of m.consumes ?? []) {
+          const a = typeof c === 'string' ? c : (c as { artifact?: string }).artifact;
+          if (a) consumesByOthers.add(a);
+        }
+      }
+      for (const m of raw as ReadonlyArray<{ id: string; produces?: readonly string[] }>) {
+        if (m.id === g.term || m.id === g.init) continue;
+        const isLeaf = (m.produces ?? []).every(p => !consumesByOthers.has(p));
+        if (isLeaf) seen.add(m.id);
+      }
+    }
+    result.set(n.id, [...seen].filter(id => ids.has(id)));
+  }
+  return result;
+}
+
 export function flat<T extends string>(g: Graph<T>): Flat[] {
-  return Object.values(g.nodes) as Flat[];
+  const raw = Object.values(g.nodes) as Array<Flat & { deps?: readonly string[] }>;
+  // Fast path: every node already has a deps array (legacy / test fixture).
+  // This preserves back-compat for callers that attach deps directly.
+  if (raw.every(n => Array.isArray(n.deps))) {
+    return raw as Flat[];
+  }
+  const synthesized = synthesizeDeps(g, raw as Array<{ id: string; produces?: readonly string[]; consumes?: readonly unknown[] }>);
+  return raw.map(n => Array.isArray(n.deps) ? n as Flat : ({ ...n, deps: synthesized.get(n.id) ?? [] } as Flat));
 }
 
 export function fwd(nodes: Flat[]): Map<string, string[]> {
