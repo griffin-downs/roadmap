@@ -29,6 +29,9 @@ import type { AnchorRect } from "./composables/useTooltipPosition";
 import { useDagPayload } from "./services/dagReader";
 import { DEFAULT_LAYOUT_OPTIONS, useDagLayout } from "./composables/useDagLayout";
 import { applyTheme, defaultTheme, findTheme, themes, type Theme } from "./themes";
+import { useIdle } from "./composables/useIdle";
+
+const idle = useIdle();
 
 // Selected repo path · drives /api/roadmap-dag?repo=<path> re-fetch.
 // Default empty → server falls back to host repo. Initialized from the
@@ -57,6 +60,12 @@ const milestoneIds: Ref<string[]> = ref<string[]>(
 // Focus mode · collapse repo-rail + lineage strip so canvas owns the screen.
 // Distinct from printMode (no poster styling, just hides the side UI).
 const focusMode: Ref<boolean> = ref<boolean>(false);
+// Calm mode · disables animations across the viewer. localStorage-backed.
+// Bound as data-calm on the .viewer-shell root for CSS to gate animations.
+const calm: Ref<boolean> = ref<boolean>(
+  (() => { try { return localStorage.getItem("viewer.calm") === "true"; } catch { return false; } })(),
+);
+watch(calm, (v) => { try { localStorage.setItem("viewer.calm", String(v)); } catch { /* ignore */ } });
 // DAG-info panel · shows head-level metadata (id, desc, init, term, progress).
 // Toggled from the toolbar; closed by default so it doesn't compete with the
 // canvas. Persists per-session via localStorage.
@@ -572,7 +581,7 @@ function buildStars(): Star[] {
 </script>
 
 <template>
-  <main class="viewer-shell" :class="{ 'viewer-shell--print': printMode }">
+  <main class="viewer-shell" :class="{ 'viewer-shell--print': printMode }" :data-calm="calm ? 'true' : 'false'" :data-idle="idle ? 'true' : 'false'">
     <div v-if="printMode" class="starfield" aria-hidden="true">
       <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
         <defs>
@@ -704,6 +713,15 @@ function buildStars(): Star[] {
           :title="focusMode ? 'show side panes' : 'maximize canvas (hide rail and lineage)'"
           @click="focusMode = !focusMode"
         >focus</button>
+
+        <button
+          type="button"
+          class="viewer-head__btn"
+          :class="{ 'is-active': calm }"
+          :aria-pressed="calm"
+          :title="calm ? 'disable calm mode' : 'enable calm mode (no animations)'"
+          @click="calm = !calm"
+        >calm</button>
       </div>
     </header>
 

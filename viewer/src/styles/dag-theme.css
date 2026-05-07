@@ -129,11 +129,10 @@
    Stacking: .viewer-shell::before sits at z-index 5 (above canvas at 1,
    below all chrome surfaces at 20+). Chrome's backdrop-filter blurs
    what's behind, so they pick up the shimmer through their own surface. */
-.viewer-shell::before,
-.viewer-shell::after {
+.viewer-shell::before {
   content: "";
   position: absolute;
-  inset: -50%;                       /* origin off-screen · gradient slice visible */
+  inset: 0;
   z-index: 5;
   pointer-events: none;
   mix-blend-mode: screen;
@@ -145,19 +144,7 @@
   opacity: 0.85;
   animation: pearl-rotate 60s linear infinite;
 }
-/* Secondary pearl · counter-rotates from opposite corner · doubles
-   the color motion at minimal cost (one extra layer) */
-.viewer-shell::after {
-  background: conic-gradient(from var(--pearl-angle-2, 0deg) at 100% 100%, var(--pearl-stops));
-  opacity: 0.55;
-  animation: pearl-rotate-rev 90s linear infinite;
-}
 @property --pearl-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-@property --pearl-angle-2 {
   syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
@@ -165,12 +152,8 @@
 @keyframes pearl-rotate {
   to { --pearl-angle: 360deg; }
 }
-@keyframes pearl-rotate-rev {
-  to { --pearl-angle-2: -360deg; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .viewer-shell::before,
-  .viewer-shell::after { animation: none; }
+  .viewer-shell::before { animation: none; }
 }
 .glass-surface:hover {
   background: var(--glass-bg-hover);
@@ -215,8 +198,7 @@
           mask-composite: exclude;
   opacity: 0.95;                        /* was 0.55 */
   z-index: 2;
-  filter: drop-shadow(0 0 10px var(--accent-gold))
-          drop-shadow(0 0 24px oklch(0.66 0.18 280 / 0.5));
+  filter: drop-shadow(0 0 10px var(--accent-gold));
   animation: halo-rotate 4s linear infinite;
 }
 @property --halo-angle {
@@ -810,4 +792,31 @@ html:has(.viewer-shell--print)::-webkit-scrollbar { display: none; }
   font-family: 'Fira Code', ui-monospace, monospace;
   margin: 2px 0;
   word-break: break-all;
+}
+
+/* ── Idle pause · stop animations when the viewer is idle ────────
+   data-idle="true" is set by useIdle (visibility · focus · inactivity).
+   Pausing animation-play-state is enough; backdrop-filter cost
+   amortizes to zero once nothing repaints. */
+.viewer-shell[data-idle="true"]::before,
+.viewer-shell[data-idle="true"] .glass-surface:hover::after,
+.viewer-shell[data-idle="true"] .dag-svg .node--in-progress .node-rainbow-rect,
+.viewer-shell[data-idle="true"] .dag-svg .edge--active,
+.viewer-shell[data-idle="true"] .dag-foil-halo::before {
+  animation-play-state: paused !important;
+}
+
+/* ── Calm mode · stronger than idle · pearl hidden, halo disabled ──
+   data-calm="true" is a user-pinned preference (toolbar toggle,
+   persisted in localStorage). Idle pauses; calm removes. */
+.viewer-shell[data-calm="true"]::before {
+  display: none;
+}
+.viewer-shell[data-calm="true"] .glass-surface:hover::after {
+  content: none;
+}
+.viewer-shell[data-calm="true"] .dag-svg .node--in-progress .node-rainbow-rect,
+.viewer-shell[data-calm="true"] .dag-svg .edge--active,
+.viewer-shell[data-calm="true"] .dag-foil-halo::before {
+  animation: none !important;
 }
