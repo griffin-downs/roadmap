@@ -129,11 +129,10 @@
    Stacking: .viewer-shell::before sits at z-index 5 (above canvas at 1,
    below all chrome surfaces at 20+). Chrome's backdrop-filter blurs
    what's behind, so they pick up the shimmer through their own surface. */
-.viewer-shell::before,
-.viewer-shell::after {
+.viewer-shell::before {
   content: "";
   position: absolute;
-  inset: -50%;                       /* origin off-screen · gradient slice visible */
+  inset: 0;
   z-index: 5;
   pointer-events: none;
   mix-blend-mode: screen;
@@ -145,19 +144,7 @@
   opacity: 0.85;
   animation: pearl-rotate 60s linear infinite;
 }
-/* Secondary pearl · counter-rotates from opposite corner · doubles
-   the color motion at minimal cost (one extra layer) */
-.viewer-shell::after {
-  background: conic-gradient(from var(--pearl-angle-2, 0deg) at 100% 100%, var(--pearl-stops));
-  opacity: 0.55;
-  animation: pearl-rotate-rev 90s linear infinite;
-}
 @property --pearl-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-@property --pearl-angle-2 {
   syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
@@ -165,12 +152,8 @@
 @keyframes pearl-rotate {
   to { --pearl-angle: 360deg; }
 }
-@keyframes pearl-rotate-rev {
-  to { --pearl-angle-2: -360deg; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .viewer-shell::before,
-  .viewer-shell::after { animation: none; }
+  .viewer-shell::before { animation: none; }
 }
 .glass-surface:hover {
   background: var(--glass-bg-hover);
