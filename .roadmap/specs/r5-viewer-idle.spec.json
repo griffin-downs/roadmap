@@ -1,10 +1,42 @@
 {
-  "id": "roadmap-r5-viewer-idle",
-  "desc": "Viewer · r5 · cheap idle. The viewer's stained-glass identity (pearlescent shimmer, hover halo, in-progress SVG glow) currently runs full-tilt regardless of whether anyone is looking. Two full-viewport pearl layers rotate forever at 60s and 90s with mix-blend-mode: screen and inset:-50% (4× viewport overdraw), the hover halo stacks two drop-shadow() filters on a rotating conic-gradient, and SVG in-progress nodes layer animated stroke-march + glow-modulate even when the canvas isn't being watched. On a moderate GPU the user reports the viewer is taxing.\n\nSCENARIO · given the viewer open in a browser tab, when the user switches to a different tab, blurs the window, or sits idle for 12s, then animations halt and compositor frame production drops to ~0. When the user comes back (mousemove · keydown · regain focus · tab visible) the aesthetic resumes within one frame. A toolbar 'calm' toggle persists a permanent low-motion state for users who want the look at minimum cost — pearl hidden, halo disabled, SVG glow off.\n\nSTANCE · the viewer's identity is the stained-glass aesthetic, not the per-frame cost. We keep the aesthetic on the marketing screenshot and the active state, and we let it sleep when the user isn't looking. The win comes from STOPPING THE THINGS THAT FORCE PAINTS — once nothing animates, backdrop-filter cost amortizes to zero for a static frame, so we don't need to remove backdrop-filter to win. We DO drop one of the two pearl layers (50% pearl cost for ~15% visual richness) and collapse the halo's two drop-shadows to one (50% halo cost for ~negligible visual loss) — those are unconditional unless the user notices.\n\nRISKS · backdrop-filter is a passive cost on every paint and cannot be cheaply paused; the strategy depends on stopping animations so the canvas stops being repainted. If something else drives repaints (incoming WebSocket data, route changes, fonts loading late) the gating won't help; this round does not address those. The Page Visibility API throttles JS timers but does NOT pause CSS animations or compositor work — we must explicitly set animation-play-state: paused via a [data-idle] attribute. prefers-reduced-motion already handles a subset; data-idle should subsume those rules, not duplicate them. The 12s inactivity threshold is a guess; surface it as a constant in useIdle so it can be tuned post-ship.\n\nCLUSTERS · b-* (baseline measurement before any change, captures the empirical 'before' so success is falsifiable) · i-* (idle infrastructure: composable + binding) · u-* (user-facing calm toggle) · r-* (unconditional render cost reduction · pearl + halo) · g-* (gating CSS that consumes the data-idle/data-calm attrs) · v-* (verification · puppeteer state machine + perf delta).\n\nORDERING · all substantive nodes consume init.json. CSS edits (r-pearl-simplify · r-halo-simplify · g-idle-pause-rules · g-calm-hide-rules) all touch viewer/src/styles/dag-theme.css and serialize via receipt chain. App.vue edits (u-calm-toggle · i-idle-binding) similarly serialize via receipt. v-idle-probe is the integration gate; v-perf-delta is the convergence assertion (compare to b-baseline-capture).\n\nVALIDATOR DOCTRINE · v-idle-probe asserts the state machine works (puppeteer + getComputedStyle on animation-play-state). v-perf-delta is the load-bearing falsifier: take screenshots at T=0 and T=2s with document.hidden=true, hash both, assert byte-equal — if they differ, something is still animating and the bet failed. Calm-mode receives the same screenshot-stability test plus a separate visibility check (pearl elements must be display:none).",
-  "init": "init",
-  "term": "term",
-  "nodes": {
-    "init": {
+  "schema_version": 2,
+  "engine": {
+    "name": "spec-kit",
+    "version": "1.0.0",
+    "config_hash": null
+  },
+  "dag_id": "roadmap-r5-viewer-idle",
+  "dag_desc": "Viewer · r5 · cheap idle. The viewer's stained-glass identity (pearlescent shimmer, hover halo, in-progress SVG glow) currently runs full-tilt regardless of whether anyone is looking. Two full-viewport pearl layers rotate forever at 60s and 90s with mix-blend-mode: screen and inset:-50% (4× viewport overdraw), the hover halo stacks two drop-shadow() filters on a rotating conic-gradient, and SVG in-progress nodes layer animated stroke-march + glow-modulate even when the canvas isn't being watched. On a moderate GPU the user reports the viewer is taxing.\n\nSCENARIO · given the viewer open in a browser tab, when the user switches to a different tab, blurs the window, or sits idle for 12s, then animations halt and compositor frame production drops to ~0. When the user comes back (mousemove · keydown · regain focus · tab visible) the aesthetic resumes within one frame. A toolbar 'calm' toggle persists a permanent low-motion state for users who want the look at minimum cost — pearl hidden, halo disabled, SVG glow off.\n\nSTANCE · the viewer's identity is the stained-glass aesthetic, not the per-frame cost. We keep the aesthetic on the marketing screenshot and the active state, and we let it sleep when the user isn't looking. The win comes from STOPPING THE THINGS THAT FORCE PAINTS — once nothing animates, backdrop-filter cost amortizes to zero for a static frame, so we don't need to remove backdrop-filter to win. We DO drop one of the two pearl layers (50% pearl cost for ~15% visual richness) and collapse the halo's two drop-shadows to one (50% halo cost for ~negligible visual loss) — those are unconditional unless the user notices.\n\nRISKS · backdrop-filter is a passive cost on every paint and cannot be cheaply paused; the strategy depends on stopping animations so the canvas stops being repainted. If something else drives repaints (incoming WebSocket data, route changes, fonts loading late) the gating won't help; this round does not address those. The Page Visibility API throttles JS timers but does NOT pause CSS animations or compositor work — we must explicitly set animation-play-state: paused via a [data-idle] attribute. prefers-reduced-motion already handles a subset; data-idle should subsume those rules, not duplicate them. The 12s inactivity threshold is a guess; surface it as a constant in useIdle so it can be tuned post-ship.\n\nCLUSTERS · b-* (baseline measurement before any change, captures the empirical 'before' so success is falsifiable) · i-* (idle infrastructure: composable + binding) · u-* (user-facing calm toggle) · r-* (unconditional render cost reduction · pearl + halo) · g-* (gating CSS that consumes the data-idle/data-calm attrs) · v-* (verification · puppeteer state machine + perf delta).\n\nORDERING · all substantive nodes consume init.json. CSS edits (r-pearl-simplify · r-halo-simplify · g-idle-pause-rules · g-calm-hide-rules) all touch viewer/src/styles/dag-theme.css and serialize via receipt chain. App.vue edits (u-calm-toggle · i-idle-binding) similarly serialize via receipt. v-idle-probe is the integration gate; v-perf-delta is the convergence assertion (compare to b-baseline-capture).\n\nVALIDATOR DOCTRINE · v-idle-probe asserts the state machine works (puppeteer + getComputedStyle on animation-play-state). v-perf-delta is the load-bearing falsifier: take screenshots at T=0 and T=2s with document.hidden=true, hash both, assert byte-equal — if they differ, something is still animating and the bet failed. Calm-mode receives the same screenshot-stability test plus a separate visibility check (pearl elements must be display:none).",
+  "metadata": {
+    "round": "r5",
+    "concern": "viewer · idle GPU near-zero · keep stained-glass identity active",
+    "files_touched": [
+      "viewer/src/styles/dag-theme.css",
+      "viewer/src/App.vue",
+      "viewer/src/composables/useIdle.ts",
+      "viewer/src/composables/useIdle.test.ts",
+      "viewer/test/idle-probe.mjs"
+    ],
+    "files_unchanged_by_design": [
+      "viewer/index.html",
+      "viewer/src/components/DagViewer.vue",
+      "viewer/src/themes/*.json"
+    ],
+    "thresholds": {
+      "inactivity_idle_ms": 12000,
+      "screenshot_stability_window_ms": 2000,
+      "expected_compositor_quiet_in_idle": "byte-equal screenshots over a 2s window"
+    }
+  },
+  "inputs": [
+    {
+      "path": ".roadmap/specs/r5-viewer-idle.spec.json",
+      "sha256": "e58af1ac5baee362bbaa4f6516a6ee5fb0dd4258715c9cf94da7cae368bf2f49",
+      "role": "spec"
+    }
+  ],
+  "tasks": [
+    {
       "id": "init",
       "desc": "Ratify the idle-cheap bet · pearl drop · halo simplify · calm-toggle · pause-on-idle\n\nProduce the ratification receipt that downstream nodes consume. Pin the policy: (a) one pearl layer, not two; (b) halo gets one drop-shadow, not two; (c) data-idle attribute drives animation-play-state via CSS; (d) data-calm attribute drives display:none on pearl + animation removal on halo; (e) idle is OR of (document.hidden, !document.hasFocus(), inactivity ≥ 12s); (f) calm persists in localStorage under key 'viewer.calm'. Without this receipt, downstream nodes have no anchor.",
       "produces": [
@@ -16,9 +48,22 @@
           "type": "artifact-exists",
           "target": ".roadmap/round-r5/init.json"
         }
-      ]
+      ],
+      "sidecar": {
+        "policy": {
+          "pearl_layers": 1,
+          "halo_drop_shadows": 1,
+          "idle_signals": [
+            "document.hidden",
+            "document.hasFocus",
+            "inactivity_timer"
+          ],
+          "inactivity_threshold_ms": 12000,
+          "calm_persist_key": "viewer.calm"
+        }
+      }
     },
-    "b-baseline-capture": {
+    {
       "id": "b-baseline-capture",
       "desc": "Measure baseline GPU cost of the viewer at idle — capture compositor frame rate and screenshot stability over a 5s window\n\nGiven the viewer running on the dev server (post-r4 main · pre-idle-changes), run a puppeteer probe that loads the viewer, waits for the canvas to settle, sets document.hidden via emulation, holds for 5s, and captures: (1) two screenshots 2s apart, (2) compositor metrics via Chrome DevTools Protocol (Performance.metrics), (3) the sha256 of each screenshot. Persist all of these to .roadmap/round-r5/b-baseline-capture.json. The receipt is the empirical 'before' that v-perf-delta compares against; without it the bet is unfalsifiable. Receipt fields: { screenshots: [{ts, sha256, bytes}], cdpMetrics: {...}, viewerCommit }.",
       "produces": [
@@ -41,9 +86,13 @@
           "type": "shell",
           "command": "test $(jq -r '.screenshots[0].sha256' .roadmap/round-r5/b-baseline-capture.json) != $(jq -r '.screenshots[1].sha256' .roadmap/round-r5/b-baseline-capture.json)"
         }
-      ]
+      ],
+      "sidecar": {
+        "rationale": "the third validator is load-bearing: baseline screenshots MUST differ — that's the proof animations are actually running pre-fix. if they're already equal, the user's complaint is something else and the bet is wrong.",
+        "probe_skeleton": "puppeteer-core + /usr/bin/google-chrome-stable; page.emulateMedia + Page.setWebLifecycleState('frozen') equivalents — actual approach: page.evaluate(() => Object.defineProperty(document, 'hidden', {get: () => true})) + dispatch visibilitychange"
+      }
     },
-    "i-idle-composable": {
+    {
       "id": "i-idle-composable",
       "desc": "Build a useIdle composable that signals when the user has stopped looking\n\nNew file viewer/src/composables/useIdle.ts exporting useIdle(): Ref<boolean>. Idle = OR of three signals: document.hidden via visibilitychange listener, !document.hasFocus() via focus/blur listeners, and inactivity timer (no pointermove/keydown for IDLE_THRESHOLD_MS, default 12000). Listeners attach via onMounted/onScopeDispose so the composable is safe to call inside any setup(). Includes a vitest unit test that fakes timers, simulates each signal independently, and asserts the ref flips correctly. The composable does NOT touch the DOM beyond reading document state — binding happens in i-idle-binding.",
       "produces": [
@@ -71,9 +120,19 @@
           "type": "shell",
           "command": "grep -q 'visibilitychange' viewer/src/composables/useIdle.ts && grep -q 'pointermove' viewer/src/composables/useIdle.ts && grep -q 'IDLE_THRESHOLD_MS' viewer/src/composables/useIdle.ts"
         }
-      ]
+      ],
+      "sidecar": {
+        "test_cases": [
+          "starts non-idle",
+          "flips idle when document.hidden true",
+          "flips idle on blur",
+          "flips idle after IDLE_THRESHOLD_MS of no input",
+          "flips back to non-idle on pointermove",
+          "cleans up listeners on unmount"
+        ]
+      }
     },
-    "u-calm-toggle": {
+    {
       "id": "u-calm-toggle",
       "desc": "Expose a calm-mode toggle in the toolbar that strips animations on demand\n\nIn viewer/src/App.vue, add a localStorage-backed ref `calm` (key 'viewer.calm', boolean), a toolbar button next to the existing focus/theme/dag-info buttons that toggles it, and bind data-calm on the <main class='viewer-shell'> root. Button label 'calm', aria-pressed, title explaining it. Persist on change via a watcher. This node ONLY adds the calm half — it does NOT bind data-idle (that's i-idle-binding). Touches App.vue but produces a marker so the App.vue edit serializes against i-idle-binding.",
       "produces": [
@@ -101,7 +160,7 @@
         }
       ]
     },
-    "i-idle-binding": {
+    {
       "id": "i-idle-binding",
       "desc": "Wire useIdle and calm-mode to data-attributes on the viewer shell\n\nIn viewer/src/App.vue, import useIdle from the new composable, instantiate it at setup level, and bind data-idle on the same <main class='viewer-shell'> root that u-calm-toggle wired data-calm to. After this node lands, the viewer-shell carries `data-idle='true|false'` and `data-calm='true|false'` reactively. No CSS rules are added here — those land in g-*. The point of separation is that g-* nodes can grep for the attrs to confirm they're plumbed before adding selectors that consume them.",
       "produces": [
@@ -132,7 +191,7 @@
         }
       ]
     },
-    "r-pearl-simplify": {
+    {
       "id": "r-pearl-simplify",
       "desc": "Drop the second pearl layer and cap the remaining pearl's overdraw\n\nIn viewer/src/styles/dag-theme.css, remove the .viewer-shell::after pearl rule (the counter-rotating second layer) and its associated keyframes/properties (pearl-rotate-rev, --pearl-angle-2). Change the surviving .viewer-shell::before from inset:-50% to inset:0 — the rotation no longer needs the off-screen origin trick because the gradient stops are theme-derived and look fine bounded to the viewport. This is unconditional: no idle/calm gating, just a permanent cost cut. Visual diff is acceptable per session conversation: ~50% pearl GPU for ~15% visual richness loss is the deliberate tradeoff. Receipt records the line ranges removed for forensic reconstruction.",
       "produces": [
@@ -164,7 +223,7 @@
         }
       ]
     },
-    "r-halo-simplify": {
+    {
       "id": "r-halo-simplify",
       "desc": "Collapse the hover halo's two drop-shadow filters to one\n\nIn viewer/src/styles/dag-theme.css, the .glass-surface:hover::after rule currently stacks `drop-shadow(0 0 10px var(--accent-gold)) drop-shadow(0 0 24px oklch(0.66 0.18 280 / 0.5))`. Drop the second drop-shadow (the wider purple bloom). Keep the first gold drop-shadow so the halo still reads as illuminated. Receipt records the before/after filter strings.",
       "produces": [
@@ -186,9 +245,12 @@
           "type": "shell",
           "command": "cd viewer && pnpm run build"
         }
-      ]
+      ],
+      "sidecar": {
+        "validator_rationale": "the drop-shadow count threshold is loose because dag-theme.css uses drop-shadow in print mode and SVG nodes too; the halo edit removes one specifically. Tightening this would require a structured CSS parser. Receipt's diff is the authoritative evidence."
+      }
     },
-    "g-idle-pause-rules": {
+    {
       "id": "g-idle-pause-rules",
       "desc": "Pause pearl, halo, and SVG node animations whenever the viewer is idle\n\nIn viewer/src/styles/dag-theme.css, add a block scoped under .viewer-shell[data-idle='true'] that sets animation-play-state: paused on every animated rule: .viewer-shell::before (pearl rotate), .glass-surface:hover::after (halo rotate), .dag-svg .node--in-progress .node-rainbow-rect (stroke-march + glow-modulate), .dag-svg .edge--active (active-edge march), .dag-foil-halo::before (foil rotate). This complements the existing prefers-reduced-motion block (do not duplicate; if any rule is in both, leave it). After this node, switching tabs in the dev server should visibly halt the pearl rotation and the in-progress node glow.",
       "produces": [
@@ -217,7 +279,7 @@
         }
       ]
     },
-    "g-calm-hide-rules": {
+    {
       "id": "g-calm-hide-rules",
       "desc": "Hide pearl entirely and disable the halo when calm mode is active\n\nIn viewer/src/styles/dag-theme.css, add a block scoped under .viewer-shell[data-calm='true']: pearl ::before sets display:none, halo .glass-surface:hover::after sets content:none (kills the pseudo entirely), and in-progress node animations are removed (animation: none). Calm is a strict superset of idle — anything paused in idle is fully removed in calm. Idle is ephemeral (auto-on/off); calm is user-pinned.",
       "produces": [
@@ -246,7 +308,7 @@
         }
       ]
     },
-    "v-idle-probe": {
+    {
       "id": "v-idle-probe",
       "desc": "Verify the idle/calm state machine actually pauses animations (puppeteer integration)\n\nExtend viewer/test/idle-probe.mjs with three test phases that all run under puppeteer-core + /usr/bin/google-chrome-stable: (P1) ACTIVE — load viewer, screenshot at T=0 and T=1s, assert sha256 differ (animation must be running normally). (P2) IDLE — dispatch visibilitychange with document.hidden=true, screenshot at T=0 and T=2s, assert sha256 EQUAL (animations paused). (P3) CALM — click the calm toolbar button, screenshot at T=0 and T=2s, assert EQUAL AND assert getComputedStyle on .viewer-shell::before reports display:none. Persist results to .roadmap/round-r5/v-idle-probe.json. The script exits non-zero if any phase fails. This IS the load-bearing convergence gate — every claim of the round must survive these three assertions.",
       "produces": [
@@ -274,9 +336,12 @@
           "type": "shell",
           "command": "test $(jq -r '.phases[] | select(.id==\"calm\") | .pass' .roadmap/round-r5/v-idle-probe.json) = true"
         }
-      ]
+      ],
+      "sidecar": {
+        "convergence_role": "this is the gate. if any phase fails the round is not done. the screenshot-equality test is a strong falsifier — if anything is animating, the PNGs differ at the pixel level."
+      }
     },
-    "v-perf-delta": {
+    {
       "id": "v-perf-delta",
       "desc": "Compare baseline vs idle screenshots and confirm GPU goes quiet\n\nRead .roadmap/round-r5/b-baseline-capture.json (pre-fix idle screenshots, which differed) and .roadmap/round-r5/v-idle-probe.json (post-fix idle screenshots, which must match). Assert: baseline screenshots differ (sanity — animations were running), post-fix idle screenshots are byte-equal (animations stopped). Also report compositor metrics delta if the CDP capture ran. Receipt is informational + the assertion is the gate.",
       "produces": [
@@ -301,7 +366,7 @@
         }
       ]
     },
-    "term": {
+    {
       "id": "term",
       "desc": "Confirm build clean, type-check clean, and manually smoke the toolbar in dev\n\nFinal convergence assertion. pnpm tsc --noEmit, pnpm vitest run, pnpm run build all clean. Manual smoke via dev-server screenshot: verify the calm toggle is visible in the toolbar, click it, screenshot shows pearl absent. Receipt records the build hashes + the smoke screenshots' sha256.",
       "produces": [
@@ -329,16 +394,5 @@
         }
       ]
     }
-  },
-  "version": "0.3.0",
-  "protocolVersion": "0.3.0",
-  "_origin": {
-    "schemaVersion": 1,
-    "engine": "spec-kit",
-    "version": "1.0.0",
-    "compile_hash": "496e4a74114ae921cc67a9a74ea4b65f76421b0c8e4406221ad16aa2ee068c1d",
-    "spec_sha": "e58af1ac5baee362bbaa4f6516a6ee5fb0dd4258715c9cf94da7cae368bf2f49",
-    "importedAt": "2026-05-07T18:03:26.688Z",
-    "dagId": "roadmap-r5-viewer-idle"
-  }
+  ]
 }
