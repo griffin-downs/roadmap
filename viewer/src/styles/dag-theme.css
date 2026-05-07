@@ -793,3 +793,15 @@ html:has(.viewer-shell--print)::-webkit-scrollbar { display: none; }
   margin: 2px 0;
   word-break: break-all;
 }
+
+/* ── Idle pause · stop animations when the viewer is idle ────────
+   data-idle="true" is set by useIdle (visibility · focus · inactivity).
+   Pausing animation-play-state is enough; backdrop-filter cost
+   amortizes to zero once nothing repaints. */
+.viewer-shell[data-idle="true"]::before,
+.viewer-shell[data-idle="true"] .glass-surface:hover::after,
+.viewer-shell[data-idle="true"] .dag-svg .node--in-progress .node-rainbow-rect,
+.viewer-shell[data-idle="true"] .dag-svg .edge--active,
+.viewer-shell[data-idle="true"] .dag-foil-halo::before {
+  animation-play-state: paused !important;
+}
