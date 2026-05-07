@@ -905,7 +905,7 @@ function buildStars(): Star[] {
   left: calc(24px + 280px * var(--ui-scale, 1)) !important;
   right: 12px !important;
   top: 64px !important;
-  height: calc(180px * var(--ui-scale, 1)) !important;
+  height: calc(96px * var(--ui-scale, 1)) !important;
   z-index: 20;
 }
 .viewer-shell:has(.viewer-shell__lineage):not(:has(.repo-rail)) > .viewer-shell__lineage {
@@ -914,7 +914,7 @@ function buildStars(): Star[] {
 .viewer-shell > .dag-info {
   position: absolute !important;
   right: 12px !important;
-  top: calc(76px + 180px * var(--ui-scale, 1)) !important;
+  top: calc(76px + 96px * var(--ui-scale, 1)) !important;
   bottom: 12px !important;
   width: calc(360px * var(--ui-scale, 1)) !important;
   z-index: 25;
