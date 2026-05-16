@@ -111,15 +111,79 @@ separate brief. If the change touches multiple domains unintentionally:
 
 ## 7. EXECUTOR INSTRUCTION
 
-Execute-only mode:
+Execute-only mode within scope (TIGHT on what you touch):
 - No scope expansion · no "while I'm here" refactors
 - No adjacent refactoring · changes outside section 3 are forbidden
 - No new abstractions unless the task explicitly requires
 - Artifacts, not opinions · do not narrate · do not propose alternatives
-- If blocked: STOP · output one blocking question · do NOT guess
+
+Within scope, DECIDE and PROCEED (LOOSE on judgment):
+- Ambiguity in interpretation → pick the strict reading · log decision
+- Two reasonable implementations → pick one · log why
+- Missing pattern → read neighbors · follow precedent · proceed
+- Unfamiliar code → read it · infer · proceed
+
+If you feel BLOCKED · diffuse FIRST · do NOT surface
+
+  felt-blocked is a SIGNAL to diffuse, not a signal to stop.
+  inventory recovery axes · enumerate options · evaluate · ROUTE the apparent
+  block to one of:
+
+    · endogenous       resolve within scope · proceed
+    · substrate drift  narrow + carrier · proceed
+    · category mismatch reframe the spec wedge · proceed
+    · genuinely unroutable  → THEN write BLOCKED
+
+  if you find yourself writing a three-option diagnosis with a clear
+  recommendation: you have diffused. take the recommendation. log the
+  full diagnosis under receipt.decisions[]. proceed.
+
+  receipt.decisions[] format:
+    { at: "<one line · what was the choice point>",
+      options: ["narrow + carry r121", "commission inline", "pause to investigate"],
+      taken:   "narrow + carry r121",
+      why:     "round deliverable is instrumentation not coverage · grabber-bug
+                falsifier doesn't need annotations · clean carrier into r121",
+      carriers: ["r121-fusion-icon-audit-LLM-annotation-generation"] }
+
+BLOCKED requires evidence of diffusion attempt. A BLOCKED receipt without
+diffusion: { axes_tried[], routes_considered[], why_unroutable } is rejected
+by the orchestrator and re-dispatched. No diffuse = no BLOCKED.
+
+STOP and write BLOCKED only when:
+- World refuses (5xx · credential missing · hardware unreachable)
+- ALL options in the diffused inventory require operator action
+  (no tractable narrow · no carrier · no reframe)
+- Stated SCOPE is exhausted with no path to outcome
 
 End output after the receipt is written.
 ```
+
+### Canonical anti-example · substrate drift at round-open
+
+Four parallel workers discover the spec assumed `model/raw/fusion-icon-audit/
+annotations.jsonl` (288 LLM annotations) that doesn't exist. Three workers
+adapt; the auditor refuses to forge and writes BLOCKED with a three-option
+diagnosis: (1) narrow the round to instrumentation, carrier the LLM-tier
+nodes into r121 · (2) commission the annotation pass inline · (3) pause to
+investigate. Recommendation: option 1, with explicit rationale (*"round
+deliverable is instrumentation not coverage · grabber-bug falsifier doesn't
+need annotations · clean carrier into r121"*).
+
+**What the agent did:** surfaced to human · waited.
+
+**What the agent had already done:** diffused · identified three options ·
+evaluated them · arrived at a routed answer.
+
+**What the agent should have done:** logged the diagnosis under
+`receipt.decisions[]` with `taken: "narrow + carry r121"`, wrote AMBER
+receipt with `surface.action: "decision-logged"`, modified the DAG to drop
+annotation-dependent nodes, opened r121 carrier, continued.
+
+The 2-hour autonomous run lost an hour to a human roundtrip for a decision
+the agent had made. Don't do this.
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
 **Why seven numbered sections, not "≤40 lines target":** the worker is an
 *executor*, not a co-designer. A loose brief invites improvisation;
@@ -156,6 +220,65 @@ Doctrine today. Engine-enforceable once `sidecar.domain` becomes
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
+## Dispatch policy · BLOCKED handling · two-stage diffusion before human
+
+A worker writing BLOCKED is the FIRST stage of escalation. The orchestrator
+is the SECOND stage. Human surface is the THIRD. **Multi-hour autonomous runs
+spend almost zero time at stage three** — most BLOCKEDs route at stage one or
+two and the run continues.
+
+```
+worker writes BLOCKED with diffusion artifact
+       │
+       ▽
+┌─────────────────────────────────────────────────────────────┐
+│ ORCHESTRATOR-LEVEL DIFFUSE                                  │
+│                                                             │
+│ wider view than the worker had:                             │
+│   · other ready nodes in the frontier                       │
+│   · fleet state across repos                                │
+│   · round context · carrier inheritance                     │
+│   · DAG modification options                                │
+│                                                             │
+│ procedure:                                                  │
+│   1. read worker's diffusion.routes_considered              │
+│   2. check surface.recommendation                           │
+│      · if recommendation is tractable                       │
+│        AND doesn't require operator action                  │
+│        AND doesn't require scope-changing approval          │
+│        → ADOPT THE RECOMMENDATION · execute · log · proceed │
+│   3. if recommendation requires operator/scope action:      │
+│      enumerate orchestrator-level recovery axes:            │
+│        · re-dispatch with reframed brief                    │
+│        · swap to a parallel-ready node, defer this one      │
+│        · narrow scope at DAG level, modify the node         │
+│        · split the node into a tractable+carrier pair       │
+│   4. tractable orchestrator-level route? → execute · log    │
+│   5. NO route at orchestrator level either? → STAGE 3       │
+└─────────────────────────────────────────────────────────────┘
+       │
+       ▽ (only if both stages exhausted)
+┌─────────────────────────────────────────────────────────────┐
+│ HUMAN SURFACE · stage 3                                     │
+│                                                             │
+│ surface explicitly names: "both stages exhausted"           │
+│ presents: worker diffusion · orchestrator diffusion ·       │
+│           the actual exogenous fact requiring operator       │
+│ format: name the operator action verbatim · no menu         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Failure mode this prevents:** worker writes "BLOCKED · three options, here's
+my recommendation" → orchestrator passes through to human → human says "use
+your recommendation" → 1 hour lost. The orchestrator-level diffuse adopts the
+recommendation automatically when it doesn't require operator action.
+
+**Decision recording at orchestrator level:** when the orchestrator adopts a
+route, it writes the decision to the node's receipt under `decisions[]` with
+`at: "orchestrator-adopted"` so terminal review sees both stages of routing.
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
 ## Verdict ladder · 6 states, each with a next-move
 
 Verdict says **what happened at the gate.** It is mechanical — derived from
@@ -183,10 +306,34 @@ Receipt schema:
   "commits":  [{"repo": "fleet", "sha": "<hex>"}],
   "verify":   {"cmd": "<...>", "exit": 0, "summary": "<one line>"},
   "sniff":    {"category_match": true, "carrier_collapse": false, "stance_violation": false},
-  "surface":  { "concern": "<...>", "evidence": "<...>", "action": "monitor" | "next-round-carrier" | "human-review" },
+  "decisions": [
+    { "at": "<one line>", "options": ["..."], "taken": "...", "why": "...", "carriers": ["..."]? }
+  ],
+  "diffusion": {
+    "axes_tried":        ["endogenous-fix", "substrate-narrow", "category-reframe", "..."],
+    "routes_considered": ["narrow + carry r121", "commission inline", "pause"],
+    "route_taken":       "narrow + carry r121",
+    "why_unroutable":    "<only on BLOCKED · all routes need operator action>"
+  },
+  "surface":  { "concern": "<...>", "evidence": "<...>",
+                "action": "monitor" | "next-round-carrier" | "human-review" | "decision-logged",
+                "recommendation": "<routed answer from diffusion · used by orchestrator>" },
   "carriers": [{"id": "<...>", "condition": "<...>"}],
   "notes":    "<≤3 lines · only if truly needed>"
 }
+```
+
+**REQUIRED-FIELD RULES:**
+
+```
+verdict = GREEN          decisions[] optional · diffusion optional
+verdict = AMBER          decisions[] required if surface.action = "decision-logged"
+verdict = RED            no special requirement · iterate-loop fires
+verdict = GBD-r<N+1>     decisions[] required naming the dispositioned carriers
+verdict = HONEST-RED     decisions[] required · carriers[] required
+verdict = BLOCKED        diffusion required · diffusion.why_unroutable required ·
+                         surface.recommendation set if diffusion found a near-route ·
+                         RECEIPT IS REJECTED IF DIFFUSION ATTEMPT IS ABSENT
 ```
 
 No narration. No tables. No banners. The artifact + commit IS the evidence;
@@ -293,34 +440,89 @@ static` fires.
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
-## Convergence stance · keep head down, surface only what's exogenous
+## §Felt-blocked-triggers-diffusion · the load-bearing disposition
 
-Default mode is convergence: when something fails, iterate. Don't surface a
-blocker until you've genuinely exhausted what's in your hands.
+Default mode is convergence: when something fails, iterate. When iteration
+feels insufficient — when the agent feels BLOCKED — **the response is diffuse,
+not surface.** Multi-hour autonomous runs cannot afford block-on-first-friction.
+A 2-hour run that surfaces 10 minutes in is the failure mode this doctrine
+exists to prevent.
 
 ```
-ENDOGENOUS · keep head down · iterate
-  validator rejects                · fix the produce, re-advance
-  test fails                       · read the failure, fix the code
-  schema doesn't match              · hoist the field, regenerate
-  hypothesis falsified              · diffuse · widen scope · upstream
-  my code doesn't compile           · I write code, I fix code
-  my receipt shape is wrong         · I author receipts, I fix shape
+felt-blocked is a SIGNAL TO DIFFUSE, not a signal to stop.
 
-EXOGENOUS · surface · don't invent workarounds
-  credentials I cannot provision
-  hardware/host I cannot reach (and operator can)
-  service genuinely down (not "I haven't figured out the API yet")
-  human decision needed (and not a synthesis I can perform)
-  disk full / network gone on a remote I do not control
+  diffusion routes the apparent block to one of:
+    · endogenous       resolve within scope · proceed
+    · substrate drift  narrow + carrier · proceed
+    · category mismatch reframe the spec wedge · proceed
+    · genuinely unroutable  → THEN surface
 
-DISCRIMINATOR · can I fix this with the tools I already have?
-  yes  → keep head down · iterate
-  no   → surface, name the operator action verbatim, leave BLOCKED receipt
+  most "felt blocked" routes to one of the first three.
+  surface is the residual after diffusion fails to find a route.
 ```
 
-§Convergence-default · agents iterate by default · escalation is the exception ·
-the exception is named exogenous · everything else is endogenous.
+**The old discriminator** (*"can I fix this with the tools I already have?"*) was
+wrong because the agent treated "I don't know which option to pick" as not-having-
+the-tools. The new procedure replaces the introspective question with a mandatory
+action:
+
+```
+PROCEDURE on felt-blocked:
+
+1. INVENTORY              enumerate every recovery axis you can name
+                          (endogenous fix · substrate narrow · category reframe ·
+                           scope split · carrier-to-successor · DAG modification)
+
+2. EVALUATE               for each axis: is the route tractable WITHIN MY SCOPE?
+                          do I have the produces, the consumes, the means to act?
+
+3. ROUTE                  pick the most coherent tractable route
+                          if multiple are tractable: pick the narrowest
+
+4. LOG                    receipt.decisions[] captures: at · options · taken · why
+                          receipt.diffusion captures: axes_tried · routes_considered ·
+                          route_taken
+
+5. PROCEED                execute the routed answer · advance the node
+
+ONLY IF NO ROUTE IS TRACTABLE:
+6. write BLOCKED with diffusion.why_unroutable and surface.recommendation
+   (the closest near-route, if any · the orchestrator will try it)
+```
+
+**Endogenous catalog (still iterate · no diffusion needed):**
+
+```
+validator rejects                · fix the produce, re-advance
+test fails                       · read the failure, fix the code
+schema doesn't match              · hoist the field, regenerate
+my code doesn't compile           · I write code, I fix code
+my receipt shape is wrong         · I author receipts, I fix shape
+```
+
+**Felt-blocked catalog (diffuse first · most route back to endogenous):**
+
+```
+spec assumed an artifact I don't see       → substrate-narrow · carrier the rest
+"there are three reasonable options"       → you have diffused · pick one · log
+validator category looks wrong for claim    → category-reframe · log, propose modification
+node desc unclear at a specific point      → strict reading · log · proceed
+two reasonable implementations exist       → pick one · log why · proceed
+upstream produced something I didn't expect → diffuse upstream once · then re-validate
+```
+
+**Genuinely exogenous (surface AFTER diffusion exhausts):**
+
+```
+credentials I cannot provision
+hardware/host I cannot reach (and operator can)
+service genuinely down (not "I haven't figured out the API yet")
+human decision changes SCOPE materially (and no narrower scope is tractable)
+disk full / network gone on a remote I do not control
+```
+
+§Felt-blocked-triggers-diffusion · the 2-hour autonomous run depends on this ·
+diffusion is not optional · BLOCKED without diffusion artifact is rejected by the orchestrator.
 
 ### The iterate loop · what RED actually triggers
 
@@ -502,7 +704,54 @@ read the trail · .roadmap/trail.jsonl · last 50-100 entries
   the trail tells what happened, not what was reported
 ```
 
-### 2. Review dropped threads
+### 2. Review decision log · what the agent decided without asking
+
+Long autonomous runs make many local judgments. Each lands in `receipt.decisions[]`
+or `receipt.diffusion`. Terminal review surfaces them in aggregate so the human
+catches up in one screen, not mid-run one-by-one.
+
+```
+jq -s '[.[].decisions[]?] + [.[] | select(.diffusion) | .diffusion]' \
+    .roadmap/round-N/*.json
+  ↑ accumulate every decision and diffusion artifact across the round
+```
+
+Present as:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  📓 DECISION LOG · <dag-id>                             │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Worker-level decisions:                                │
+│    • <node> · <at>                                      │
+│      options:  <list>                                   │
+│      taken:    <choice>                                 │
+│      why:      <one-line rationale>                     │
+│      carriers: <list, if any>                           │
+│                                                         │
+│  Orchestrator-level adoptions:                          │
+│    • <node> · adopted worker recommendation             │
+│      route:    <route>                                  │
+│      why:      <orchestrator's tractability check>      │
+│                                                         │
+│  Diffusion routes taken (no felt-blocked):              │
+│    • <node> · <route_taken>                             │
+│                                                         │
+│  Patterns worth flagging:                               │
+│    • <e.g. "3 nodes routed substrate-narrow → r<N+1>    │
+│       carriers · spec assumed substrate that drifted">  │
+│                                                         │
+│  Waiting for your call · approve, redirect, or modify.  │
+└─────────────────────────────────────────────────────────┘
+```
+
+The human reads the decision log first — these are the calls the agent made
+WITHOUT asking. Most should be uncontroversial; the ones that aren't get
+redirected before the next round opens. Patterns of bad routing become spec-
+authoring lessons for future rounds.
+
+### 3. Review dropped threads
 
 ```
 scan the conversation for what didn't land
@@ -518,7 +767,7 @@ execution gaps         nodes where you noticed something wrong but moved on ·
                        validators that passed but the output wasn't right
 ```
 
-### 3. Present to the human · don't act, propose
+### 4. Present to the human · don't act, propose
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -547,7 +796,7 @@ execution gaps         nodes where you noticed something wrong but moved on ·
 
 The human decides what matters. Then act.
 
-### 4. Successor proposal
+### 5. Successor proposal
 
 ```
 read successorProposal.action:
@@ -578,7 +827,7 @@ git checkout main && git merge <branch>
 /roadmap-spec → roadmap make → /roadmap-bootprompt → /roadmap-orient
 ```
 
-### 5. Persist · what to write where
+### 6. Persist · what to write where
 
 ```
 ╭─────────────────────────────────────────────────────────────────╮
