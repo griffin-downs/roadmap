@@ -145,18 +145,21 @@ Validators are proxies. After every GREEN advance, the orchestrator runs three b
 
 ```
 1. CATEGORY MATCH       validator tested the category of the claim?
-                        structural validator on behavioral claim = false GREEN
-                        fail → RED · re-iterate · validator was wrong
-
 2. CARRIER COLLAPSE     node silently absorbed work that should be a carrier?
-                        fail → AMBER · surface carrier · file for round
-
-3. STANCE VIOLATION     produce violates stance (subtract before adding ·
-                        thin > fat · ~400 LOC · extend don't bolt)?
-                        fail → AMBER · re-dispatch with stance correction
+3. STANCE VIOLATION     produce violates stance (subtract · thin > fat · ~400 LOC · extend)?
 ```
 
-Any fail → invoke `/diffuse-on-not-green`. Sniff results record in `receipt.sniff`.
+**On any fail · fix-now-in-scope is the default route, carrier is the fallback:**
+
+```
+tractable in current scope?
+  yes → fix now · re-run · re-validate · advance with note in decisions[]
+  no  → AMBER + named carrier to round-N+1 with owner
+```
+
+Carrier-without-tractability-check is the same anti-pattern as BLOCKED-without-diffusion. *"I'll note it as a carrier"* on work the agent could fix now is forge-by-narrative at the carrier level.
+
+Sniff results + tractability check record in `receipt.sniff` + `receipt.decisions[]`.
 
 ## §Felt-blocked-triggers-diffusion
 
@@ -260,7 +263,11 @@ INTRA-ROUND    modify DAG · plan-mode decomposition discovered at runtime
 ROUND BOUNDARY HONEST-RED · author successor with named carriers
 ```
 
-Each carrier becomes a node (or cluster) in the successor with concrete produces and validators describing what "fixed" means. Anti-pattern: silent validator-relaxation without named carrier = forge-by-narrative.
+Each carrier becomes a node (or cluster) in the successor with concrete produces and validators describing what "fixed" means.
+
+**Carrier-eligibility rule:** carriers are for work that doesn't fit current scope. NOT for work the agent could fix now but defers as "polite." Before naming a carrier, check tractability-in-scope · prefer fix-now.
+
+Anti-patterns: silent validator-relaxation without named carrier · carriering tractable in-scope work · both are forge-by-narrative.
 
 Carriers travel via `inputs[]` sha-pinned receipts and via dag_desc / Round narrative.
 
