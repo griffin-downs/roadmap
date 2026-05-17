@@ -122,8 +122,10 @@ roadmap advance <node-id> --note "<what>" # run validators, record completion
        │
        ╰────▷ [📁 heads/]              compiled DAGs (gitignored except curated examples)
                   │
-                  ├────▷ [{dagId}.json]
-                  ╰────▷ [{dagId}.boot.md]    cognitive cartridge · written by /roadmap-bootprompt
+                  ├────▷ [{dagId}.json]            compiled DAG
+                  ╰────▷ [r{N}.boot.md]            round-scoped cognitive cartridge ·
+                                                   written by /roadmap-bootprompt ·
+                                                   glob r*.boot.md = chronological round history
 ```
 
 ```

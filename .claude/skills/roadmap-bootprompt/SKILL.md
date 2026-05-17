@@ -11,9 +11,7 @@ wanted to think.** Drift-prevention, dead ends, register, user concerns, the
 micro-doctrine that emerged in conversation but isn't formal enough for
 CLAUDE.md — all of it dies when the session ends unless captured now.
 
-A fresh agent in a future session loads `boot.md` via `/roadmap-orient` and
-inherits the cognitive stance. Without this skill, that residue is lost and
-the next session re-discovers (or worse, re-falls-into) the same patterns.
+A fresh agent in a future session loads `r<N>.boot.md` via `/roadmap-orient` and inherits the cognitive stance. Without this skill, that residue is lost and the next session re-discovers (or worse, re-falls-into) the same patterns.
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
@@ -36,7 +34,15 @@ NEVER        by a fresh agent that wasn't there for the drafting session
 
 ## Output · the boot.md file
 
-Write to `.roadmap/heads/<dag-id>.boot.md`. One file per DAG. Canonical path.
+Write to `.roadmap/heads/r<N>.boot.md`. **One file per ROUND** (not per DAG). N is the round number from `dag-id` prefix (`r7-...` → N=7), or from `sidecar.round`, or from `dag_desc / Round`. If none present, the spec lacks round encoding and the boot.md falls back to `.roadmap/heads/<dag-id>.boot.md` (legacy).
+
+Round-scoped because cognitive context is round-scoped — multiple DAGs within a round share stance, drift-prevention, and substrate inheritance. Re-writing on each intra-round successor is by design: the latest boot.md folds prior round-stable residue with new shifts.
+
+```
+.roadmap/heads/r6.boot.md         round 6 cartridge
+.roadmap/heads/r7.boot.md         round 7 cartridge (reads r6 for cross-round residue)
+glob: .roadmap/heads/r*.boot.md   all rounds, sorted lexicographically = chronologically
+```
 
 ```markdown
 # <Plain-English DAG title from dag_desc line 1>
@@ -147,10 +153,11 @@ prose summaries rot within one round..
                 AMBER candidates · likely boundaries of surprise ·
                 things the user wants eyes on
 
-4. WRITE        one file, .roadmap/heads/<dag-id>.boot.md
-                ≤ 80 lines total
-                if any section bloats, compress · the boot prompt is a
-                cartridge, not a doctrine repo
+4. WRITE        one file, .roadmap/heads/r<N>.boot.md (round-scoped)
+                if r<N>.boot.md exists from a prior DAG in the round, FOLD
+                still-relevant residue into the new write · do not blindly
+                overwrite, do not blindly append
+                ≤ 80 lines total · cartridge, not doctrine repo
 ```
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
@@ -175,7 +182,7 @@ the floor stance always ships · the ceiling raises from there
                     capture FORWARD-LOOKING cognitive cues, not history
 
 ✗ doctrine          permanent doctrine goes to CLAUDE.md ·
-                    boot.md is per-DAG and dies with the chain
+                    boot.md is per-ROUND and rotates on round boundary
 
 ✗ a retro           not "what went well/poorly" · that's roadmap-auto's
                     terminal review · this is about the next session's mind
@@ -186,7 +193,8 @@ the floor stance always ships · the ceiling raises from there
 ```
 called immediately after /roadmap-spec runs `roadmap make`
 also invokable standalone mid-session when drift emerges
-output: .roadmap/heads/<dag-id>.boot.md at canonical path
+output: .roadmap/heads/r<N>.boot.md at canonical path (round-scoped) ·
+        glob `.roadmap/heads/r*.boot.md` lists all rounds chronologically
 read by: /roadmap-orient on session start
 chain: spec → bootprompt → (user) → orient (next session) → auto
 ```

@@ -21,21 +21,15 @@ This is the source of truth. Auto-detects fleet.json for cross-repo state. Never
 ## Then read the boot prompt · cognitive handoff from the drafting session
 
 ```bash
-cat .roadmap/heads/<dag-id>.boot.md   # if present
+cat .roadmap/heads/r<N>.boot.md   # round-scoped · N from current dag-id prefix
+ls  .roadmap/heads/r*.boot.md     # all rounds chronologically
 ```
 
-The boot prompt is the cognitive cartridge. It carries Stance (drift-prevention,
-dead ends, register, user concerns), Watch (things to flag), and Trajectory
-(prior session's outcome streak). Written by `/roadmap-bootprompt` at the end
-of the drafting session — surfaces it on first orient of the next session.
+The boot prompt is the cognitive cartridge — round-scoped (one per round, not per DAG). Carries Stance (drift-prevention, dead ends, register, user concerns), Watch (things to flag), and Trajectory (prior session's outcome streak). Written by `/roadmap-bootprompt` at the end of the drafting session.
 
-**On first orient of a session, render the boot prompt inline alongside the
-DAG topology.** A fresh agent reading orient output cold should see both:
-where they are (DAG state) AND how the prior session wanted to think (boot).
+**On first orient of a session, render `r<N>.boot.md` inline alongside the DAG topology.** A fresh agent reading orient output cold sees both: where they are (DAG state) AND how the prior session wanted to think (boot).
 
-If no boot.md exists for the current head, note it — and consider invoking
-`/roadmap-bootprompt` to author one if the session has cognitive context
-worth preserving.
+If no `r<N>.boot.md` exists for the current round, note it — consider invoking `/roadmap-bootprompt` if cognitive context is worth preserving.
 
 ## Read the output
 
@@ -104,7 +98,7 @@ For fleet orient, show per-repo status with their active DAGs:
   no DAG?                → /roadmap-spec (design one)
                            → /roadmap-bootprompt (capture stance)
   fleet has blockers?    → surface which repos are blocking which
-  no boot.md for head?   → consider /roadmap-bootprompt if context worth preserving
+  no r<N>.boot.md?       → consider /roadmap-bootprompt if context worth preserving
 ```
 
 ## The chain

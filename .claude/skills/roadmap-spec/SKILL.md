@@ -70,12 +70,12 @@ roadmap api make    # live schema · check shape before authoring
 
 ```
 .roadmap/heads/*.json         archived DAGs
-.roadmap/heads/*.boot.md      prior boot prompts · cognitive residue
+.roadmap/heads/r*.boot.md     prior boot prompts · round-scoped cognitive residue
 .roadmap/trail.jsonl          what actually happened
 .roadmap/.handoff/*.json      what agents discovered
 ```
 
-Scan 2-3 recent DAGs for shape, validators, friction (`grep` trail for advance rejections). Read the most recent boot.md — it carries the prior session's stance and round context.
+Scan 2-3 recent DAGs for shape, validators, friction (`grep` trail for advance rejections). Read the most recent `r<N>.boot.md` — it carries the prior session's stance and round context. `ls .roadmap/heads/r*.boot.md | sort` gives chronological round history.
 
 ## Observation discipline · author-time, not DAG-time
 

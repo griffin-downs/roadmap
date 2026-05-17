@@ -11,7 +11,7 @@ Companion skills for the `roadmap` CLI. Each subdirectory contains a single `SKI
                      next move. Entry point and re-entry point.
   roadmap-spec       Generate a convergence-oriented spec.json from intent + scope ·
                      ships default code stance · ends with pointer to /roadmap-bootprompt
-  roadmap-bootprompt Author .roadmap/heads/<dag-id>.boot.md — cognitive cartridge
+  roadmap-bootprompt Author .roadmap/heads/r<N>.boot.md — round-scoped cognitive cartridge
                      carrying Stance + Watch from the drafting session
   roadmap-auto       Autonomous execution · convergence stance · iterate-loop on RED ·
                      verdict ladder (GREEN/AMBER/RED/GBD/HONEST-RED/BLOCKED) ·
