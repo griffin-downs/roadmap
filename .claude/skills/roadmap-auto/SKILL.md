@@ -235,6 +235,40 @@ worker writes BLOCKED with diffusion artifact
 
 Surfaces are rare · explicitly two-stage-failed. Orchestrator records its adoption in the node's receipt under `decisions[]` with `at: "orchestrator-adopted"`.
 
+## §Capture-before-rerun · iteration consumes captures, not re-runs
+
+Test execution is expensive substrate-creation. Iteration is cheap substrate-consumption. **First failure CAPTURES; iteration reads the capture; re-run ONCE after fix is committed.**
+
+Anti-pattern: run → fail → patch → run → fail → patch → run. Each run pays full cost. Most of the cost is re-execution noise, not new information.
+
+```
+1. RUN ONCE                    execute the test command per spec's Test profile
+2. CAPTURE on failure          write .roadmap/round-N/<node>.test-capture.json
+                               { cmd, exit, duration_ms, stdout_tail, stderr_tail,
+                                 failing_tests, env, repro }
+3. INSPECT capture, not test    iteration substrate is the capture · not re-execution
+4. FIX based on capture         the capture is the source of truth between attempts
+5. RE-RUN to verify             after fix is committed · ONE verification run
+6. CAPTURE again if still fail  attempt counter increments · capture replaces
+```
+
+The capture artifact survives the iterate-loop. Multiple fix attempts read the same capture until a re-run is justified by an actual change to the code under test.
+
+### Test execution policy · profile-aware
+
+Workers consult the spec's Test profile before running. Machine-aware:
+
+```
+unit         any machine · always run in worker scope · fast feedback
+integration  dev or ci · orchestrator-coordinated at frontier checkpoints
+e2e          ci-only by default · explicit user opt-in for local
+benchmarks   ci-only · scheduled · not per-dispatch
+```
+
+A worker on a dev laptop running `npm test` should not accidentally trigger a 30-minute e2e suite. The profile gates which suites run by default. If the spec doesn't declare a profile, the floor profile travels (unit any · integration dev-or-ci · e2e ci-only).
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
 ## Iterate loop · what RED triggers
 
 ```
