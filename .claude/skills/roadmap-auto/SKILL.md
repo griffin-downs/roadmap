@@ -259,13 +259,26 @@ The capture artifact survives the iterate-loop. Multiple fix attempts read the s
 Workers consult the spec's Test profile before running. Machine-aware:
 
 ```
-unit         any machine · always run in worker scope · fast feedback
+unit         any machine · worker scope · fast feedback
 integration  dev or ci · orchestrator-coordinated at frontier checkpoints
 e2e          ci-only by default · explicit user opt-in for local
 benchmarks   ci-only · scheduled · not per-dispatch
 ```
 
-A worker on a dev laptop running `npm test` should not accidentally trigger a 30-minute e2e suite. The profile gates which suites run by default. If the spec doesn't declare a profile, the floor profile travels (unit any · integration dev-or-ci · e2e ci-only).
+A worker on a dev laptop running `npm test` shouldn't accidentally trigger a 30-minute e2e suite. The profile gates which suites run by default. Floor profile travels if spec omits it (unit any · integration dev-or-ci · e2e ci-only).
+
+### Continuous profiling · timing accumulates across runs
+
+Each test run appends `duration_ms` to `.roadmap/round-N/<node>.test-profile.jsonl`. The orchestrator reads this to:
+
+```
+detect drift       suite N took 30s last round · 90s this round · investigate
+catch flakiness    pass/fail ratio across runs · flag tests > 5% flake rate
+gate by budget     if a suite exceeds spec's max-duration · downgrade verdict to AMBER
+                   surface: "integration suite ran 7min · spec budget was 5min"
+```
+
+Multiple workers in the same dispatch don't each re-run shared suites — the orchestrator runs once at frontier checkpoints, distributes the result. **No-redundant-runs** is the policy: if a suite has run on the current sha for this round, don't re-run it; read the prior result.
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 

@@ -440,7 +440,9 @@ investigation finding   targeted test · the fix holds against the symptom
 
 Without paired tests, audit findings rot. The codebase regresses to the state the audit found removable. Round work becomes Sisyphean.
 
-### Test pyramid by node-type
+### Test pyramid by node-type · authoring guidance
+
+When authoring a node, match test level to claim category:
 
 ```
 refactor          unit tests           logic preserved
@@ -450,11 +452,11 @@ performance       benchmarks           regression bound
 audit-removal     regression tests     deleted stays deleted
 ```
 
-The /roadmap-auto · post-GREEN sniff category-match check enforces this. Structural test on behavioral claim = false GREEN.
+Runtime enforces this via `/roadmap-auto · post-GREEN sniff category-match`. Structural test on behavioral claim = false GREEN.
 
 ### Test profile · declared in dag_desc
 
-The Test profile block (above) declares per-level: path glob · machine class · max duration. Workers consult the profile before running. **Machine-aware execution prevents a worker on a dev laptop from accidentally triggering a 30-minute e2e suite.** If the spec doesn't declare a profile, the floor profile travels.
+Declare the per-level path globs · machine class · max duration in the Test profile block above. Execution rules (when to run, capture-before-rerun, profile-aware dispatch) live in `/roadmap-auto`. If the spec omits the profile, the floor profile travels.
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
