@@ -56,6 +56,9 @@ then  <the human can ___>
 Round <N> · falsifier: <one line>
 Carriers inherited from r<N-1>: <list, or "none">
 
+## Substrate state at round boundary
+<MANDATORY · see "Required boot.md section" below · jq-runnable facts, not prose>
+
 ## Start
 Run `/roadmap-orient` — position is truth.
 Read CLAUDE.md for execution protocol.
@@ -92,6 +95,31 @@ Notable pattern: <e.g. "LOSS streak at nodes 5-7 routed to upstream">
 ```
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
+## Required boot.md section · ## Substrate state at round boundary
+
+Every boot.md MUST include a top-level section titled `## Substrate state at
+round boundary` between intent/thesis and stance. The section is mechanically
+populated, not narrated · it inventories the substrate that exists at round
+boundary so the next session opens with state, not prose.
+
+Mandatory sub-sections (each one paragraph or short list):
+
+  · Canonical artifacts touched by this round · jq model/canon/index.json ·
+    cite path + sha256 + relevant entity counts.
+  · Cross-machine substrate · jq model/canon/forensic-sources.json for any
+    .sources[] whose role intersects the round's problem domain · cite
+    .access.remote_host + .access.capture_emit_dir + .known_emitter_state flags.
+  · Ephemeral substrate state · ls newest 1-3 epochs under model/raw/<domain>/ ·
+    cite actual VALUES sampled (not just field names) · note coverage percentages.
+  · Predecessor round empirical findings · cite specific receipts (path + verdict
+    + key numeric finding) · NOT prose summaries.
+
+Anti-pattern · "prose narrating cognitive stance about substrate" instead of
+"jq-runnable substrate facts." Substrate facts survive context compression ·
+prose summaries rot within one round..
+
+§Substrate-inventory-precedes-DAG-authoring (sibling /roadmap-spec discipline)
 
 ## Authoring procedure
 

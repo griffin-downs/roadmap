@@ -8,6 +8,40 @@ user-invocable: true
 
 A spec is a bet: *if I execute these nodes in this order, I satisfy this intent.* Intelligence lives in the spec. Pack thinking into compile-time.
 
+## Substrate inventory · precedes DAG authoring · §Substrate-inventory-precedes-DAG-authoring
+
+Before drafting any DAG, enumerate the substrate state for this round's problem
+domain. Skip this step and the round inherits substrate-amnesia risk · DAG
+authoring against a partial substrate map duplicates extant artifacts and
+misframes terminal classes.
+
+Required inventory · for each round's problem domain:
+
+1. Canonical artifacts        jq the four-or-five entries in model/canon/index.json
+                              that touch this domain · cite path + sha256 + status
+2. Cross-machine substrate    jq model/canon/forensic-sources.json for any
+                              .sources[] whose role intersects the domain · note
+                              .access (ssh host + paths) · .known_emitter_state
+                              (per-field empirical observations · KNOWN-BUG flags)
+3. Recent ephemeral substrate ls model/raw/<domain>/ · pick newest 1-3 epochs ·
+                              record actual VALUES not just field presence
+4. Deployed source state      if .access.remote_host present · ssh -O check the
+                              controlmaster socket · note LastWriteTime · grep for
+                              any in-flight integration markers
+5. Predecessor round receipts find prior-round receipts under this domain ·
+                              jq the carriers[] AND known limitations they named
+
+Emit the inventory as the spec's ## Substrate state at round boundary block.
+The DAG must declare for each new artifact it proposes: CONSUMES (extant) ·
+SUPERSEDES (with named retirement) · NET-NEW (with justification why no extant
+substrate satisfies). NET-NEW without justification is forge-by-narrative at the
+DAG level.
+
+If inventory cannot be completed (operator authority required · ssh unreachable ·
+canonical artifact missing) · the spec must admit terminal class
+HONEST_RED_SUBSTRATE_INVENTORY_INCOMPLETE explicitly. The round cannot close
+GREEN if the inventory was skipped.
+
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
 ## Schema
@@ -342,5 +376,8 @@ chain: /roadmap-spec → roadmap make → /roadmap-bootprompt → user
 ```
 
 Skipping strands the cognitive residue. Do not skip.
+
+The boot prompt for the resulting round must inherit the inventory block · see
+/roadmap-bootprompt skill for the ## Substrate state at round boundary template.
 
 💀 *spec is the bet · terminal is the falsifier · boot prompt is the stance.*
