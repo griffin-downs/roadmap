@@ -126,6 +126,13 @@ then  <the human can ___>
 |---------------------|----------------------------------|---------|
 | src/**/*.{ts,tsx}   | tests/ · generated/ · vendor/    | ≥ N LOC |
 
+## Test profile
+| level       | path glob                      | machine   | max dur |
+|-------------|--------------------------------|-----------|---------|
+| unit        | src/**/*.test.ts               | any       | 30s     |
+| integration | tests/integration/**/*.test.ts | dev or ci | 5min    |
+| e2e         | tests/e2e/**/*.spec.ts         | ci-only   | 30min   |
+
 <narrative · risks · boundaries · known vs unknown>
 ```
 
@@ -333,6 +340,9 @@ Streaming dispatch. Spec does NOT pre-partition into waves.
 9. permissive scope        no authority map · workers collide
 10. investigation in execute "fix the X" as one execute node hides broad reads
 11. no subtraction       no audit/removal nodes · target=0 without greenfield justification
+12. audit without tests  audit produces findings but no paired tests · findings will rot
+13. missing test profile no Test profile in dag_desc · workers run blind, expensive suites
+                         fire on wrong machines
 ```
 
 ## §Defer-only-when-necessary · spec-time mirror of fix-now beats carrier-now
@@ -412,6 +422,39 @@ terminal validator  shell · asserts removed >= target in budget
 - `/roadmap-auto · fix-now beats carrier-now` — runtime mirror
 - `/roadmap-bootprompt · §Substrate-inventory-precedes-DAG-authoring` — what the round inherits
 - §Round-must-remove — what the round leaves behind
+- §Audit-must-test — what protects the round's findings (below)
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
+## §Audit-must-test · tests are the anti-rot mechanism
+
+Every audit (substrate inventory · subtraction · investigation) produces findings AND tests. Findings without tests are advisory; tests are structural — they fire on regression and prevent the next round from re-introducing the same defect.
+
+```
+audit kind              paired test
+──────────────────────  ──────────────────────────────────────────
+substrate inventory     contract test · substrate matches inventory (drift detection)
+subtraction removal     regression test · deleted code stays deleted · behavior unchanged
+investigation finding   targeted test · the fix holds against the symptom
+```
+
+Without paired tests, audit findings rot. The codebase regresses to the state the audit found removable. Round work becomes Sisyphean.
+
+### Test pyramid by node-type
+
+```
+refactor          unit tests           logic preserved
+feature           integration tests    component contract
+ui                e2e tests            user workflow
+performance       benchmarks           regression bound
+audit-removal     regression tests     deleted stays deleted
+```
+
+The /roadmap-auto · post-GREEN sniff category-match check enforces this. Structural test on behavioral claim = false GREEN.
+
+### Test profile · declared in dag_desc
+
+The Test profile block (above) declares per-level: path glob · machine class · max duration. Workers consult the profile before running. **Machine-aware execution prevents a worker on a dev laptop from accidentally triggering a 30-minute e2e suite.** If the spec doesn't declare a profile, the floor profile travels.
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
@@ -424,6 +467,8 @@ titles         line 1 plain English · ≤ 80 chars · capability-shaped
 validators     match category of claim · structural→structural · behavioral→behavioral
 terminal       validate[] holds the falsifier · INCLUDES the subtraction check
 subtraction    audit node + removal nodes · Subtraction budget declared with target
+tests          every audit produces paired tests · Test profile declared
+               level matches node-type · machine class respected
 dag_desc       title + Intent + Scenario + Round + Authority map + Stance pointers
 authority      every node has sidecar.domain
 investigations all "fix/find/investigate" are plan-mode producing finding.json
@@ -439,6 +484,8 @@ approve    premises grounded in conversation · embedded in dag_desc
            investigations are plan-mode producing finding.json
            Subtraction budget declared · audit + removal nodes present ·
            terminal validator asserts removed >= target
+           Test profile declared · audit nodes pair with test nodes ·
+           test level matches node-type claim
 
 redirect   observation-thread · implementation-first · validators don't name produces
            terminal validate is [] · under 20 nodes · titleless nodes
@@ -446,6 +493,8 @@ redirect   observation-thread · implementation-first · validators don't name p
            "fix/find/investigate" in execute-mode · Authority map absent
            no Subtraction budget · target=0 without greenfield justification ·
            no audit/removal nodes
+           audit without paired tests · missing Test profile ·
+           test level mismatches claim (structural test on behavioral claim)
 
 stop       boundaries unknown · intent unclear · no archived heads read
 ```
