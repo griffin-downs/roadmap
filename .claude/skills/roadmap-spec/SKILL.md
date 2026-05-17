@@ -121,6 +121,11 @@ then  <the human can ___>
 ## Stance pointers
 <CLAUDE.md sections · doctrine files · project-specific stance>
 
+## Subtraction budget
+| counted             | excluded                         | target  |
+|---------------------|----------------------------------|---------|
+| src/**/*.{ts,tsx}   | tests/ · generated/ · vendor/    | ≥ N LOC |
+
 <narrative · risks · boundaries · known vs unknown>
 ```
 
@@ -327,7 +332,88 @@ Streaming dispatch. Spec does NOT pre-partition into waves.
 8. empty terminal          terminal.validate = []
 9. permissive scope        no authority map · workers collide
 10. investigation in execute "fix the X" as one execute node hides broad reads
+11. no subtraction       no audit/removal nodes · target=0 without greenfield justification
 ```
+
+## §Defer-only-when-necessary · spec-time mirror of fix-now beats carrier-now
+
+Default to concrete now. Defer only when concrete-now genuinely isn't tractable at spec time.
+
+```
+plan-mode             genuine runtime uncertainty · NOT "I haven't decomposed"
+                      test: can you write the children right now? then write them.
+
+sidecar.{}            ad-hoc context engine ignores · NOT "I don't want to think
+                      about the schema." if the engine reads it (domain, round,
+                      validators), it's first-class.
+
+observation-node      genuinely needing-execution discovery · NOT for questions
+                      the user and author can resolve in 5 minutes.
+
+carriers to round-N+1 work that doesn't fit this round's falsifier · NOT for work
+                      the spec author defers because the spec already feels big enough.
+
+vague authority map   not a thing · concrete domains with concrete dirs and
+                      concrete allowed/forbidden, or the map is decorative.
+```
+
+Runtime mirror: `/roadmap-auto · fix-now beats carrier-now`. Both rules exist because polite-feeling deferrals defer tractable work and call it discipline.
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
+
+## §Round-must-remove · subtraction is the discipline
+
+Codebases accrete. Every round adds. Without forced subtraction, complexity grows monotonically. **Every round (post-greenfield) must include audit-and-removal as first-class nodes, and the terminal falsifier must confirm a non-trivial LOC reduction in the declared budget.**
+
+The discipline is reducing SURFACE AREA, not compressing per-line. Remove whole files · whole abstractions · whole branches that don't pull weight. Do NOT compress thin-and-long code into dense one-liners — that fights rule 10.
+
+**Audit candidates:**
+
+```
+dead code               unreachable · unused exports · unreferenced files
+obsolete shims          backwards-compat whose callers are gone
+redundant abstractions  abstraction layers used in 1 place
+duplicated logic        copy-paste that should collapse
+_-prefixed stubs        "removed" comments · placeholder names
+over-fat functions      subjects of rule 10 refactor (extract + subtract from original)
+```
+
+**Spec shape:**
+
+```
+audit node          mode: plan · sidecar.domain: housekeeping (or candidate domain)
+                    produces: .roadmap/round-N/subtract.audit.json
+                    runs at round-open · inventories removal candidates
+
+removal nodes       mode: execute · single-domain per node · consume audit.json
+                    each candidate becomes a node in the expansion · scope tight
+
+dag_desc            declare Subtraction budget block with target ≥ N LOC
+
+terminal validator  shell · asserts removed >= target in budget
+                    { type: "shell",
+                      command: "removed=$(git diff main..HEAD --shortstat -- src/ \
+                                ':!src/**/*.test.ts' | awk '{print $6+0}'); \
+                                test ${removed:-0} -ge 50" }
+```
+
+**Greenfield exemption:** round 1 of a new lane may declare target=0. After round 1, target=0 requires explicit justification in dag_desc — *"this round is greenfield because <reason>."*
+
+**Anti-patterns · gaming the metric:**
+
+```
+✗ delete whitespace · rename · comment removal to satisfy the gate
+✗ compress thin-and-long into dense one-liners (fights rule 10)
+✗ declare target=0 routinely · accretion is the failure mode
+✗ subtraction punted to a "cleanup round" that never happens
+```
+
+**Sibling disciplines** · same shape, different artifact:
+- `/roadmap-auto · fix-now beats carrier-now` — runtime mirror
+- `/roadmap-bootprompt · §Substrate-inventory-precedes-DAG-authoring` — what the round inherits
+- §Round-must-remove — what the round leaves behind
+
+🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
 
 ## Writing checklist
 
@@ -336,7 +422,8 @@ shape          observe-in-conversation → implement narrow → verify wide
 nodes          self-contained · one concern · falsifiable · heavyweight desc
 titles         line 1 plain English · ≤ 80 chars · capability-shaped
 validators     match category of claim · structural→structural · behavioral→behavioral
-terminal       validate[] holds the falsifier
+terminal       validate[] holds the falsifier · INCLUDES the subtraction check
+subtraction    audit node + removal nodes · Subtraction budget declared with target
 dag_desc       title + Intent + Scenario + Round + Authority map + Stance pointers
 authority      every node has sidecar.domain
 investigations all "fix/find/investigate" are plan-mode producing finding.json
@@ -350,11 +437,15 @@ approve    premises grounded in conversation · embedded in dag_desc
            descs are scenarios, not tasks
            Authority map declares directory → domain · every node has sidecar.domain
            investigations are plan-mode producing finding.json
+           Subtraction budget declared · audit + removal nodes present ·
+           terminal validator asserts removed >= target
 
 redirect   observation-thread · implementation-first · validators don't name produces
            terminal validate is [] · under 20 nodes · titleless nodes
            missing sidecar.domain · produces spanning domains
            "fix/find/investigate" in execute-mode · Authority map absent
+           no Subtraction budget · target=0 without greenfield justification ·
+           no audit/removal nodes
 
 stop       boundaries unknown · intent unclear · no archived heads read
 ```
