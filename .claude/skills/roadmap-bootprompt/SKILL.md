@@ -66,10 +66,12 @@ Carriers inherited from r<N-1>: <list, or "none">
 <MANDATORY · see "Required boot.md section" below · jq-runnable facts, not prose>
 
 ## Start
-Run `/roadmap-orient` — position is truth.
-Read CLAUDE.md for execution protocol.
+
+**First action: invoke `/roadmap-auto`.** Do not orient separately — auto handles orientation internally. Do not ask the user "should I begin" — the user pasted this boot prompt because they want execution to start. (§No-spontaneous-checkpoints applies.)
+
 Branch: <current branch>
 First frontier (from compile-time orient): <ready node ids>
+Read CLAUDE.md for project-specific execution protocol.
 
 ## Skills
 /roadmap-orient · /roadmap-spec · /roadmap-bootprompt · /roadmap-auto
@@ -158,6 +160,13 @@ prose summaries rot within one round..
                 still-relevant residue into the new write · do not blindly
                 overwrite, do not blindly append
                 ≤ 80 lines total · cartridge, not doctrine repo
+
+MANDATORY      the ## Start section MUST contain the directive
+                "First action: invoke `/roadmap-auto`." verbatim and prominent.
+                The boot prompt is a self-executing cartridge — pasting it
+                into a fresh session must trigger execution without the user
+                typing /roadmap-auto themselves. A boot.md missing this
+                directive failed authoring.
 ```
 
 🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪🟥🟧🟨🟩🟦🟪
